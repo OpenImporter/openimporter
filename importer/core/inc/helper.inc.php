@@ -7,12 +7,15 @@
  *  
  * @version 1.0 Alpha
  *  
- * This software contains functions based on:
+ * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
  * copyright:	2011 Simple Machines (http://www.simplemachines.org)
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
+
+if (!defined('OPENIMPORTER'))
+	die('No direct access allowed...');
 
 /**
  * @name is_utf8

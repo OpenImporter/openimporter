@@ -14,6 +14,9 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+if (!defined('OPENIMPORTER'))
+	die('No direct access allowed...');
+
 class database
 {
 	/**

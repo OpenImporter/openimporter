@@ -8,6 +8,9 @@
  * @version 1.0 Alpha
  */
 
+if (!defined('OPENIMPORTER'))
+	die('No direct access allowed...');
+
 class lang
 {
 	private static $language = array();

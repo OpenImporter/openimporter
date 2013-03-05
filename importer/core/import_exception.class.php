@@ -10,6 +10,10 @@
  * class import_exception extends the build-in Exception class and
  * catches potential errors
  */
+
+if (!defined('OPENIMPORTER'))
+	die('No direct access allowed...');
+
 class import_exception extends Exception
 {
 	public static function error_handler_callback($code, $string, $file, $line, $context)
