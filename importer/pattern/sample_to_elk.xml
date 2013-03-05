@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.eurich.de/xml/importer" xmlns:smf="http://www.eurich.de/">
+	<general>
+		<name>vBulletin 4</name>
+		<version>Elkarte 1.0</version>
+		<settings>/includes/config.php</settings>
+		<from_prefix>`{$config['Database']['dbname']}`.{$config['Database']['tableprefix']}</from_prefix>
+		<globals>config</globals>
+		<table_test>{$from_prefix}user</table_test>
+		<custom_functions>
+			function vb4_replace_bbc($content)
+			{
+				$content = preg_replace(
+					array(
+						'~\[(quote)=([^\]]+)\]~i',
+						'~\[(.+?)=&quot;(.+?)&quot;\]~is',
+						'~\[INDENT\]~is',
+						'~\[/INDENT\]~is',
+						'~\[LIST=1\]~is',
+					),
+					array(
+						'[$1=&quot;$2&quot;]',
+						'[$1=$2]',
+						'	',
+						'',
+						'[list type=decimal]',
+					), strtr($content, array('"' => '&quot;')));
+
+				// fixing Code tags
+				$replace = array();
+				
+				preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
+				foreach ($matches as $temp)
+					$replace[$temp] = htmlspecialchars($temp);
+				$content = substr(strtr($content, $replace), 0, 65534);
+
+				return $content;
+			}
+		</custom_functions>
+	</general>
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}user</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			TRUNCATE {$to_prefix}members;
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN password_salt password_salt varchar(32) NOT NULL DEFAULT ''
+		</presql>
+		<preparsecode>
+			$row['signature'] = vb4_replace_bbc($row['signature']);
+		</preparsecode>
+		<query>
+			SELECT
+				u.userid AS id_member, SUBSTRING(u.username, 1, 80) AS member_name,
+				SUBSTRING(u.username, 1, 255) AS real_name,
+				SUBSTRING(u.password, 1, 64) AS passwd,
+				SUBSTRING(u.email, 1, 255) AS email_address,
+				SUBSTRING(u.homepage, 1, 255) AS website_title,
+				SUBSTRING(u.homepage, 1, 255) AS website_url,
+				SUBSTRING(IF(u.customtitle, u.usertitle, ''), 1, 255) AS usertitle,
+				u.lastvisit AS last_login, u.joindate AS date_registered, u.posts,
+				u.birthday_search AS birthdate,
+				SUBSTRING(u.ipaddress, 1, 255) AS member_ip,
+				SUBSTRING(u.ipaddress, 1, 255) AS member_ip2,
+				CASE
+					WHEN u.usergroupid = 6 THEN 1
+					WHEN u.usergroupid = 5 THEN 2
+					WHEN u.usergroupid = 7 THEN 2
+					ELSE 0
+				END AS id_group,
+				CASE WHEN u.usergroupid IN (3, 4) THEN 0 ELSE 1 END AS is_activated,
+				SUBSTRING(u.salt, 1, 5) AS password_salt,
+				SUBSTRING(ut.signature, 1, 65534) AS signature, '' AS lngfile,
+				'' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
+				'' AS personal_text, '' AS time_format, '' AS avatar, '' AS secret_question,
+				'' AS secret_answer, '' AS validation_code, '' AS additional_groups,
+				'' AS smiley_set, salt AS password_salt, '' AS ignore_boards
+			FROM {$from_prefix}user AS u
+				LEFT JOIN {$from_prefix}usertextfield AS ut ON (ut.userid = u.userid)
+			WHERE u.userid != 0;
+		</query>
+	</step>
+</importer>
