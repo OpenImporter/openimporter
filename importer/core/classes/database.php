@@ -25,7 +25,7 @@ class database
 	 * @param type $db_password
 	 * @param type $db_persist
 	 * 
-	 * constructor, connets to our database
+	 * constructor, connects to our database
 	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
