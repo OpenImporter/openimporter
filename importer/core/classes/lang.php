@@ -11,8 +11,17 @@
 if (!defined('OPENIMPORTER'))
 	die('No direct access allowed...');
 
+/**
+ * This class handles language files
+ *  
+ */
 class lang
 {
+	/**
+	* Holds all language information.
+	*
+	* @var array
+	*/
 	private static $language = array();
 
 	/**

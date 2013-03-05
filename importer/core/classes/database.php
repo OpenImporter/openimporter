@@ -133,6 +133,7 @@ class database
 		if (strlen($query_string) != 0)
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
 
+		//@todo: move to template class..
 		echo '
 				<b>Unsuccessful!</b><br />
 				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
