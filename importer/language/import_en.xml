@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lang xmlns="http://wedge.org/xml/importer/lang" xmlns:smf="http://wedge.org" languagecode="en">
+	<item name="imp.locale">en</item>
+	<item name="imp.which_software">Which software are you using?</item>
+</lang>
