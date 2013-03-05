@@ -16,8 +16,8 @@ Supported Source systems:
 
 Supported destination systems:
 ===
-ElKarte www.elkarte.net
-Wedge www.wedge.org
+* ElKarte www.elkarte.net
+* Wedge www.wedge.org
 
 The software is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
 
