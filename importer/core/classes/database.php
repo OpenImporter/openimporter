@@ -20,11 +20,12 @@ if (!defined('OPENIMPORTER'))
 class database
 {
 	/**
-	 * constructor, connets to our database
 	 * @param type $db_server
 	 * @param type $db_user
 	 * @param type $db_password
-	 * @param type $db_persist 
+	 * @param type $db_persist
+	 * 
+	 * constructor, connets to our database
 	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
@@ -90,10 +91,6 @@ class database
 	{
 		global $import, $to_prefix;
 
-		// Debugging?
-		if (isset($_REQUEST['debug']))
-			$_SESSION['import_debug'] = !empty($_REQUEST['debug']);
-
 		if (trim($string) == 'TRUNCATE ' . $to_prefix . 'attachments;')
 			$this->removeAttachments();
 
@@ -127,9 +124,12 @@ class database
 		// Get the query string so we pass everything.
 		if (isset($_REQUEST['start']))
 			$_GET['start'] = $_REQUEST['start'];
+
 		$query_string = '';
+
 		foreach ($_GET as $k => $v)
 			$query_string .= '&' . $k . '=' . $v;
+
 		if (strlen($query_string) != 0)
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
 
