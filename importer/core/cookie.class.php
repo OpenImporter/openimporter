@@ -8,9 +8,9 @@
  * @version 1.0 Alpha
  */
 
-class Cookie
+class cookie
 {
-	public function Cookie()
+	public function cookie()
 	{
 		return true;
 	}
