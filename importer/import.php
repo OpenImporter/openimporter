@@ -35,8 +35,6 @@ if (method_exists($import, 'doStep' . $_GET['step']))
  */
 class Importer
 {
-	const INVALID_IP = '00000000000000000000000000000000';
-
 	public $db;
 	public $cookie;
 	
