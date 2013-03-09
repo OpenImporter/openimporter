@@ -1,0 +1,362 @@
+<?xml version="1.0"?>
+<importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
+	<general>
+		<name>Woltlab Burning Board 3.1</name>
+		<version>Elkarte 1.0</version>
+		<settings>/wcf/config.inc.php</settings>
+		<form>
+			<field id="1" type="text" size="20" default="wcf1_" label="WCF table prefix">wcf_prefix</field>
+			<field id="2" type="text" size="20" default="wbb1_1_" label="WBB table prefix">wbb_prefix</field>
+		</form>
+		<from_prefix>`$dbName`.</from_prefix>
+		<table_test>{$from_prefix}{$wbb_prefix}user;</table_test>
+		<globals>userOptions</globals>
+		<custom_functions>
+			function wbb_replace_bbc($message)
+			{
+				$row['body'] = preg_replace(
+					array(
+						'~\[size=(.+?)\]~is',
+						'~\[align=left\](.+?)\[\/align\]~is',
+						'~\[align=right\](.+?)\[\/align\]~is',
+						'~\[align=center\](.+?)\[\/align\]~is',
+						'~\[align=justify\](.+?)\[\/align\]~is',
+						'~.Geneva, Arial, Helvetica, sans-serif.~is',
+						'~.Tahoma, Arial, Helvetica, sans-serif.~is',
+						'~.Arial, Helvetica, sans-serif.~is',
+						'~.Chicago, Impact, Compacta, sans-serif.~is',
+						'~.Comic Sans MS, sans-serif.~is',
+						'~.Courier New, Courier, mono.~is',
+						'~.Georgia, Times New Roman, Times, serif.~is',
+						'~.Helvetica, Verdana, sans-serif.~is',
+						'~.Impact, Compacta, Chicago, sans-serif.~is',
+						'~.Lucida Sans, Monaco, Geneva, sans-serif.~is',
+						'~.Times New Roman, Times, Georgia, serif.~is',
+						'~.Trebuchet MS, Arial, sans-serif.~is',
+						'~.Verdana, Helvetica, sans-serif.~is',
+						'~\[list=1\]\[\*\]~is',
+						'~\[list\]\[\*\]~is',
+						'~\[\*\]~is',
+						'~\[\/list\]~is',
+						'~\[attach\](.+?)\[\/attach\]~is'
+					),
+					array(
+						'[size=$1pt]',
+						'[left]$1[/left]',
+						'[right]$1[/right]',
+						'[center]$1[/center]',
+						'$1',
+						'Geneva',
+						'Tahoma',
+						'Arial',
+						'Chicago',
+						'Comic Sans MS',
+						'Courier New',
+						'Georgia',
+						'Helvetica',
+						'Impact',
+						'Lucida Sans',
+						'Times New Roman',
+						'Trebuchet MS',
+						'Verdana',
+						'[list type=decimal][li]',
+						'[list][li]',
+						'[/li][li]',
+						'[/li][/list]',
+						'',
+					),
+					trim($message)
+				);
+				return $message;
+			}
+		</custom_functions>
+	</general>
+	<step type="mandatory">
+		<title>Analysing WCF options</title>
+		<code>
+			global $userOptions;
+			$userOptions = array();
+			$request = $db->query("
+				SELECT optionName, optionID
+				FROM{$from_prefix}{$wcf_prefix}user_option");
+
+			while ($wbbOpt = $db->fetch_assoc($request))
+				$userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
+
+			store_global('userOptions',$userOptions);
+			$db->free_result($request);
+		</code>
+	</step>
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}{$wbb_prefix}user</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			TRUNCATE {$to_prefix}members;
+			TRUNCATE {$to_prefix}attachments;
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN password_salt password_salt varchar(40) NOT NULL default '';
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN passwd passwd varchar(40) NOT NULL default '';
+		</presql>
+		<preparsecode>
+			$request = $db->query("
+				SELECT groupID
+				FROM {$from_prefix}{$wcf_prefix}user_to_groups
+				WHERE userID = $row[id_member]");
+
+			while ($groups = $db->fetch_assoc($request))
+			{
+				if (in_array('4', $groups))
+					$row['id_group'] = '1';
+				elseif (in_array('5', $groups))
+					$row['id_group'] = '2';
+				elseif (in_array('6', $groups))
+					$row['id_group'] = '2';
+			}
+			$db->free_result($request);
+
+			$row['signature'] = wbb_replace_bbc($row['signature']);
+
+			/* load wbb userOptions */
+			$request = $db->query("
+				SELECT *
+				FROM {$from_prefix}{$wcf_prefix}user_option_value
+				WHERE userID = $row[id_member]");
+	
+			while ($userdata = $db->fetch_assoc($request))
+				$smfOptions = $userdata;
+	
+			$db->free_result($request);
+
+			/* now we can fix some profile options*/	
+			$row['birthdate'] = $smfOptions['userOption'. $userOptions['birthday']];
+			$row['show_online'] = !empty($smfOptions['userOption'. $userOptions['invisible']]) ? (int) $smfOptions['userOption'. $userOptions['invisible']] : 0;
+			$row['hide_email'] = (int)$smfOptions['userOption'. $userOptions['hideEmailAddress']];
+			$row['location'] = !empty($smfOptions['userOption'. $userOptions['location']]) ? $smfOptions['userOption'. $userOptions['location']] : '';
+			$row['gender'] = !empty($smfOptions['userOption'. $userOptions['gender']])? $smfOptions['userOption'. $userOptions['gender']] : 0;
+			$row['website_title'] = $smfOptions['userOption'. $userOptions['homepage']];
+			$row['website_url'] = $smfOptions['userOption'. $userOptions['homepage']];
+			/* fix invalid birthdates */
+			if(!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
+				$row['birthdate'] = '0001-01-01';
+		</preparsecode>
+		<query>
+			SELECT
+				u.userID AS id_member, SUBSTRING(u.username, 1, 80) AS member_name, '' AS buddy_list,
+				IF (p.Posts IS NULL, 0, p.Posts) AS posts, u.registrationDate AS date_registered,
+				u.lastActivityTime AS last_login,SUBSTRING(u.username, 1, 255) AS real_name,
+				u.password AS passwd, SUBSTRING(u.email, 1, 64) AS email_address, '' AS message_labels,
+				1 AS show_online, 0 AS id_group, 1 AS hide_email, '' AS ignore_boards,
+				SUBSTRING(u.signature, 1, 65534) AS signature, salt AS password_salt
+			FROM {$from_prefix}wcf1_user AS u
+				LEFT JOIN {$from_prefix}{$wbb_prefix}user AS p ON (u.userID = p.UserID);
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}{$wbb_prefix}board WHERE boardType = 1</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT
+				c.boardID AS id_cat, SUBSTRING(c.title, 1, 255) AS name,
+				o.position AS cat_order
+			FROM {$from_prefix}{$wbb_prefix}board AS c
+				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = c.boardID)
+			WHERE boardType = 1;		
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}{$wbb_prefix}board WHERE boardType = 0</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+		</presql>
+		<query>
+			SELECT
+				b.boardID AS id_board, o.parentID AS id_parent, o.position AS board_order, 0 AS id_cat,
+				SUBSTRING(b.title, 1, 255) AS name, SUBSTRING(b.description, 1, 65534) AS description,
+				b.threads AS num_topics, b.countUserPosts AS num_posts, '2,-1,0,1' AS member_groups
+			FROM {$from_prefix}{$wbb_prefix}board AS b
+				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = b.boardID)
+			WHERE boardType = 0;		
+		</query>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}{$wbb_prefix}thread</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<preparsecode>
+			$request = $db->query("
+				SELECT
+					pollID
+				FROM {$from_prefix}{$wbb_prefix}post
+				WHERE threadID = $row[id_topic] AND pollID > 0
+				GROUP BY threadID");
+
+			list ($pollID) = $db->fetch_row($request);
+			$db->free_result($request);
+			if ($pollID > 0)
+				$row['id_poll'] = $pollID;
+		</preparsecode>
+		<query>
+			SELECT
+				t.threadID AS id_topic, t.isSticky AS is_sticky, t.boardID AS id_board,
+				t.replies AS num_replies, t.views AS num_views, t.isClosed AS locked,
+				t.userID AS id_member_started, t.lastPosterID AS id_member_updated,
+				t.firstPostID AS id_first_msg, MAX(p.postid) AS id_last_msg,
+				p.pollID AS id_poll
+			FROM {$from_prefix}{$wbb_prefix}thread AS t
+				LEFT JOIN {$from_prefix}{$wbb_prefix}post AS p ON (p.threadID = t.threadID)
+			GROUP BY t.threadID
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}{$wbb_prefix}post</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<slashes>false</slashes>
+			<limit>100</limit>
+		</options>
+		<preparsecode>
+			$row['body'] = wbb_replace_bbc($row['body']);
+		</preparsecode>
+		<query>
+			SELECT
+				p.postID AS id_msg, p.threadID AS id_topic, t.boardID AS id_board,
+				p.time AS poster_time, p.userID AS id_member,
+				SUBSTRING(t.topic, 1, 255) AS subject,
+				SUBSTRING(IFNULL(u.username, p.username), 1, 255) AS poster_name,
+				SUBSTRING(p.ipAddress, 1, 255) AS poster_ip,
+				SUBSTRING(IFNULL(u.email, ''), 1, 255) AS poster_email,
+				p.enableSmilies AS smileys_enabled,
+				SUBSTRING(p.message, 1, 65534) AS body,
+				p.lastEditTime AS modified_name, 'xx' AS icon
+			FROM {$from_prefix}{$wbb_prefix}post AS p
+				INNER JOIN {$from_prefix}{$wbb_prefix}thread AS t ON (t.threadID = p.threadID)
+				LEFT JOIN {$from_prefix}{$wcf_prefix}user AS u ON (u.userID = p.userID);
+		</query>
+	</step>
+	<step>
+		<title>Importing polls</title>
+		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
+		<destination>{$to_prefix}polls</destination>
+		<presql>
+			ALTER TABLE {$to_prefix}poll_choices
+				ADD old_choice INT( 12 ) unsigned NOT NULL;
+			TRUNCATE {$to_prefix}polls;
+			TRUNCATE {$to_prefix}poll_choices;
+			TRUNCATE {$to_prefix}log_polls;
+		</presql>
+		<query>
+			SELECT
+				p.pollID AS id_poll, SUBSTRING(p.question , 1, 255) AS question,
+				t.userID AS id_member, p.endTime AS expire_time,
+				SUBSTRING(IFNULL(t.username, ''), 1, 255) AS poster_name,
+				choiceCount AS max_votes
+			FROM {$from_prefix}{$wcf_prefix}poll AS p
+				LEFT JOIN {$from_prefix}{$wbb_prefix}post AS m ON (p.pollID = m.pollID)
+				LEFT JOIN {$from_prefix}{$wbb_prefix}thread AS t ON (m.threadID = t.threadID);
+		</query>
+	</step>
+	<step>
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
+		<destination>{$to_prefix}poll_choices</destination>
+		<preparsecode>
+			if (!isset($_SESSION['convert_last_poll']) || $_SESSION['convert_last_poll'] != $row['id_poll'])
+			{	
+				$_SESSION['convert_last_poll'] = $row['id_poll'];
+				$_SESSION['convert_last_choice'] = 0;
+			}
+			$row['id_choice'] = ++$_SESSION['convert_last_choice'];
+		</preparsecode>
+		<query>
+			SELECT
+				pollID AS id_poll, 1 AS id_choice, SUBSTRING(pollOption, 1, 255) AS label,
+				votes AS votes, pollOptionID AS old_choice
+			FROM {$from_prefix}{$wcf_prefix}poll_option
+			ORDER BY pollID;
+		</query>
+	</step>
+	<step>
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}{$wcf_prefix}poll_option_vote</detect>
+		<destination>{$to_prefix}log_polls</destination>
+		<query>
+			SELECT
+				v.pollID AS id_poll, v.userID AS id_member, c.id_choice AS id_choice
+			FROM {$from_prefix}{$wcf_prefix}poll_option_vote AS v
+				LEFT JOIN {$to_prefix}poll_choices AS c ON (v.pollOptionID = c.old_choice)
+			GROUP BY id_poll, id_member;
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}{$wcf_prefix}pm</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>
+			ALTER TABLE {$to_prefix}poll_choices DROP old_choice;
+			TRUNCATE {$to_prefix}personal_messages;
+			TRUNCATE {$to_prefix}pm_recipients;
+		</presql>
+		<preparsecode>
+			$row['body'] = wbb_replace_bbc($row['body']);
+		</preparsecode>
+		<query>
+			SELECT
+				pmID AS id_pm, userID AS id_member_from, '0' AS deleted_by_sender,
+				time AS msgtime, username from_name, SUBSTRING(subject, 1, 255) AS subject,
+				SUBSTRING(message, 1, 65534) AS body
+			FROM {$from_prefix}{$wcf_prefix}pm;
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}{$wcf_prefix}pm_to_user</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<query>
+			SELECT
+				pmID AS id_pm, recipientID AS id_member,
+				IF(isViewed > 0, 1, 0) AS is_read, IF(isDeleted = 1, 1, 0) AS deleted,
+				'-1' AS labels, isBlindCopy AS bcc
+			FROM {$from_prefix}{$wcf_prefix}pm_to_user;
+		</query>
+	</step>
+	<step>
+		<title>Importing topic notifications</title>
+		<detect>{$from_prefix}{$wbb_prefix}thread_subscription</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<presql>
+			TRUNCATE {$to_prefix}log_notify;
+		</presql>
+		<query>
+			SELECT
+				userID AS id_member, threadID AS id_topic
+			FROM {$from_prefix}{$wbb_prefix}thread_subscription;
+		</query>
+	</step>
+	<step>
+		<title>Importing board notifications</title>
+		<detect>{$from_prefix}{$wbb_prefix}board_subscription</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<query>
+			SELECT
+				userID AS id_member, boardID AS id_board
+			FROM {$from_prefix}{$wbb_prefix}board_subscription;
+		</query>
+	</step>
+</importer>
