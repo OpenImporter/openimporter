@@ -159,7 +159,7 @@ class Importer
 		if (!empty($this->script))
 			$_SESSION['import_script'] = (string) $this->script;
 		if (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . '/' . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			$this->preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
+			$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 		else
 			unset($_SESSION['import_script']);
 		
@@ -182,7 +182,7 @@ class Importer
 	 * @param type $file
 	 * @throws import_exception 
 	 */
-	private function preparse_xml($file)
+	private function _preparse_xml($file)
 	{
 		try
 		{
@@ -197,7 +197,7 @@ class Importer
 		}
 
 		if (isset($_POST['path_to']) && !empty($_GET['step']))
-			$this->loadSettings();
+			$this->_loadSettings();
 	}
 
 	/**
@@ -252,7 +252,7 @@ class Importer
 		{
 			$_SESSION['import_script'] = basename($scripts[0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
-				$this->preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
+				$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 			return false;
 		}
 
@@ -270,7 +270,7 @@ class Importer
 	 * @global type $global
 	 * @return type 
 	 */
-	private function loadSettings()
+	private function _loadSettings()
 	{
 		global $db, $to_prefix;
 
@@ -446,7 +446,7 @@ class Importer
 	 * Looks at the importer and returns the steps that it's able to make.
 	 * @return int 
 	 */
-	private function find_steps()
+	private function _find_steps()
 	{
 		$steps = array();
 		$steps_count = 0;
@@ -469,7 +469,7 @@ class Importer
 	* @param string 
 	* @return string 
 	*/
-	private function fix_params($string)
+	private function _fix_params($string)
 	{
 		if (isset($_SESSION['import_parameters']))
 		{
@@ -489,7 +489,7 @@ class Importer
 	* @param string $ip 
 	* @return string $ip
 	*/
-	private function prepareIPV6($ip)
+	private function _prepare_ipv6($ip)
 	{
 		return $ip;
 	}
@@ -540,7 +540,7 @@ class Importer
 			$template->error($error_message);
 		}
 
-		$this->template->step0($this, $this->find_steps(), $test_from, $test_to);
+		$this->template->step0($this, $this->_find_steps(), $test_from, $test_to);
 
 		if ($error_message !== null)
 		{
@@ -589,7 +589,7 @@ class Importer
 			{
 				if ($counts->detect)
 				{
-					$count = $this->fix_params((string) $counts->detect);
+					$count = $this->_fix_params((string) $counts->detect);
 					$request = $db->query("
 						SELECT COUNT(*)
 						FROM $count", true);
@@ -627,7 +627,7 @@ class Importer
 
 			// any preparsing code here?
 			if (isset($steps->preparsecode) && !empty($steps->preparsecode))
-				$special_code = $this->fix_params((string) $steps->preparsecode);
+				$special_code = $this->_fix_params((string) $steps->preparsecode);
 
 			$do_current = $substep >= $_GET['substep'];
 
@@ -639,7 +639,7 @@ class Importer
 
 			elseif ($steps->detect)
 			{
-				$count = $this->fix_params((string) $steps->detect);
+				$count = $this->_fix_params((string) $steps->detect);
 				$table_test = $db->query("
 					SELECT COUNT(*)
 					FROM $count", true);
@@ -666,7 +666,7 @@ class Importer
 			// pre sql queries first!!
 			if (isset($steps->presql) && !isset($_SESSION['import_steps'][$substep]['presql']))
 			{
-				$presql = $this->fix_params((string) $steps->presql);
+				$presql = $this->_fix_params((string) $steps->presql);
 				$presql_array = explode(';', $presql);
 				if (isset($presql_array) && is_array($presql_array))
 				{
@@ -689,7 +689,7 @@ class Importer
 				$special_table = null;
 
 			if (isset($steps->query))
-				$current_data = substr(rtrim($this->fix_params((string) $steps->query)), 0, -1);
+				$current_data = substr(rtrim($this->_fix_params((string) $steps->query)), 0, -1);
 
 			if (isset($steps->options->limit))
 				$special_limit = $steps->options->limit;
@@ -704,7 +704,7 @@ class Importer
 			if (isset($steps->code))
 			{
 				// execute our code block
-				$special_code = $this->fix_params((string) $steps->code);
+				$special_code = $this->_fix_params((string) $steps->code);
 				eval($special_code);
 				// reset some defaults
 				$current_data = '';
@@ -725,7 +725,7 @@ class Importer
 
 				if (isset($steps->detect))
 				{
-					$count = $this->fix_params((string) $steps->detect);
+					$count = $this->_fix_params((string) $steps->detect);
 					$result2 = $db->query("
 						SELECT COUNT(*)
 						FROM $count");
@@ -839,7 +839,7 @@ class Importer
 								{
 									$ip = trim($ip);
 									if (array_key_exists($ip, $row))
-										$row[$ip] = $this->prepareIPV6($row[$ip]);
+										$row[$ip] = $this->_prepare_ipv6($row[$ip]);
 								}
 							}
 							// prepare ip address conversion to a pointer
@@ -1566,7 +1566,7 @@ class Database
 	 * remove old attachments
 	 * @global type $to_prefix 
 	 */
-	private function removeAttachments()
+	private function _removeAttachments()
 	{
 		global $to_prefix;
 
@@ -1619,7 +1619,7 @@ class Database
 			$_SESSION['import_debug'] = !empty($_REQUEST['debug']);
 
 		if (trim($string) == 'TRUNCATE ' . $to_prefix . 'attachments;')
-			$this->removeAttachments();
+			$this->_removeAttachments();
 
 		$result = @mysql_query($string);
 
@@ -1729,7 +1729,7 @@ class Database
 */
 class lng
 {
-	private static $lang = array();
+	private static $_lang = array();
 
 	/**
 	* Adds a new variable to lang.
@@ -1745,7 +1745,7 @@ class lng
 		{
 				if (!self::has($key))
 				{
-					self::$lang[$key] = $value;
+					self::$_lang[$key] = $value;
 					return true;
 				}
 				else
@@ -1812,7 +1812,7 @@ class lng
 	*/
 	public static function has($key)
 	{
-		if (isset(self::$lang[$key]))
+		if (isset(self::$_lang[$key]))
 			return true;
 
 		return false;
@@ -1827,7 +1827,7 @@ class lng
 	public static function get($key)
 	{
 		if (self::has($key))
-			return self::$lang[$key];
+			return self::$_lang[$key];
 
 		return null;
 	}
@@ -1838,7 +1838,7 @@ class lng
 	*/
 	public static function getAll()
 	{
-		return self::$lang;
+		return self::$_lang;
 	}
 
 	protected static function detect_browser_language()
