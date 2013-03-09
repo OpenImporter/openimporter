@@ -2414,22 +2414,6 @@ class template
 
 	public function xml()
 	{
-		global $import;
-
-		if (isset($_GET['doStep']) && isset($_GET['bypass']))
-		{
-			$temp = unserialize($_GET['bypass']);
-			foreach ($temp as $key => $value)
-				$_SESSION[$key] = $value;
-
-			$json = array(
-				'status' => '1',
-				'next' => '2'
-			);
-
-			return true;
-		}
-
 		if (isset($_GET['path_to']))
 			$test_to = file_exists($_GET['path_to']);
 		elseif (isset($_GET['path_from']))
@@ -2440,65 +2424,6 @@ class template
 		header('Content-Type: text/xml');
 		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	<valid>', $test_to ? 'true' : 'false' ,'</valid>';
-	}
-
-	public function ajax_importer()
-	{
-
-	echo '
-		<div id="ajax_progress"></div>
-			<script type="text/javascript">
-				// define these variables
-				var interval = \'5000\';
-				var file = \'import.php?xml=true&doStep=true&bypass=', $bypass, '\';
-				var myelement = \'ajax_progress\';
-				var json;
-
-				function createRequestObject()
-				{
-					if (window.XMLHttpRequest)
-						return new XMLHttpRequest();
-
-					if (window.ActiveXObject)
-						return new ActiveXObject("Microsoft.XMLHTTP");
-				}
-
-				// Make the XMLHttpRequest object
-				var http = createRequestObject();
-
-				function sendRequest(page)
-				{
-					http.open(\'get\', page);
-					http.onreadystatechange = handleResponse;
-					http.setRequestHeader("Pragma", "no-cache");
-					http.setRequestHeader("Cache-Control", "must-revalidate");
-					http.setRequestHeader("If-Modified-Since", document.lastModified);
-					http.send(null);
-				}
-
-				function handleResponse()
-				{
-					if (http.readyState == 4 && http.status == 200)
-					{
-						// the PHP output
-						var response = http.responseText;
-						// json = eval(\'(\'+ http.responseText +\')\');
-						if (response)
-							document.getElementById(myelement).innerHTML = response;
-					}
-				}
-
-				function loop()
-				{
-					sendRequest(file +json);
-					setTimeout("loop()", interval);
-				}
-
-				window.onload = function ()
-				{
-					loop();
-				};
-			</script>';
 	}
 }
 
