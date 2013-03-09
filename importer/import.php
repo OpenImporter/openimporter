@@ -120,7 +120,7 @@ class Importer
 
 		// Add slashes, as long as they aren't already being added.
 		if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
-			$_POST = helper::stripslashes_recursive($_POST);
+			$_POST = stripslashes_recursive($_POST);
 
 		// This is really quite simple; if ?delete is on the URL, delete the importer...
 		if (isset($_GET['delete']))
@@ -892,7 +892,7 @@ class Importer
 								);
 
 							if (empty($no_add) && empty($ignore_slashes))
-								$rows[] = "'" . implode("', '", helper::addslashes_recursive($row)) . "'";
+								$rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
 							elseif (empty($no_add) && !empty($ignore_slashes))
 								$rows[] = "'" . implode("', '", $row) . "'";
 							else
@@ -1267,8 +1267,8 @@ class Importer
 
 				while ($topicArray = $db->fetch_assoc($resultTopic))
 				{
-					$memberStartedID = helper::getMsgMemberID($topicArray['myid_first_msg']);
-					$memberUpdatedID = helper::getMsgMemberID($topicArray['myid_last_msg']);
+					$memberStartedID = getMsgMemberID($topicArray['myid_first_msg']);
+					$memberUpdatedID = getMsgMemberID($topicArray['myid_last_msg']);
 
 					$db->query("
 						UPDATE {$to_prefix}topics
@@ -1476,7 +1476,7 @@ class Importer
 						$filename = $custom_avatar_dir . '/' . $row['filename'];
 					}
 					else
-						$filename = helper::getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+						$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
 
 					// Probably not one of the imported ones, then?
 					if (!file_exists($filename))
@@ -2641,180 +2641,182 @@ function pastTime($substep = null, $stop_time = 5)
 	exit;
 }
 
-
-abstract class helper
+/**
+* helper function for old attachments
+*
+* @param string $filename
+* @param int $attachment_id
+* @return string
+*/
+function getLegacyAttachmentFilename($filename, $attachment_id)
 {
-	/**
-	* helper function for storing vars that need to be global
-	*
-	* @param string $variable
-	* @param string $value
-	*/
-	public static function store_global($variable, $value)
-	{
-		$_SESSION['store_globals'][$variable] = $value;
-	}
+	// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
+	$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
+	$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
 
-	/**
-	* helper function for old attachments
-	*
-	* @param string $filename
-	* @param int $attachment_id
-	* @return string
-	*/
-	public static function getLegacyAttachmentFilename($filename, $attachment_id)
-	{
-		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
-		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-
-		// Get rid of dots, spaces, and other weird characters.
-		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-
+	// Get rid of dots, spaces, and other weird characters.
+	$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
 		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
-	}
+}
 
-	/**
-	* helper function to create an encrypted attachment name
-	*
-	* @param string $filename
-	* @return string
-	*/
-	public static function createAttachmentFilehash($filename)
+/**
+ * 	
+ * * helper function to create an encrypted attachment name
+*
+* @param string $filename
+* @return string
+*/
+function createAttachmentFilehash($filename)
+{
+	return sha1(md5($filename . time()) . mt_rand());
+}
+
+/**
+* helper function, simple file copy at all
+*
+* @param string $filename
+* @return bol
+*/
+function copy_file($source, $destination)
+{
+	if (is_file($source))
 	{
-		return sha1(md5($filename . time()) . mt_rand());
+		copy($source, $destination);
+		return false;
 	}
+	return true;
+}
 
-	/**
-	* helper function, simple file copy at all
-	*
-	* @param string $filename
-	* @return bol
-	*/
-	public static function copy_file($source, $destination)
+/**
+* // Add slashes recursively...
+*
+* @param array $var
+* @return array
+*/
+function addslashes_recursive($var)
+{
+	if (!is_array($var))
+		return addslashes($var);
+	else
 	{
-		if (is_file($source))
-		{
-			copy($source, $destination);
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	* // Add slashes recursively...
-	*
-	* @param array $var
-	* @return array
-	*/
-	public static function addslashes_recursive($var)
-	{
-		if (!is_array($var))
-			return addslashes($var);
-		else
-		{
-			foreach ($var as $k => $v)
-				$var[$k] = self::addslashes_recursive($v);
-			return $var;
-		}
-	}
-
-	/**
-	* // Remove slashes recursively...
-	*
-	* @param array $var
-	* @return array
-	*/
-	public static function stripslashes_recursive($var, $level = 0)
-	{
-		if (!is_array($var))
-			return stripslashes($var);
-
-		// Reindex the array without slashes, this time.
-		$new_var = array();
-
-		// Strip the slashes from every element.
 		foreach ($var as $k => $v)
-			$new_var[stripslashes($k)] = $level > 25 ? null : self::stripslashes_recursive($v, $level + 1);
-
-		return $new_var;
+			$var[$k] = addslashes_recursive($v);
+		return $var;
 	}
+}
 
-	public static function copy_smileys($source, $dest)
+/**
+* Remove slashes recursively...
+*
+* @param array $var
+* @return array
+*/
+function stripslashes_recursive($var, $level = 0)
+{
+	if (!is_array($var))
+		return stripslashes($var);
+
+	// Reindex the array without slashes, this time.
+	$new_var = array();
+
+	// Strip the slashes from every element.
+	foreach ($var as $k => $v)
+		$new_var[stripslashes($k)] = $level > 25 ? null : stripslashes_recursive($v, $level + 1);
+
+	return $new_var;
+}
+
+/**
+ * function copy_smileys is used to copy smileys from a source to destination.
+ * @param type $source
+ * @param type $dest
+ * @return type 
+ */
+function copy_smileys($source, $dest)
+{
+	if (!is_dir($source) || !($dir = opendir($source)))
+		return;
+
+	while ($file = readdir($dir))
 	{
-		if (!is_dir($source) || !($dir = opendir($source)))
-			return;
+		if ($file == '.' || $file == '..')
+			continue;
 
-		while ($file = readdir($dir))
+		// If we have a directory create it on the destination and copy contents into it!
+		if (is_dir($source . '/' . $file))
 		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-			// If we have a directory create it on the destination and copy contents into it!
-			if (is_dir($source . '/' . $file))
-			{
-				if (!is_dir($dest))
-					@mkdir($dest . '/' . $file, 0777);
-				self::copy_dir($source . '/' . $file, $dest . '/' . $file);
-			}
-			else
-			{
-				if (!is_dir($dest))
-					@mkdir($dest . '/' . $file, 0777);
-				copy($source . '/' . $file, $dest . '/' . $file);
-			}
+			if (!is_dir($dest))
+				@mkdir($dest . '/' . $file, 0777);
+			copy_dir($source . '/' . $file, $dest . '/' . $file);
 		}
-		closedir($dir);
-	}
-
-	private static function copy_dir($source, $dest)
-	{
-		if (!is_dir($source) || !($dir = opendir($source)))
-			return;
-
-		while ($file = readdir($dir))
-		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-			// If we have a directory create it on the destination and copy contents into it!
-			if (is_dir($source . '/'. $file))
-			{
-				if (!is_dir($dest))
-					@mkdir($dest, 0777);
-				copy_dir($source . '/' . $file, $dest . '/' . $file);
-			}
-			else
-			{
-				if (!is_dir($dest))
-					@mkdir($dest, 0777);
-				copy($source . '/' . $file, $dest . '/' . $file);
-			}
-		}
-		closedir($dir);
-	}
-
-	// Get the id_member associated with the specified message.
-	public static function getMsgMemberID($messageID)
-	{
-		global $to_prefix, $db;
-
-		// Find the topic and make sure the member still exists.
-		$result = $db->query("
-			SELECT IFNULL(mem.id_member, 0)
-			FROM {$to_prefix}messages AS m
-				LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
-			WHERE m.id_msg = " . (int) $messageID . "
-			LIMIT 1");
-		if ($db->num_rows($result) > 0)
-			list ($memberID) = $db->fetch_row($result);
-		// The message doesn't even exist.
 		else
-			$memberID = 0;
-		$db->free_result($result);
+		{
+			if (!is_dir($dest))
+				@mkdir($dest . '/' . $file, 0777);
+			copy($source . '/' . $file, $dest . '/' . $file);
+		}
+	}
+	closedir($dir);
+}
+
+/**
+ * function copy_dir copies a directory
+ * @param type $source
+ * @param type $dest
+ * @return type 
+ */
+function copy_dir($source, $dest)
+{
+	if (!is_dir($source) || !($dir = opendir($source)))
+		return;
+		while ($file = readdir($dir))
+	{
+		if ($file == '.' || $file == '..')
+			continue;
+			// If we have a directory create it on the destination and copy contents into it!
+		if (is_dir($source . '/'. $file))
+		{
+			if (!is_dir($dest))
+				@mkdir($dest, 0777);
+			copy_dir($source . '/' . $file, $dest . '/' . $file);
+		}
+		else
+		{
+			if (!is_dir($dest))
+				@mkdir($dest, 0777);
+			copy($source . '/' . $file, $dest . '/' . $file);
+		}
+	}
+	closedir($dir);
+}
+
+/**
+ *
+ * Get the id_member associated with the specified message.
+ * @global type $to_prefix
+ * @global type $db
+ * @param type $messageID
+ * @return int 
+ */
+function getMsgMemberID($messageID)
+{
+	global $to_prefix, $db;
+
+	// Find the topic and make sure the member still exists.
+	$result = $db->query("
+		SELECT IFNULL(mem.id_member, 0)
+		FROM {$to_prefix}messages AS m
+		LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
+		WHERE m.id_msg = " . (int) $messageID . "
+		LIMIT 1");
+	if ($db->num_rows($result) > 0)
+		list ($memberID) = $db->fetch_row($result);
+	// The message doesn't even exist.
+	else
+		$memberID = 0;
+	$db->free_result($result);
 
 		return $memberID;
-	}
 }
 
 /**
@@ -2961,5 +2963,15 @@ function fix_charset($text)
 	return $buf;
 }
 
+/**
+* helper function for storing vars that need to be global
+*
+* @param string $variable
+* @param string $value
+*/
+function store_global($variable, $value)
+{
+	$_SESSION['store_globals'][$variable] = $value;
+}
 
 ?>
