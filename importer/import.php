@@ -35,18 +35,57 @@ if (method_exists($import, 'doStep' . $_GET['step']))
  */
 class Importer
 {
+	/**
+	 * main database object
+	 * @var object
+	 */
 	public $db;
+
+	/**
+	 * our cookie settings
+	 * @var object
+	 */
 	public $cookie;
-	
+
+	/**
+	 * the template
+	 * @var object 
+	 */
 	public $template;
+
+	/**
+	 * an array of possible importer scripts
+	 * @var array
+	 */
 	public $possible_scripts;
 
+	/**
+	 * prefix for our destination database
+	 * @var type 
+	 */
 	public $to_prefix;
+
+	/**
+	 * prefix for our source database
+	 * @var type 
+	 */
 	public $from_prefix;
 
+	/**
+	 * used to deceide if the database query is INSERT or INSERT IGNORE
+	 * @var type 
+	 */
 	private $ignore = true;
+
+	/**
+	 *use to switch between INSERT and REPLACE
+	 * @var type 
+	 */
 	private $replace = false;
 
+	/**
+	 * initialize the main Importer object 
+	 */
 	public function __construct()
 	{
 		
@@ -129,12 +168,20 @@ class Importer
 			$this->template->header();
 	}
 
+	/**
+	 * destructor 
+	 */
 	public function __destruct()
 	{
 		if (!isset($_GET['xml']))
 			$this->template->footer();
 	}
 
+	/**
+	 * loads the _importer.xml files
+	 * @param type $file
+	 * @throws import_exception 
+	 */
 	private function preparse_xml($file)
 	{
 		try
@@ -153,6 +200,12 @@ class Importer
 			$this->loadSettings();
 	}
 
+	/**
+	 * - checks,  if we have already specified an importer script
+	 * - checks the file system for importer definition files
+	 * @return boolean
+	 * @throws import_exception 
+	 */
 	public function detect_scripts()
 	{
 		if (isset($_REQUEST['import_script']))
@@ -208,6 +261,15 @@ class Importer
 		return true;
 	}
 
+	/**
+	 * prepare the importer with custom settings stuff
+	 * @global Database $db
+	 * @global type $to_prefix
+	 * @global type $global
+	 * @global type $varname
+	 * @global type $global
+	 * @return type 
+	 */
 	private function loadSettings()
 	{
 		global $db, $to_prefix;
@@ -380,7 +442,10 @@ class Importer
 			$db->query("SET @@SQL_MAX_JOIN_SIZE = 18446744073709551615");
 	}
 
-	// Looks at the importer and returns the steps that it's able to make.
+	/**
+	 * Looks at the importer and returns the steps that it's able to make.
+	 * @return int 
+	 */
 	private function find_steps()
 	{
 		$steps = array();
@@ -429,6 +494,18 @@ class Importer
 		return $ip;
 	}
 
+	/**
+	 * collects all the important things, the importer can't do anything
+	 * witout this information. 
+	 * @global Database $db
+	 * @global type $to_prefix
+	 * @global type $import_script
+	 * @global type $cookie
+	 * @global type $import
+	 * @param type $error_message
+	 * @param type $object
+	 * @return boolean 
+	 */
 	public function doStep0($error_message = null, $object = false)
 	{
 		global $db, $to_prefix, $import_script, $cookie, $import;
@@ -474,6 +551,14 @@ class Importer
 		return;
 	}
 
+	/**
+	 * the important one, transfer the content from the source forum to our
+	 * destination system
+	 * @global Database $db
+	 * @global type $to_prefix
+	 * @global type $global
+	 * @return type 
+	 */
 	public function doStep1()
 	{
 		global $db, $to_prefix;
@@ -534,7 +619,7 @@ class Importer
 			$special_code = null;
 
 			// Increase the substep slightly...
-			helper::pastTime(++$substep);
+			pastTime(++$substep);
 
 			$_SESSION['import_steps'][$substep]['title'] = (string) $steps->title;
 			if (!isset($_SESSION['import_steps'][$substep]['status']))
@@ -715,7 +800,7 @@ class Importer
 
 					while (true)
 					{
-						helper::pastTime($substep);
+						pastTime($substep);
 
 						if (strpos($current_data, '%d') !== false)
 							$special_result = $db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
@@ -795,7 +880,7 @@ class Importer
 								}
 							}
 							// inject our charset class, we need proper utf-8
-							$row = Charset::fix($row);
+							$row = fix_charset($row);
 
 							// If we have a message here, we'll want to convert <br /> to <br>.
 							if (isset($row['body']))
@@ -851,6 +936,13 @@ class Importer
 		return $this->doStep2();
 	}
 
+
+	/**
+	 * we have imported the old database, let's recalculate the forum statistics.
+	 * @global Database $db
+	 * @global type $to_prefix
+	 * @return type 
+	 */
 	public function doStep2()
 	{
 		global $db, $to_prefix;
@@ -876,7 +968,7 @@ class Importer
 					WHERE id_member = $row[id_member]
 					LIMIT 1");
 
-				helper::pastTime(0);
+				pastTime(0);
 			}
 			$db->free_result($request);
 
@@ -894,11 +986,11 @@ class Importer
 					WHERE id_member = $row[id_member]
 					LIMIT 1");
 
-				helper::pastTime(0);
+				pastTime(0);
 			}
 			$db->free_result($request);
 
-			helper::pastTime(1);
+			pastTime(1);
 		}
 
 		if ($_GET['substep'] <= 1)
@@ -958,7 +1050,7 @@ class Importer
 				$db->free_result($request);
 			}
 
-			helper::pastTime(2);
+			pastTime(2);
 		}
 
 		if ($_GET['substep'] <= 2)
@@ -984,7 +1076,7 @@ class Importer
 					LIMIT 1");
 			$db->free_result($request);
 
-			helper::pastTime(3);
+			pastTime(3);
 		}
 
 		if ($_GET['substep'] <= 3)
@@ -1031,7 +1123,7 @@ class Importer
 					('totalTopics', '$row[totalTopics]'),
 					('disableHashTime', " . (time() + 7776000) . ")");
 
-			helper::pastTime(4);
+			pastTime(4);
 		}
 
 		if ($_GET['substep'] <= 4)
@@ -1071,7 +1163,7 @@ class Importer
 					WHERE id_member IN (" . implode(', ', $update_members) . ")
 					LIMIT " . count($update_members));
 
-			helper::pastTime(5);
+			pastTime(5);
 		}
 
 		if ($_GET['substep'] <= 5)
@@ -1111,7 +1203,7 @@ class Importer
 					LIMIT 1");
 			}
 
-			helper::pastTime(6);
+			pastTime(6);
 		}
 
 		// Remove all topics that have zero messages in the messages table.
@@ -1148,11 +1240,11 @@ class Importer
 					break;
 
 				$_REQUEST['start'] += 200;
-				helper::pastTime(6);
+				pastTime(6);
 			}
 
 			$_REQUEST['start'] = 0;
-			helper::pastTime(7);
+			pastTime(7);
 		}
 
 		// Get the correct number of replies.
@@ -1192,11 +1284,11 @@ class Importer
 					break;
 
 				$_REQUEST['start'] += 100;
-				helper::pastTime(7);
+				pastTime(7);
 			}
 
 			$_REQUEST['start'] = 0;
-			helper::pastTime(8);
+			pastTime(8);
 		}
 
 		// Fix id_cat, id_parent, and child_level.
@@ -1299,7 +1391,7 @@ class Importer
 					WHERE id_cat IN (" . implode(', ', array_unique($fix_cats)) . ")");
 			}
 
-			helper::pastTime(9);
+			pastTime(9);
 		}
 
 		if ($_GET['substep'] <= 9)
@@ -1333,7 +1425,7 @@ class Importer
 			}
 			$db->free_result($request);
 
-			helper::pastTime(10);
+			pastTime(10);
 		}
 
 		if ($_GET['substep'] <= 10)
@@ -1346,7 +1438,7 @@ class Importer
 				ALTER TABLE {$to_prefix}smileys
 				ORDER BY code DESC");
 
-			helper::pastTime(11);
+			pastTime(11);
 		}
 
 		if ($_GET['substep'] <= 11)
@@ -1407,11 +1499,11 @@ class Importer
 				// More?
 				// We can't keep importing the same files over and over again!
 				$_REQUEST['start'] += 500;
-				helper::pastTime(11);
+				pastTime(11);
 			}
 
 			$_REQUEST['start'] = 0;
-			helper::pastTime(12);
+			pastTime(12);
 		}
 
 		$this->template->status(12, 1, false, true);
@@ -1419,6 +1511,12 @@ class Importer
 		return $this->doStep3();
 	}
 
+	/**
+	 * we are done :) 
+	 * @global Database $db
+	 * @global type $boardurl
+	 * @return boolean 
+	 */
 	public function doStep3()
 	{
 		global $db, $boardurl;
@@ -1443,215 +1541,19 @@ class Importer
 
 }
 
-abstract class helper
-{
-	/**
-	* Checks if we've passed a time limit..
-	*
-	* @param int $substep
-	* @param int $top_time
-	* @return null
-	*/
-	public static function pastTime($substep = null, $stop_time = 5)
-	{
-		global $import, $time_start, $do_steps;
-
-		if (isset($_GET['substep']) && $_GET['substep'] < $substep)
-			$_GET['substep'] = $substep;
-
-		// some details for our progress bar
-		if (isset($import->count->$substep) && $import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
-			$bar = round($_REQUEST['start'] / $import->count->$substep * 100, 0);
-		else
-			$bar = false;
-
-		@set_time_limit(300);
-		if (is_callable('apache_reset_timeout'))
-			apache_reset_timeout();
-
-		if (time() - $time_start < $stop_time)
-			return;
-
-			$import->template->time_limit($bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
-		$import->template->footer();
-		exit;
-	}
-
-	/**
-	* helper function for storing vars that need to be global
-	*
-	* @param string $variable
-	* @param string $value
-	*/
-	public static function store_global($variable, $value)
-	{
-		$_SESSION['store_globals'][$variable] = $value;
-	}
-
-	/**
-	* helper function for old attachments
-	*
-	* @param string $filename
-	* @param int $attachment_id
-	* @return string
-	*/
-	public static function getLegacyAttachmentFilename($filename, $attachment_id)
-	{
-		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
-		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-
-		// Get rid of dots, spaces, and other weird characters.
-		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-
-		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
-	}
-
-	/**
-	* helper function to create an encrypted attachment name
-	*
-	* @param string $filename
-	* @return string
-	*/
-	public static function createAttachmentFilehash($filename)
-	{
-		return sha1(md5($filename . time()) . mt_rand());
-	}
-
-	/**
-	* helper function, simple file copy at all
-	*
-	* @param string $filename
-	* @return bol
-	*/
-	public static function copy_file($source, $destination)
-	{
-		if (is_file($source))
-		{
-			copy($source, $destination);
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	* // Add slashes recursively...
-	*
-	* @param array $var
-	* @return array
-	*/
-	public static function addslashes_recursive($var)
-	{
-		if (!is_array($var))
-			return addslashes($var);
-		else
-		{
-			foreach ($var as $k => $v)
-				$var[$k] = self::addslashes_recursive($v);
-			return $var;
-		}
-	}
-
-	/**
-	* // Remove slashes recursively...
-	*
-	* @param array $var
-	* @return array
-	*/
-	public static function stripslashes_recursive($var, $level = 0)
-	{
-		if (!is_array($var))
-			return stripslashes($var);
-
-		// Reindex the array without slashes, this time.
-		$new_var = array();
-
-		// Strip the slashes from every element.
-		foreach ($var as $k => $v)
-			$new_var[stripslashes($k)] = $level > 25 ? null : self::stripslashes_recursive($v, $level + 1);
-
-		return $new_var;
-	}
-
-	public static function copy_smileys($source, $dest)
-	{
-		if (!is_dir($source) || !($dir = opendir($source)))
-			return;
-
-		while ($file = readdir($dir))
-		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-			// If we have a directory create it on the destination and copy contents into it!
-			if (is_dir($source . '/' . $file))
-			{
-				if (!is_dir($dest))
-					@mkdir($dest . '/' . $file, 0777);
-				self::copy_dir($source . '/' . $file, $dest . '/' . $file);
-			}
-			else
-			{
-				if (!is_dir($dest))
-					@mkdir($dest . '/' . $file, 0777);
-				copy($source . '/' . $file, $dest . '/' . $file);
-			}
-		}
-		closedir($dir);
-	}
-
-	private static function copy_dir($source, $dest)
-	{
-		if (!is_dir($source) || !($dir = opendir($source)))
-			return;
-
-		while ($file = readdir($dir))
-		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-			// If we have a directory create it on the destination and copy contents into it!
-			if (is_dir($source . '/'. $file))
-			{
-				if (!is_dir($dest))
-					@mkdir($dest, 0777);
-				copy_dir($source . '/' . $file, $dest . '/' . $file);
-			}
-			else
-			{
-				if (!is_dir($dest))
-					@mkdir($dest, 0777);
-				copy($source . '/' . $file, $dest . '/' . $file);
-			}
-		}
-		closedir($dir);
-	}
-
-	// Get the id_member associated with the specified message.
-	public static function getMsgMemberID($messageID)
-	{
-		global $to_prefix, $db;
-
-		// Find the topic and make sure the member still exists.
-		$result = $db->query("
-			SELECT IFNULL(mem.id_member, 0)
-			FROM {$to_prefix}messages AS m
-				LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
-			WHERE m.id_msg = " . (int) $messageID . "
-			LIMIT 1");
-		if ($db->num_rows($result) > 0)
-			list ($memberID) = $db->fetch_row($result);
-		// The message doesn't even exist.
-		else
-			$memberID = 0;
-		$db->free_result($result);
-
-		return $memberID;
-	}
-}
-
+/**
+ * the database class
+ */
 class Database
 {
+
+	/**
+	 * constructor, connects to the database
+	 * @param type $db_server
+	 * @param type $db_user
+	 * @param type $db_password
+	 * @param type $db_persist 
+	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
 		if ($db_persist == 1)
@@ -1660,6 +1562,10 @@ class Database
 			$this->con = mysql_connect ($db_server, $db_user, $db_password) or die (mysql_error());
 	}
 
+	/**
+	 * remove old attachments
+	 * @global type $to_prefix 
+	 */
 	private function removeAttachments()
 	{
 		global $to_prefix;
@@ -1696,6 +1602,14 @@ class Database
 		$this->free_result($result);
 	}
 
+	/**
+	 * execute an SQL query
+	 * @global type $import
+	 * @global type $to_prefix
+	 * @param type $string
+	 * @param type $return_error
+	 * @return type 
+	 */
 	public function query($string, $return_error = false)
 	{
 		global $import, $to_prefix;
@@ -1757,276 +1671,62 @@ class Database
 		die;
 	}
 
+
+	/**
+	 * wrapper for mysql_free_result
+	 * @param type $result 
+	 */
 	public function free_result($result)
+
 	{
 		mysql_free_result($result);
 	}
 
+	/**
+	 * wrapper for mysql_fetch_assoc
+	 * @param type $result
+	 * @return type 
+	 */
 	public function fetch_assoc($result)
 	{
 		return mysql_fetch_assoc($result);
 	}
 
+	/**
+	 * wrapper for mysql_fetch_row
+	 * @param type $result
+	 * @return type 
+	 */
 	public function fetch_row($result)
 	{
 		return mysql_fetch_row($result);
 	}
 
+	/**
+	 * wrapper for mysql_num_rows
+	 * @param type $result
+	 * @return type 
+	 */
 	public function num_rows($result)
 	{
 		return mysql_num_rows($result);
 	}
+
+	/**
+	 * wrapper for mysql_insert_id
+	 * @return type 
+	 */
 	public function insert_id()
 	{
 		return mysql_insert_id();
 	}
-
-	public function alter_table($tableName, $knownKeys = '', $knownColumns = '', $alterColumns = '', $reverseKeys = false, $reverseColumns = false, $return_error = false)
-	{
-		global $to_prefix, $db;
-
-		// Shorten this up
-		$to_table = $to_prefix . $tableName;
-
-		// Get the keys
-		if (!empty($knownKeys))
-		{
-			$request = $db->query("
-				SHOW KEYS
-				FROM $to_table");
-
-			$availableKeys = array();
-			while ($row = $db->fetch_assoc($request))
-				$availableKeys[] = $row['Key_name'];
-
-			// Flip the keys.
-			array_flip($availableKeys);
-		}
-		else
-			$knownKeys = array();
-
-		// Are we dealing with columns also?
-		if (!empty($knownColumns))
-		{
-			$request = $db->query("
-				SHOW COLUMNS
-				FROM $to_table");
-
-			$availableColumns = array();
-			while ($row = $db->fetch_assoc($request))
-				$availableColumns[] = $row['Field'];
-
-			array_flip($availableColumns);
-		}
-		else
-			$knownColumns = array();
-
-		// Column to alter
-		if (!empty($alterColumns) && is_array($alterColumns))
-			$alterColumns = $alterColumns;
-		else
-			$alterColumns = array();
-
-		// Check indexes
-		foreach ($knownKeys as $key => $value)
-		{
-			// If we are dropping keys then it should unset the known keys if it's NOT available
-			if ($reverseKeys == false && !in_array($key, $availableKeys))
-				unset($knownKeys[$key], $knownKeys[$key]);
-			// Since we are in reverse and we are adding then unknown the known keys that are available
-			elseif ($reverseKeys == true && in_array($key, $availableKeys))
-				unset($knownKeys[$key], $knownKeys[$key]);
-		}
-
-		// Check columns
-		foreach ($knownColumns as $column => $value)
-		{
-			// Here we reverse things. If the column is not in then we must add it.
-			if ($reverseColumns == false && in_array($column, $availableColumns))
-				unset($knownColumns[$column], $knownColumns[$column]);
-			// If it's in then we must unset it.
-			elseif ($reverseColumns == true && !in_array($column, $availableColumns))
-				unset($knownColumns[$column], $knownColumns[$column]);
-		}
-
-		// Now merge the three
-		$alter = array_merge($alterColumns, $knownKeys, $knownColumns);
-
-		// Now lets see what we want to do with them
-		$clause = '';
-		foreach ($alter as $key)
-			$clause .= "
-			$key,";
-
-		// Lets do some altering
-		$db->query("
-			ALTER TABLE $to_table" .
-			substr($clause, 0, -1), $return_error);
-	}
 }
 
-/*
-* 	class Charset(string data)
-*		- this is our main class for proper character encoding
-* 		- whatever we throw in, the output will be clean
+/**
+* Object lng provides storage for shared objects
 *
-*	array Charset::fix(string data or array)
-*		- this function can convert an array recursively to utf-8
-*		- The input can have mixed encodings.
-*
-*	bool Charset::is_utf8(string data)
-*		- returns whether the string is already utf8 or not
+* @var array $lang
 */
-class Charset
-{
-	// simple function to detect whether a string is utf-8 or not
-	private static function is_utf8($string)
-	{
-		return utf8_encode(utf8_decode($string)) == $string;
-	}
-
-	/**
-	* Function fix based on ForceUTF8 by Sebastián Grignoli <grignoli@framework2.com.ar>
-	* @link http://www.framework2.com.ar/dzone/forceUTF8-es/
-	* This function leaves UTF8 characters alone, while converting almost all non-UTF8 to UTF8.
-	*
-	* It may fail to convert characters to unicode if they fall into one of these scenarios:
-	*
-	* 1) when any of these characters:   ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß
-	*    are followed by any of these:  ("group B")
-	*                                    ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶•¸¹º»¼½¾¿
-	* For example:   %ABREPR%C9SENT%C9%BB. «REPRÉSENTÉ»
-	* The "«" (%AB) character will be converted, but the "É" followed by "»" (%C9%BB)
-	* is also a valid unicode character, and will be left unchanged.
-	*
-	* 2) when any of these: àáâãäåæçèéêëìíîï  are followed by TWO chars from group B,
-	* 3) when any of these: ðñòó  are followed by THREE chars from group B.
-	*
-	* @name fix
-	* @param string $text  Any string.
-	* @return string  The same string, UTF8 encoded
-	*/
-	public static function fix($text)
-	{
-		if (is_array($text))
-		{
-			foreach ($text as $k => $v)
-				$text[$k] = self::fix($v);
-			return $text;
-		}
-
-		// numeric? There's nothing to do, we simply return our input.
-		if (is_numeric($text))
-			return $text;
-
-		$max = strlen($text);
-		$buf = '';
-
-		for ($i = 0; $i < $max; $i++)
-		{
-			$c1 = $text{$i};
-			if ($c1 >= "\xc0")
-			{
-				// Should be converted to UTF8, if it's not UTF8 already
-				$c2 = $i+1 >= $max? "\x00" : $text{$i+1};
-				$c3 = $i+2 >= $max? "\x00" : $text{$i+2};
-				$c4 = $i+3 >= $max? "\x00" : $text{$i+3};
-				if ($c1 >= "\xc0" & $c1 <= "\xdf")
-				{
-					// looks like 2 bytes UTF8
-					if ($c2 >= "\x80" && $c2 <= "\xbf")
-					{
-						// yeah, almost sure it's UTF8 already
-						$buf .= $c1 . $c2;
-						$i++;
-					}
-					else
-					{
-						// not valid UTF8. Convert it.
-						$cc1 = (chr(ord($c1) / 64) | "\xc0");
-						$cc2 = ($c1 & "\x3f") | "\x80";
-						$buf .= $cc1 . $cc2;
-					}
-				}
-				elseif ($c1 >= "\xe0" & $c1 <= "\xef")
-				{
-					// looks like 3 bytes UTF8
-					if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf")
-					{
-						// yeah, almost sure it's UTF8 already
-						$buf .= $c1 . $c2 . $c3;
-						$i = $i + 2;
-					}
-					else
-					{
-						// not valid UTF8. Convert it.
-						$cc1 = (chr(ord($c1) / 64) | "\xc0");
-						$cc2 = ($c1 & "\x3f") | "\x80";
-						$buf .= $cc1 . $cc2;
-					}
-				}
-				elseif ($c1 >= "\xf0" & $c1 <= "\xf7")
-				{
-					// Looks like 4-byte UTF8
-					if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf" && $c4 >= "\x80" && $c4 <= "\xbf")
-					{
-						// Yeah, almost sure it's UTF8 already
-						$buf .= $c1 . $c2 . $c3;
-						$i = $i + 2;
-					}
-					else
-					{
-						// Not valid UTF8. Convert it.
-						$cc1 = (chr(ord($c1) / 64) | "\xc0");
-						$cc2 = ($c1 & "\x3f") | "\x80";
-						$buf .= $cc1 . $cc2;
-					}
-				}
-				else
-				{
-					// Doesn't look like UTF8, but should be converted
-					$cc1 = (chr(ord($c1) / 64) | "\xc0");
-					$cc2 = (($c1 & "\x3f") | "\x80");
-					$buf .= $cc1 . $cc2;
-				}
-			}
-			elseif (($c1 & "\xc0") == "\x80")
-			{
-				// Needs conversion
-				$cc1 = (chr(ord($c1) / 64) | "\xc0");
-				$cc2 = (($c1 & "\x3f") | "\x80");
-				$buf .= $cc1 . $cc2;
-			}
-			else
-				// Doesn't need conversion
-				$buf .= $c1;
-		}
-
-		if (function_exists('mb_decode_numericentity'))
-			$buf = mb_decode_numericentity($buf, array(0x80, 0x2ffff, 0, 0xffff), 'UTF-8');
-		else
-		{
-			// Take care of html entities..
-			$entity_replace = create_function('$num', '
-				return $num < 0x20 || $num > 0x10FFFF || ($num >= 0xD800 && $num <= 0xDFFF) ? \'\' :
-					  ($num < 0x80 ? \'&#\' . $num . \';\' : ($num < 0x800 ? chr(192 | $num >> 6) . chr(128 | $num & 63) :
-					  ($num < 0x10000 ? chr(224 | $num >> 12) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63) :
-					  chr(240 | $num >> 18) . chr(128 | $num >> 12 & 63) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63))));');
-
-			$buf = preg_replace('~(&#(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(\\2)', $buf);
-			$buf = preg_replace('~(&#x(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(0x\\2)', $buf);
-		}
-
-		// surprise, surprise... the string
-		return $buf;
-	}
-}
-
-	/**
-	* Object lng provides storage for shared objects
-	*
-	* @var array $lang
-	*/
 class lng
 {
 	private static $lang = array();
@@ -2830,13 +2530,26 @@ class import_exception extends Exception
 	}
 }
 
+/**
+ * we need Cooooookies.. 
+ */
 class Cookie
 {
+	/**
+	 * Constructor
+	 * @return boolean 
+	 */
 	public function Cookie()
 	{
 		return true;
 	}
 
+	/**
+	 * set a cookie
+	 * @param type $data
+	 * @param type $name
+	 * @return boolean 
+	 */
 	public function set($data, $name = 'openimporter_cookie')
 	{
 		if (!empty($data))
@@ -2848,6 +2561,11 @@ class Cookie
 		return false;
 	}
 
+	/**
+	 * get our cookie
+	 * @param type $name
+	 * @return boolean 
+	 */
 	public function get($name = 'openimporter_cookie')
 	{
 		if (isset($_COOKIE[$name]))
@@ -2859,6 +2577,11 @@ class Cookie
 		return false;
 	}
 
+	/**
+	 * once we are done, we should destroy our cookie
+	 * @param type $name
+	 * @return boolean 
+	 */
 	public function destroy($name = 'openimporter_cookie')
 	{
 		setcookie($name, '');
@@ -2867,6 +2590,12 @@ class Cookie
 		return true;
 	}
 
+	/**
+	 * extend the cookie with new infos
+	 * @param type $data
+	 * @param type $name
+	 * @return boolean 
+	 */
 	public function extend($data, $name = 'openimporter_cookie')
 	{
 		$cookie = unserialize($_COOKIE[$name]);
@@ -2879,5 +2608,358 @@ class Cookie
 		return true;
 	}
 }
+
+/**
+* Checks if we've passed a time limit..
+*
+* @param int $substep
+* @param int $top_time
+* @return null
+*/
+function pastTime($substep = null, $stop_time = 5)
+{
+	global $import, $time_start, $do_steps;
+
+	if (isset($_GET['substep']) && $_GET['substep'] < $substep)
+		$_GET['substep'] = $substep;
+
+	// some details for our progress bar
+	if (isset($import->count->$substep) && $import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
+		$bar = round($_REQUEST['start'] / $import->count->$substep * 100, 0);
+	else
+		$bar = false;
+
+	@set_time_limit(300);
+	if (is_callable('apache_reset_timeout'))
+		apache_reset_timeout();
+
+	if (time() - $time_start < $stop_time)
+		return;
+
+	$import->template->time_limit($bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
+	$import->template->footer();
+	exit;
+}
+
+
+abstract class helper
+{
+	/**
+	* helper function for storing vars that need to be global
+	*
+	* @param string $variable
+	* @param string $value
+	*/
+	public static function store_global($variable, $value)
+	{
+		$_SESSION['store_globals'][$variable] = $value;
+	}
+
+	/**
+	* helper function for old attachments
+	*
+	* @param string $filename
+	* @param int $attachment_id
+	* @return string
+	*/
+	public static function getLegacyAttachmentFilename($filename, $attachment_id)
+	{
+		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
+		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
+		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+
+		// Get rid of dots, spaces, and other weird characters.
+		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
+
+		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+	}
+
+	/**
+	* helper function to create an encrypted attachment name
+	*
+	* @param string $filename
+	* @return string
+	*/
+	public static function createAttachmentFilehash($filename)
+	{
+		return sha1(md5($filename . time()) . mt_rand());
+	}
+
+	/**
+	* helper function, simple file copy at all
+	*
+	* @param string $filename
+	* @return bol
+	*/
+	public static function copy_file($source, $destination)
+	{
+		if (is_file($source))
+		{
+			copy($source, $destination);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	* // Add slashes recursively...
+	*
+	* @param array $var
+	* @return array
+	*/
+	public static function addslashes_recursive($var)
+	{
+		if (!is_array($var))
+			return addslashes($var);
+		else
+		{
+			foreach ($var as $k => $v)
+				$var[$k] = self::addslashes_recursive($v);
+			return $var;
+		}
+	}
+
+	/**
+	* // Remove slashes recursively...
+	*
+	* @param array $var
+	* @return array
+	*/
+	public static function stripslashes_recursive($var, $level = 0)
+	{
+		if (!is_array($var))
+			return stripslashes($var);
+
+		// Reindex the array without slashes, this time.
+		$new_var = array();
+
+		// Strip the slashes from every element.
+		foreach ($var as $k => $v)
+			$new_var[stripslashes($k)] = $level > 25 ? null : self::stripslashes_recursive($v, $level + 1);
+
+		return $new_var;
+	}
+
+	public static function copy_smileys($source, $dest)
+	{
+		if (!is_dir($source) || !($dir = opendir($source)))
+			return;
+
+		while ($file = readdir($dir))
+		{
+			if ($file == '.' || $file == '..')
+				continue;
+
+			// If we have a directory create it on the destination and copy contents into it!
+			if (is_dir($source . '/' . $file))
+			{
+				if (!is_dir($dest))
+					@mkdir($dest . '/' . $file, 0777);
+				self::copy_dir($source . '/' . $file, $dest . '/' . $file);
+			}
+			else
+			{
+				if (!is_dir($dest))
+					@mkdir($dest . '/' . $file, 0777);
+				copy($source . '/' . $file, $dest . '/' . $file);
+			}
+		}
+		closedir($dir);
+	}
+
+	private static function copy_dir($source, $dest)
+	{
+		if (!is_dir($source) || !($dir = opendir($source)))
+			return;
+
+		while ($file = readdir($dir))
+		{
+			if ($file == '.' || $file == '..')
+				continue;
+
+			// If we have a directory create it on the destination and copy contents into it!
+			if (is_dir($source . '/'. $file))
+			{
+				if (!is_dir($dest))
+					@mkdir($dest, 0777);
+				copy_dir($source . '/' . $file, $dest . '/' . $file);
+			}
+			else
+			{
+				if (!is_dir($dest))
+					@mkdir($dest, 0777);
+				copy($source . '/' . $file, $dest . '/' . $file);
+			}
+		}
+		closedir($dir);
+	}
+
+	// Get the id_member associated with the specified message.
+	public static function getMsgMemberID($messageID)
+	{
+		global $to_prefix, $db;
+
+		// Find the topic and make sure the member still exists.
+		$result = $db->query("
+			SELECT IFNULL(mem.id_member, 0)
+			FROM {$to_prefix}messages AS m
+				LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
+			WHERE m.id_msg = " . (int) $messageID . "
+			LIMIT 1");
+		if ($db->num_rows($result) > 0)
+			list ($memberID) = $db->fetch_row($result);
+		// The message doesn't even exist.
+		else
+			$memberID = 0;
+		$db->free_result($result);
+
+		return $memberID;
+	}
+}
+
+/**
+ * detects, if a string is utf-8 or not
+ * @param type $string
+ * @return type 
+ */
+ function is_utf8($string)
+{
+	return utf8_encode(utf8_decode($string)) == $string;
+}
+
+/**
+* Function fix based on ForceUTF8 by Sebastián Grignoli <grignoli@framework2.com.ar>
+* @link http://www.framework2.com.ar/dzone/forceUTF8-es/
+* This function leaves UTF8 characters alone, while converting almost all non-UTF8 to UTF8.
+*
+* It may fail to convert characters to unicode if they fall into one of these scenarios:
+*
+* 1) when any of these characters:   ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß
+*    are followed by any of these:  ("group B")
+*                                    ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶•¸¹º»¼½¾¿
+* For example:   %ABREPR%C9SENT%C9%BB. «REPRÉSENTÉ»
+* The "«" (%AB) character will be converted, but the "É" followed by "»" (%C9%BB)
+* is also a valid unicode character, and will be left unchanged.
+*
+* 2) when any of these: àáâãäåæçèéêëìíîï  are followed by TWO chars from group B,
+* 3) when any of these: ðñòó  are followed by THREE chars from group B.
+*
+* @name fix
+* @param string $text  Any string.
+* @return string  The same string, UTF8 encoded
+*/
+function fix_charset($text)
+{
+	if (is_array($text))
+	{
+		foreach ($text as $k => $v)
+			$text[$k] = fix_charset($v);
+		return $text;
+	}
+	// numeric? There's nothing to do, we simply return our input.
+	if (is_numeric($text))
+		return $text;
+
+	$max = strlen($text);
+	$buf = '';
+
+	for ($i = 0; $i < $max; $i++)
+	{
+		$c1 = $text{$i};
+		if ($c1 >= "\xc0")
+		{
+			// Should be converted to UTF8, if it's not UTF8 already
+			$c2 = $i+1 >= $max? "\x00" : $text{$i+1};
+			$c3 = $i+2 >= $max? "\x00" : $text{$i+2};
+			$c4 = $i+3 >= $max? "\x00" : $text{$i+3};
+			if ($c1 >= "\xc0" & $c1 <= "\xdf")
+			{
+				// looks like 2 bytes UTF8
+				if ($c2 >= "\x80" && $c2 <= "\xbf")
+				{
+					// yeah, almost sure it's UTF8 already
+					$buf .= $c1 . $c2;
+					$i++;
+				}
+				else
+				{
+					// not valid UTF8. Convert it.
+					$cc1 = (chr(ord($c1) / 64) | "\xc0");
+					$cc2 = ($c1 & "\x3f") | "\x80";
+					$buf .= $cc1 . $cc2;
+				}
+			}
+			elseif ($c1 >= "\xe0" & $c1 <= "\xef")
+			{
+				// looks like 3 bytes UTF8
+				if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf")
+				{
+					// yeah, almost sure it's UTF8 already
+					$buf .= $c1 . $c2 . $c3;
+					$i = $i + 2;
+				}
+				else
+				{
+					// not valid UTF8. Convert it.
+					$cc1 = (chr(ord($c1) / 64) | "\xc0");
+					$cc2 = ($c1 & "\x3f") | "\x80";
+					$buf .= $cc1 . $cc2;
+				}
+			}
+			elseif ($c1 >= "\xf0" & $c1 <= "\xf7")
+			{
+				// Looks like 4-byte UTF8
+				if ($c2 >= "\x80" && $c2 <= "\xbf" && $c3 >= "\x80" && $c3 <= "\xbf" && $c4 >= "\x80" && $c4 <= "\xbf")
+				{
+					// Yeah, almost sure it's UTF8 already
+					$buf .= $c1 . $c2 . $c3;
+					$i = $i + 2;
+				}
+				else
+				{
+					// Not valid UTF8. Convert it.
+					$cc1 = (chr(ord($c1) / 64) | "\xc0");
+					$cc2 = ($c1 & "\x3f") | "\x80";
+					$buf .= $cc1 . $cc2;
+				}
+			}
+			else
+			{
+				// Doesn't look like UTF8, but should be converted
+				$cc1 = (chr(ord($c1) / 64) | "\xc0");
+				$cc2 = (($c1 & "\x3f") | "\x80");
+				$buf .= $cc1 . $cc2;
+			}
+		}
+		elseif (($c1 & "\xc0") == "\x80")
+		{
+			// Needs conversion
+			$cc1 = (chr(ord($c1) / 64) | "\xc0");
+			$cc2 = (($c1 & "\x3f") | "\x80");
+			$buf .= $cc1 . $cc2;
+		}
+		else
+			// Doesn't need conversion
+			$buf .= $c1;
+	}
+	if (function_exists('mb_decode_numericentity'))
+		$buf = mb_decode_numericentity($buf, array(0x80, 0x2ffff, 0, 0xffff), 'UTF-8');
+	else
+	{
+		// Take care of html entities..
+		$entity_replace = create_function('$num', '
+			return $num < 0x20 || $num > 0x10FFFF || ($num >= 0xD800 && $num <= 0xDFFF) ? \'\' :
+				  ($num < 0x80 ? \'&#\' . $num . \';\' : ($num < 0x800 ? chr(192 | $num >> 6) . chr(128 | $num & 63) :
+				  ($num < 0x10000 ? chr(224 | $num >> 12) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63) :
+				  chr(240 | $num >> 18) . chr(128 | $num >> 12 & 63) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63))));');
+
+		$buf = preg_replace('~(&#(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(\\2)', $buf);
+		$buf = preg_replace('~(&#x(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(0x\\2)', $buf);
+	}
+
+	// surprise, surprise... the string
+	return $buf;
+}
+
 
 ?>
