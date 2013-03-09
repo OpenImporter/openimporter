@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lang xmlns="http://www.eurich.de/xml/importer/lang" languagecode="en">
+	<item name="imp.locale">en</item>
+	<item name="imp.which_software">Which software are you using?</item>
+	<item name="imp.multiple_files">The importer found multiple import data files. Please choose the one you wish to use.</item>
+	<item name="imp.not_here">It's not here!</item>
+	<item name="imp.check_more"><![CDATA[If the software you're looking for doesn't appear above, please check to see if it is available for download at <a href="https://github.com/eurich/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
+	<item name="imp.having_problems"><![CDATA[If you're having any other problems with this importer, don't hesitate to look for help.]]></item>
+	<item name="imp.not_found"><![CDATA[The importer did not find any import data files. Please check to see if the one you want is available for download at <a href="https://github.com/eurich/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
+	<item name="imp.not_found_download"><![CDATA[After you download it, simply upload it into the same folder as <b>this import.php file</b>. If you're having any other problems with this importer, don't hesitate to look for help.]]></item>
+	<item name="imp.try_again">Try again!</item>
+	<item name="imp.settings_not_found">This importer was unable to find Wedge in the path you specified. Please double check the path, and that it is already installed there.</item>
+	<item name="imp.open_basedir">The importer detected that your host has open_basedir enabled on this server. Please ask your host to disable this setting or try moving the contents of your %s to the public html folder of your site.</item>
+	<item name="imp.config_not_found">Unable to find the settings for %s. Please double check the path and try again.</item>
+	<item name="imp.password_incorrect">The database password you entered was incorrect. Please make sure you are using the right password and try it again. If in doubt, use the password from Settings.php.</item>
+	<item name="imp.select_step">You must select at least one step to import.</item>
+	<item name="imp.permission_denied"><![CDATA[Sorry, the database connection information used in the specified installation of your forum cannot access the installation of %1. This may either mean that the installation doesn't exist, or that the MySQL account used does not have permissions to access it.<br /><br />The error MySQL gave was: ']]></item>
+	<item name="imp.before_continue">Before you continue</item>
+	<item name="imp.before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly. It copies members, posts and other data from your &quot;source&quot; installation of %s into the destination forum, so it won't work without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.</p>]]></item>
+	<item name="imp.destination_installed">Try again!</item>
+	<item name="imp.where">Where are they?</item>
+	<item name="imp.locate_destination">The importer should only need to know where the two installations are, after which it should be able to handle everything for itself.</item>
+	<item name="imp.advanced_options">Advanced options</item>
+	<item name="imp.path_to_destination">Path to destination</item>
+	<item name="imp.path_to_source">Path to</item>
+	<item name="imp.restart_after">pause script after (seconds)</item>
+	<item name="imp.countdown">Javascript countdown (sleep)</item>
+	<item name="imp.right_path">This may be the right path.</item>
+	<item name="imp.change_path">You will need to change the value in this box.</item>
+	<item name="imp.database_passwd">database password</item>
+	<item name="imp.database_verify">The MySQL password (for verification only).</item>
+	<item name="imp.selected_only">Import selected areas only</item>
+	<item name="imp.empty_log">Empty the importer's error log?</item>
+	<item name="imp.continue">Continue</item>
+	<item name="imp.not_this">Not this software?</item>
+	<item name="imp.skipped">skipped</item>
+	<item name="imp.not_found_skipped">not found, skipped</item>
+	<item name="imp.pick_different"><![CDATA[If this is the wrong software, you can go back and <a href="%s?import_script=">pick a different data file</a>.)]]></item>
+	<item name="imp.recalculate">Recalculating statistics</item>
+	<item name="imp.importing">Importing</item>
+	<item name="imp.complete">Import complete!</item>
+	<item name="imp.congrats"><![CDATA[Congratulations, the importer has completed successfully.]]></item>
+	<item name="imp.check_box">Please check this box to delete the importer right now for security reasons.</item>
+	<item name="imp.may_fail">doesn't work on all servers.</item>
+	<item name="imp.not_done">Not quite done yet!</item>
+	<item name="imp.importer_paused"><![CDATA[The importer has paused a few seconds to avoid overloading your server. Don't worry though, <b>nothing's wrong</b>.]]></item>
+	<item name="imp.all_imported">Now that everything is imported, your destination forum should have all the data from the %s installation.</item>
+	<item name="imp.smooth_transition">We hope you had a smooth transition!</item>
+	<item name="imp.valid">installation valid</item>
+	<item name="imp.invalid">invalid path, installation could not be validated!</item>
+	<item name="imp.overall_progress">Overall progress</item>
+</lang>
