@@ -30,7 +30,7 @@ if (method_exists($import, 'doStep' . $_GET['step']))
 	call_user_func(array($import, 'doStep' . $_GET['step']));
 
 /**
- * Object weimp creates the main XML object
+ * Object Importer creates the main XML object
  *
  */
 class Importer
