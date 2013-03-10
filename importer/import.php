@@ -206,7 +206,7 @@ class Importer
 	 * @return boolean
 	 * @throws import_exception 
 	 */
-	public function detect_scripts()
+	private function _detect_scripts()
 	{
 		if (isset($_REQUEST['import_script']))
 		{
@@ -516,7 +516,7 @@ class Importer
 		unset($_SESSION['import_steps']);
 		unset($_SESSION['import_overall']);
 
-		if ($this->detect_scripts())
+		if ($this->_detect_scripts())
 			return true;
 
 		// If these aren't set (from an error..) default to the current directory.
