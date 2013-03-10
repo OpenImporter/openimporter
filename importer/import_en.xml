@@ -35,7 +35,7 @@
 	<item name="imp.not_this">Not this software?</item>
 	<item name="imp.skipped">skipped</item>
 	<item name="imp.not_found_skipped">not found, skipped</item>
-	<item name="imp.pick_different"><![CDATA[If this is the wrong software, you can go back and <a href="%s?import_script=">pick a different data file</a>.)]]></item>
+	<item name="imp.pick_different"><![CDATA[If this is the wrong software, you can go back and <a href="%s?import_script=">pick a different data file</a>.]]></item>
 	<item name="imp.recalculate">Recalculating statistics</item>
 	<item name="imp.importing">Importing</item>
 	<item name="imp.complete">Import complete!</item>
