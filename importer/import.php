@@ -1532,10 +1532,7 @@ class Importer
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
 		$this->template->step3($this->xml->general->name, $boardurl, $writable);
 
-		unset ($_SESSION['import_steps']);
-		unset ($_SESSION['import_progress']);
-		unset ($_SESSION['import_overall']);
-
+		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		return true;
 	}
 
