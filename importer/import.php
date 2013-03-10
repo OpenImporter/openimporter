@@ -526,8 +526,8 @@ class Importer
 
 		$test_from = empty($this->xml->general->settings);
 
-		foreach ($this->xml->general->settings as $s)
-			$test_from |= @file_exists($_POST['path_from'] . $s);
+		foreach ($this->xml->general->settings as $settings_file)
+			$test_from |= @file_exists($_POST['path_from'] . $ettings_file);
 
 		$test_to = @file_exists($_POST['path_to'] . '/Settings.php');
 
