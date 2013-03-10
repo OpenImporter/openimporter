@@ -513,8 +513,7 @@ class Importer
 		$import = isset($object) ? $object : false;
 		$this->cookie -> destroy();
 		//previously imported? we need to clean some variables ..
-		unset($_SESSION['import_steps']);
-		unset($_SESSION['import_overall']);
+		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
 
 		if ($this->_detect_scripts())
 			return true;
