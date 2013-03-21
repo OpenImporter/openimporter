@@ -30,7 +30,9 @@ if (method_exists($import, 'doStep' . $_GET['step']))
 	call_user_func(array($import, 'doStep' . $_GET['step']));
 
 /**
- * Object Importer creates the main XML object
+ * Object Importer creates the main XML object.
+ * It detects and initializes the script to run.
+ * It handles all steps to completion.
  *
  */
 class Importer
@@ -72,7 +74,7 @@ class Importer
 	public $from_prefix;
 
 	/**
-	 * used to deceide if the database query is INSERT or INSERT IGNORE
+	 * used to decide if the database query is INSERT or INSERT IGNORE
 	 * @var type
 	 */
 	private $ignore = true;
@@ -263,6 +265,7 @@ class Importer
 
 	/**
 	 * prepare the importer with custom settings stuff
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $global
@@ -464,9 +467,11 @@ class Importer
 		}
 		return $steps;
 	}
+
 	/**
 	* used to replace {$from_prefix} and {$to_prefix} with its real values.
-	* @param string
+	*
+	* @param string the string in which parameters are replaced
 	* @return string
 	*/
 	private function _fix_params($string)
@@ -483,6 +488,7 @@ class Importer
 
 		return $string;
 	}
+
 	/**
 	* placehoder function to convert IPV4 to IPV6
 	* @TODO convert IPV4 to IPV6
@@ -496,7 +502,8 @@ class Importer
 
 	/**
 	 * collects all the important things, the importer can't do anything
-	 * witout this information.
+	 * without this information.
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $import_script
@@ -554,6 +561,7 @@ class Importer
 	/**
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $global
@@ -936,9 +944,9 @@ class Importer
 		return $this->doStep2();
 	}
 
-
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @return type
@@ -1513,6 +1521,7 @@ class Importer
 
 	/**
 	 * we are done :)
+	 *
 	 * @global Database $db
 	 * @global type $boardurl
 	 * @return boolean
@@ -1542,7 +1551,9 @@ class Importer
 }
 
 /**
- * the database class
+ * the database class.
+ * This class provides an easy wrapper around the common database
+ *  functions we work with.
  */
 class Database
 {
@@ -1564,6 +1575,7 @@ class Database
 
 	/**
 	 * remove old attachments
+	 *
 	 * @global type $to_prefix
 	 */
 	private function _removeAttachments()
@@ -1604,6 +1616,7 @@ class Database
 
 	/**
 	 * execute an SQL query
+	 *
 	 * @global type $import
 	 * @global type $to_prefix
 	 * @param type $string
@@ -1723,7 +1736,9 @@ class Database
 }
 
 /**
-* Object lng provides storage for shared objects
+* Class lng loads the appropriate language file(s)
+* if they exist. The default import_en.xml file
+* contains the English strings used by the importer.
 *
 * @var array $lang
 */
@@ -1804,6 +1819,7 @@ class lng
 
 		return null;
 	}
+
 	/**
 	* Tests if given $key exists in lang
 	*
@@ -1831,6 +1847,7 @@ class lng
 
 		return null;
 	}
+
 	/**
 	* Returns the whole lang as an array.
 	*
@@ -2325,6 +2342,14 @@ class template
 			</script>';
 	}
 
+	/**
+	 * Display notification with the given status
+	 *
+	 * @param int $substep
+	 * @param int $status
+	 * @param string $title
+	 * @param bool $hide = false
+	 */
 	public function status($substep, $status, $title, $hide = false)
 	{
 		if (isset($title) && $hide == false)
@@ -2343,12 +2368,23 @@ class template
 			echo '<br />';
 	}
 
+	/**
+	 * Display information related to step2
+	 */
 	public function step2()
 	{
 		echo '
 				<span style="width: 250px; display: inline-block">', lng::get('imp.recalculate'), '...</span> ';
 	}
 
+	/**
+	 * Display last step UI, completion status and allow eventually
+	 * to delete the scripts
+	 *
+	 * @param string $name
+	 * @param string $boardurl
+	 * @param bool $writable if the files are writable, the UI will allow deletion
+	 */
 	public function step3($name, $boardurl, $writable)
 	{
 		echo '
@@ -2374,6 +2410,14 @@ class template
 				<p>', lng::get('imp.smooth_transition'), '</p>';
 	}
 
+	/**
+	 * Display the progress bar,
+	 * and inform the user about when the script is paused and re-run.
+	 *
+	 * @param unknown_type $bar
+	 * @param unknown_type $value
+	 * @param unknown_type $max
+	 */
 	public function time_limit($bar, $value, $max)
 	{
 		if (!empty($bar))
@@ -2412,6 +2456,10 @@ class template
 			// ]]></script>';
 	}
 
+	/**
+	 * ajax response, whether the paths to the source and destination
+	 * software are correctly set.
+	 */
 	public function xml()
 	{
 		if (isset($_GET['path_to']))
@@ -2585,12 +2633,11 @@ function getLegacyAttachmentFilename($filename, $attachment_id)
 }
 
 /**
+ * helper function to create an encrypted attachment name
  *
- * * helper function to create an encrypted attachment name
-*
-* @param string $filename
-* @return string
-*/
+ * @param string $filename
+ * @return string
+ */
 function createAttachmentFilehash($filename)
 {
 	return sha1(md5($filename . time()) . mt_rand());
