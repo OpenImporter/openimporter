@@ -2945,5 +2945,3 @@ function store_global($variable, $value)
 {
 	$_SESSION['store_globals'][$variable] = $value;
 }
-
-?>
