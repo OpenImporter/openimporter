@@ -3,9 +3,9 @@
  * @name      OpenImporter
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
- *  
+ *
  * @version 1.0 Alpha
- *  
+ *
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
@@ -49,7 +49,7 @@ class Importer
 
 	/**
 	 * the template
-	 * @var object 
+	 * @var object
 	 */
 	public $template;
 
@@ -61,37 +61,37 @@ class Importer
 
 	/**
 	 * prefix for our destination database
-	 * @var type 
+	 * @var type
 	 */
 	public $to_prefix;
 
 	/**
 	 * prefix for our source database
-	 * @var type 
+	 * @var type
 	 */
 	public $from_prefix;
 
 	/**
 	 * used to deceide if the database query is INSERT or INSERT IGNORE
-	 * @var type 
+	 * @var type
 	 */
 	private $ignore = true;
 
 	/**
 	 *use to switch between INSERT and REPLACE
-	 * @var type 
+	 * @var type
 	 */
 	private $replace = false;
 
 	/**
-	 * initialize the main Importer object 
+	 * initialize the main Importer object
 	 */
 	public function __construct()
 	{
-		
+
 		// Load the language file and create an importer cookie.
 		lng::loadLang();
-	
+
 		// initialize some objects
 		$this->cookie = new Cookie();
 		$this->template = new template();
@@ -162,14 +162,14 @@ class Importer
 			$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 		else
 			unset($_SESSION['import_script']);
-		
+
 		// UI and worker process comes next..
 		if (!isset($_GET['xml']))
 			$this->template->header();
 	}
 
 	/**
-	 * destructor 
+	 * destructor
 	 */
 	public function __destruct()
 	{
@@ -180,7 +180,7 @@ class Importer
 	/**
 	 * loads the _importer.xml files
 	 * @param type $file
-	 * @throws import_exception 
+	 * @throws import_exception
 	 */
 	private function _preparse_xml($file)
 	{
@@ -204,7 +204,7 @@ class Importer
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
 	 * @return boolean
-	 * @throws import_exception 
+	 * @throws import_exception
 	 */
 	private function _detect_scripts()
 	{
@@ -268,7 +268,7 @@ class Importer
 	 * @global type $global
 	 * @global type $varname
 	 * @global type $global
-	 * @return type 
+	 * @return type
 	 */
 	private function _loadSettings()
 	{
@@ -290,7 +290,7 @@ class Importer
 			foreach ($_SESSION['store_globals'] as $varname => $value)
 			{
 				global $$varname;
-				$$varname = $value;  
+				$$varname = $value;
 			}
 
 		// catch form elements and globalize them for later use..
@@ -444,7 +444,7 @@ class Importer
 
 	/**
 	 * Looks at the importer and returns the steps that it's able to make.
-	 * @return int 
+	 * @return int
 	 */
 	private function _find_steps()
 	{
@@ -466,8 +466,8 @@ class Importer
 	}
 	/**
 	* used to replace {$from_prefix} and {$to_prefix} with its real values.
-	* @param string 
-	* @return string 
+	* @param string
+	* @return string
 	*/
 	private function _fix_params($string)
 	{
@@ -486,7 +486,7 @@ class Importer
 	/**
 	* placehoder function to convert IPV4 to IPV6
 	* @TODO convert IPV4 to IPV6
-	* @param string $ip 
+	* @param string $ip
 	* @return string $ip
 	*/
 	private function _prepare_ipv6($ip)
@@ -496,7 +496,7 @@ class Importer
 
 	/**
 	 * collects all the important things, the importer can't do anything
-	 * witout this information. 
+	 * witout this information.
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $import_script
@@ -504,7 +504,7 @@ class Importer
 	 * @global type $import
 	 * @param type $error_message
 	 * @param type $object
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function doStep0($error_message = null, $object = false)
 	{
@@ -557,7 +557,7 @@ class Importer
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $global
-	 * @return type 
+	 * @return type
 	 */
 	public function doStep1()
 	{
@@ -809,7 +809,7 @@ class Importer
 
 						$rows = array();
 						$keys = array();
-						
+
 						if (isset($steps->detect))
 							$_SESSION['import_progress'] += $special_limit;
 
@@ -941,7 +941,7 @@ class Importer
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 * @global Database $db
 	 * @global type $to_prefix
-	 * @return type 
+	 * @return type
 	 */
 	public function doStep2()
 	{
@@ -1512,10 +1512,10 @@ class Importer
 	}
 
 	/**
-	 * we are done :) 
+	 * we are done :)
 	 * @global Database $db
 	 * @global type $boardurl
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function doStep3()
 	{
@@ -1552,7 +1552,7 @@ class Database
 	 * @param type $db_server
 	 * @param type $db_user
 	 * @param type $db_password
-	 * @param type $db_persist 
+	 * @param type $db_persist
 	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
@@ -1564,7 +1564,7 @@ class Database
 
 	/**
 	 * remove old attachments
-	 * @global type $to_prefix 
+	 * @global type $to_prefix
 	 */
 	private function _removeAttachments()
 	{
@@ -1608,7 +1608,7 @@ class Database
 	 * @global type $to_prefix
 	 * @param type $string
 	 * @param type $return_error
-	 * @return type 
+	 * @return type
 	 */
 	public function query($string, $return_error = false)
 	{
@@ -1674,7 +1674,7 @@ class Database
 
 	/**
 	 * wrapper for mysql_free_result
-	 * @param type $result 
+	 * @param type $result
 	 */
 	public function free_result($result)
 
@@ -1685,7 +1685,7 @@ class Database
 	/**
 	 * wrapper for mysql_fetch_assoc
 	 * @param type $result
-	 * @return type 
+	 * @return type
 	 */
 	public function fetch_assoc($result)
 	{
@@ -1695,7 +1695,7 @@ class Database
 	/**
 	 * wrapper for mysql_fetch_row
 	 * @param type $result
-	 * @return type 
+	 * @return type
 	 */
 	public function fetch_row($result)
 	{
@@ -1705,7 +1705,7 @@ class Database
 	/**
 	 * wrapper for mysql_num_rows
 	 * @param type $result
-	 * @return type 
+	 * @return type
 	 */
 	public function num_rows($result)
 	{
@@ -1714,7 +1714,7 @@ class Database
 
 	/**
 	 * wrapper for mysql_insert_id
-	 * @return type 
+	 * @return type
 	 */
 	public function insert_id()
 	{
@@ -2456,13 +2456,13 @@ class import_exception extends Exception
 }
 
 /**
- * we need Cooooookies.. 
+ * we need Cooooookies..
  */
 class Cookie
 {
 	/**
 	 * Constructor
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function Cookie()
 	{
@@ -2473,7 +2473,7 @@ class Cookie
 	 * set a cookie
 	 * @param type $data
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function set($data, $name = 'openimporter_cookie')
 	{
@@ -2489,7 +2489,7 @@ class Cookie
 	/**
 	 * get our cookie
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function get($name = 'openimporter_cookie')
 	{
@@ -2505,7 +2505,7 @@ class Cookie
 	/**
 	 * once we are done, we should destroy our cookie
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function destroy($name = 'openimporter_cookie')
 	{
@@ -2519,7 +2519,7 @@ class Cookie
 	 * extend the cookie with new infos
 	 * @param type $data
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function extend($data, $name = 'openimporter_cookie')
 	{
@@ -2585,7 +2585,7 @@ function getLegacyAttachmentFilename($filename, $attachment_id)
 }
 
 /**
- * 	
+ *
  * * helper function to create an encrypted attachment name
 *
 * @param string $filename
@@ -2655,7 +2655,7 @@ function stripslashes_recursive($var, $level = 0)
  * function copy_smileys is used to copy smileys from a source to destination.
  * @param type $source
  * @param type $dest
- * @return type 
+ * @return type
  */
 function copy_smileys($source, $dest)
 {
@@ -2688,7 +2688,7 @@ function copy_smileys($source, $dest)
  * function copy_dir copies a directory
  * @param type $source
  * @param type $dest
- * @return type 
+ * @return type
  */
 function copy_dir($source, $dest)
 {
@@ -2721,7 +2721,7 @@ function copy_dir($source, $dest)
  * @global type $to_prefix
  * @global type $db
  * @param type $messageID
- * @return int 
+ * @return int
  */
 function getMsgMemberID($messageID)
 {
@@ -2747,7 +2747,7 @@ function getMsgMemberID($messageID)
 /**
  * detects, if a string is utf-8 or not
  * @param type $string
- * @return type 
+ * @return type
  */
  function is_utf8($string)
 {
