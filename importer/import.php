@@ -2414,9 +2414,9 @@ class template
 	 * Display the progress bar,
 	 * and inform the user about when the script is paused and re-run.
 	 *
-	 * @param unknown_type $bar
-	 * @param unknown_type $value
-	 * @param unknown_type $max
+	 * @param int $bar
+	 * @param int $value
+	 * @param int $max
 	 */
 	public function time_limit($bar, $value, $max)
 	{
