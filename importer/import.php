@@ -3,9 +3,9 @@
  * @name      OpenImporter
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
- *  
+ *
  * @version 1.0 Alpha
- *  
+ *
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
@@ -30,7 +30,9 @@ if (method_exists($import, 'doStep' . $_GET['step']))
 	call_user_func(array($import, 'doStep' . $_GET['step']));
 
 /**
- * Object Importer creates the main XML object
+ * Object Importer creates the main XML object.
+ * It detects and initializes the script to run.
+ * It handles all steps to completion.
  *
  */
 class Importer
@@ -49,7 +51,7 @@ class Importer
 
 	/**
 	 * the template
-	 * @var object 
+	 * @var object
 	 */
 	public $template;
 
@@ -61,37 +63,37 @@ class Importer
 
 	/**
 	 * prefix for our destination database
-	 * @var type 
+	 * @var type
 	 */
 	public $to_prefix;
 
 	/**
 	 * prefix for our source database
-	 * @var type 
+	 * @var type
 	 */
 	public $from_prefix;
 
 	/**
-	 * used to deceide if the database query is INSERT or INSERT IGNORE
-	 * @var type 
+	 * used to decide if the database query is INSERT or INSERT IGNORE
+	 * @var type
 	 */
 	private $ignore = true;
 
 	/**
 	 *use to switch between INSERT and REPLACE
-	 * @var type 
+	 * @var type
 	 */
 	private $replace = false;
 
 	/**
-	 * initialize the main Importer object 
+	 * initialize the main Importer object
 	 */
 	public function __construct()
 	{
-		
+
 		// Load the language file and create an importer cookie.
 		lng::loadLang();
-	
+
 		// initialize some objects
 		$this->cookie = new Cookie();
 		$this->template = new template();
@@ -162,14 +164,14 @@ class Importer
 			$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 		else
 			unset($_SESSION['import_script']);
-		
+
 		// UI and worker process comes next..
 		if (!isset($_GET['xml']))
 			$this->template->header();
 	}
 
 	/**
-	 * destructor 
+	 * destructor
 	 */
 	public function __destruct()
 	{
@@ -180,7 +182,7 @@ class Importer
 	/**
 	 * loads the _importer.xml files
 	 * @param type $file
-	 * @throws import_exception 
+	 * @throws import_exception
 	 */
 	private function _preparse_xml($file)
 	{
@@ -204,7 +206,7 @@ class Importer
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
 	 * @return boolean
-	 * @throws import_exception 
+	 * @throws import_exception
 	 */
 	private function _detect_scripts()
 	{
@@ -263,12 +265,13 @@ class Importer
 
 	/**
 	 * prepare the importer with custom settings stuff
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $global
 	 * @global type $varname
 	 * @global type $global
-	 * @return type 
+	 * @return type
 	 */
 	private function _loadSettings()
 	{
@@ -290,7 +293,7 @@ class Importer
 			foreach ($_SESSION['store_globals'] as $varname => $value)
 			{
 				global $$varname;
-				$$varname = $value;  
+				$$varname = $value;
 			}
 
 		// catch form elements and globalize them for later use..
@@ -444,7 +447,7 @@ class Importer
 
 	/**
 	 * Looks at the importer and returns the steps that it's able to make.
-	 * @return int 
+	 * @return int
 	 */
 	private function _find_steps()
 	{
@@ -464,10 +467,12 @@ class Importer
 		}
 		return $steps;
 	}
+
 	/**
 	* used to replace {$from_prefix} and {$to_prefix} with its real values.
-	* @param string 
-	* @return string 
+	*
+	* @param string the string in which parameters are replaced
+	* @return string
 	*/
 	private function _fix_params($string)
 	{
@@ -483,10 +488,11 @@ class Importer
 
 		return $string;
 	}
+
 	/**
 	* placehoder function to convert IPV4 to IPV6
 	* @TODO convert IPV4 to IPV6
-	* @param string $ip 
+	* @param string $ip
 	* @return string $ip
 	*/
 	private function _prepare_ipv6($ip)
@@ -496,7 +502,8 @@ class Importer
 
 	/**
 	 * collects all the important things, the importer can't do anything
-	 * witout this information. 
+	 * without this information.
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $import_script
@@ -504,7 +511,7 @@ class Importer
 	 * @global type $import
 	 * @param type $error_message
 	 * @param type $object
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function doStep0($error_message = null, $object = false)
 	{
@@ -553,10 +560,11 @@ class Importer
 	/**
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $global
-	 * @return type 
+	 * @return type
 	 */
 	public function doStep1()
 	{
@@ -808,7 +816,7 @@ class Importer
 
 						$rows = array();
 						$keys = array();
-						
+
 						if (isset($steps->detect))
 							$_SESSION['import_progress'] += $special_limit;
 
@@ -935,12 +943,12 @@ class Importer
 		return $this->doStep2();
 	}
 
-
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
+	 *
 	 * @global Database $db
 	 * @global type $to_prefix
-	 * @return type 
+	 * @return type
 	 */
 	public function doStep2()
 	{
@@ -1511,10 +1519,11 @@ class Importer
 	}
 
 	/**
-	 * we are done :) 
+	 * we are done :)
+	 *
 	 * @global Database $db
 	 * @global type $boardurl
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function doStep3()
 	{
@@ -1538,7 +1547,9 @@ class Importer
 }
 
 /**
- * the database class
+ * the database class.
+ * This class provides an easy wrapper around the common database
+ *  functions we work with.
  */
 class Database
 {
@@ -1548,7 +1559,7 @@ class Database
 	 * @param type $db_server
 	 * @param type $db_user
 	 * @param type $db_password
-	 * @param type $db_persist 
+	 * @param type $db_persist
 	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
@@ -1560,7 +1571,8 @@ class Database
 
 	/**
 	 * remove old attachments
-	 * @global type $to_prefix 
+	 *
+	 * @global type $to_prefix
 	 */
 	private function _removeAttachments()
 	{
@@ -1600,11 +1612,12 @@ class Database
 
 	/**
 	 * execute an SQL query
+	 *
 	 * @global type $import
 	 * @global type $to_prefix
 	 * @param type $string
 	 * @param type $return_error
-	 * @return type 
+	 * @return type
 	 */
 	public function query($string, $return_error = false)
 	{
@@ -1670,7 +1683,7 @@ class Database
 
 	/**
 	 * wrapper for mysql_free_result
-	 * @param type $result 
+	 * @param type $result
 	 */
 	public function free_result($result)
 
@@ -1681,7 +1694,7 @@ class Database
 	/**
 	 * wrapper for mysql_fetch_assoc
 	 * @param type $result
-	 * @return type 
+	 * @return type
 	 */
 	public function fetch_assoc($result)
 	{
@@ -1691,7 +1704,7 @@ class Database
 	/**
 	 * wrapper for mysql_fetch_row
 	 * @param type $result
-	 * @return type 
+	 * @return type
 	 */
 	public function fetch_row($result)
 	{
@@ -1701,7 +1714,7 @@ class Database
 	/**
 	 * wrapper for mysql_num_rows
 	 * @param type $result
-	 * @return type 
+	 * @return type
 	 */
 	public function num_rows($result)
 	{
@@ -1710,7 +1723,7 @@ class Database
 
 	/**
 	 * wrapper for mysql_insert_id
-	 * @return type 
+	 * @return type
 	 */
 	public function insert_id()
 	{
@@ -1719,7 +1732,9 @@ class Database
 }
 
 /**
-* Object lng provides storage for shared objects
+* Class lng loads the appropriate language file(s)
+* if they exist. The default import_en.xml file
+* contains the English strings used by the importer.
 *
 * @var array $lang
 */
@@ -1800,6 +1815,7 @@ class lng
 
 		return null;
 	}
+
 	/**
 	* Tests if given $key exists in lang
 	*
@@ -1827,6 +1843,7 @@ class lng
 
 		return null;
 	}
+
 	/**
 	* Returns the whole lang as an array.
 	*
@@ -2321,6 +2338,14 @@ class template
 			</script>';
 	}
 
+	/**
+	 * Display notification with the given status
+	 *
+	 * @param int $substep
+	 * @param int $status
+	 * @param string $title
+	 * @param bool $hide = false
+	 */
 	public function status($substep, $status, $title, $hide = false)
 	{
 		if (isset($title) && $hide == false)
@@ -2339,12 +2364,23 @@ class template
 			echo '<br />';
 	}
 
+	/**
+	 * Display information related to step2
+	 */
 	public function step2()
 	{
 		echo '
 				<span style="width: 250px; display: inline-block">', lng::get('imp.recalculate'), '...</span> ';
 	}
 
+	/**
+	 * Display last step UI, completion status and allow eventually
+	 * to delete the scripts
+	 *
+	 * @param string $name
+	 * @param string $boardurl
+	 * @param bool $writable if the files are writable, the UI will allow deletion
+	 */
 	public function step3($name, $boardurl, $writable)
 	{
 		echo '
@@ -2370,6 +2406,14 @@ class template
 				<p>', lng::get('imp.smooth_transition'), '</p>';
 	}
 
+	/**
+	 * Display the progress bar,
+	 * and inform the user about when the script is paused and re-run.
+	 *
+	 * @param int $bar
+	 * @param int $value
+	 * @param int $max
+	 */
 	public function time_limit($bar, $value, $max)
 	{
 		if (!empty($bar))
@@ -2408,6 +2452,10 @@ class template
 			// ]]></script>';
 	}
 
+	/**
+	 * ajax response, whether the paths to the source and destination
+	 * software are correctly set.
+	 */
 	public function xml()
 	{
 		if (isset($_GET['path_to']))
@@ -2452,13 +2500,13 @@ class import_exception extends Exception
 }
 
 /**
- * we need Cooooookies.. 
+ * we need Cooooookies..
  */
 class Cookie
 {
 	/**
 	 * Constructor
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function Cookie()
 	{
@@ -2469,7 +2517,7 @@ class Cookie
 	 * set a cookie
 	 * @param type $data
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function set($data, $name = 'openimporter_cookie')
 	{
@@ -2485,7 +2533,7 @@ class Cookie
 	/**
 	 * get our cookie
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function get($name = 'openimporter_cookie')
 	{
@@ -2501,7 +2549,7 @@ class Cookie
 	/**
 	 * once we are done, we should destroy our cookie
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function destroy($name = 'openimporter_cookie')
 	{
@@ -2515,7 +2563,7 @@ class Cookie
 	 * extend the cookie with new infos
 	 * @param type $data
 	 * @param type $name
-	 * @return boolean 
+	 * @return boolean
 	 */
 	public function extend($data, $name = 'openimporter_cookie')
 	{
@@ -2581,12 +2629,11 @@ function getLegacyAttachmentFilename($filename, $attachment_id)
 }
 
 /**
- * 	
- * * helper function to create an encrypted attachment name
-*
-* @param string $filename
-* @return string
-*/
+ * helper function to create an encrypted attachment name
+ *
+ * @param string $filename
+ * @return string
+ */
 function createAttachmentFilehash($filename)
 {
 	return sha1(md5($filename . time()) . mt_rand());
@@ -2651,7 +2698,7 @@ function stripslashes_recursive($var, $level = 0)
  * function copy_smileys is used to copy smileys from a source to destination.
  * @param type $source
  * @param type $dest
- * @return type 
+ * @return type
  */
 function copy_smileys($source, $dest)
 {
@@ -2684,7 +2731,7 @@ function copy_smileys($source, $dest)
  * function copy_dir copies a directory
  * @param type $source
  * @param type $dest
- * @return type 
+ * @return type
  */
 function copy_dir($source, $dest)
 {
@@ -2717,7 +2764,7 @@ function copy_dir($source, $dest)
  * @global type $to_prefix
  * @global type $db
  * @param type $messageID
- * @return int 
+ * @return int
  */
 function getMsgMemberID($messageID)
 {
@@ -2743,7 +2790,7 @@ function getMsgMemberID($messageID)
 /**
  * detects, if a string is utf-8 or not
  * @param type $string
- * @return type 
+ * @return type
  */
  function is_utf8($string)
 {
@@ -2894,5 +2941,3 @@ function store_global($variable, $value)
 {
 	$_SESSION['store_globals'][$variable] = $value;
 }
-
-?>
