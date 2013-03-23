@@ -1535,6 +1535,7 @@ class Importer
 		$db->query("
 			REPLACE INTO {$to_prefix}settings (variable, value)
 				VALUES ('import_time', " . time() . "),
+					('enable_password_conversion', '1'),
 					('imported_from', '" . $_SESSION['import_script'] . "')");
 
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
