@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
+	<general>
+		<name>Wordpress 3.x</name>
+		<version>Elkarte 1.0</version>
+		<!-- We can't load wp-config.php, there's a require_once at the end of that file which would load the enire wp stuff an break our importer engine. --> 
+		<settings>/wp-includes/version.php</settings>
+		<form>
+			<field id="1" type="text" size="20" label="Wordpress database">wp_database</field>
+			<field id="2" type="text" size="10" default="wp_" label="Wordpress table prefix">wp_prefix</field>
+		</form>
+		<from_prefix>`$wp_database`.$wp_prefix</from_prefix>
+		<table_test>{$from_prefix}users;</table_test>
+		<ip_to_ipv6>member_ip, member_ip2</ip_to_ipv6>
+		<ip_to_pointer>poster_ip</ip_to_pointer>
+	</general>
+	<step type="mandatory">
+		<title>Importing members</title>
+		<detect>{$from_prefix}users</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>TRUNCATE {$to_prefix}members;</presql>
+		<preparsecode>
+			$request = $db->query("
+				SELECT meta_value
+				FROM {$from_prefix}usermeta
+				WHERE user_id = $row[id_member]
+				AND meta_key = 'wp_capabilities'");
+
+			list ($serialized) = $db->fetch_row($request);
+			$row['id_group']= array_key_exists('administrator', unserialize($serialized)) ? 1 : 0;
+		</preparsecode>
+		<query>
+			SELECT
+				ID AS id_member, SUBSTRING(user_login, 1, 80) AS member_name,
+				SUBSTRING(display_name, 1, 255) AS real_name, user_url AS website_title,
+				user_url AS website_url, UNIX_TIMESTAMP(user_registered) AS date_registered,
+				SUBSTRING(user_pass, 1, 64) AS passwd, '' AS buddy_list, '' AS message_labels,
+				'' AS ignore_boards, 1 AS hide_email, SUBSTRING(user_email, 1, 255) AS email_address
+			FROM {$from_prefix}users;
+		</query>
+	</step>
+	<step>
+		<title>Creating a default category</title>
+		<detect>{$from_prefix}term_taxonomy</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<code>
+			$db->query("
+				INSERT INTO {$to_prefix}categories
+					(id_cat, cat_order, name, can_collapse)
+				VALUES(1, 0, 'General Category', 1)");
+		</code>
+	</step>
+	<step>
+		<title>Importing wordpress categories</title>
+		<detect>{$from_prefix}term_taxonomy</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions
+			WHERE id_profile > 4;
+		</presql>
+		<query>
+			SELECT
+				tax.term_id AS id_board, '1' AS id_cat, terms.name AS name, 0 AS board_order,
+				SUBSTRING(tax.description, 1, 65534) AS description, '1,2,3,-1,0' AS member_groups, 
+				tax.count AS num_topics, tax.parent AS id_parent, 0 AS num_posts
+			FROM {$from_prefix}term_taxonomy AS tax
+				LEFT JOIN {$from_prefix}terms AS terms ON (tax.term_id = terms.term_id)
+			WHERE tax.taxonomy = 'category';
+		</query>
+	</step>
+	<step>
+		<title>Creating topic and article relations</title>
+		<detect>{$from_prefix}posts</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+			TRUNCATE {$to_prefix}polls;
+			TRUNCATE {$to_prefix}poll_choices;
+			TRUNCATE {$to_prefix}log_polls;
+		</presql>
+		<query>
+			SELECT
+				t.ID AS id_topic, rel.term_taxonomy_id AS id_board, 0 AS is_pinned,
+				0 AS num_views, t.post_author AS id_member_started,
+				1 AS id_member_updated, t.ID AS id_first_msg, t.ID AS id_last_msg,
+				t.comment_count AS num_replies, IF(t.comment_status = 'locked', 1, 0) AS locked
+			FROM {$from_prefix}posts AS t
+				INNER JOIN {$from_prefix}term_relationships AS rel ON (t.ID = rel.object_id)
+			WHERE t.post_status = 'publish' AND t.post_type = 'post'
+			GROUP BY t.ID
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing articles</title>
+		<detect>{$from_prefix}posts</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<limit>100</limit>
+			<ignore_slashes>true</ignore_slashes>
+		</options>
+		<query>
+			SELECT
+				p.ID AS id_msg, p.ID AS id_topic, t.id_board AS id_board,
+				UNIX_TIMESTAMP(p.post_date) AS poster_time, p.post_author AS id_member,
+				p.post_title AS subject, u.user_login AS poster_name, 'xx' AS icon,
+				u.user_email AS poster_email, 1 AS smileys_enabled, p.post_content AS body
+			FROM {$from_prefix}posts AS p
+				INNER JOIN {$to_prefix}topics AS t ON (t.id_topic = p.ID)
+				INNER JOIN {$from_prefix}users AS u ON (u.ID = p.post_author);
+		</query>
+	</step>
+	<step>
+		<title>Importing comments</title>
+		<detect>{$from_prefix}comments</detect>
+		<destination>{$to_prefix}messages</destination>
+		<options>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				p.comment_post_ID AS id_topic, t.id_board AS id_board, 
+				UNIX_TIMESTAMP(p.comment_date) AS poster_time, p.user_id AS id_member,
+				c.post_title AS subject, p.comment_author_IP AS poster_ip,
+				p.comment_author AS poster_name, p.comment_author_email AS poster_email,
+				1 AS smileys_enabled, p.comment_content AS body, 'xx' AS icon
+			FROM {$from_prefix}comments AS p
+				INNER JOIN {$to_prefix}topics AS t ON (t.id_topic = p.comment_post_ID)
+				INNER JOIN {$from_prefix}posts AS c ON (c.ID = p.comment_post_ID);
+		</query>
+	</step>
+</importer>
