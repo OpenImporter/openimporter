@@ -858,7 +858,7 @@ class Importer
 									$ip = trim($ip);
 									if (array_key_exists($ip, $row))
 									{
-										$ipv6ip = $this->prepareIPV6($row[$ip]);
+										$ipv6ip = $this->_prepare_ipv6($row[$ip]);
 
 										$request2 = $db->query("
 											SELECT id_ip
