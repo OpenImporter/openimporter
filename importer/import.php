@@ -838,6 +838,7 @@ class Importer
 									$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
 							}
 
+							// this is wedge specific stuff and will move at some point.
 							// prepare ip address conversion
 							if (isset($this->xml->general->ip_to_ipv6))
 							{
