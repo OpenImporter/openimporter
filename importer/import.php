@@ -886,7 +886,7 @@ class Importer
 									}
 								}
 							}
-							// inject our charset class, we need proper utf-8
+							// fixing the charset, we need proper utf-8
 							$row = fix_charset($row);
 
 							// If we have a message here, we'll want to convert <br /> to <br>.
