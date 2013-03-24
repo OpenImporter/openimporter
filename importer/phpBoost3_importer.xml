@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
+	<general>
+		<name>PHPBoost3</name>
+		<version>ElkArte 1.0</version>
+		<form>
+			<field id="1" type="text" size="20" default="" label="PHPBoost database">boost_database</field>
+			<field id="2" type="text" size="20" default="" label="PHPBoost table prefix">boost_prefix</field>
+			<field id="3" type="text" size="40" default="" label="path to PHPBoost installation">path_from</field>
+		</form>
+		<from_prefix>`$boost_database`.$boost_prefix</from_prefix>
+		<table_test>{$from_prefix}member;</table_test>
+		<ip_to_ipv6>member_ip, member_ip2, ip</ip_to_ipv6>
+		<ip_to_pointer>poster_ip</ip_to_pointer>
+		<custom_functions><![CDATA[
+			function boost_replace_bbc($content)
+			{
+				$content = preg_replace(
+					array(
+						'~<strong>~is',
+						'~</strong>~is',
+						'~<em>~is',
+						'~</em>~is',
+						'~<strike>~is',
+						'~</strike>~is',
+						'~\<h3(.+?)\>~is',
+						'~</h3>~is',
+						'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
+						'~\<div class="bb_block">(.+?)<\/div>~is',
+						'~\[style=(.+?)\](.+?)\[\/style\]~is',
+					),
+					array(
+						'[b]',
+						'[/b]',
+						'[i]',
+						'[/i]',
+						'[s]',
+						'[/s]',
+						'',
+						'',
+						'[u]%1[/u]',
+						'%1',
+						'%1',
+					),
+					trim($content)
+				);
+
+				return $content;
+			}
+		]]></custom_functions>
+	</general>
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}member</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN passwd passwd varchar(64) NOT NULL default '';
+			TRUNCATE {$to_prefix}members;
+		</presql>
+		<query>
+			SELECT
+				user_id AS id_member, SUBSTRING(login, 1, 80) AS member_name,
+				SUBSTRING(login, 1, 255) AS real_name, SUBSTRING(password, 1, 64) AS passwd,
+				user_sex AS gender,	SUBSTRING(user_mail, 1, 255) AS email_address,
+				last_connect AS last_login, timestamp AS date_registered,
+				user_born AS birthdate, user_local AS location,
+				IF (level = 2, 1, 0) AS id_group, user_msg AS posts,
+				IF (user_show_mail = 1, 1, 0) AS hide_email
+			FROM {$from_prefix}member;
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}categories</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT 	id AS id_cat, name AS name, id_left AS cat_order
+			FROM {$from_prefix}forum_cats
+			WHERE level = 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}forum_cats</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+		</presql>
+		<options>
+			<slashes>true</slashes>
+		</options>
+		<query>
+			SELECT
+				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups, 
+				SUBSTRING(subname, 1, 65534) AS description, id_left AS board_order,
+				nbr_msg AS num_posts, nbr_topic AS num_topics, id_left AS id_cat, id_left AS id_parent
+			FROM {$from_prefix}forum_cats
+			WHERE level > 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}forum_msg</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<preparsecode>
+			$row['id_member_started'] = (int) $row['id_member_started'];
+			$row['id_member_updated'] = (int) $row['id_member_updated'];
+
+			if(empty($row['id_poll']))
+				$row['id_poll'] = 0;
+		</preparsecode>
+		<query>
+			SELECT
+				t.id AS id_topic, t.idcat AS id_board, 
+				t.type AS is_sticky, t.user_id AS id_member_started, 
+				t.last_user_id AS id_member_updated, poll.id AS id_poll,
+				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg, 
+				0 AS locked
+			FROM {$from_prefix}forum_topics AS t
+			LEFT JOIN {$from_prefix}forum_msg AS p ON (p.idtopic = t.id)
+			LEFT JOIN {$from_prefix}forum_poll AS poll ON (poll.idtopic = t.id)
+			GROUP BY t.id
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}posts</detect>
+		<destination>{$to_prefix}forum_msg</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<slashes>true</slashes>
+			<limit>100</limit>
+		</options>
+		<preparsecode>
+			$row['body'] = boost_replace_bbc($row['body']);
+			if (empty($row['modified_name']))
+			{
+				$row['modified_name'] = 'Guest';
+				$row['modified_time'] = 0;
+			}
+		</preparsecode>
+		<query>
+			SELECT
+				p.id AS id_msg, p.idtopic AS id_topic,	t.idcat  AS id_board, 
+				p.timestamp AS poster_time, p.user_id AS id_member, t.title AS subject,
+				u.login AS poster_name, u.user_mail AS poster_email, p.user_ip AS poster_ip, 
+				1 AS smileys_enabled, e.login AS modified_name, p.timestamp_edit AS modified_time, 
+				p.contents AS body, 'xx' AS icon
+			FROM {$from_prefix}forum_msg AS p
+			LEFT JOIN {$from_prefix}member AS u ON (u.user_id = p.user_id)
+			LEFT JOIN {$from_prefix}member AS e ON (e.user_id = p.user_id_edit)
+			LEFT JOIN {$from_prefix}forum_topics AS t ON (p.idtopic = t.id)
+			GROUP BY p.id;		
+		</query>
+	</step>
+</importer>
