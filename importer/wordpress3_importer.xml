@@ -2,7 +2,7 @@
 <importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
 	<general>
 		<name>Wordpress 3.x</name>
-		<version>Elkarte 1.0</version>
+		<version>ElkArte 1.0</version>
 		<!-- We can't load wp-config.php, there's a require_once at the end of that file which would load the enire wp stuff an break our importer engine. --> 
 		<settings>/wp-includes/version.php</settings>
 		<form>

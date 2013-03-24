@@ -2,7 +2,7 @@
 <importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
 	<general>
 		<name>vBulletin 4</name>
-		<version>Elkarte 1.0</version>
+		<version>ElkArte 1.0</version>
 		<settings>/includes/config.php</settings>
 		<from_prefix>`{$config['Database']['dbname']}`.{$config['Database']['tableprefix']}</from_prefix>
 		<globals>config</globals>

@@ -2,7 +2,7 @@
 <importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
 	<general>
 		<name>MyBB 1.6</name>
-		<version>Elkarte</version>
+		<version>ElkArte</version>
 		<settings>/inc/config.php</settings>
 		<from_prefix>`{$config['database']['database']}`.{$config['database']['table_prefix']}</from_prefix>
 		<table_test>{$from_prefix}users</table_test>
