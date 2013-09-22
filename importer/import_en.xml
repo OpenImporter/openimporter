@@ -39,7 +39,7 @@
 	<item name="imp.recalculate">Recalculating statistics</item>
 	<item name="imp.importing">Importing</item>
 	<item name="imp.complete">Import complete!</item>
-	<item name="imp.congrats"><![CDATA[Congratulations, the importer has completed successfully.]]></item>
+	<item name="imp.congrats">Congratulations, the importer has completed successfully.</item>
 	<item name="imp.check_box">Please check this box to delete the importer right now for security reasons.</item>
 	<item name="imp.may_fail">doesn't work on all servers.</item>
 	<item name="imp.not_done">Not quite done yet!</item>
