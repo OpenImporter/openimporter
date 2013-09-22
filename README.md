@@ -34,7 +34,7 @@ Please see [How to contribute](https://github.com/eurich/openimporter/blob/maste
 
 Site
 ===
-Project site: tba
+Project site: http://eurich.github.io/openimporter
 
 
 
