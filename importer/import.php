@@ -2479,10 +2479,8 @@ class template
 */
 class import_exception extends Exception
 {
-	public static function error_handler_callback($code, $string, $file, $line, $context)
+	public static function error_handler_callback($code, $string, $file, $line)
 	{
-		global $import;
-
 		$e = new self($string, $code);
 		$e->line = $line;
 		$e->file = $file;
@@ -2589,7 +2587,7 @@ class Cookie
 */
 function pastTime($substep = null, $stop_time = 5)
 {
-	global $import, $time_start, $do_steps;
+	global $import, $time_start;
 
 	if (isset($_GET['substep']) && $_GET['substep'] < $substep)
 		$_GET['substep'] = $substep;
