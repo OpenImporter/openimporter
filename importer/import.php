@@ -515,7 +515,7 @@ class Importer
 	 */
 	public function doStep0($error_message = null, $object = false)
 	{
-		global $db, $to_prefix, $import_script, $cookie, $import;
+		global $import;
 
 		$import = isset($object) ? $object : false;
 		$this->cookie -> destroy();
