@@ -193,7 +193,7 @@
 				if ($row['variable'] == 'pretty_board_urls')
 				{
 					$pretty_urls = $row['value'];
-					helper::store_global('pretty_urls', $row['value']);
+					store_global('pretty_urls', $row['value']);
 				}
 			}
 
