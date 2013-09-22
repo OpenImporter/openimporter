@@ -432,7 +432,7 @@ class Importer
 
 			$db->free_result($result);
 		}
-
+/*
 		$results = $db->query("SELECT @@SQL_BIG_SELECTS, @@SQL_MAX_JOIN_SIZE");
 		list ($big_selects, $sql_max_join) = $db->fetch_row($results);
 
@@ -443,6 +443,7 @@ class Importer
 		// Lets set MAX_JOIN_SIZE to something we should
 		if (empty($sql_max_join) || ($sql_max_join == '18446744073709551615' && $sql_max_join == '18446744073709551615'))
 			$db->query("SET @@SQL_MAX_JOIN_SIZE = 18446744073709551615");
+*/
 	}
 
 	/**
