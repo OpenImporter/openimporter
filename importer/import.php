@@ -738,7 +738,7 @@ class Importer
 						SELECT COUNT(*)
 						FROM $count");
 					list ($counter) = $db->fetch_row($result2);
-					$this->count->$substep = $counter;
+					//$this->count->$substep = $counter;
 					$db->free_result($result2);
 				}
 
