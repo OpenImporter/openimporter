@@ -393,9 +393,12 @@ class Importer
 			$to_prefix = $db_prefix;
 			$this->to_prefix = $db_prefix;
 		}
+		// Custom functions? we need eval.
+
 		if (isset($this->xml->general->custom_functions))
 			eval($this->xml->general->custom_functions);
 
+		// Custom variables from our importer?
 		if (isset($this->xml->general->variables))
 		{
 			foreach ($this->xml->general->variables as $eval_me)
@@ -581,7 +584,8 @@ class Importer
 		$special_table = null;
 		$special_code = null;
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
-		$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
+		// @TODO: check if this is needed
+		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
 
 		// Skipping steps?
 		if (isset($_SESSION['do_steps']))
@@ -593,6 +597,7 @@ class Importer
 			$progress_counter = 0;
 			$counter_current_step = 0;
 
+			// loop through each step
 			foreach ($this->xml->step as $counts)
 			{
 				if ($counts->detect)
@@ -644,7 +649,7 @@ class Importer
 				$_SESSION['import_steps'][$substep]['status'] = 2;
 				$_SESSION['import_steps'][$substep]['presql'] = true;
 			}
-
+			// Detect the table, then count rows.. 
 			elseif ($steps->detect)
 			{
 				$count = $this->_fix_params((string) $steps->detect);
@@ -1270,7 +1275,7 @@ class Importer
 						LEFT JOIN {$to_prefix}messages AS m ON (m.id_topic = t.id_topic)
 					GROUP BY t.id_topic
 					HAVING id_first_msg != myid_first_msg OR id_last_msg != myid_last_msg OR num_replies != my_num_replies
-					LIMIT $_REQUEST[start], " . (!empty($convert_data['step2_block_size']) ? $convert_data['step2_block_size'] : 200));
+					LIMIT $_REQUEST[start], 200");
 
 				$numRows = $db->num_rows($resultTopic);
 
