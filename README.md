@@ -12,11 +12,11 @@ Supported Source systems:
 * Woltlab Burning Board
 * Wordpress
 * Wedge
-* ElKarte
+* ElkArte
 
 Supported destination systems:
 ===
-* ElKarte www.elkarte.net
+* ElkArte www.elkarte.net
 * Wedge www.wedge.org
 
 The software is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
@@ -35,6 +35,3 @@ Please see [How to contribute](https://github.com/eurich/openimporter/blob/maste
 Site
 ===
 Project site: http://eurich.github.io/openimporter
-
-
-
