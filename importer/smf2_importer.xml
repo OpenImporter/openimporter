@@ -237,10 +237,10 @@
 			if (empty($row['file_hash']))
 			{
 				$row['file_hash'] = createAttachmentFileHash($row['filename']);
-				copy_file($smf_attachments_dir . '/' . $row['filename'], $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.ext');
+				copy_file($smf_attachments_dir . '/' . $row['filename'], $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 			}
 			else
-				copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $attachmentUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.ext');
+				copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $attachmentUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 		</preparsecode>
 		<query>
 			SELECT
