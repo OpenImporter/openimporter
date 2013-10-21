@@ -12,7 +12,6 @@ Supported Source systems:
 * Woltlab Burning Board
 * Wordpress
 * Wedge
-* ElkArte
 
 Supported destination systems:
 ===
@@ -27,11 +26,11 @@ Notes:
 ===
 Feel free to fork this repository and make your desired changes.
 
-Please see the [Developer's Certificate of Origin](https://github.com/eurich/openimporter/DCO.txt) in the repository:
+Please see the [Developer's Certificate of Origin](https://github.com/openimporter/openimporter/DCO.txt) in the repository:
 by signing off your contributions, you acknowledge that you can and do license your submissions under the license of the project.
 
-Please see [How to contribute](https://github.com/eurich/openimporter/blob/master/CONTRIBUTING.md) for information on how to contribute to the development process.
+Please see [How to contribute](https://github.com/openimporter/openimporter/blob/master/CONTRIBUTING.md) for information on how to contribute to the development process.
 
 Site
 ===
-Project site: http://eurich.github.io/openimporter
+Project site: http://openimporter.github.io/openimporter/
