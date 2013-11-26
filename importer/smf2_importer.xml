@@ -208,7 +208,7 @@
 		<query>
 			SELECT
 				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
-				real_name, instant_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
+				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
 				pm_prefs, mod_prefs, message_labels, passwd, email_address, personal_text,
 				gender, birthdate, website_url, website_title, location, hide_email, show_online,
 				time_format, signature, time_offset, avatar, pm_email_notify,
@@ -216,7 +216,7 @@
 				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
 				total_time_logged_in, password_salt, ignore_boards, IFNULL(warning, 0) AS warning, passwd_flood,
-				pm_receive_from
+				receive_from
 			FROM {$from_prefix}members;
 		</query>
 	</step>
