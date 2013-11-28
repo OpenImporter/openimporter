@@ -216,7 +216,7 @@
 				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
 				total_time_logged_in, password_salt, ignore_boards, IFNULL(warning, 0) AS warning, passwd_flood,
-				receive_from
+				pm_receive_from AS receive_from
 			FROM {$from_prefix}members;
 		</query>
 	</step>
