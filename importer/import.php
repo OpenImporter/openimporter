@@ -969,16 +969,16 @@ class Importer
 		{
 			// Get all members with wrong number of personal messages.
 			$request = $db->query("
-				SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.instant_messages
+				SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.personal_messages
 				FROM {$to_prefix}members AS mem
 					LEFT JOIN {$to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0)
 				GROUP BY mem.id_member
-				HAVING real_num != instant_messages");
+				HAVING real_num != personal_messages");
 			while ($row = $db->fetch_assoc($request))
 			{
 				$db->query("
 					UPDATE {$to_prefix}members
-					SET instant_messages = $row[real_num]
+					SET personal_messages = $row[real_num]
 					WHERE id_member = $row[id_member]
 					LIMIT 1");
 
