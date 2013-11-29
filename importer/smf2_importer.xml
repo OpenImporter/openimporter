@@ -660,26 +660,4 @@
 			FROM {$from_prefix}subscriptions;
 		</query>
 	</step>
-	<step>
-		<title>Importing pretty topic urls</title>
-		<detect>{$from_prefix}pretty_topic_urls</detect>
-		<destination>{$to_prefix}pretty_topic_urls</destination>
-		<presql>TRUNCATE {$to_prefix}pretty_topic_urls;</presql>
-		<query>
-			SELECT
-				id_topic, pretty_url
-			FROM {$from_prefix}pretty_topic_urls;
-		</query>
-	</step>
-	<step>
-		<title>Importing pretty urls cache</title>
-		<detect>{$from_prefix}pretty_urls_cache</detect>
-		<destination>{$to_prefix}pretty_urls_cache</destination>
-		<presql>TRUNCATE {$to_prefix}pretty_urls_cache;</presql>
-		<query>
-			SELECT
-				url_id, replacement
-			FROM {$from_prefix}pretty_urls_cache;
-		</query>
-	</step>
 </importer>
