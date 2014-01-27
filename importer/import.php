@@ -1989,7 +1989,7 @@ class template
 				var target = document.getElementById(string);
 				var from = "', isset($import->xml->general->settings) ? $import->xml->general->settings : null , '";
 				var to = "/Settings.php";
-				var url = "import.php?xml=true&" + string + "=" + target.value + (string == "path_to" ? to : from);
+				var url = "import.php?xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + (string == "path_to" ? to : from);
 				var ajax = new AJAXCall(url, validateCallback, string);
 				ajax.doGet();
 			}
