@@ -435,18 +435,18 @@ class Importer
 
 			$db->free_result($result);
 		}
-/*
-		$results = $db->query("SELECT @@SQL_BIG_SELECTS, @@SQL_MAX_JOIN_SIZE");
+
+		$results = $db->query("SELECT @@SQL_BIG_SELECTS, @@MAX_JOIN_SIZE");
 		list ($big_selects, $sql_max_join) = $db->fetch_row($results);
 
 		// Only waste a query if its worth it.
 		if (empty($big_selects) || ($big_selects != 1 && $big_selects != '1'))
 			$db->query("SET @@SQL_BIG_SELECTS = 1");
 
-		// Lets set MAX_JOIN_SIZE to something we should
+		// Let's set MAX_JOIN_SIZE to something we should
 		if (empty($sql_max_join) || ($sql_max_join == '18446744073709551615' && $sql_max_join == '18446744073709551615'))
-			$db->query("SET @@SQL_MAX_JOIN_SIZE = 18446744073709551615");
-*/
+			$db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
+
 	}
 
 	/**
