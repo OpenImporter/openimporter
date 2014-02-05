@@ -404,7 +404,7 @@ class Importer
 			foreach ($this->xml->general->variables as $eval_me)
 				eval($eval_me);
 		}
-
+		// Load the settings file.
 		if (isset($this->xml->general->settings))
 		{
 			foreach ($this->xml->general->settings as $file)
@@ -431,7 +431,7 @@ class Importer
 				SELECT COUNT(*)
 				FROM " . eval('return "' . $this->xml->general->table_test . '";'), true);
 			if ($result === false)
-				$this->doStep0(lng::get('imp.permission_denied') . mysql_error(), (string) $this->xml->general->name);
+				$this->doStep0(lng::get('imp.permission_denied') . mysqli_error($db->con), (string) $this->xml->general->name);
 
 			$db->free_result($result);
 		}
@@ -1397,7 +1397,7 @@ class Importer
 					INSERT INTO {$to_prefix}categories
 						(name)
 					VALUES ('General Category')");
-				$catch_cat = mysql_insert_id();
+				$catch_cat = mysqli_insert_id($db->con);
 
 				$db->query("
 					UPDATE {$to_prefix}boards
@@ -1569,12 +1569,21 @@ class Database
 	 * @param type $db_password
 	 * @param type $db_persist
 	 */
+	var $con;
+	
+	/**
+	 * 
+	 * @param string $db_server
+	 * @param string $db_user
+	 * @param string $db_password
+	 * @param bool $db_persist
+	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
-		if ($db_persist == 1)
-			$this->con = mysql_pconnect ($db_server, $db_user, $db_password) or die (mysql_error());
-		else
-			$this->con = mysql_connect ($db_server, $db_user, $db_password) or die (mysql_error());
+		$this->con = mysqli_connect(($db_persist == 1 ? 'p:' : '') . $db_server, $db_user, $db_password);
+ 
+		if (mysqli_connect_error())
+ 			die('Database error: ' . mysqli_connect_error());
 	}
 
 	/**
@@ -1638,18 +1647,18 @@ class Database
 		if (trim($string) == 'TRUNCATE ' . $to_prefix . 'attachments;')
 			$this->_removeAttachments();
 
-		$result = @mysql_query($string);
+		$result = @mysqli_query($this->con, $string);
 
 		if ($result !== false || $return_error)
 			return $result;
 
-		$mysql_error = mysql_error();
-		$mysql_errno = mysql_errno();
+		$mysql_error = mysqli_error($this->con);
+		$mysql_errno = mysqli_errno($this->con);
 
 		if ($mysql_errno == 1016)
 		{
 			if (preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
-				mysql_query("
+				mysqli_query($this->con, "
 					REPAIR TABLE $match[1]");
 
 			$result = mysql_query($string);
@@ -1659,7 +1668,7 @@ class Database
 		}
 		elseif ($mysql_errno == 2013)
 		{
-			$result = mysql_query($string);
+			$result = mysqli_query($this->con, $string);
 
 			if ($result !== false)
 				return $result;
@@ -1696,7 +1705,7 @@ class Database
 	public function free_result($result)
 
 	{
-		mysql_free_result($result);
+		mysqli_free_result($result);
 	}
 
 	/**
@@ -1706,7 +1715,7 @@ class Database
 	 */
 	public function fetch_assoc($result)
 	{
-		return mysql_fetch_assoc($result);
+		return mysqli_fetch_assoc($result);
 	}
 
 	/**
@@ -1716,7 +1725,7 @@ class Database
 	 */
 	public function fetch_row($result)
 	{
-		return mysql_fetch_row($result);
+		return mysqli_fetch_row($result);
 	}
 
 	/**
@@ -1726,7 +1735,7 @@ class Database
 	 */
 	public function num_rows($result)
 	{
-		return mysql_num_rows($result);
+		return mysqli_num_rows($result);
 	}
 
 	/**
@@ -1735,7 +1744,7 @@ class Database
 	 */
 	public function insert_id()
 	{
-		return mysql_insert_id();
+		return mysql_insert_id($this->con);
 	}
 }
 
