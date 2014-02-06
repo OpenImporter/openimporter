@@ -38,53 +38,64 @@ if (method_exists($import, 'doStep' . $_GET['step']))
 class Importer
 {
 	/**
-	 * main database object
+	 * This is our main database object.
 	 * @var object
 	 */
 	public $db;
 
 	/**
-	 * our cookie settings
+	 * Our cookie settings
 	 * @var object
 	 */
 	public $cookie;
 
 	/**
-	 * the template
+	 * The template, basically our UI.
 	 * @var object
 	 */
 	public $template;
 
 	/**
-	 * an array of possible importer scripts
+	 * An array of possible importer scripts
 	 * @var array
 	 */
 	public $possible_scripts;
 
 	/**
-	 * prefix for our destination database
-	 * @var type
+	 * The table prefix for our destination database
+	 * @var string
 	 */
 	public $to_prefix;
 
 	/**
-	 * prefix for our source database
-	 * @var type
+	 * The table prefix for our source database
+	 * @var string
 	 */
 	public $from_prefix;
 
 	/**
-	 * used to decide if the database query is INSERT or INSERT IGNORE
-	 * @var type
+	 * Used to decide if the database query is INSERT or INSERT IGNORE
+	 * @var boolean
 	 */
 	private $ignore = true;
 
 	/**
-	 *use to switch between INSERT and REPLACE
-	 * @var type
+	 * Used to switch between INSERT and REPLACE
+	 * @var boolean
 	 */
 	private $replace = false;
 
+	/**
+	 *
+	 * @var string The importer script which will be used for the import.
+	 */
+	private $_script;
+
+	/**
+	 *
+	 * @var string This is the URL from our Installation. 
+	 */
+	private $_boardurl;
 	/**
 	 * initialize the main Importer object
 	 */
@@ -100,7 +111,7 @@ class Importer
 
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
-			$this->script = @$_REQUEST['import_script'];
+			$this->_script = @$_REQUEST['import_script'];
 
 		// Clean up after unfriendly php.ini settings.
 		if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, '5.3.0') < 0)
@@ -158,8 +169,9 @@ class Importer
 		}
 
 		// If we have our script then set it to the session.
-		if (!empty($this->script))
-			$_SESSION['import_script'] = (string) $this->script;
+		if (!empty($this->_script))
+			$_SESSION['import_script'] = (string) $this->_script;
+
 		if (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . '/' . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
 			$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 		else
@@ -356,7 +368,7 @@ class Importer
 		}
 		// Everything should be alright now... no cross server includes, we hope...
 		require_once($_POST['path_to'] . '/Settings.php');
-		$this->boardurl = $boardurl;
+		$this->_boardurl = $boardurl;
 
 		if ($_SESSION['import_db_pass'] != $db_passwd)
 			return $this->doStep0(lng::get('imp.password_incorrect'), $this);
@@ -404,7 +416,7 @@ class Importer
 			foreach ($this->xml->general->variables as $eval_me)
 				eval($eval_me);
 		}
-
+		// Load the settings file.
 		if (isset($this->xml->general->settings))
 		{
 			foreach ($this->xml->general->settings as $file)
@@ -431,7 +443,7 @@ class Importer
 				SELECT COUNT(*)
 				FROM " . eval('return "' . $this->xml->general->table_test . '";'), true);
 			if ($result === false)
-				$this->doStep0(lng::get('imp.permission_denied') . mysql_error(), (string) $this->xml->general->name);
+				$this->doStep0(lng::get('imp.permission_denied') . mysqli_error($db->con), (string) $this->xml->general->name);
 
 			$db->free_result($result);
 		}
@@ -738,6 +750,8 @@ class Importer
 
 				if (isset($steps->detect))
 				{
+					$counter = 0;
+
 					$count = $this->_fix_params((string) $steps->detect);
 					$result2 = $db->query("
 						SELECT COUNT(*)
@@ -1397,7 +1411,7 @@ class Importer
 					INSERT INTO {$to_prefix}categories
 						(name)
 					VALUES ('General Category')");
-				$catch_cat = mysql_insert_id();
+				$catch_cat = mysqli_insert_id($db->con);
 
 				$db->query("
 					UPDATE {$to_prefix}boards
@@ -1569,12 +1583,21 @@ class Database
 	 * @param type $db_password
 	 * @param type $db_persist
 	 */
+	var $con;
+	
+	/**
+	 * 
+	 * @param string $db_server
+	 * @param string $db_user
+	 * @param string $db_password
+	 * @param bool $db_persist
+	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
-		if ($db_persist == 1)
-			$this->con = mysql_pconnect ($db_server, $db_user, $db_password) or die (mysql_error());
-		else
-			$this->con = mysql_connect ($db_server, $db_user, $db_password) or die (mysql_error());
+		$this->con = mysqli_connect(($db_persist == 1 ? 'p:' : '') . $db_server, $db_user, $db_password);
+ 
+		if (mysqli_connect_error())
+ 			die('Database error: ' . mysqli_connect_error());
 	}
 
 	/**
@@ -1638,18 +1661,18 @@ class Database
 		if (trim($string) == 'TRUNCATE ' . $to_prefix . 'attachments;')
 			$this->_removeAttachments();
 
-		$result = @mysql_query($string);
+		$result = @mysqli_query($this->con, $string);
 
 		if ($result !== false || $return_error)
 			return $result;
 
-		$mysql_error = mysql_error();
-		$mysql_errno = mysql_errno();
+		$mysql_error = mysqli_error($this->con);
+		$mysql_errno = mysqli_errno($this->con);
 
 		if ($mysql_errno == 1016)
 		{
 			if (preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
-				mysql_query("
+				mysqli_query($this->con, "
 					REPAIR TABLE $match[1]");
 
 			$result = mysql_query($string);
@@ -1659,7 +1682,7 @@ class Database
 		}
 		elseif ($mysql_errno == 2013)
 		{
-			$result = mysql_query($string);
+			$result = mysqli_query($this->con, $string);
 
 			if ($result !== false)
 				return $result;
@@ -1696,7 +1719,7 @@ class Database
 	public function free_result($result)
 
 	{
-		mysql_free_result($result);
+		mysqli_free_result($result);
 	}
 
 	/**
@@ -1706,7 +1729,7 @@ class Database
 	 */
 	public function fetch_assoc($result)
 	{
-		return mysql_fetch_assoc($result);
+		return mysqli_fetch_assoc($result);
 	}
 
 	/**
@@ -1716,7 +1739,7 @@ class Database
 	 */
 	public function fetch_row($result)
 	{
-		return mysql_fetch_row($result);
+		return mysqli_fetch_row($result);
 	}
 
 	/**
@@ -1726,7 +1749,7 @@ class Database
 	 */
 	public function num_rows($result)
 	{
-		return mysql_num_rows($result);
+		return mysqli_num_rows($result);
 	}
 
 	/**
@@ -1735,7 +1758,7 @@ class Database
 	 */
 	public function insert_id()
 	{
-		return mysql_insert_id();
+		return mysql_insert_id($this->con);
 	}
 }
 
@@ -1805,7 +1828,7 @@ class lng
 		if (!$lngfile)
 			throw new Exception('Unable to detect language file!');
 
-				try
+		try
 		{
 			if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
 				throw new import_exception('XML-Syntax error in file: ' . $lngfile);
@@ -1816,7 +1839,6 @@ class lng
 		{
 			import_exception::exception_handler($e);
 		}
-
 
 		foreach ($langObj as $strings)
 			self::set((string) $strings->attributes()->{'name'}, (string) $strings);
@@ -1862,6 +1884,11 @@ class lng
 		return self::$_lang;
 	}
 
+	/**
+	 * This is used to detect the Client's browser language.
+	 *
+	 * @return string the shortened string of the browser's language.
+	 */
 	protected static function detect_browser_language()
 	{
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
@@ -2194,18 +2221,25 @@ class template
 			<div class="content"><p>';
 	}
 
+	/**
+	 * This is the template part for selecting the importer script.
+	 *
+	 * @param array $scripts
+	 */
 	public function select_script($scripts)
 	{
 		echo '
 			<h2>', lng::get('imp.which_software'), '</h2>
 			<div class="content">';
 
+		// We found at least one?
 		if (!empty($scripts))
 		{
 			echo '
 				<p>', lng::get('imp.multiple_files'), '</p>
 				<ul>';
 
+			// Let's löop and output all the found scripts.
 			foreach ($scripts as $script)
 				echo '
 					<li>
@@ -2222,12 +2256,10 @@ class template
 				<p>', lng::get('imp.having_problems'), '</p>';
 		}
 		else
-		{
 			echo '
 				<p>', lng::get('imp.not_found'), '</p>
 				<p>', lng::get('imp.not_found_download'), '</p>
 				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', lng::get('imp.try_again'), '</a>';
-		}
 
 		echo '
 			</div>';
