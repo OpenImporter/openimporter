@@ -89,7 +89,13 @@ class Importer
 	 *
 	 * @var string The importer script which will be used for the import.
 	 */
-	private $_script = false;
+	private $_script;
+
+	/**
+	 *
+	 * @var string This is the URL from our Installation. 
+	 */
+	private $_boardurl;
 	/**
 	 * initialize the main Importer object
 	 */
@@ -362,7 +368,7 @@ class Importer
 		}
 		// Everything should be alright now... no cross server includes, we hope...
 		require_once($_POST['path_to'] . '/Settings.php');
-		$this->boardurl = $boardurl;
+		$this->_boardurl = $boardurl;
 
 		if ($_SESSION['import_db_pass'] != $db_passwd)
 			return $this->doStep0(lng::get('imp.password_incorrect'), $this);
