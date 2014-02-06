@@ -1842,7 +1842,7 @@ class lng
 	* Returns the value of the specified $key in lang.
 	*
 	* @param string $key Name of the variable
-	* @return mixed Value of the specified $key
+	* @return string|null Value of the specified $key
 	*/
 	public static function get($key)
 	{
