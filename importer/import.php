@@ -80,11 +80,16 @@ class Importer
 	private $ignore = true;
 
 	/**
-	 *use to switch between INSERT and REPLACE
+	 * use to switch between INSERT and REPLACE
 	 * @var type
 	 */
 	private $replace = false;
 
+	/**
+	 *
+	 * @var string The importer script which will be used for the import.
+	 */
+	private $_script = false;
 	/**
 	 * initialize the main Importer object
 	 */
@@ -100,7 +105,7 @@ class Importer
 
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
-			$this->script = @$_REQUEST['import_script'];
+			$this->_script = @$_REQUEST['import_script'];
 
 		// Clean up after unfriendly php.ini settings.
 		if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, '5.3.0') < 0)
@@ -158,8 +163,9 @@ class Importer
 		}
 
 		// If we have our script then set it to the session.
-		if (!empty($this->script))
-			$_SESSION['import_script'] = (string) $this->script;
+		if (!empty($this->_script))
+			$_SESSION['import_script'] = (string) $this->_script;
+
 		if (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . '/' . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
 			$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 		else
