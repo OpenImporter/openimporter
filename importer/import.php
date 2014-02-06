@@ -750,6 +750,8 @@ class Importer
 
 				if (isset($steps->detect))
 				{
+					$counter = 0;
+
 					$count = $this->_fix_params((string) $steps->detect);
 					$result2 = $db->query("
 						SELECT COUNT(*)
@@ -1826,7 +1828,7 @@ class lng
 		if (!$lngfile)
 			throw new Exception('Unable to detect language file!');
 
-				try
+		try
 		{
 			if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
 				throw new import_exception('XML-Syntax error in file: ' . $lngfile);
@@ -1837,7 +1839,6 @@ class lng
 		{
 			import_exception::exception_handler($e);
 		}
-
 
 		foreach ($langObj as $strings)
 			self::set((string) $strings->attributes()->{'name'}, (string) $strings);
@@ -1883,6 +1884,11 @@ class lng
 		return self::$_lang;
 	}
 
+	/**
+	 * This is used to detect the Client's browser language.
+	 *
+	 * @return string the shortened string of the browser's language.
+	 */
 	protected static function detect_browser_language()
 	{
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
@@ -2215,18 +2221,25 @@ class template
 			<div class="content"><p>';
 	}
 
+	/**
+	 * This is the template part for selecting the importer script.
+	 *
+	 * @param array $scripts
+	 */
 	public function select_script($scripts)
 	{
 		echo '
 			<h2>', lng::get('imp.which_software'), '</h2>
 			<div class="content">';
 
+		// We found at least one?
 		if (!empty($scripts))
 		{
 			echo '
 				<p>', lng::get('imp.multiple_files'), '</p>
 				<ul>';
 
+			// Let's löop and output all the found scripts.
 			foreach ($scripts as $script)
 				echo '
 					<li>
@@ -2243,12 +2256,10 @@ class template
 				<p>', lng::get('imp.having_problems'), '</p>';
 		}
 		else
-		{
 			echo '
 				<p>', lng::get('imp.not_found'), '</p>
 				<p>', lng::get('imp.not_found_download'), '</p>
 				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', lng::get('imp.try_again'), '</a>';
-		}
 
 		echo '
 			</div>';
