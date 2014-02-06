@@ -181,7 +181,7 @@ class Importer
 
 	/**
 	 * loads the _importer.xml files
-	 * @param type $file
+	 * @param string $file
 	 * @throws import_exception
 	 */
 	private function _preparse_xml($file)
@@ -271,7 +271,7 @@ class Importer
 	 * @global type $global
 	 * @global type $varname
 	 * @global type $global
-	 * @return type
+	 * @return boolean|null
 	 */
 	private function _loadSettings()
 	{
@@ -475,7 +475,7 @@ class Importer
 	/**
 	* used to replace {$from_prefix} and {$to_prefix} with its real values.
 	*
-	* @param string the string in which parameters are replaced
+	* @param string string string in which parameters are replaced
 	* @return string
 	*/
 	private function _fix_params($string)
@@ -515,7 +515,7 @@ class Importer
 	 * @global type $import
 	 * @param type $error_message
 	 * @param type $object
-	 * @return boolean
+	 * @return boolean|null
 	 */
 	public function doStep0($error_message = null, $object = false)
 	{
@@ -568,7 +568,7 @@ class Importer
 	 * @global Database $db
 	 * @global type $to_prefix
 	 * @global type $global
-	 * @return type
+	 * @return boolean
 	 */
 	public function doStep1()
 	{
@@ -955,7 +955,7 @@ class Importer
 	 *
 	 * @global Database $db
 	 * @global type $to_prefix
-	 * @return type
+	 * @return boolean
 	 */
 	public function doStep2()
 	{
@@ -1702,7 +1702,7 @@ class Database
 	/**
 	 * wrapper for mysql_fetch_assoc
 	 * @param type $result
-	 * @return type
+	 * @return string
 	 */
 	public function fetch_assoc($result)
 	{
@@ -1722,7 +1722,7 @@ class Database
 	/**
 	 * wrapper for mysql_num_rows
 	 * @param type $result
-	 * @return type
+	 * @return integer
 	 */
 	public function num_rows($result)
 	{
@@ -1731,7 +1731,7 @@ class Database
 
 	/**
 	 * wrapper for mysql_insert_id
-	 * @return type
+	 * @return integer
 	 */
 	public function insert_id()
 	{
@@ -1754,9 +1754,9 @@ class lng
 	* Adds a new variable to lang.
 	*
 	* @param string $key Name of the variable
-	* @param mixed $value Value of the variable
+	* @param string $value Value of the variable
 	* @throws Exception
-	* @return bool
+	* @return boolean|null
 	*/
 	protected static function set($key, $value)
 	{
@@ -2493,6 +2493,9 @@ class import_exception extends Exception
 		throw $e;
 	}
 
+	/**
+	 * @param Exception $exception
+	 */
 	public static function exception_handler($exception)
 	{
 		global $import;
@@ -2588,7 +2591,7 @@ class Cookie
 * Checks if we've passed a time limit..
 *
 * @param int $substep
-* @param int $top_time
+* @param int $stop_time
 * @return null
 */
 function pastTime($substep = null, $stop_time = 5)
@@ -2649,7 +2652,7 @@ function createAttachmentFilehash($filename)
 * helper function, simple file copy at all
 *
 * @param string $filename
-* @return bol
+* @return boolean
 */
 function copy_file($source, $destination)
 {
@@ -2735,8 +2738,8 @@ function copy_smileys($source, $dest)
 
 /**
  * function copy_dir copies a directory
- * @param type $source
- * @param type $dest
+ * @param string $source
+ * @param string $dest
  * @return type
  */
 function copy_dir($source, $dest)
@@ -2796,7 +2799,7 @@ function getMsgMemberID($messageID)
 /**
  * detects, if a string is utf-8 or not
  * @param type $string
- * @return type
+ * @return boolean
  */
  function is_utf8($string)
 {
