@@ -74,6 +74,11 @@ class Importer
 	public $from_prefix;
 
 	/**
+	 * The XML file which will be used from the importer.
+	 * @var Object
+	 */
+	public $xml;
+	/**
 	 * Used to decide if the database query is INSERT or INSERT IGNORE
 	 * @var boolean
 	 */
