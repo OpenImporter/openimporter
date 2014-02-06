@@ -38,50 +38,50 @@ if (method_exists($import, 'doStep' . $_GET['step']))
 class Importer
 {
 	/**
-	 * main database object
+	 * This is our main database object.
 	 * @var object
 	 */
 	public $db;
 
 	/**
-	 * our cookie settings
+	 * Our cookie settings
 	 * @var object
 	 */
 	public $cookie;
 
 	/**
-	 * the template
+	 * The template, basically our UI.
 	 * @var object
 	 */
 	public $template;
 
 	/**
-	 * an array of possible importer scripts
+	 * An array of possible importer scripts
 	 * @var array
 	 */
 	public $possible_scripts;
 
 	/**
-	 * prefix for our destination database
-	 * @var type
+	 * The table prefix for our destination database
+	 * @var string
 	 */
 	public $to_prefix;
 
 	/**
-	 * prefix for our source database
-	 * @var type
+	 * The table prefix for our source database
+	 * @var string
 	 */
 	public $from_prefix;
 
 	/**
-	 * used to decide if the database query is INSERT or INSERT IGNORE
-	 * @var type
+	 * Used to decide if the database query is INSERT or INSERT IGNORE
+	 * @var boolean
 	 */
 	private $ignore = true;
 
 	/**
-	 * use to switch between INSERT and REPLACE
-	 * @var type
+	 * Used to switch between INSERT and REPLACE
+	 * @var boolean
 	 */
 	private $replace = false;
 
