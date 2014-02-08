@@ -1805,9 +1805,10 @@ class lng
 	}
 
 	/**
-	* load the language xml in lang
+	* Loads the language xml file.
 	*
 	* @return null
+	* @throws import_exception if the XML file has got a corrupted structure.
 	*/
 	public static function loadLang()
 	{
