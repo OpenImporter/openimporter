@@ -1805,9 +1805,10 @@ class lng
 	}
 
 	/**
-	* load the language xml in lang
+	* Loads the language xml file.
 	*
 	* @return null
+	* @throws import_exception if the XML file has got a corrupted structure.
 	*/
 	public static function loadLang()
 	{
@@ -1859,10 +1860,7 @@ class lng
 	*/
 	public static function has($key)
 	{
-		if (isset(self::$_lang[$key]))
-			return true;
-
-		return false;
+		return isset(self::$_lang[$key]);
 	}
 
 	/**
@@ -2615,7 +2613,7 @@ class Cookie
 	{
 		$cookie = unserialize($_COOKIE[$name]);
 		if (!empty($cookie) && isset($data))
-			$merged = array_merge((array)$cookie, (array) $data);
+			$merged = array_merge((array) $cookie, (array) $data);
 
 		$this->set($merged);
 		$_COOKIE[$name] = serialize($merged);
