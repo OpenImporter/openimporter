@@ -811,8 +811,8 @@ class Importer
 								WHERE variable = 'attachmentUploadDir'
 								LIMIT 1");
 							list ($attachmentdir) = $db->fetch_row($result);
-							$attachment_UploadDir = unserialize($attachmentdir);
-							$attachmentUploadDir = $attachment_UploadDir[1];
+							$attachment_UploadDir = @unserialize($attachmentdir);
+							$attachmentUploadDir = !empty($attachment_UploadDir[1]) && is_array($attachment_UploadDir[1]) ? $attachment_UploadDir[1] : $attachmentdir;
 
 							$result = $db->query("
 								SELECT value
