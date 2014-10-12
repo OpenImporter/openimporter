@@ -21,7 +21,7 @@ require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
 $classLoader = new SplClassLoader('OpenImporter', __DIR__ . '/OpenImporter');
 $classLoader->register();
 
-$import = new Importer(new Lang(), new Template(), new Cookie());
+$import = new Importer(new Lang(__DIR__ . '/Languages'), new Template(), new Cookie());
 
 // XML ajax feedback? We can just skip everything else
 if (isset($_GET['xml']))

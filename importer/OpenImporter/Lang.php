@@ -10,6 +10,12 @@
 class Lang
 {
 	private $_lang = array();
+	private $_path = '';
+
+	public function __construct($path = '')
+	{
+		$this->_path = $path;
+	}
 
 	/**
 	* Adds a new variable to lang.
@@ -51,17 +57,17 @@ class Lang
 		// loop through the preferred languages and try to find the related language file
 		foreach ($language as $key => $value)
 		{
-			if (file_exists(dirname(__FILE__) . '/import_' . $key . '.xml'))
+			if (file_exists($this->_path . '/import_' . $key . '.xml'))
 			{
-				$lngfile = dirname(__FILE__) . '/import_' . $key . '.xml';
+				$lngfile = $this->_path . '/import_' . $key . '.xml';
 				break;
 			}
 		}
 		// english is still better than nothing
 		if (!isset($lngfile))
 		{
-			if (file_exists(dirname(__FILE__) . '/import_en.xml'))
-				$lngfile = dirname(__FILE__) . '/import_en.xml';
+			if (file_exists($this->_path . '/import_en.xml'))
+				$lngfile = $this->_path . '/import_en.xml';
 		}
 		// ouch, we really should never arrive here..
 		if (!$lngfile)
