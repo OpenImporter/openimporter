@@ -1,7 +1,7 @@
 <?php
 
 /**
- * class import_exception extends the build-in Exception class and
+ * class ImportException extends the build-in Exception class and
  * catches potential errors
  */
 class ImportException extends Exception

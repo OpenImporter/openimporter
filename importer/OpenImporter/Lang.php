@@ -33,7 +33,7 @@ class Lang
 		}
 		catch(Exception $e)
 		{
-			import_exception::exception_handler($e);
+			ImportException::exception_handler($e);
 		}
 	}
 
@@ -41,7 +41,7 @@ class Lang
 	* Loads the language xml file.
 	*
 	* @return null
-	* @throws import_exception if the XML file has got a corrupted structure.
+	* @throws ImportException if the XML file has got a corrupted structure.
 	*/
 	public function loadLang()
 	{
@@ -70,13 +70,13 @@ class Lang
 		try
 		{
 			if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
-				throw new import_exception('XML-Syntax error in file: ' . $lngfile);
+				throw new ImportException('XML-Syntax error in file: ' . $lngfile);
 
 			$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
 		catch (Exception $e)
 		{
-			import_exception::exception_handler($e);
+			ImportException::exception_handler($e);
 		}
 
 		foreach ($langObj as $strings)
