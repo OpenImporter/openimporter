@@ -14,10 +14,14 @@
  */
 
 @set_time_limit(600);
-@set_exception_handler(array('import_exception', 'exception_handler'));
-@set_error_handler(array('import_exception', 'error_handler_callback'), E_ALL);
+@set_exception_handler(array('ImportException', 'exception_handler'));
+@set_error_handler(array('ImportException', 'error_handler_callback'), E_ALL);
 
-$import = new Importer();
+require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
+$classLoader = new SplClassLoader('OpenImporter', __DIR__ . '/OpenImporter');
+$classLoader->register();
+
+$import = new Importer(new Lang(), new Template(), new Cookie());
 
 // XML ajax feedback? We can just skip everything else
 if (isset($_GET['xml']))
@@ -42,6 +46,12 @@ class Importer
 	 * @var object
 	 */
 	public $db;
+
+	/**
+	 * The "translator" (i.e. the Lang object)
+	 * @var object
+	 */
+	public $lng;
 
 	/**
 	 * Our cookie settings
@@ -101,18 +111,20 @@ class Importer
 	 * @var string This is the URL from our Installation. 
 	 */
 	private $_boardurl;
+
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct()
+	public function __construct($lang, $template, $cookie)
 	{
+		$this->lng = $lang;
 
 		// Load the language file and create an importer cookie.
-		lng::loadLang();
+		$this->lng->loadLang();
 
 		// initialize some objects
-		$this->cookie = new Cookie();
-		$this->template = new template();
+		$this->cookie = $cookie;
+		$this->template = template;
 
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
@@ -199,20 +211,20 @@ class Importer
 	/**
 	 * loads the _importer.xml files
 	 * @param string $file
-	 * @throws import_exception
+	 * @throws ImportException
 	 */
 	private function _preparse_xml($file)
 	{
 		try
 		{
 			if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
-				throw new import_exception('XML-Syntax error in file: ' . $file);
+				throw new ImportException('XML-Syntax error in file: ' . $file);
 
 			$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
 		catch (Exception $e)
 		{
-			import_exception::exception_handler($e);
+			ImportException::exception_handler($e);
 		}
 
 		if (isset($_POST['path_to']) && !empty($_GET['step']))
@@ -223,7 +235,7 @@ class Importer
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
 	 * @return boolean
-	 * @throws import_exception
+	 * @throws ImportException
 	 */
 	private function _detect_scripts()
 	{
@@ -247,13 +259,13 @@ class Importer
 				try
 				{
 					if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
-						throw new import_exception('XML-Syntax error in file: ' . $entry);
+						throw new ImportException('XML-Syntax error in file: ' . $entry);
 
 					$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA);
 				}
 				catch (Exception $e)
 				{
-					import_exception::exception_handler($e);
+					ImportException::exception_handler($e);
 				}
 				$scripts[] = array('path' => $entry, 'name' => $xmlObj->general->name);
 			}
@@ -320,7 +332,7 @@ class Importer
 
 		// Cannot find Settings.php?
 		if (!file_exists($_POST['path_to'] . '/Settings.php'))
-			return $this->doStep0(lng::get('imp.settings_not_found'));
+			return $this->doStep0($this->lng->get('imp.settings_not_found'));
 
 		$found = empty($this->xml->general->settings);
 
@@ -328,10 +340,10 @@ class Importer
 			$found |= @file_exists($_POST['path_from'] . stripslashes($file));
 
 		if (@ini_get('open_basedir') != '' && !$found)
-			return $this->doStep0(array(lng::get('imp.open_basedir'), (string) $this->xml->general->name));
+			return $this->doStep0(array($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
 
 		if (!$found)
-			return $this->doStep0(array(lng::get('imp.config_not_found'), (string) $this->xml->general->name));
+			return $this->doStep0(array($this->lng->get('imp.config_not_found'), (string) $this->xml->general->name));
 
 		// Any custom form elements to speak of?
 		if ($this->xml->general->form && !empty($_SESSION['import_parameters']))
@@ -376,11 +388,11 @@ class Importer
 		$this->_boardurl = $boardurl;
 
 		if ($_SESSION['import_db_pass'] != $db_passwd)
-			return $this->doStep0(lng::get('imp.password_incorrect'), $this);
+			return $this->doStep0($this->lng->get('imp.password_incorrect'), $this);
 
 		// Check the steps that we have decided to go through.
 		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
-			return $this->doStep0(lng::get('imp.select_step'));
+			return $this->doStep0($this->lng->get('imp.select_step'));
 
 		elseif (isset($_POST['do_steps']))
 		{
@@ -390,13 +402,13 @@ class Importer
 		}
 		try
 		{
-			$db = new Database($db_server, $db_user, $db_passwd, $db_persist);
+			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
 			//We want UTF8 only, let's set our mysql connetction to utf8
-			$db->query('SET NAMES \'utf8\'');
+			$this->db->query('SET NAMES \'utf8\'');
 		}
 		catch(Exception $e)
 		{
-			import_exception::exception_handler($e);
+			ImportException::exception_handler($e);
 			die();
 		}
 
@@ -444,25 +456,25 @@ class Importer
 
 		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && isset($this->xml->general->table_test))
 		{
-			$result = $db->query("
+			$result = $this->db->query("
 				SELECT COUNT(*)
 				FROM " . eval('return "' . $this->xml->general->table_test . '";'), true);
 			if ($result === false)
-				$this->doStep0(lng::get('imp.permission_denied') . mysqli_error($db->con), (string) $this->xml->general->name);
+				$this->doStep0($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name);
 
-			$db->free_result($result);
+			$this->db->free_result($result);
 		}
 
-		$results = $db->query("SELECT @@SQL_BIG_SELECTS, @@MAX_JOIN_SIZE");
-		list ($big_selects, $sql_max_join) = $db->fetch_row($results);
+		$results = $this->db->query("SELECT @@SQL_BIG_SELECTS, @@MAX_JOIN_SIZE");
+		list ($big_selects, $sql_max_join) = $this->db->fetch_row($results);
 
 		// Only waste a query if its worth it.
 		if (empty($big_selects) || ($big_selects != 1 && $big_selects != '1'))
-			$db->query("SET @@SQL_BIG_SELECTS = 1");
+			$this->db->query("SET @@SQL_BIG_SELECTS = 1");
 
 		// Let's set MAX_JOIN_SIZE to something we should
 		if (empty($sql_max_join) || ($sql_max_join == '18446744073709551615' && $sql_max_join == '18446744073709551615'))
-			$db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
+			$this->db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
 
 	}
 
@@ -562,7 +574,8 @@ class Importer
 		// Was an error message specified?
 		if ($error_message !== null)
 		{
-			$template = new template();
+			// @todo why not re-use $this->template?
+			$template = new Template();
 			$template->header(false);
 			$template->error($error_message);
 		}
@@ -620,14 +633,14 @@ class Importer
 				if ($counts->detect)
 				{
 					$count = $this->_fix_params((string) $counts->detect);
-					$request = $db->query("
+					$request = $this->db->query("
 						SELECT COUNT(*)
 						FROM $count", true);
 
 					if (!empty($request))
 					{
-						list ($current) = $db->fetch_row($request);
-						$db->free_result($request);
+						list ($current) = $this->db->fetch_row($request);
+						$this->db->free_result($request);
 					}
 
 					$progress_counter = $progress_counter + $current;
@@ -670,7 +683,7 @@ class Importer
 			elseif ($steps->detect)
 			{
 				$count = $this->_fix_params((string) $steps->detect);
-				$table_test = $db->query("
+				$table_test = $this->db->query("
 					SELECT COUNT(*)
 					FROM $count", true);
 
@@ -702,10 +715,10 @@ class Importer
 				{
 					array_pop($presql_array);
 					foreach ($presql_array as $exec)
-						$db->query($exec . ';');
+						$this->db->query($exec . ';');
 				}
 				else
-					$db->query($presql);
+					$this->db->query($presql);
 				// don't do this twice..
 				$_SESSION['import_steps'][$substep]['presql'] = true;
 			}
@@ -758,12 +771,12 @@ class Importer
 					$counter = 0;
 
 					$count = $this->_fix_params((string) $steps->detect);
-					$result2 = $db->query("
+					$result2 = $this->db->query("
 						SELECT COUNT(*)
 						FROM $count");
-					list ($counter) = $db->fetch_row($result2);
+					list ($counter) = $this->db->fetch_row($result2);
 					//$this->count->$substep = $counter;
-					$db->free_result($result2);
+					$this->db->free_result($result2);
 				}
 
 				// create some handy shortcuts
@@ -777,11 +790,11 @@ class Importer
 					preg_match('~FROM [(]?([^\s,]+)~i', (string) $steps->detect, $match);
 					if (!empty($match))
 					{
-						$result = $db->query("
+						$result = $this->db->query("
 							SELECT COUNT(*)
 							FROM $match[1]");
-						list ($special_max) = $db->fetch_row($result);
-						$db->free_result($result);
+						list ($special_max) = $this->db->fetch_row($result);
+						$this->db->free_result($result);
 					}
 					else
 						$special_max = 0;
@@ -790,7 +803,7 @@ class Importer
 					$special_max = 0;
 
 				if ($special_table === null)
-					$db->query($current_data);
+					$this->db->query($current_data);
 
 				else
 				{
@@ -799,28 +812,28 @@ class Importer
 					{
 						if (!isset($id_attach, $attachmentUploadDir, $avatarUploadDir))
 						{
-							$result = $db->query("
+							$result = $this->db->query("
 								SELECT MAX(id_attach) + 1
 								FROM {$to_prefix}attachments");
-							list ($id_attach) = $db->fetch_row($result);
-							$db->free_result($result);
+							list ($id_attach) = $this->db->fetch_row($result);
+							$this->db->free_result($result);
 
-							$result = $db->query("
+							$result = $this->db->query("
 								SELECT value
 								FROM {$to_prefix}settings
 								WHERE variable = 'attachmentUploadDir'
 								LIMIT 1");
-							list ($attachmentdir) = $db->fetch_row($result);
+							list ($attachmentdir) = $this->db->fetch_row($result);
 							$attachment_UploadDir = @unserialize($attachmentdir);
 							$attachmentUploadDir = !empty($attachment_UploadDir[1]) && is_array($attachment_UploadDir[1]) ? $attachment_UploadDir[1] : $attachmentdir;
 
-							$result = $db->query("
+							$result = $this->db->query("
 								SELECT value
 								FROM {$to_prefix}settings
 								WHERE variable = 'custom_avatar_dir'
 								LIMIT 1");
-							list ($avatarUploadDir) = $db->fetch_row($result);
-							$db->free_result($result);
+							list ($avatarUploadDir) = $this->db->fetch_row($result);
+							$this->db->free_result($result);
 
 							if (empty($avatarUploadDir))
 								$avatarUploadDir = $attachmentUploadDir;
@@ -835,9 +848,9 @@ class Importer
 						pastTime($substep);
 
 						if (strpos($current_data, '%d') !== false)
-							$special_result = $db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+							$special_result = $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
 						else
-							$special_result = $db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+							$special_result = $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
 
 						$rows = array();
 						$keys = array();
@@ -845,7 +858,7 @@ class Importer
 						if (isset($steps->detect))
 							$_SESSION['import_progress'] += $special_limit;
 
-						while ($row = $db->fetch_assoc($special_result))
+						while ($row = $this->db->fetch_assoc($special_result))
 						{
 							if ($special_code !== null)
 								eval($special_code);
@@ -886,29 +899,29 @@ class Importer
 									{
 										$ipv6ip = $this->_prepare_ipv6($row[$ip]);
 
-										$request2 = $db->query("
+										$request2 = $this->db->query("
 											SELECT id_ip
 											FROM {$to_prefix}log_ips
 											WHERE member_ip = '" . $ipv6ip . "'
 											LIMIT 1");
 										// IP already known?
-										if ($db->num_rows($request2) != 0)
+										if ($this->db->num_rows($request2) != 0)
 										{
-											list ($id_ip) = $db->fetch_row($request2);
+											list ($id_ip) = $this->db->fetch_row($request2);
 											$row[$ip] = $id_ip;
 										}
 										// insert the new ip
 										else
 										{
-											$db->query("
+											$this->db->query("
 												INSERT INTO {$to_prefix}log_ips
 													(member_ip)
 												VALUES ('$ipv6ip')");
-											$pointer = $db->insert_id();
+											$pointer = $this->db->insert_id();
 											$row[$ip] = $pointer;
 										}
 
-										$db->free_result($request2);
+										$this->db->free_result($request2);
 									}
 								}
 							}
@@ -939,17 +952,17 @@ class Importer
 						$insert_replace = (isset($replace) && $replace == true) ? 'REPLACE' : 'INSERT';
 
 						if (!empty($rows))
-							$db->query("
+							$this->db->query("
 								$insert_replace $insert_ignore INTO $special_table
 									(" . implode(', ', $keys) . ")
 								VALUES (" . implode('),
 									(', $rows) . ")");
 						$_REQUEST['start'] += $special_limit;
-						if (empty($special_max) && $db->num_rows($special_result) < $special_limit)
+						if (empty($special_max) && $this->db->num_rows($special_result) < $special_limit)
 							break;
-						elseif (!empty($special_max) && $db->num_rows($special_result) == 0 && $_REQUEST['start'] > $special_max)
+						elseif (!empty($special_max) && $this->db->num_rows($special_result) == 0 && $_REQUEST['start'] > $special_max)
 							break;
-						$db->free_result($special_result);
+						$this->db->free_result($special_result);
 					}
 				}
 				$_REQUEST['start'] = 0;
@@ -987,15 +1000,15 @@ class Importer
 		if ($_GET['substep'] <= 0)
 		{
 			// Get all members with wrong number of personal messages.
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.personal_messages
 				FROM {$to_prefix}members AS mem
 					LEFT JOIN {$to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0)
 				GROUP BY mem.id_member
 				HAVING real_num != personal_messages");
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 			{
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}members
 					SET personal_messages = $row[real_num]
 					WHERE id_member = $row[id_member]
@@ -1003,17 +1016,17 @@ class Importer
 
 				pastTime(0);
 			}
-			$db->free_result($request);
+			$this->db->free_result($request);
 
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.unread_messages
 				FROM {$to_prefix}members AS mem
 					LEFT JOIN {$to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0 AND pmr.is_read = 0)
 				GROUP BY mem.id_member
 				HAVING real_num != unread_messages");
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 			{
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}members
 					SET unread_messages = $row[real_num]
 					WHERE id_member = $row[id_member]
@@ -1021,22 +1034,22 @@ class Importer
 
 				pastTime(0);
 			}
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			pastTime(1);
 		}
 
 		if ($_GET['substep'] <= 1)
 		{
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_board, MAX(id_msg) AS id_last_msg, MAX(modified_time) AS last_edited
 				FROM {$to_prefix}messages
 				GROUP BY id_board");
 			$modifyData = array();
 			$modifyMsg = array();
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 			{
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}boards
 					SET id_last_msg = $row[id_last_msg], id_msg_updated = $row[id_last_msg]
 					WHERE id_board = $row[id_board]
@@ -1047,40 +1060,40 @@ class Importer
 				);
 				$modifyMsg[] = $row['id_last_msg'];
 			}
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			// Are there any boards where the updated message is not the last?
 			if (!empty($modifyMsg))
 			{
-				$request = $db->query("
+				$request = $this->db->query("
 					SELECT id_board, id_msg, modified_time, poster_time
 					FROM {$to_prefix}messages
 					WHERE id_msg IN (" . implode(',', $modifyMsg) . ")");
-				while ($row = $db->fetch_assoc($request))
+				while ($row = $this->db->fetch_assoc($request))
 				{
 					// Have we got a message modified before this was posted?
 					if (max($row['modified_time'], $row['poster_time']) < $modifyData[$row['id_board']]['last_edited'])
 					{
 						// Work out the ID of the message (This seems long but it won't happen much.
-						$request2 = $db->query("
+						$request2 = $this->db->query("
 							SELECT id_msg
 							FROM {$to_prefix}messages
 							WHERE modified_time = " . $modifyData[$row['id_board']]['last_edited'] . "
 							LIMIT 1");
-						if ($db->num_rows($request2) != 0)
+						if ($this->db->num_rows($request2) != 0)
 						{
-							list ($id_msg) = $db->fetch_row($request2);
+							list ($id_msg) = $this->db->fetch_row($request2);
 
-							$db->query("
+							$this->db->query("
 								UPDATE {$to_prefix}boards
 								SET id_msg_updated = $id_msg
 								WHERE id_board = $row[id_board]
 								LIMIT 1");
 						}
-						$db->free_result($request2);
+						$this->db->free_result($request2);
 					}
 				}
-				$db->free_result($request);
+				$this->db->free_result($request);
 			}
 
 			pastTime(2);
@@ -1088,26 +1101,26 @@ class Importer
 
 		if ($_GET['substep'] <= 2)
 		{
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_group
 				FROM {$to_prefix}membergroups
 				WHERE min_posts = -1");
 			$all_groups = array();
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 				$all_groups[] = $row['id_group'];
-			$db->free_result($request);
+			$this->db->free_result($request);
 
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_board, member_groups
 				FROM {$to_prefix}boards
 				WHERE FIND_IN_SET(0, member_groups)");
-			while ($row = $db->fetch_assoc($request))
-				$db->query("
+			while ($row = $this->db->fetch_assoc($request))
+				$this->db->query("
 					UPDATE {$to_prefix}boards
 					SET member_groups = '" . implode(',', array_unique(array_merge($all_groups, explode(',', $row['member_groups'])))) . "'
 					WHERE id_board = $row[id_board]
 					LIMIT 1");
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			pastTime(3);
 		}
@@ -1115,37 +1128,37 @@ class Importer
 		if ($_GET['substep'] <= 3)
 		{
 			// Get the number of messages...
-			$result = $db->query("
+			$result = $this->db->query("
 				SELECT COUNT(*) AS totalMessages, MAX(id_msg) AS maxMsgID
 				FROM {$to_prefix}messages");
-			$row = $db->fetch_assoc($result);
-			$db->free_result($result);
+			$row = $this->db->fetch_assoc($result);
+			$this->db->free_result($result);
 
 			// Update the latest member. (Highest ID_MEMBER)
-			$result = $db->query("
+			$result = $this->db->query("
 				SELECT id_member AS latestMember, real_name AS latestreal_name
 				FROM {$to_prefix}members
 				ORDER BY id_member DESC
 				LIMIT 1");
-			if ($db->num_rows($result))
-				$row += $db->fetch_assoc($result);
-			$db->free_result($result);
+			if ($this->db->num_rows($result))
+				$row += $this->db->fetch_assoc($result);
+			$this->db->free_result($result);
 
 			// Update the member count.
-			$result = $db->query("
+			$result = $this->db->query("
 				SELECT COUNT(*) AS totalMembers
 				FROM {$to_prefix}members");
-			$row += $db->fetch_assoc($result);
-			$db->free_result($result);
+			$row += $this->db->fetch_assoc($result);
+			$this->db->free_result($result);
 
 			// Get the number of topics.
-			$result = $db->query("
+			$result = $this->db->query("
 				SELECT COUNT(*) AS totalTopics
 				FROM {$to_prefix}topics");
-			$row += $db->fetch_assoc($result);
-			$db->free_result($result);
+			$row += $this->db->fetch_assoc($result);
+			$this->db->free_result($result);
 
-			$db->query("
+			$this->db->query("
 				REPLACE INTO {$to_prefix}settings
 					(variable, value)
 				VALUES ('latestMember', '$row[latestMember]'),
@@ -1161,21 +1174,21 @@ class Importer
 
 		if ($_GET['substep'] <= 4)
 		{
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_group, min_posts
 				FROM {$to_prefix}membergroups
 				WHERE min_posts != -1
 				ORDER BY min_posts DESC");
 			$post_groups = array();
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 				$post_groups[$row['min_posts']] = $row['id_group'];
-			$db->free_result($request);
+			$this->db->free_result($request);
 
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_member, posts
 				FROM {$to_prefix}members");
 			$mg_updates = array();
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 			{
 				$group = 4;
 				foreach ($post_groups as $min_posts => $group_id)
@@ -1187,10 +1200,10 @@ class Importer
 
 				$mg_updates[$group][] = $row['id_member'];
 			}
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			foreach ($mg_updates as $group_to => $update_members)
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}members
 					SET id_post_group = $group_to
 					WHERE id_member IN (" . implode(', ', $update_members) . ")
@@ -1202,34 +1215,34 @@ class Importer
 		if ($_GET['substep'] <= 5)
 		{
 			// Needs to be done separately for each board.
-			$result_boards = $db->query("
+			$result_boards = $this->db->query("
 				SELECT id_board
 				FROM {$to_prefix}boards");
 			$boards = array();
-			while ($row_boards = $db->fetch_assoc($result_boards))
+			while ($row_boards = $this->db->fetch_assoc($result_boards))
 				$boards[] = $row_boards['id_board'];
-			$db->free_result($result_boards);
+			$this->db->free_result($result_boards);
 
 			foreach ($boards as $id_board)
 			{
 				// Get the number of topics, and iterate through them.
-				$result_topics = $db->query("
+				$result_topics = $this->db->query("
 					SELECT COUNT(*)
 					FROM {$to_prefix}topics
 					WHERE id_board = $id_board");
-				list ($num_topics) = $db->fetch_row($result_topics);
-				$db->free_result($result_topics);
+				list ($num_topics) = $this->db->fetch_row($result_topics);
+				$this->db->free_result($result_topics);
 
 				// Find how many messages are in the board.
-				$result_posts = $db->query("
+				$result_posts = $this->db->query("
 					SELECT COUNT(*)
 					FROM {$to_prefix}messages
 					WHERE id_board = $id_board");
-				list ($num_posts) = $db->fetch_row($result_posts);
-				$db->free_result($result_posts);
+				list ($num_posts) = $this->db->fetch_row($result_posts);
+				$this->db->free_result($result_posts);
 
 				// Fix the board's totals.
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}boards
 					SET num_topics = $num_topics, num_posts = $num_posts
 					WHERE id_board = $id_board
@@ -1244,7 +1257,7 @@ class Importer
 		{
 			while (true)
 			{
-				$resultTopic = $db->query("
+				$resultTopic = $this->db->query("
 					SELECT t.id_topic, COUNT(m.id_msg) AS num_msg
 					FROM {$to_prefix}topics AS t
 						LEFT JOIN {$to_prefix}messages AS m ON (m.id_topic = t.id_topic)
@@ -1252,22 +1265,22 @@ class Importer
 					HAVING num_msg = 0
 					LIMIT $_REQUEST[start], 200");
 
-				$numRows = $db->num_rows($resultTopic);
+				$numRows = $this->db->num_rows($resultTopic);
 
 				if ($numRows > 0)
 				{
 					$stupidTopics = array();
-					while ($topicArray = $db->fetch_assoc($resultTopic))
+					while ($topicArray = $this->db->fetch_assoc($resultTopic))
 						$stupidTopics[] = $topicArray['id_topic'];
-					$db->query("
+					$this->db->query("
 						DELETE FROM {$to_prefix}topics
 						WHERE id_topic IN (" . implode(',', $stupidTopics) . ')
 						LIMIT ' . count($stupidTopics));
-					$db->query("
+					$this->db->query("
 						DELETE FROM {$to_prefix}log_topics
 						WHERE id_topic IN (" . implode(',', $stupidTopics) . ')');
 				}
-				$db->free_result($resultTopic);
+				$this->db->free_result($resultTopic);
 
 				if ($numRows < 200)
 					break;
@@ -1285,7 +1298,7 @@ class Importer
 		{
 			while (true)
 			{
-				$resultTopic = $db->query("
+				$resultTopic = $this->db->query("
 					SELECT
 						t.id_topic, MIN(m.id_msg) AS myid_first_msg, t.id_first_msg,
 						MAX(m.id_msg) AS myid_last_msg, t.id_last_msg, COUNT(m.id_msg) - 1 AS my_num_replies,
@@ -1296,14 +1309,14 @@ class Importer
 					HAVING id_first_msg != myid_first_msg OR id_last_msg != myid_last_msg OR num_replies != my_num_replies
 					LIMIT $_REQUEST[start], 200");
 
-				$numRows = $db->num_rows($resultTopic);
+				$numRows = $this->db->num_rows($resultTopic);
 
-				while ($topicArray = $db->fetch_assoc($resultTopic))
+				while ($topicArray = $this->db->fetch_assoc($resultTopic))
 				{
 					$memberStartedID = getMsgMemberID($topicArray['myid_first_msg']);
 					$memberUpdatedID = getMsgMemberID($topicArray['myid_last_msg']);
 
-					$db->query("
+					$this->db->query("
 						UPDATE {$to_prefix}topics
 						SET id_first_msg = '$topicArray[myid_first_msg]',
 							id_member_started = '$memberStartedID', id_last_msg = '$topicArray[myid_last_msg]',
@@ -1311,7 +1324,7 @@ class Importer
 						WHERE id_topic = $topicArray[id_topic]
 						LIMIT 1");
 				}
-				$db->free_result($resultTopic);
+				$this->db->free_result($resultTopic);
 
 				if ($numRows < 200)
 					break;
@@ -1328,17 +1341,17 @@ class Importer
 		if ($_GET['substep'] <= 8)
 		{
 			// First, let's get an array of boards and parents.
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_board, id_parent, id_cat
 				FROM {$to_prefix}boards");
 			$child_map = array();
 			$cat_map = array();
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 			{
 				$child_map[$row['id_parent']][] = $row['id_board'];
 				$cat_map[$row['id_board']] = $row['id_cat'];
 			}
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			// Let's look for any boards with obviously invalid parents...
 			foreach ($child_map as $parent => $dummy)
@@ -1378,7 +1391,7 @@ class Importer
 
 			foreach ($fixed_boards as $board => $fix)
 			{
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}boards
 					SET id_parent = " . (int) $fix[0] . ", id_cat = " . (int) $fix[1] . ", child_level = " . (int) $fix[2] . "
 					WHERE id_board = " . (int) $board . "
@@ -1388,20 +1401,20 @@ class Importer
 			// Leftovers should be brought to the root. They had weird parents we couldn't find.
 			if (count($fixed_boards) < count($cat_map))
 			{
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}boards
 					SET child_level = 0, id_parent = 0" . (empty($fixed_boards) ? '' : "
 					WHERE id_board NOT IN (" . implode(', ', array_keys($fixed_boards)) . ")"));
 			}
 
 			// Last check: any boards not in a good category?
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT id_cat
 				FROM {$to_prefix}categories");
 			$real_cats = array();
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 				$real_cats[] = $row['id_cat'];
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			$fix_cats = array();
 			foreach ($cat_map as $board => $cat)
@@ -1412,13 +1425,13 @@ class Importer
 
 			if (!empty($fix_cats))
 			{
-				$db->query("
+				$this->db->query("
 					INSERT INTO {$to_prefix}categories
 						(name)
 					VALUES ('General Category')");
-				$catch_cat = mysqli_insert_id($db->con);
+				$catch_cat = mysqli_insert_id($this->db->con);
 
-				$db->query("
+				$this->db->query("
 					UPDATE {$to_prefix}boards
 					SET id_cat = " . (int) $catch_cat . "
 					WHERE id_cat IN (" . implode(', ', array_unique($fix_cats)) . ")");
@@ -1429,7 +1442,7 @@ class Importer
 
 		if ($_GET['substep'] <= 9)
 		{
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT c.id_cat, c.cat_order, b.id_board, b.board_order
 				FROM {$to_prefix}categories AS c
 					LEFT JOIN {$to_prefix}boards AS b ON (b.id_cat = c.id_cat)
@@ -1437,37 +1450,37 @@ class Importer
 			$cat_order = -1;
 			$board_order = -1;
 			$curCat = -1;
-			while ($row = $db->fetch_assoc($request))
+			while ($row = $this->db->fetch_assoc($request))
 			{
 				if ($curCat != $row['id_cat'])
 				{
 					$curCat = $row['id_cat'];
 					if (++$cat_order != $row['cat_order'])
-						$db->query("
+						$this->db->query("
 							UPDATE {$to_prefix}categories
 							SET cat_order = $cat_order
 							WHERE id_cat = $row[id_cat]
 							LIMIT 1");
 				}
 				if (!empty($row['id_board']) && ++$board_order != $row['board_order'])
-					$db->query("
+					$this->db->query("
 						UPDATE {$to_prefix}boards
 						SET board_order = $board_order
 						WHERE id_board = $row[id_board]
 						LIMIT 1");
 			}
-			$db->free_result($request);
+			$this->db->free_result($request);
 
 			pastTime(10);
 		}
 
 		if ($_GET['substep'] <= 10)
 		{
-			$db->query("
+			$this->db->query("
 				ALTER TABLE {$to_prefix}boards
 				ORDER BY board_order");
 
-			$db->query("
+			$this->db->query("
 				ALTER TABLE {$to_prefix}smileys
 				ORDER BY code DESC");
 
@@ -1476,15 +1489,15 @@ class Importer
 
 		if ($_GET['substep'] <= 11)
 		{
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT COUNT(*)
 				FROM {$to_prefix}attachments");
-			list ($attachments) = $db->fetch_row($request);
-			$db->free_result($request);
+			list ($attachments) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
 
 			while ($_REQUEST['start'] < $attachments)
 			{
-				$request = $db->query("
+				$request = $this->db->query("
 					SELECT id_attach, filename, attachment_type
 					FROM {$to_prefix}attachments
 					WHERE id_thumb = 0
@@ -1492,19 +1505,19 @@ class Importer
 						AND width = 0
 						AND height = 0
 					LIMIT $_REQUEST[start], 500");
-				if ($db->num_rows($request) == 0)
+				if ($this->db->num_rows($request) == 0)
 					break;
-				while ($row = $db->fetch_assoc($request))
+				while ($row = $this->db->fetch_assoc($request))
 				{
 					if ($row['attachment_type'] == 1)
 					{
-						$request2 = $db->query("
+						$request2 = $this->db->query("
 							SELECT value
 							FROM {$to_prefix}settings
 							WHERE variable = 'custom_avatar_dir'
 							LIMIT 1");
-						list ($custom_avatar_dir) = $db->fetch_row($request2);
-						$db->free_result($request2);
+						list ($custom_avatar_dir) = $this->db->fetch_row($request2);
+						$this->db->free_result($request2);
 
 						$filename = $custom_avatar_dir . '/' . $row['filename'];
 					}
@@ -1518,7 +1531,7 @@ class Importer
 					$size = @getimagesize($filename);
 					$filesize = @filesize($filename);
 					if (!empty($size) && !empty($size[0]) && !empty($size[1]) && !empty($filesize))
-						$db->query("
+						$this->db->query("
 							UPDATE {$to_prefix}attachments
 							SET
 								size = " . (int) $filesize . ",
@@ -1527,7 +1540,7 @@ class Importer
 							WHERE id_attach = $row[id_attach]
 							LIMIT 1");
 				}
-				$db->free_result($request);
+				$this->db->free_result($request);
 
 				// More?
 				// We can't keep importing the same files over and over again!
@@ -1558,7 +1571,7 @@ class Importer
 		$to_prefix = $this->to_prefix;
 
 		// add some importer information.
-		$db->query("
+		$this->db->query("
 			REPLACE INTO {$to_prefix}settings (variable, value)
 				VALUES ('import_time', " . time() . "),
 					('enable_password_conversion', '1'),
@@ -1571,1055 +1584,6 @@ class Importer
 		return true;
 	}
 
-}
-
-/**
- * the database class.
- * This class provides an easy wrapper around the common database
- *  functions we work with.
- */
-class Database
-{
-
-	/**
-	 * constructor, connects to the database
-	 * @param type $db_server
-	 * @param type $db_user
-	 * @param type $db_password
-	 * @param type $db_persist
-	 */
-	var $con;
-	
-	/**
-	 * 
-	 * @param string $db_server
-	 * @param string $db_user
-	 * @param string $db_password
-	 * @param bool $db_persist
-	 */
-	public function __construct($db_server, $db_user, $db_password, $db_persist)
-	{
-		$this->con = mysqli_connect(($db_persist == 1 ? 'p:' : '') . $db_server, $db_user, $db_password);
- 
-		if (mysqli_connect_error())
- 			die('Database error: ' . mysqli_connect_error());
-	}
-
-	/**
-	 * remove old attachments
-	 *
-	 * @global type $to_prefix
-	 */
-	private function _removeAttachments()
-	{
-		global $to_prefix;
-
-		$result = $this->query("
-			SELECT value
-			FROM {$to_prefix}settings
-			WHERE variable = 'attachmentUploadDir'
-			LIMIT 1");
-		list ($attachmentUploadDir) = $this->fetch_row($result);
-		$this->free_result($result);
-
-		// !!! This should probably be done in chunks too.
-		$result = $this->query("
-			SELECT id_attach, filename
-			FROM {$to_prefix}attachments");
-		while ($row = $this->fetch_assoc($result))
-		{
-			// We're duplicating this from below because it's slightly different for getting current ones.
-			$clean_name = strtr($row['filename'], 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-			$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-			$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-			$enc_name = $row['id_attach'] . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
-			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
-
-			if (file_exists($attachmentUploadDir . '/' . $enc_name))
-				$filename = $attachmentUploadDir . '/' . $enc_name;
-			else
-				$filename = $attachmentUploadDir . '/' . $clean_name;
-
-			if (is_file($filename))
-				unlink($filename);
-		}
-		$this->free_result($result);
-	}
-
-	/**
-	 * execute an SQL query
-	 *
-	 * @global type $import
-	 * @global type $to_prefix
-	 * @param type $string
-	 * @param type $return_error
-	 * @return type
-	 */
-	public function query($string, $return_error = false)
-	{
-		global $import, $to_prefix;
-
-		// Debugging?
-		if (isset($_REQUEST['debug']))
-			$_SESSION['import_debug'] = !empty($_REQUEST['debug']);
-
-		if (trim($string) == 'TRUNCATE ' . $to_prefix . 'attachments;')
-			$this->_removeAttachments();
-
-		$result = @mysqli_query($this->con, $string);
-
-		if ($result !== false || $return_error)
-			return $result;
-
-		$mysql_error = mysqli_error($this->con);
-		$mysql_errno = mysqli_errno($this->con);
-
-		if ($mysql_errno == 1016)
-		{
-			if (preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
-				mysqli_query($this->con, "
-					REPAIR TABLE $match[1]");
-
-			$result = mysql_query($string);
-
-			if ($result !== false)
-				return $result;
-		}
-		elseif ($mysql_errno == 2013)
-		{
-			$result = mysqli_query($this->con, $string);
-
-			if ($result !== false)
-				return $result;
-		}
-
-		// Get the query string so we pass everything.
-		if (isset($_REQUEST['start']))
-			$_GET['start'] = $_REQUEST['start'];
-		$query_string = '';
-		foreach ($_GET as $k => $v)
-			$query_string .= '&' . $k . '=' . $v;
-		if (strlen($query_string) != 0)
-			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
-
-		echo '
-				<b>Unsuccessful!</b><br />
-				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
-				Caused the error:<br />
-				<blockquote>' . nl2br(htmlspecialchars($mysql_error)) . '</blockquote>
-				<form action="', $_SERVER['PHP_SELF'], $query_string, '" method="post">
-					<input type="submit" value="Try again" />
-				</form>
-			</div>';
-
-		$import->template->footer();
-		die;
-	}
-
-
-	/**
-	 * wrapper for mysql_free_result
-	 * @param type $result
-	 */
-	public function free_result($result)
-
-	{
-		mysqli_free_result($result);
-	}
-
-	/**
-	 * wrapper for mysql_fetch_assoc
-	 * @param type $result
-	 * @return string
-	 */
-	public function fetch_assoc($result)
-	{
-		return mysqli_fetch_assoc($result);
-	}
-
-	/**
-	 * wrapper for mysql_fetch_row
-	 * @param type $result
-	 * @return type
-	 */
-	public function fetch_row($result)
-	{
-		return mysqli_fetch_row($result);
-	}
-
-	/**
-	 * wrapper for mysql_num_rows
-	 * @param type $result
-	 * @return integer
-	 */
-	public function num_rows($result)
-	{
-		return mysqli_num_rows($result);
-	}
-
-	/**
-	 * wrapper for mysql_insert_id
-	 * @return integer
-	 */
-	public function insert_id()
-	{
-		return mysql_insert_id($this->con);
-	}
-}
-
-/**
-* Class lng loads the appropriate language file(s)
-* if they exist. The default import_en.xml file
-* contains the English strings used by the importer.
-*
-* @var array $lang
-*/
-class lng
-{
-	private static $_lang = array();
-
-	/**
-	* Adds a new variable to lang.
-	*
-	* @param string $key Name of the variable
-	* @param string $value Value of the variable
-	* @throws Exception
-	* @return boolean|null
-	*/
-	protected static function set($key, $value)
-	{
-		try
-		{
-				if (!self::has($key))
-				{
-					self::$_lang[$key] = $value;
-					return true;
-				}
-				else
-					throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
-		}
-		catch(Exception $e)
-		{
-			import_exception::exception_handler($e);
-		}
-	}
-
-	/**
-	* Loads the language xml file.
-	*
-	* @return null
-	* @throws import_exception if the XML file has got a corrupted structure.
-	*/
-	public static function loadLang()
-	{
-		// detect the browser language
-		$language = self::detect_browser_language();
-
-		// loop through the preferred languages and try to find the related language file
-		foreach ($language as $key => $value)
-		{
-			if (file_exists(dirname(__FILE__) . '/import_' . $key . '.xml'))
-			{
-				$lngfile = dirname(__FILE__) . '/import_' . $key . '.xml';
-				break;
-			}
-		}
-		// english is still better than nothing
-		if (!isset($lngfile))
-		{
-			if (file_exists(dirname(__FILE__) . '/import_en.xml'))
-				$lngfile = dirname(__FILE__) . '/import_en.xml';
-		}
-		// ouch, we really should never arrive here..
-		if (!$lngfile)
-			throw new Exception('Unable to detect language file!');
-
-		try
-		{
-			if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
-				throw new import_exception('XML-Syntax error in file: ' . $lngfile);
-
-			$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA);
-		}
-		catch (Exception $e)
-		{
-			import_exception::exception_handler($e);
-		}
-
-		foreach ($langObj as $strings)
-			self::set((string) $strings->attributes()->{'name'}, (string) $strings);
-
-		return null;
-	}
-
-	/**
-	* Tests if given $key exists in lang
-	*
-	* @param string $key
-	* @return bool
-	*/
-	public static function has($key)
-	{
-		return isset(self::$_lang[$key]);
-	}
-
-	/**
-	* Returns the value of the specified $key in lang.
-	*
-	* @param string $key Name of the variable
-	* @return string|null Value of the specified $key
-	*/
-	public static function get($key)
-	{
-		if (self::has($key))
-			return self::$_lang[$key];
-
-		return null;
-	}
-
-	/**
-	* Returns the whole lang as an array.
-	*
-	* @return array Whole lang
-	*/
-	public static function getAll()
-	{
-		return self::$_lang;
-	}
-
-	/**
-	 * This is used to detect the Client's browser language.
-	 *
-	 * @return string the shortened string of the browser's language.
-	 */
-	protected static function detect_browser_language()
-	{
-		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
-		{
-			// break up string into pieces (languages and q factors)
-			preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']), $lang_parse);
-
-			if (count($lang_parse[1]))
-			{
-				// create a list like "en" => 0.8
-				$preferred = array_combine($lang_parse[1], $lang_parse[4]);
-
-				// set default to 1 for any without q factor (IE fix)
-				foreach ($preferred as $lang => $val)
-				{
-					if ($val === '')
-						$preferred[$lang] = 1;
-				}
-
-				// sort list based on value
-				arsort($preferred, SORT_NUMERIC);
-			}
-		}
-		return $preferred;
-	}
-
-}
-
-/**
-* this is our UI
-*
-*/
-class template
-{
-	/**
-	* Display a specific error message.
-	*
-	* @param string $error_message
-	* @param int $trace
-	* @param int $line
-	* @param string $file
-	*/
-	public function error($error_message, $trace = false, $line = false, $file = false)
-	{
-		echo '
-			<div class="error_message">
-				<div class="error_text">', isset($trace) && !empty($trace) ? 'Message: ' : '', is_array($error_message) ? sprintf($error_message[0], $error_message[1]) : $error_message , '</div>';
-		if (isset($trace) && !empty($trace))
-			echo '<div class="error_text">Trace: ', $trace , '</div>';
-		if (isset($line) && !empty($line))
-			echo '<div class="error_text">Line: ', $line , '</div>';
-		if (isset($file) && !empty($file))
-			echo '<div class="error_text">File: ', $file , '</div>';
-		echo '
-			</div>';
-	}
-
-	/**
-	* Show the footer.
-	*
-	* @param bol $inner
-	*/
-	public function footer($inner = true)
-	{
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
-			echo '
-				</p>
-			</div>';
-		echo '
-		</div>
-	</body>
-</html>';
-	}
-	/**
-	* Show the header.
-	*
-	* @param bol $inner
-	*/
-	public function header($inner = true)
-	{
-		global $import, $time_start;
-		$time_start = time();
-
-		echo '<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', lng::get('imp.locale'), '" lang="', lng::get('imp.locale'), '">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>', isset($import->xml->general->name) ? $import->xml->general->name . ' to ' : '', 'OpenImporter</title>
-		<script type="text/javascript">
-			function AJAXCall(url, callback, string)
-			{
-				var req = init();
-				var string = string;
-				req.onreadystatechange = processRequest;
-
-				function init()
-				{
-					if (window.XMLHttpRequest)
-						return new XMLHttpRequest();
-					else if (window.ActiveXObject)
-						return new ActiveXObject("Microsoft.XMLHTTP");
-				}
-
-				function processRequest()
-				{
-					// readyState of 4 signifies request is complete
-					if (req.readyState == 4)
-					{
-						// status of 200 signifies sucessful HTTP call
-						if (req.status == 200)
-							if (callback) callback(req.responseXML, string);
-					}
-				}
-
-				// make a HTTP GET request to the URL asynchronously
-				this.doGet = function () {
-					req.open("GET", url, true);
-					req.send(null);
-				};
-			}
-
-			function validateField(string)
-			{
-				var target = document.getElementById(string);
-				var from = "', isset($import->xml->general->settings) ? $import->xml->general->settings : null , '";
-				var to = "/Settings.php";
-				var url = "import.php?xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + (string == "path_to" ? to : from);
-				var ajax = new AJAXCall(url, validateCallback, string);
-				ajax.doGet();
-			}
-
-			function validateCallback(responseXML, string)
-			{
-				var msg = responseXML.getElementsByTagName("valid")[0].firstChild.nodeValue;
-				if (msg == "false")
-				{
-					var field = document.getElementById(string);
-					var validate = document.getElementById(\'validate_\' + string);
-					field.className = "invalid_field";
-					validate.innerHTML = "', lng::get('imp.invalid') , '";
-					// set the style on the div to invalid
-					var submitBtn = document.getElementById("submit_button");
-					submitBtn.disabled = true;
-				}
-				else
-				{
-					var field = document.getElementById(string);
-					var validate = document.getElementById(\'validate_\' + string);
-					field.className = "valid_field";
-					validate.innerHTML = "installation validated!";
-					var submitBtn = document.getElementById("submit_button");
-					submitBtn.disabled = false;
-				}
-			}
-		</script>
-		<style type="text/css">
-			body
-			{
-				background-color: #cbd9e7;
-				margin: 0px;
-				padding: 0px;
-			}
-			body, td
-			{
-				color: #000;
-				font-size: small;
-				font-family: arial;
-			}
-			a
-			{
-				color: #2a4259;
-				text-decoration: none;
-				border-bottom: 1px dashed #789;
-			}
-			#header
-			{
-				background-color: #809ab3;
-				padding: 22px 4% 12px 4%;
-				color: #fff;
-				text-shadow: 0 0 8px #333;
-				font-size: xx-large;
-				border-bottom: 1px solid #fff;
-				height: 40px;
-			}
-			#main
-			{
-				padding: 20px 30px;
-				background-color: #fff;
-				border-radius: 5px;
-				margin: 7px;
-				border: 1px solid #abadb3;
-			}
-			#path_from, #path_to
-			{
-				width: 480px;
-			}
-			.error_message, blockquote, .error
-			{
-				border: 1px dashed red;
-				border-radius: 5px;
-				background-color: #fee;
-				padding: 1.5ex;
-			}
-			.error_text
-			{
-				color: red;
-			}
-			.content
-			{
-				border-radius: 3px;
-				background-color: #eee;
-				color: #444;
-				margin: 1ex 0;
-				padding: 1.2ex;
-				border: 1px solid #abadb3;
-			}
-			.button
-			{
-				margin: 0 0.8em 0.8em 0.8em;
-			}
-			#submit_button
-			{
-				cursor: pointer;
-			}
-			h1
-			{
-				margin: 0;
-				padding: 0;
-				font-size: 24pt;
-			}
-			h2
-			{
-				font-size: 15pt;
-				color: #809ab3;
-				font-weight: bold;
-			}
-			form
-			{
-				margin: 0;
-			}
-			.textbox
-			{
-				padding-top: 2px;
-				white-space: nowrap;
-				padding-right: 1ex;
-			}
-			.bp_invalid
-			{
-				color:red;
-				font-weight: bold;
-			}
-			.bp_valid
-			{
-				color:green;
-			}
-			.validate
-			{
-				font-style: italic;
-				font-size: smaller;
-			}
-			.valid_field
-			{
-				background-color: #DEFEDD;
-				border: 1px solid green;
-			}
-			.invalid_field
-			{
-				background-color: #fee;;
-				border: 1px solid red;
-			}
-			#progressbar
-			{
-				position: relative;
-				top: -28px;
-				left: 255px;
-			}
-			progress
-			{
-				width: 300px;
-			}
-			dl
-			{
-				clear: right;
-				overflow: auto;
-				margin: 0 0 0 0;
-				padding: 0;
-			}
-			dt
-			{
-				width: 20%;
-				float: left;
-				margin: 6px 5px 10px 0;
-				padding: 0;
-				clear: both;
-			}
-			dd
-			{
-				width: 78%;
-				float: right;
-				margin: 6px 0 3px 0;
-				padding: 0;
-			}
-			#arrow_up
-			{
-				display: none;
-			}
-			#toggle_button
-			{
-				display: block;
-				color: #2a4259;
-				margin-bottom: 4px;
-				cursor: pointer;
-			}
-			.arrow
-			{
-				font-size: 8pt;
-			}
-		</style>
-	</head>
-	<body>
-		<div id="header">
-			<h1 title="SMF is dead. The forks are your future :-P">', isset($import->xml->general->{'name'}) ? $import->xml->general->{'name'} . ' to ' : '', 'OpenImporter</h1>
-		</div>
-		<div id="main">';
-
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
-			echo '
-			<h2 style="margin-top: 2ex">', lng::get('imp.importing'), '...</h2>
-			<div class="content"><p>';
-	}
-
-	/**
-	 * This is the template part for selecting the importer script.
-	 *
-	 * @param array $scripts
-	 */
-	public function select_script($scripts)
-	{
-		echo '
-			<h2>', lng::get('imp.which_software'), '</h2>
-			<div class="content">';
-
-		// We found at least one?
-		if (!empty($scripts))
-		{
-			echo '
-				<p>', lng::get('imp.multiple_files'), '</p>
-				<ul>';
-
-			// Let's löop and output all the found scripts.
-			foreach ($scripts as $script)
-				echo '
-					<li>
-						<a href="', $_SERVER['PHP_SELF'], '?import_script=', $script['path'], '">', $script['name'], '</a>
-						<span>(', $script['path'], ')</span>
-					</li>';
-
-			echo '
-				</ul>
-			</div>
-			<h2>', lng::get('imp.not_here'), '</h2>
-			<div class="content">
-				<p>', lng::get('imp.check_more'), '</p>
-				<p>', lng::get('imp.having_problems'), '</p>';
-		}
-		else
-			echo '
-				<p>', lng::get('imp.not_found'), '</p>
-				<p>', lng::get('imp.not_found_download'), '</p>
-				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', lng::get('imp.try_again'), '</a>';
-
-		echo '
-			</div>';
-	}
-
-	public function step0($object, $steps, $test_from, $test_to)
-	{
-		echo '
-			<h2>', lng::get('imp.before_continue'), '</h2>
-			<div class="content">
-				<p>', sprintf(lng::get('imp.before_details'), (string) $object->xml->general->name ), '</p>
-			</div>';
-		echo '
-			<h2>', lng::get('imp.where'), '</h2>
-			<div class="content">
-				<form action="', $_SERVER['PHP_SELF'], '?step=1', isset($_REQUEST['debug']) ? '&amp;debug=' . $_REQUEST['debug'] : '', '" method="post">
-					<p>', lng::get('imp.locate_destination'), '</p>
-					<div id="toggle_button">', lng::get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
-					<dl id="advanced_options" style="display: none; margin-top: 5px">
-						<dt><label for="path_to">', lng::get('imp.path_to_destination'), ':</label></dt>
-						<dd>
-							<input type="text" name="path_to" id="path_to" value="', $_POST['path_to'], '" onblur="validateField(\'path_to\')" />
-							<div id="validate_path_to" class="validate">', $test_to ? lng::get('imp.right_path') : lng::get('imp.change_path'), '</div>
-						</dd>
-					</dl>
-					<dl>';
-
-		if ($object->xml->general->settings)
-			echo '
-						<dt><label for="path_from">', lng::get('imp.path_to_source'),' ', $object->xml->general->name, ':</label></dt>
-						<dd>
-							<input type="text" name="path_from" id="path_from" value="', $_POST['path_from'], '" onblur="validateField(\'path_from\')" />
-							<div id="validate_path_from" class="validate">', $test_from ? lng::get('imp.right_path') : lng::get('imp.change_path'), '</div>
-						</dd>';
-
-		// Any custom form elements?
-		if ($object->xml->general->form)
-		{
-			foreach ($object->xml->general->form->children() as $field)
-			{
-				if ($field->attributes()->{'type'} == 'text')
-					echo '
-						<dt><label for="field', $field->attributes()->{'id'}, '">', $field->attributes()->{'label'}, ':</label></dt>
-						<dd><input type="text" name="field', $field->attributes()->{'id'}, '" id="field', $field->attributes()->{'id'}, '" value="', isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} :'' ,'" size="', $field->attributes()->{'size'}, '" /></dd>';
-
-				elseif ($field->attributes()->{'type'}== 'checked' || $field->attributes()->{'type'} == 'checkbox')
-					echo '
-						<dt></dt>
-						<dd>
-							<label for="field', $field->attributes()->{'id'}, '">
-								<input type="checkbox" name="field', $field->attributes()->{'id'}, '" id="field', $field->attributes()->{'id'}, '" value="1"', $field->attributes()->{'type'} == 'checked' ? ' checked="checked"' : '', ' /> ', $field->attributes()->{'label'}, '
-							</label>
-						</dd>';
-			}
-		}
-
-		echo '
-						<dt><label for="db_pass">', lng::get('imp.database_passwd'),':</label></dt>
-						<dd>
-							<input type="password" name="db_pass" size="30" class="text" />
-							<div style="font-style: italic; font-size: smaller">', lng::get('imp.database_verify'),'</div>
-						</dd>';
-
-
-		// Now for the steps.
-		if (!empty($steps))
-		{
-			echo '
-						<dt>', lng::get('imp.selected_only'),':</dt>
-						<dd>';
-			foreach ($steps as $key => $step)
-				echo '
-							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', ucfirst(str_replace('importing ', '', $step['name'])), '</label><br />';
-
-			echo '
-						</dd>';
-		}
-
-		echo '
-					</dl>
-					<div class="button"><input id="submit_button" name="submit_button" type="submit" value="', lng::get('imp.continue'),'" class="submit" /></div>
-				</form>
-			</div>';
-
-		if (!empty($object->possible_scripts))
-			echo '
-			<h2>', lng::get('imp.not_this'),'</h2>
-			<div class="content">
-				<p>', sprintf(lng::get('imp.pick_different'), $_SERVER['PHP_SELF']), '</p>
-			</div>';
-		echo '
-			<script type="text/javascript">
-				document.getElementById(\'toggle_button\').onclick = function ()
-				{
-					var elem = document.getElementById(\'advanced_options\');
-					var arrow_up = document.getElementById(\'arrow_up\');
-					var arrow_down = document.getElementById(\'arrow_down\');
-					if (!elem)
-						return true;
-
-					if (elem.style.display == \'none\')
-					{
-						elem.style.display = \'block\';
-						arrow_down.style.display = \'none\';
-						arrow_up.style.display = \'inline\';
-					}
-					else
-					{
-						elem.style.display = \'none\';
-						arrow_down.style.display = \'inline\';
-						arrow_up.style.display = \'none\';
-					}
-
-					return true;
-				}
-			</script>';
-	}
-
-	/**
-	 * Display notification with the given status
-	 *
-	 * @param int $substep
-	 * @param int $status
-	 * @param string $title
-	 * @param bool $hide = false
-	 */
-	public function status($substep, $status, $title, $hide = false)
-	{
-		if (isset($title) && $hide == false)
-			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
-
-		if ($status == 1)
-			echo '<span style="color: green">&#x2714</span>';
-
-		if ($status == 2)
-			echo '<span style="color: grey">&#x2714</span> (', lng::get('imp.skipped'),')';
-
-		if ($status == 3)
-			echo '<span style="color: red">&#x2718</span> (', lng::get('imp.not_found_skipped'),')';
-
-		if ($status != 0)
-			echo '<br />';
-	}
-
-	/**
-	 * Display information related to step2
-	 */
-	public function step2()
-	{
-		echo '
-				<span style="width: 250px; display: inline-block">', lng::get('imp.recalculate'), '...</span> ';
-	}
-
-	/**
-	 * Display last step UI, completion status and allow eventually
-	 * to delete the scripts
-	 *
-	 * @param string $name
-	 * @param string $boardurl
-	 * @param bool $writable if the files are writable, the UI will allow deletion
-	 */
-	public function step3($name, $boardurl, $writable)
-	{
-		echo '
-			</div>
-			<h2 style="margin-top: 2ex">', lng::get('imp.complete'), '</h2>
-			<div class="content">
-			<p>', lng::get('imp.congrats'),'</p>';
-
-		if ($writable)
-			echo '
-				<div style="margin: 1ex; font-weight: bold">
-					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', lng::get('imp.check_box'), '</label>
-				</div>
-				<script type="text/javascript"><!-- // --><![CDATA[
-					function doTheDelete()
-					{
-						new Image().src = "', $_SERVER['PHP_SELF'], '?delete=1&" + (+Date());
-						(document.getElementById ? document.getElementById("delete_self") : document.all.delete_self).disabled = true;
-					}
-				// ]]></script>';
-		echo '
-				<p>', sprintf(lng::get('imp.all_imported'), $name), '</p>
-				<p>', lng::get('imp.smooth_transition'), '</p>';
-	}
-
-	/**
-	 * Display the progress bar,
-	 * and inform the user about when the script is paused and re-run.
-	 *
-	 * @param int $bar
-	 * @param int $value
-	 * @param int $max
-	 */
-	public function time_limit($bar, $value, $max)
-	{
-		if (!empty($bar))
-			echo '
-			<div id="progressbar">
-				<progress value="', $bar, '" max="100">', $bar, '%</progress>
-			</div>';
-
-		echo '
-		</div>
-		<h2 style="margin-top: 2ex">', lng::get('imp.not_done'),'</h2>
-		<div class="content">
-			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', lng::get('imp.overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
-			<p>', lng::get('imp.importer_paused'), '</p>
-
-			<form action="', $_SERVER['PHP_SELF'], '?step=', $_GET['step'], isset($_GET['substep']) ? '&amp;substep=' . $_GET['substep'] : '', '&amp;start=', $_REQUEST['start'], '" method="post" name="autoSubmit">
-				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', lng::get('imp.continue'),'" /></div>
-			</form>
-
-			<script type="text/javascript"><!-- // --><![CDATA[
-				var countdown = 3;
-				window.onload = doAutoSubmit;
-
-				function doAutoSubmit()
-				{
-					if (countdown == 0)
-						document.autoSubmit.submit();
-					else if (countdown == -1)
-						return;
-
-					document.autoSubmit.b.value = "', lng::get('imp.continue'),' (" + countdown + ")";
-					countdown--;
-
-					setTimeout("doAutoSubmit();", 1000);
-				}
-			// ]]></script>';
-	}
-
-	/**
-	 * ajax response, whether the paths to the source and destination
-	 * software are correctly set.
-	 */
-	public function xml()
-	{
-		if (isset($_GET['path_to']))
-			$test_to = file_exists($_GET['path_to']);
-		elseif (isset($_GET['path_from']))
-			$test_to = file_exists($_GET['path_from']);
-		else
-			$test_to = false;
-
-		header('Content-Type: text/xml');
-		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-	<valid>', $test_to ? 'true' : 'false' ,'</valid>';
-	}
-}
-
-/**
-* class import_exception extends the build-in Exception class and
-* catches potential errors
-*/
-class import_exception extends Exception
-{
-	public static function error_handler_callback($code, $string, $file, $line)
-	{
-		$e = new self($string, $code);
-		$e->line = $line;
-		$e->file = $file;
-		throw $e;
-	}
-
-	/**
-	 * @param Exception $exception
-	 */
-	public static function exception_handler($exception)
-	{
-		global $import;
-
-		$message = $exception->getMessage();
-		$trace = $exception->getTrace();
-		$line = $exception->getLine();
-		$file = $exception->getFile();
-		$import->template->error($message, $trace[0]['args'][1], $line, $file);
-	}
-}
-
-/**
- * we need Cooooookies..
- */
-class Cookie
-{
-	/**
-	 * Constructor
-	 * @return boolean
-	 */
-	public function Cookie()
-	{
-		return true;
-	}
-
-	/**
-	 * set a cookie
-	 * @param type $data
-	 * @param type $name
-	 * @return boolean
-	 */
-	public function set($data, $name = 'openimporter_cookie')
-	{
-		if (!empty($data))
-		{
-			setcookie($name, serialize($data), time()+ 86400);
-			$_COOKIE[$name] = serialize($data);
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * get our cookie
-	 * @param type $name
-	 * @return boolean
-	 */
-	public function get($name = 'openimporter_cookie')
-	{
-		if (isset($_COOKIE[$name]))
-		{
-			$cookie = unserialize($_COOKIE[$name]);
-			return $cookie;
-		}
-
-		return false;
-	}
-
-	/**
-	 * once we are done, we should destroy our cookie
-	 * @param type $name
-	 * @return boolean
-	 */
-	public function destroy($name = 'openimporter_cookie')
-	{
-		setcookie($name, '');
-		unset($_COOKIE[$name]);
-
-		return true;
-	}
-
-	/**
-	 * extend the cookie with new infos
-	 * @param type $data
-	 * @param type $name
-	 * @return boolean
-	 */
-	public function extend($data, $name = 'openimporter_cookie')
-	{
-		$cookie = unserialize($_COOKIE[$name]);
-		if (!empty($cookie) && isset($data))
-			$merged = array_merge((array) $cookie, (array) $data);
-
-		$this->set($merged);
-		$_COOKIE[$name] = serialize($merged);
-
-		return true;
-	}
 }
 
 /**
@@ -2815,18 +1779,18 @@ function getMsgMemberID($messageID)
 	global $to_prefix, $db;
 
 	// Find the topic and make sure the member still exists.
-	$result = $db->query("
+	$result = $this->db->query("
 		SELECT IFNULL(mem.id_member, 0)
 		FROM {$to_prefix}messages AS m
 		LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
 		WHERE m.id_msg = " . (int) $messageID . "
 		LIMIT 1");
-	if ($db->num_rows($result) > 0)
-		list ($memberID) = $db->fetch_row($result);
+	if ($this->db->num_rows($result) > 0)
+		list ($memberID) = $this->db->fetch_row($result);
 	// The message doesn't even exist.
 	else
 		$memberID = 0;
-	$db->free_result($result);
+	$this->db->free_result($result);
 
 		return $memberID;
 }
