@@ -9,7 +9,7 @@
  */
 class Lang
 {
-	private static $_lang = array();
+	private $_lang = array();
 
 	/**
 	* Adds a new variable to lang.
@@ -19,13 +19,13 @@ class Lang
 	* @throws Exception
 	* @return boolean|null
 	*/
-	protected static function set($key, $value)
+	protected function set($key, $value)
 	{
 		try
 		{
-				if (!self::has($key))
+				if (!$this->has($key))
 				{
-					self::$_lang[$key] = $value;
+					$this->$_lang[$key] = $value;
 					return true;
 				}
 				else
@@ -43,10 +43,10 @@ class Lang
 	* @return null
 	* @throws import_exception if the XML file has got a corrupted structure.
 	*/
-	public static function loadLang()
+	public function loadLang()
 	{
 		// detect the browser language
-		$language = self::detect_browser_language();
+		$language = $this->detect_browser_language();
 
 		// loop through the preferred languages and try to find the related language file
 		foreach ($language as $key => $value)
@@ -80,7 +80,7 @@ class Lang
 		}
 
 		foreach ($langObj as $strings)
-			self::set((string) $strings->attributes()->{'name'}, (string) $strings);
+			$this->set((string) $strings->attributes()->{'name'}, (string) $strings);
 
 		return null;
 	}
@@ -91,9 +91,9 @@ class Lang
 	* @param string $key
 	* @return bool
 	*/
-	public static function has($key)
+	public function has($key)
 	{
-		return isset(self::$_lang[$key]);
+		return isset($this->$_lang[$key]);
 	}
 
 	/**
@@ -102,10 +102,10 @@ class Lang
 	* @param string $key Name of the variable
 	* @return string|null Value of the specified $key
 	*/
-	public static function get($key)
+	public function get($key)
 	{
-		if (self::has($key))
-			return self::$_lang[$key];
+		if ($this->has($key))
+			return $this->$_lang[$key];
 
 		return null;
 	}
@@ -115,9 +115,9 @@ class Lang
 	*
 	* @return array Whole lang
 	*/
-	public static function getAll()
+	public function getAll()
 	{
-		return self::$_lang;
+		return $this->$_lang;
 	}
 
 	/**
@@ -125,7 +125,7 @@ class Lang
 	 *
 	 * @return string the shortened string of the browser's language.
 	 */
-	protected static function detect_browser_language()
+	protected function detect_browser_language()
 	{
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 		{
