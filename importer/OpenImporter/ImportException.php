@@ -28,4 +28,3 @@ class ImportException extends Exception
 		$import->template->error($message, $trace[0]['args'][1], $line, $file);
 	}
 }
-

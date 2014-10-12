@@ -78,4 +78,3 @@ class Cookie
 		return true;
 	}
 }
-

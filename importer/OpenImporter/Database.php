@@ -193,4 +193,3 @@ class Database
 		return mysql_insert_id($this->con);
 	}
 }
-

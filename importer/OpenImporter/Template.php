@@ -593,4 +593,3 @@ class Template
 	<valid>', $test_to ? 'true' : 'false' ,'</valid>';
 	}
 }
-

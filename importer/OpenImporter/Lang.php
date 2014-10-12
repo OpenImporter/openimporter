@@ -150,6 +150,4 @@ class Lang
 		}
 		return $preferred;
 	}
-
 }
-
