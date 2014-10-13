@@ -11,6 +11,7 @@ class Lang
 {
 	private $_lang = array();
 	private $_path = '';
+	protected $_ns = array();
 
 	public function __construct($path = '')
 	{
@@ -18,19 +19,24 @@ class Lang
 	}
 
 	/**
-	* Adds a new variable to lang.
-	*
-	* @param string $key Name of the variable
-	* @param string $value Value of the variable
-	* @throws Exception
-	* @return boolean|null
-	*/
+	 * Adds a new variable to lang.
+	 *
+	 * @param string $key Name of the variable
+	 * @param string $value Value of the variable
+	 * @throws Exception
+	 * @return boolean|null
+	 */
 	protected function set($key, $value)
 	{
 		try
 		{
 				if (!$this->has($key))
 				{
+					if (strpos($key, '.') !== false)
+					{
+						$exp = explode('.', $key);
+						$this->registerNamespace($exp[0]);
+					}
 					$this->_lang[$key] = $value;
 					return true;
 				}
@@ -44,12 +50,18 @@ class Lang
 		}
 	}
 
+	protected registerNamespace($key)
+	{
+		if (!in_array($key, $this->_ns))
+			$this->_ns[] = $key;
+	}
+
 	/**
-	* Loads the language xml file.
-	*
-	* @return null
-	* @throws ImportException if the XML file has got a corrupted structure.
-	*/
+	 * Loads the language xml file.
+	 *
+	 * @return null
+	 * @throws ImportException if the XML file has got a corrupted structure.
+	 */
 	public function loadLang()
 	{
 		// detect the browser language
@@ -93,22 +105,33 @@ class Lang
 	}
 
 	/**
-	* Tests if given $key exists in lang
-	*
-	* @param string $key
-	* @return bool
-	*/
+	 * Tests if given $key exists in lang
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
 	public function has($key)
 	{
 		return isset($this->_lang[$key]);
 	}
 
+	public __get($key)
+	{
+		foreach ($this->_ns as $sn)
+		{
+			if ($this->has($ns . '.' . $key))
+				return $this->get($ns . '.' . $key);
+		}
+
+		return $this->get($key);
+	}
+
 	/**
-	* Returns the value of the specified $key in lang.
-	*
-	* @param string $key Name of the variable
-	* @return string|null Value of the specified $key
-	*/
+	 * Returns the value of the specified $key in lang.
+	 *
+	 * @param string $key Name of the variable
+	 * @return string|null Value of the specified $key
+	 */
 	public function get($key)
 	{
 		if ($this->has($key))
@@ -118,10 +141,10 @@ class Lang
 	}
 
 	/**
-	* Returns the whole lang as an array.
-	*
-	* @return array Whole lang
-	*/
+	 * Returns the whole lang as an array.
+	 *
+	 * @return array Whole lang
+	 */
 	public function getAll()
 	{
 		return $this->_lang;
