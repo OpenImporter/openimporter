@@ -80,6 +80,12 @@ class Importer
 	public $params_template = array();
 
 	/**
+	 * If set to true the template should not render anything
+	 * @var bool
+	 */
+	public $no_template = false;
+
+	/**
 	 * An array of possible importer scripts
 	 * @var array
 	 */
@@ -166,42 +172,9 @@ class Importer
 		$this->template = $template;
 		$this->headers = $headers;
 
-		// Save here so it doesn't get overwritten when sessions are restarted.
-		if (isset($_REQUEST['import_script']))
-			$this->_script = @$_REQUEST['import_script'];
+		$this->_cleanupServerSettings();
 
-		// Clean up after unfriendly php.ini settings.
-		if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, '5.3.0') < 0)
-			@set_magic_quotes_runtime(0);
-
-		error_reporting(E_ALL);
-		ignore_user_abort(true);
-		umask(0);
-
-		ob_start();
-
-		// disable gzip compression if possible
-		if (is_callable('apache_setenv'))
-			apache_setenv('no-gzip', '1');
-
-		if (@ini_get('session.save_handler') == 'user')
-			@ini_set('session.save_handler', 'files');
-		@session_start();
-
-		// Add slashes, as long as they aren't already being added.
-		if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
-			$_POST = stripslashes_recursive($_POST);
-
-		// This is really quite simple; if ?delete is on the URL, delete the importer...
-		if (isset($_GET['delete']))
-		{
-			@unlink(__FILE__);
-			if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-				@unlink(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
-			$_SESSION['import_script'] = null;
-
-			exit;
-		}
+		$this->_findScript();
 
 		// The current step - starts at 0.
 		$_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
@@ -225,14 +198,53 @@ class Importer
 			$_SESSION['import_paths'] = array(@$_POST['path_from'], @$_POST['path_to']);
 		}
 
-		// If we have our script then set it to the session.
 		if (!empty($this->_script))
-			$_SESSION['import_script'] = (string) $this->_script;
+			$this->_preparse_xml(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
+	}
 
-		if (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			$this->_preparse_xml(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
+	/**
+	 * Some serevr settings require more work to be fit for the purpose
+	 */
+	protected function _cleanupServerSettings()
+	{
+		// Clean up after unfriendly php.ini settings.
+		if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, '5.3.0') < 0)
+			@set_magic_quotes_runtime(0);
+
+		error_reporting(E_ALL);
+		ignore_user_abort(true);
+		umask(0);
+
+		ob_start();
+
+		// disable gzip compression if possible
+		if (is_callable('apache_setenv'))
+			apache_setenv('no-gzip', '1');
+
+		if (@ini_get('session.save_handler') == 'user')
+			@ini_set('session.save_handler', 'files');
+		@session_start();
+
+		// Add slashes, as long as they aren't already being added.
+		if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
+			$_POST = stripslashes_recursive($_POST);
+	}
+
+	/**
+	 * Finds the script either in the session or in request
+	 */
+	protected function _findScript()
+	{
+		// Save here so it doesn't get overwritten when sessions are restarted.
+		if (isset($_REQUEST['import_script']))
+			$this->_script = (string) $_REQUEST['import_script'];
+		elseif (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
+			$this->_script = (string) $_SESSION['import_script'];
 		else
+		{
+			$this->_script = '';
 			unset($_SESSION['import_script']);
+		}
 	}
 
 	/**
@@ -240,7 +252,14 @@ class Importer
 	 */
 	public function getResponse()
 	{
-		if (isset($_GET['xml']))
+		// This is really quite simple; if ?delete is on the URL, delete the importer...
+		if (isset($_GET['delete']))
+		{
+			$this->uninstall();
+
+			$this->no_template = true;
+		}
+		elseif (isset($_GET['xml']))
 			$this->is_xml = true;
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
 			call_user_func(array($this, 'doStep' . $_GET['step']));
@@ -248,6 +267,18 @@ class Importer
 			call_user_func(array($this, 'doStep0'));
 
 		return $this;
+	}
+
+	/**
+	 * Deletes the importer files from the server
+	 * @todo doesn't know yet about the new structure.
+	 */
+	protected function uninstall()
+	{
+		@unlink(__FILE__);
+		if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
+			@unlink(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
+		$_SESSION['import_script'] = null;
 	}
 
 	/**

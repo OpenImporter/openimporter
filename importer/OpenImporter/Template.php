@@ -33,8 +33,11 @@ class Template
 	{
 		$this->response = $response;
 
+		// No text? ... so sad. :(
+		if ($this->response->no_template)
+			return;
 		// XML ajax feedback? We can just skip everything else
-		if ($this->response->is_xml)
+		elseif ($this->response->is_xml)
 			$this->xml();
 		elseif ($this->response->is_page)
 		{
