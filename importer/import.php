@@ -197,7 +197,7 @@ class Importer
 		{
 			@unlink(__FILE__);
 			if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-				@unlink(dirname(__FILE__) . '/' . $_SESSION['import_script']);
+				@unlink(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
 			$_SESSION['import_script'] = null;
 
 			exit;
@@ -218,9 +218,9 @@ class Importer
 		elseif (isset($_POST['path_from']) || isset($_POST['path_to']))
 		{
 			if (isset($_POST['path_from']))
-				$_POST['path_from'] = substr($_POST['path_from'], -1) == '/' ? substr($_POST['path_from'], 0, -1) : $_POST['path_from'];
+				$_POST['path_from'] = substr($_POST['path_from'], -1) == DIRECTORY_SEPARATOR ? substr($_POST['path_from'], 0, -1) : $_POST['path_from'];
 			if (isset($_POST['path_to']))
-				$_POST['path_to'] = substr($_POST['path_to'], -1) == '/' ? substr($_POST['path_to'], 0, -1) : $_POST['path_to'];
+				$_POST['path_to'] = substr($_POST['path_to'], -1) == DIRECTORY_SEPARATOR ? substr($_POST['path_to'], 0, -1) : $_POST['path_to'];
 
 			$_SESSION['import_paths'] = array(@$_POST['path_from'], @$_POST['path_to']);
 		}
@@ -229,8 +229,8 @@ class Importer
 		if (!empty($this->_script))
 			$_SESSION['import_script'] = (string) $this->_script;
 
-		if (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . '/' . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
+		if (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
+			$this->_preparse_xml(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
 		else
 			unset($_SESSION['import_script']);
 	}
@@ -307,8 +307,8 @@ class Importer
 						throw new ImportException('XML-Syntax error in file: ' . $entry);
 
 					$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA);
-					$scripts[$from][] = array('path' => $entry, 'name' => $xmlObj->general->name);
-					$all_scripts[] = array('path' => $from . '/' . $entry, 'name' => $xmlObj->general->name);
+					$scripts[$from][] = array('path' => $from . DIRECTORY_SEPARATOR . basename($entry), 'name' => $xmlObj->general->name);
+					$all_scripts[] = array('path' => $from . DIRECTORY_SEPARATOR . basename($entry), 'name' => $xmlObj->general->name);
 				}
 				catch (Exception $e)
 				{
@@ -328,7 +328,7 @@ class Importer
 		{
 			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
-				$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
+				$this->_preparse_xml(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
 			return false;
 		}
 
@@ -1571,7 +1571,7 @@ class Importer
 						list ($custom_avatar_dir) = $this->db->fetch_row($request2);
 						$this->db->free_result($request2);
 
-						$filename = $custom_avatar_dir . '/' . $row['filename'];
+						$filename = $custom_avatar_dir . DIRECTORY_SEPARATOR . $row['filename'];
 					}
 					else
 						$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
@@ -1773,17 +1773,17 @@ function copy_smileys($source, $dest)
 			continue;
 
 		// If we have a directory create it on the destination and copy contents into it!
-		if (is_dir($source . '/' . $file))
+		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
 		{
 			if (!is_dir($dest))
-				@mkdir($dest . '/' . $file, 0777);
-			copy_dir($source . '/' . $file, $dest . '/' . $file);
+				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
+			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
 		}
 		else
 		{
 			if (!is_dir($dest))
-				@mkdir($dest . '/' . $file, 0777);
-			copy($source . '/' . $file, $dest . '/' . $file);
+				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
+			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
 		}
 	}
 	closedir($dir);
@@ -1804,17 +1804,17 @@ function copy_dir($source, $dest)
 		if ($file == '.' || $file == '..')
 			continue;
 			// If we have a directory create it on the destination and copy contents into it!
-		if (is_dir($source . '/'. $file))
+		if (is_dir($source . DIRECTORY_SEPARATOR. $file))
 		{
 			if (!is_dir($dest))
 				@mkdir($dest, 0777);
-			copy_dir($source . '/' . $file, $dest . '/' . $file);
+			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
 		}
 		else
 		{
 			if (!is_dir($dest))
 				@mkdir($dest, 0777);
-			copy($source . '/' . $file, $dest . '/' . $file);
+			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
 		}
 	}
 	closedir($dir);
