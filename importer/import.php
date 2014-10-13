@@ -18,7 +18,7 @@
 @set_error_handler(array('ImportException', 'error_handler_callback'), E_ALL);
 
 require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader('OpenImporter', __DIR__ . '/OpenImporter');
+$classLoader = new SplClassLoader(null, __DIR__ . '/OpenImporter');
 $classLoader->register();
 $template = new Template();
 
@@ -47,7 +47,7 @@ class Importer
 	 * The "translator" (i.e. the Lang object)
 	 * @var object
 	 */
-	protected $lng;
+	public $lng;
 
 	/**
 	 * Our cookie settings
@@ -108,6 +108,12 @@ class Importer
 	 * @var bool
 	 */
 	public $is_xml = false;
+
+	/**
+	 * If render a full page or just a bit
+	 * @var bool
+	 */
+	public $is_page = true;
 
 	/**
 	 * Is there an error?
@@ -283,14 +289,16 @@ class Importer
 				$_SESSION['import_script'] = null;
 		}
 
-		$dir = dir(dirname(__FILE__) . '/Importers/');
+		$dir = dirname(__FILE__) . '/Importers/';
 		$sources = glob($dir . '*', GLOB_ONLYDIR);
 		$all_scripts = array();
 		$scripts = array();
 		foreach ($sources as $source)
 		{
-			$scripts[$source] = array();
-			$possible_scripts = glob($source . '*_importer.xml');
+			$from = basename($source);
+			$scripts[$from] = array();
+			$possible_scripts = glob($source . '/*_importer.xml');
+
 			foreach ($possible_scripts as $entry)
 			{
 				try
@@ -299,8 +307,8 @@ class Importer
 						throw new ImportException('XML-Syntax error in file: ' . $entry);
 
 					$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA);
-					$scripts[$source] = array('path' => $entry, 'name' => $xmlObj->general->name);
-					$all_scripts[] = array('path' => basename($source) . '/' . $entry, 'name' => $xmlObj->general->name);
+					$scripts[$from][] = array('path' => $entry, 'name' => $xmlObj->general->name);
+					$all_scripts[] = array('path' => $from . '/' . $entry, 'name' => $xmlObj->general->name);
 				}
 				catch (Exception $e)
 				{
@@ -312,13 +320,13 @@ class Importer
 		if (isset($_SESSION['import_script']))
 		{
 			if (count($all_scripts) > 1)
-				$this->sources[basename($source)] = $scripts[$source];
+				$this->sources[$from] = $scripts[$from];
 			return false;
 		}
 
-		if (count($scripts) == 1)
+		if (count($all_scripts) == 1)
 		{
-			$_SESSION['import_script'] = basename($scripts[$source][0]['path']);
+			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
 				$this->_preparse_xml(dirname(__FILE__) . '/' . $_SESSION['import_script']);
 			return false;

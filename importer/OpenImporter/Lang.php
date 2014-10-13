@@ -31,7 +31,7 @@ class Lang
 		{
 				if (!$this->has($key))
 				{
-					$this->$_lang[$key] = $value;
+					$this->_lang[$key] = $value;
 					return true;
 				}
 				else
@@ -39,6 +39,7 @@ class Lang
 		}
 		catch(Exception $e)
 		{
+			// @todo this should not be a fatal error
 			ImportException::exception_handler($e);
 		}
 	}
@@ -99,7 +100,7 @@ class Lang
 	*/
 	public function has($key)
 	{
-		return isset($this->$_lang[$key]);
+		return isset($this->_lang[$key]);
 	}
 
 	/**
@@ -111,7 +112,7 @@ class Lang
 	public function get($key)
 	{
 		if ($this->has($key))
-			return $this->$_lang[$key];
+			return $this->_lang[$key];
 
 		return null;
 	}
@@ -123,7 +124,7 @@ class Lang
 	*/
 	public function getAll()
 	{
-		return $this->$_lang;
+		return $this->_lang;
 	}
 
 	/**
