@@ -341,11 +341,11 @@ class Template
 			<h2>', $this->response->lng->get('imp.to_what'), '</h2>
 			<div class="content">
 				<p><label for="source">', $this->response->lng->get('imp.locate_source'), '</label></p>
-				<select name="source" id="source">';
+				<select onchange="toggle_to(this);" name="source" id="source">';
 
 		foreach ($scripts as $key => $values)
 			echo '
-					<option value="', $key, '">', $key, '</option>';
+					<option value="', preg_replace('~[^\w\d]~', '_', $key), '">', $key, '</option>';
 
 		echo '
 				</select>
@@ -353,7 +353,7 @@ class Template
 
 		echo '
 			<h2>', $this->response->lng->get('imp.which_software'), '</h2>
-			<div class="content">';
+			<div id="destinations" class="content">';
 
 		// We found at least one?
 		if (!empty($scripts))
@@ -361,10 +361,10 @@ class Template
 			echo '
 				<p>', $this->response->lng->get('imp.multiple_files'), '</p>';
 
-			foreach ($scripts as $value)
+			foreach ($scripts as $key => $value)
 			{
 				echo '
-				<ul>';
+				<ul id="', preg_replace('~[^\w\d]~', '_', $key), '">';
 
 				// Let's loop and output all the found scripts.
 				foreach ($value as $script)
@@ -393,7 +393,16 @@ class Template
 
 		echo '
 			<script>
-				
+				function toggle_to(e)
+				{
+					var dest_container = document.getElementById(\'destinations\');
+					var dests = dest_container.getElementsByTagName(\'ul\');
+					for (var i = 0; i < dests.length; i++)
+						dests[i].style.display = \'none\';
+
+					document.getElementById(e.value).style.display = \'block\';
+				}
+				toggle_to(document.getElementById(\'source\'));
 			</script>
 			</div>';
 	}
