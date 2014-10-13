@@ -29,6 +29,31 @@ class Template
 			</div>';
 	}
 
+	public function render($response)
+	{
+		$this->response = $response;
+
+		// XML ajax feedback? We can just skip everything else
+		if ($this->response->is_xml)
+			$this->xml();
+		elseif ($this->response->is_page)
+		{
+			$this->header(!$this->response->template_error);
+
+			if ($this->response->template_error)
+			{
+				foreach ($this->response->error_params as $msg)
+					$this->error($msg);
+			}
+
+			call_user_func_array(array($this, $this->response->use_template), $this->response->params_template);
+
+			$this->footer(!$this->response->template_error);
+		}
+		else
+			call_user_func_array(array($this, $this->response->use_template), $this->response->params_template);
+	}
+
 	/**
 	* Show the footer.
 	*
@@ -45,6 +70,7 @@ class Template
 	</body>
 </html>';
 	}
+
 	/**
 	* Show the header.
 	*
@@ -312,6 +338,20 @@ class Template
 	public function select_script($scripts)
 	{
 		echo '
+			<h2>', $this->lng->get('imp.from_what'), '</h2>
+			<div class="content">
+				<p><label for="source">', $this->lng->get('imp.locate_source'), '</label></p>
+				<select name="source" id="source">';
+
+		foreach ($object->sources as $key => $value)
+			echo '
+					<option value="', $key, '">', $value['source'], '</option>';
+
+		echo '
+				</select>
+			</div>'
+
+		echo '
 			<h2>', $this->lng->get('imp.which_software'), '</h2>
 			<div class="content">';
 
@@ -319,19 +359,26 @@ class Template
 		if (!empty($scripts))
 		{
 			echo '
-				<p>', $this->lng->get('imp.multiple_files'), '</p>
+				<p>', $this->lng->get('imp.multiple_files'), '</p>';
+
+			foreach ($this->sources as $value)
+			{
+				echo '
 				<ul>';
 
-			// Let's löop and output all the found scripts.
-			foreach ($scripts as $script)
-				echo '
+				// Let's loop and output all the found scripts.
+				foreach ($value['destinations'] as $script)
+					echo '
 					<li>
 						<a href="', $_SERVER['PHP_SELF'], '?import_script=', $script['path'], '">', $script['name'], '</a>
 						<span>(', $script['path'], ')</span>
 					</li>';
 
+				echo '
+				</ul>';
+			}
+
 			echo '
-				</ul>
 			</div>
 			<h2>', $this->lng->get('imp.not_here'), '</h2>
 			<div class="content">
@@ -345,6 +392,9 @@ class Template
 				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('imp.try_again'), '</a>';
 
 		echo '
+			<script>
+				
+			</script>
 			</div>';
 	}
 
@@ -428,11 +478,14 @@ class Template
 			</div>';
 
 		if (!empty($object->possible_scripts))
+		{
 			echo '
 			<h2>', $this->lng->get('imp.not_this'),'</h2>
 			<div class="content">
 				<p>', sprintf($this->lng->get('imp.pick_different'), $_SERVER['PHP_SELF']), '</p>
 			</div>';
+		}
+
 		echo '
 			<script type="text/javascript">
 				document.getElementById(\'toggle_button\').onclick = function ()

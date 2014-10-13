@@ -1,0 +1,460 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>UBB Threads 7.5.x</name>
+		<version>ElkArte 1.0</version>
+		<settings>/includes/config.inc.php</settings>
+		<from_prefix>`$db_name`.$db_prefix</from_prefix>
+		<table_test>{$from_prefix}USERS;</table_test>
+		<custom_functions><![CDATA[
+			function fix_quotes($string, $new_lines = true)
+			{
+				if ($new_lines)
+					return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'))
+				else
+					return htmlspecialchars($string);
+			}
+			function convert_birthdate($date)
+			{
+				$tmp_birthdate = explode('/', $date);
+				if (count($tmp_birthdate) == 3)
+				{
+					if (strlen($tmp_birthdate[2]) != 4)
+						$tmp_birthdate[2] = '0004';
+					return $tmp_birthdate[2] . '-' . str_pad($tmp_birthdate[0], 2, "0", STR_PAD_LEFT) . '-' . str_pad($tmp_birthdate[1], 2, "0", STR_PAD_LEFT);
+				}
+				else
+					return '0001-01-01';
+			}
+		]]></custom_functions>
+	</general>
+	<step type="mandatory">
+		<title>Importing members</title>
+		<detect>{$from_prefix}USERS</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>TRUNCATE {$to_prefix}members;</presql>
+		<preparsecode>
+			$row['signature'] = fix_quotes($row['signature'], false);
+			$row['birthdate'] = convert_birthdate($row['birthdate']);
+		</preparsecode>
+		<query>
+			SELECT
+				m.USER_ID AS id_member, SUBSTRING(m.USER_LOGIN_NAME, 1, 80) AS member_name,
+				IFNULL(m.USER_REGISTERED_ON, 0) AS date_registered, up.USER_TOTAL_POSTS as posts,
+				CASE
+					WHEN m.USER_MEMBERSHIP_LEVEL = 'Administrator' THEN 1
+					WHEN m.USER_MEMBERSHIP_LEVEL = 'Moderator' THEN 3
+					ELSE 0
+				END as id_group,
+				IFNULL(ud.USER_LAST_VISIT_TIME, 0) as last_login, SUBSTRING(m.USER_DISPLAY_NAME, 1, 255) AS real_name,
+				IFNULL(up.USER_TOTAL_PM, 0) as instant_messages, m.USER_REGISTRATION_EMAIL AS email_address,
+
+				USER_BIRTHDAY as birthdate,
+
+				SUBSTRING(up.USER_HOMEPAGE, 1, 255) AS website_url, up.USER_LOCATION as location,
+				SUBSTRING(up.USER_ICQ, 1, 255) AS icq, SUBSTRING(up.USER_AIM, 1, 16) AS aim,
+				SUBSTRING(up.USER_YAHOO, 1, 32) AS yim, SUBSTRING(up.USER_MSN, 1, 255) AS msn, m.USER_PASSWORD as passwd,
+
+				CASE
+					WHEN up.USER_VISIBLE_ONLINE_STATUS = 'no' THEN 0
+					ELSE 1
+				END as show_online,
+				1 as hide_email, SUBSTRING(up.USER_DEFAULT_SIGNATURE, 1, 65534) AS signature,
+
+				up.USER_AVATAR as avatar,
+
+				m.USER_REGISTRATION_IP AS member_ip, ud.USER_LAST_IP as member_ip2,
+
+				m.USER_IS_APPROVED = 'yes' as is_activated,
+
+				SUBSTRING(m.USER_PASSWORD, 1, 64) AS passwd, '' AS password_salt
+			FROM {$from_prefix}USERS AS m
+				LEFT JOIN {$from_prefix}USER_PROFILE AS up ON (m.USER_ID = up.USER_ID)
+				LEFT JOIN {$from_prefix}USER_DATA as ud ON (m.USER_ID = ud.USER_ID);
+		</query>
+	</step>
+
+	<step>
+		<title>Importing categories</title>
+		<detect>{$from_prefix}CATEGORIES</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT CATEGORY_ID AS id_cat, CATEGORY_TITLE as name, CATEGORY_SORT_ORDER AS cat_order
+			FROM {$from_prefix}CATEGORIES;
+		</query>
+	</step>
+	<step>
+		<title>Importing boards</title>
+		<detect>{$from_prefix}FORUMS</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>TRUNCATE {$to_prefix}boards;</presql>
+		<preparsecode>
+			$row['description'] = fix_quotes($row['description'], false);
+		</preparsecode>
+		<query>
+			SELECT
+				FORUM_ID AS id_board, CATEGORY_ID as id_cat, SUBSTRING(FORUM_TITLE, 1, 255) AS name,
+				SUBSTRING(FORUM_DESCRIPTION, 1, 65534) AS description, FORUM_SORT_ORDER AS board_order,
+				FORUM_POSTS AS num_posts, IFNULL(FORUM_PARENT, 0) as id_parent, FORUM_POSTS_COUNT AS count_posts, 
+				'' AS member_groups
+			FROM {$from_prefix}FORUMS;
+		</query>
+	</step>
+	<step>
+		<title>Importing topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>TRUNCATE {$to_prefix}topics;</presql>
+		<query>
+			SELECT
+				id_topic, is_sticky, id_board, id_first_msg, id_last_msg, id_member_started,
+				id_member_updated, id_poll,id_previous_board, id_previous_topic, num_replies,
+				num_views, locked, unapproved_posts, approved
+			FROM {$from_prefix}topics;
+		</query>
+	</step>
+	<step>
+		<title>Importing messages</title>
+		<detect>{$from_prefix}messages</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				id_msg, id_topic, id_board, poster_time, id_member, id_msg_modified, subject, poster_name,
+				poster_email, poster_ip, smileys_enabled, modified_time, modified_name, body, icon, approved
+			FROM {$from_prefix}messages;
+		</query>
+	</step>
+	<step>
+		<title>Importing polls</title>
+		<detect>{$from_prefix}polls</detect>
+		<destination>{$to_prefix}polls</destination>
+		<presql>TRUNCATE {$to_prefix}polls;</presql>
+		<query>
+			SELECT
+				id_poll, question, voting_locked, max_votes, expire_time, hide_results, change_vote,
+				guest_vote, num_guest_voters, reset_poll, id_member, poster_name
+			FROM {$from_prefix}polls;
+		</query>
+	</step>
+	<step>
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}poll_choices</detect>
+		<destination>{$to_prefix}poll_choices</destination>
+		<presql>TRUNCATE {$to_prefix}poll_choices;</presql>
+		<query>
+			SELECT
+				id_poll, id_choice, label, votes
+			FROM {$from_prefix}poll_choices;
+		</query>
+	</step>
+	<step>
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}log_polls</detect>
+		<destination>{$to_prefix}log_polls</destination>
+		<presql>TRUNCATE {$to_prefix}log_polls;</presql>
+		<query>
+			SELECT
+				id_poll, id_member, id_choice
+			FROM {$from_prefix}log_polls;
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}personal_messages</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>TRUNCATE {$to_prefix}personal_messages;</presql>
+		<options>
+			<limit>200</limit>
+		</options>
+		<query>
+			SELECT
+				id_pm, id_pm_head, id_member_from, deleted_by_sender, from_name,
+				msgtime, subject, body
+			FROM {$from_prefix}personal_messages;
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}pm_recipients</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<presql>TRUNCATE {$to_prefix}pm_recipients;</presql>
+		<query>
+			SELECT
+				id_pm, id_member, labels, bcc, is_read, is_new, deleted
+			FROM {$from_prefix}pm_recipients;
+		</query>
+	</step>
+	<step>
+		<title>Importing pm rules</title>
+		<detect>{$from_prefix}pm_rules</detect>
+		<destination>{$to_prefix}pm_rules</destination>
+		<presql>TRUNCATE {$to_prefix}pm_rules;</presql>
+		<query>
+			SELECT
+				id_rule, id_member, rule_name, criteria, actions, delete_pm, is_or
+			FROM {$from_prefix}pm_rules;
+		</query>
+	</step>
+	<step>
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}moderators</detect>
+		<destination>{$to_prefix}moderators</destination>
+		<presql>TRUNCATE {$to_prefix}moderators;</presql>
+		<query>
+			SELECT
+				id_board, id_member
+			FROM {$from_prefix}moderators;
+		</query>
+	</step>
+	<step>
+		<title>Importing mark read data (boards)</title>
+		<detect>{$from_prefix}log_boards</detect>
+		<destination>{$to_prefix}log_boards</destination>
+		<presql>TRUNCATE {$to_prefix}log_boards;</presql>
+		<query>
+			SELECT
+				id_member, id_board, id_msg
+			FROM {$from_prefix}log_boards;
+		</query>
+	</step>
+	<step>
+		<title>Importing mark read data (topics)</title>
+		<detect>{$from_prefix}log_topics</detect>
+		<destination>{$to_prefix}log_topics</destination>
+		<presql>TRUNCATE {$to_prefix}log_topics;</presql>
+		<query>
+			SELECT
+				id_member, id_topic, id_msg
+			FROM {$from_prefix}log_topics;
+		</query>
+	</step>
+	<step>
+		<title>Importing mark read data</title>
+		<detect>{$from_prefix}log_mark_read</detect>
+		<destination>{$to_prefix}log_mark_read</destination>
+		<presql>TRUNCATE {$to_prefix}log_mark_read;</presql>
+		<query>
+			SELECT
+				id_member, id_board, id_msg
+			FROM {$from_prefix}log_mark_read;
+		</query>
+	</step>
+	<step>
+		<title>Importing notifications</title>
+		<detect>{$from_prefix}log_notify</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<presql>TRUNCATE {$to_prefix}log_notify;</presql>
+		<query>
+			SELECT
+				id_member, id_topic, id_board, sent
+			FROM {$from_prefix}log_notify;
+		</query>
+	</step>
+	<step>
+		<title>Importing membergroups</title>
+		<detect>{$from_prefix}membergroups</detect>
+		<destination>{$to_prefix}membergroups</destination>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, group_name, description, online_color, min_posts,
+				max_messages, stars AS icons, group_type, hidden, id_parent
+			FROM {$from_prefix}membergroups;
+		</query>
+	</step>
+	<step>
+		<title>Importing group moderators</title>
+		<detect>{$from_prefix}group_moderators</detect>
+		<destination>{$to_prefix}group_moderators</destination>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, id_member
+			FROM {$from_prefix}group_moderators;
+		</query>
+	</step>
+	<step>
+		<title>Importing permission profiles</title>
+		<detect>{$from_prefix}permission_profiles</detect>
+		<destination>{$to_prefix}permission_profiles</destination>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_profile, profile_name
+			FROM {$from_prefix}permission_profiles;
+		</query>
+	</step>
+	<step>
+		<title>Importing permissions</title>
+		<detect>{$from_prefix}permissions</detect>
+		<destination>{$to_prefix}permissions</destination>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, permission, add_deny
+			FROM {$from_prefix}permissions;
+		</query>
+	</step>
+	<step>
+		<title>Importing board permissions</title>
+		<detect>{$from_prefix}board_permissions</detect>
+		<destination>{$to_prefix}board_permissions</destination>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, id_profile, permission, add_deny
+			FROM {$from_prefix}board_permissions;
+		</query>
+	</step>
+	<step>
+		<title>Importing smileys</title>
+		<detect>{$from_prefix}smileys</detect>
+		<destination>{$to_prefix}smileys</destination>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_smiley, code, filename, description, smiley_row,
+				smiley_order, hidden
+			FROM {$from_prefix}smileys;
+		</query>
+	</step>
+	<step>
+		<title>Copying smileys</title>
+		<detect>{$from_prefix}smileys</detect>
+		<code>
+			$request = $db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable='smileys_dir';");
+			list ($we_smileys_dir) = $db->fetch_row($request);
+
+			$request = $db->query("
+				SELECT value
+				FROM {$from_prefix}settings
+				WHERE variable='smileys_dir';");
+			list ($smf_smileys_dir) = $db->fetch_row($request);
+
+			copy_smileys($smf_smileys_dir, $we_smileys_dir);
+		</code>
+	</step>
+	
+	<step>
+		<title>Importing statistics (activity log)</title>
+		<detect>{$from_prefix}log_activity</detect>
+		<destination>{$to_prefix}log_activity</destination>
+		<presql>TRUNCATE {$to_prefix}log_activity;</presql>
+		<query>
+			SELECT
+				date, hits, topics, posts, registers, most_on
+			FROM {$from_prefix}log_activity;
+		</query>
+	</step>
+	<step>
+		<title>Importing logged actions</title>
+		<detect>{$from_prefix}log_actions</detect>
+		<destination>{$to_prefix}log_actions</destination>
+		<presql>TRUNCATE {$to_prefix}log_actions;</presql>
+		<query>
+			SELECT
+				id_action, id_log, log_time, id_member, ip, action, id_board,
+				id_topic, id_msg, extra
+			FROM {$from_prefix}log_actions;
+		</query>
+	</step>
+	<step>
+		<title>Importing reported posts</title>
+		<detect>{$from_prefix}log_reported</detect>
+		<destination>{$to_prefix}log_reported</destination>
+		<presql>TRUNCATE {$to_prefix}log_reported;</presql>
+		<query>
+			SELECT
+				id_report, id_msg, id_topic, id_board, id_member, membername, subject,
+				body, time_started, time_updated, num_reports, closed, ignore_all
+			FROM {$from_prefix}log_reported;
+		</query>
+	</step>
+	<step>
+		<title>Importing reported comments</title>
+		<detect>{$from_prefix}log_reported_comments</detect>
+		<destination>{$to_prefix}log_reported_comments</destination>
+		<presql>TRUNCATE {$to_prefix}log_reported_comments;</presql>
+		<query>
+			SELECT
+				id_comment, id_report, id_member, membername, comment, time_sent
+			FROM {$from_prefix}log_reported_comments;
+		</query>
+	</step>
+	<step>
+		<title>Importing spider hits</title>
+		<detect>{$from_prefix}log_spider_hits</detect>
+		<destination>{$to_prefix}log_spider_hits</destination>
+		<presql>TRUNCATE {$to_prefix}log_spider_hits;</presql>
+		<query>
+			SELECT
+				id_hit, id_spider, log_time, url, processed
+			FROM {$from_prefix}log_spider_hits;
+		</query>
+	</step>
+	<step>
+		<title>Importing spider stats</title>
+		<detect>{$from_prefix}log_spider_stats</detect>
+		<destination>{$to_prefix}log_spider_stats</destination>
+		<presql>TRUNCATE {$to_prefix}log_spider_stats;</presql>
+		<query>
+			SELECT
+				id_spider, page_hits, last_seen, stat_date
+			FROM {$from_prefix}log_spider_stats;
+		</query>
+	</step>
+	<step>
+		<title>Importing subscriptions</title>
+		<detect>{$from_prefix}subscriptions</detect>
+		<destination>{$to_prefix}subscriptions</destination>
+		<presql>TRUNCATE {$to_prefix}subscriptions;</presql>
+		<query>
+			SELECT
+				id_subscribe, name, description, cost, length, id_group,
+				add_groups, active, repeatable, allow_partial, reminder, email_complete
+			FROM {$from_prefix}subscriptions;
+		</query>
+	</step>
+	<step>
+		<title>Importing pretty topic urls</title>
+		<detect>{$from_prefix}pretty_topic_urls</detect>
+		<destination>{$to_prefix}pretty_topic_urls</destination>
+		<presql>TRUNCATE {$to_prefix}pretty_topic_urls;</presql>
+		<query>
+			SELECT
+				id_topic, pretty_url
+			FROM {$from_prefix}pretty_topic_urls;
+		</query>
+	</step>
+	<step>
+		<title>Importing pretty urls cache</title>
+		<detect>{$from_prefix}pretty_urls_cache</detect>
+		<destination>{$to_prefix}pretty_urls_cache</destination>
+		<presql>TRUNCATE {$to_prefix}pretty_urls_cache;</presql>
+		<query>
+			SELECT
+				url_id, replacement
+			FROM {$from_prefix}pretty_urls_cache;
+		</query>
+	</step>
+</importer>

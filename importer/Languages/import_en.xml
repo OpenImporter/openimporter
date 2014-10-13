@@ -18,8 +18,10 @@
 	<item name="imp.before_continue">Before you continue</item>
 	<item name="imp.before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly. It copies members, posts and other data from your &quot;source&quot; installation of %s into the destination forum, so it won't work without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.</p>]]></item>
 	<item name="imp.destination_installed">Try again!</item>
+	<item name="imp.from_what">Import from which platform?</item>
 	<item name="imp.where">Where are they?</item>
 	<item name="imp.locate_destination">The importer should only need to know where the two installations are, after which it should be able to handle everything for itself.</item>
+	<item name="imp.locate_destination">The importer need to know from what software you are importing your forum to.</item>
 	<item name="imp.advanced_options">Advanced options</item>
 	<item name="imp.path_to_destination">Path to destination</item>
 	<item name="imp.path_to_source">Path to</item>
