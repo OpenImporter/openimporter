@@ -1089,23 +1089,39 @@ class Importer
 	 */
 	public function doStep2()
 	{
-		global $db, $to_prefix;
-
 		$_GET['step'] = '2';
-		$substeps = count($this->xml->steps2->step);
 
 		$this->template->step2();
 
-		foreach ($this->xml->steps2->step as $key => $step)
+		if ($this->xml->steps2->className !== null)
 		{
-			if ($_GET['substep'] <= $key)
-			{
-				$this->_processSteps($step);
-				pastTime($key + 1);
-			}
-		}
+			$instance = new $this->xml->steps2->className($this->db, $this->to_prefix);
 
-		$this->template->status($key + 1, 1, false, true);
+			$methods = get_class_methods($instance)
+			$substeps = array();
+			$substep = 0;
+			foreach ($methods as $method)
+			{
+				if (substr($method, 0, 7) !== 'substep')
+					continue;
+
+				$substeps[substr($method, 7)] = $method;
+			}
+			ksort($substeps);
+
+			foreach ($substeps as $key => $method)
+			{
+				if ($_GET['substep'] <= $key)
+				{
+					call_user_func(array($instance, $method));
+				}
+
+				$substep++;
+				pastTime($substep);
+			}
+
+			$this->template->status($key + 1, 1, false, true);
+		}
 
 		return $this->doStep3();
 	}

@@ -331,78 +331,7 @@
 		</step>
 	</steps1>
 	<steps2>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep0();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep1();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep2();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep3();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep4();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep5();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep6();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep7();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep8();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep9();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep10();
-			</code>
-		</step>
-		<step>
-			<code>
-				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
-				$elkarte_1_0_importer->substep11();
-			</code>
-		</step>
+		<className>elkarte_1_0_importer</className>
 	</steps2>
 	<steps3>
 		<step>
