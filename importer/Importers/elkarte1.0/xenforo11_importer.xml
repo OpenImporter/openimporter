@@ -180,74 +180,74 @@
 	<steps2>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep0();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep0();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep1();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep1();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep2();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep2();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep3();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep3();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep4();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep4();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep5();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep5();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep6();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep6();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep7();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep7();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep8();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep8();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep9();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep9();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep10();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep10();
 			</code>
 		</step>
 		<step>
 			<code>
-				$smf2_0_importer = new smf2_0_importer($this->db, $this->to_prefix);
-				$smf2_0_importer->substep11();
+				$elkarte_1_0_importer = new elkarte_1_0_importer($this->db, $this->to_prefix);
+				$elkarte_1_0_importer->substep11();
 			</code>
 		</step>
 	</steps2>

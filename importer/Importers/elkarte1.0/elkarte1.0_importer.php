@@ -1,6 +1,6 @@
 <?php
 
-class smf2_0_importer
+class elkarte_1_0_importer
 {
 	protected $db = null;
 	protected $to_prefix = '';

@@ -285,8 +285,10 @@ class Importer
 	{
 		$this->_preparse_xml($file);
 
-		// Maybe come php helper functions?
-		$possible_php = str_replace('.xml', '.php', $file);
+		// Maybe come with php helper functions?
+		$path = dirname($file);
+		$possible_php = $path . '/' . basename($path) . '_importer.php';
+		
 		if (file_exists($possible_php))
 			require_once($possible_php);
 	}
