@@ -1109,14 +1109,12 @@ class Importer
 	{
 		global $db, $boardurl;
 
-		$to_prefix = $this->to_prefix;
+		$substeps = count($this->xml->steps3->step);
 
-		// add some importer information.
-		$this->db->query("
-			REPLACE INTO {$to_prefix}settings (variable, value)
-				VALUES ('import_time', " . time() . "),
-					('enable_password_conversion', '1'),
-					('imported_from', '" . $_SESSION['import_script'] . "')");
+		foreach ($this->xml->steps3->step as $key => $step)
+		{
+			$this->_processSteps($step);
+		}
 
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
 

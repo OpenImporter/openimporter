@@ -3,35 +3,6 @@
 class elkarte10_to_smf20
 {
 	/**
-	 * we are done :)
-	 *
-	 * @global Database $db
-	 * @global type $boardurl
-	 * @return boolean
-	 */
-	public function doStep3()
-	{
-		global $db, $boardurl;
-
-		$to_prefix = $this->to_prefix;
-
-		// add some importer information.
-		$this->db->query("
-			REPLACE INTO {$to_prefix}settings (variable, value)
-				VALUES ('import_time', " . time() . "),
-					('enable_password_conversion', '1'),
-					('imported_from', '" . $_SESSION['import_script'] . "')");
-
-		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
-
-		$this->use_template = 'step3';
-		$this->params_template = array($this->xml->general->name, $boardurl, $writable);
-
-		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
-		return true;
-	}
-
-	/**
 	 * helper function for old attachments
 	 *
 	 * @param string $filename
