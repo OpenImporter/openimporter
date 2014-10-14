@@ -199,7 +199,7 @@ class Importer
 		}
 
 		if (!empty($this->_script))
-			$this->_preparse_xml(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
 	/**
@@ -279,6 +279,16 @@ class Importer
 		if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
 			@unlink(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
 		$_SESSION['import_script'] = null;
+	}
+
+	protected function _loadImporter($file)
+	{
+		$this->_preparse_xml($file);
+
+		// Maybe come php helper functions?
+		$possible_php = str_replace('.xml', '.php', $file);
+		if (file_exists($possible_php))
+			require_once($possible_php);
 	}
 
 	/**
