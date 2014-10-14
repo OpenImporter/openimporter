@@ -668,7 +668,7 @@ class Importer
 
 		if ($error_message !== null)
 		{
-			$template->footer();
+			$this->template->footer();
 			exit;
 		}
 
@@ -704,10 +704,7 @@ class Importer
 				global $$global;
 
 		$this->cookie->set(array($_POST['path_to'], $_POST['path_from']));
-		$current_data = '';
 		$substep = 0;
-		$special_table = null;
-		$special_code = null;
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
 		// @TODO: check if this is needed
 		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
@@ -715,6 +712,8 @@ class Importer
 		// Skipping steps?
 		if (isset($_SESSION['do_steps']))
 			$do_steps = $_SESSION['do_steps'];
+		else
+			$do_steps = array();
 
 		//calculate our overall time and create the progress bar
 		if(!isset($_SESSION['import_overall']))
@@ -750,7 +749,7 @@ class Importer
 			$_SESSION['import_progress'] = 0;
 
 		foreach ($this->xml->steps1->step as $step)
-			$this->_processSteps($step);
+			$this->_processSteps($step, $substep, $do_steps);
 
 		$_GET['substep'] = 0;
 		$_REQUEST['start'] = 0;
@@ -758,8 +757,10 @@ class Importer
 		return $this->doStep2();
 	}
 
-	protected function _processSteps($step)
+	protected function _processSteps($step, &$substep, &$do_steps)
 	{
+		$to_prefix = $this->to_prefix;
+
 		// Reset some defaults
 		$current_data = '';
 		$special_table = null;
@@ -1132,11 +1133,9 @@ class Importer
 	 */
 	public function doStep3()
 	{
-		global $db, $boardurl;
+		global $boardurl;
 
-		$substeps = count($this->xml->steps3->step);
-
-		foreach ($this->xml->steps3->step as $key => $step)
+		foreach ($this->xml->steps3->step as $step)
 		{
 			$this->_processSteps($step);
 		}
@@ -1406,6 +1405,7 @@ function fix_charset($text)
 				  ($num < 0x10000 ? chr(224 | $num >> 12) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63) :
 				  chr(240 | $num >> 18) . chr(128 | $num >> 12 & 63) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63))));');
 
+		// @todo use preg_replace_callback
 		$buf = preg_replace('~(&#(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(\\2)', $buf);
 		$buf = preg_replace('~(&#x(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(0x\\2)', $buf);
 	}
