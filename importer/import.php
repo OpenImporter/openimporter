@@ -564,7 +564,7 @@ class Importer
 		$steps = array();
 		$steps_count = 0;
 
-		foreach ($this->xml->step as $xml_steps)
+		foreach ($this->xml->steps1->step as $xml_steps)
 		{
 			$steps_count++;
 
@@ -711,7 +711,7 @@ class Importer
 			$counter_current_step = 0;
 
 			// loop through each step
-			foreach ($this->xml->step as $counts)
+			foreach ($this->xml->steps1->step as $counts)
 			{
 				if ($counts->detect)
 				{
@@ -737,7 +737,17 @@ class Importer
 		if(!isset($_SESSION['import_progress']))
 			$_SESSION['import_progress'] = 0;
 
-		foreach ($this->xml->step as $steps)
+		$this->_processSteps($this->xml->steps1->step);
+
+		$_GET['substep'] = 0;
+		$_REQUEST['start'] = 0;
+
+		return $this->doStep2();
+	}
+
+	protected function _processSteps($steps)
+	{
+		foreach ($steps as $step)
 		{
 			// Reset some defaults
 			$current_data = '';
@@ -747,13 +757,13 @@ class Importer
 			// Increase the substep slightly...
 			pastTime(++$substep);
 
-			$_SESSION['import_steps'][$substep]['title'] = (string) $steps->title;
+			$_SESSION['import_steps'][$substep]['title'] = (string) $step->title;
 			if (!isset($_SESSION['import_steps'][$substep]['status']))
 				$_SESSION['import_steps'][$substep]['status'] = 0;
 
 			// any preparsing code here?
-			if (isset($steps->preparsecode) && !empty($steps->preparsecode))
-				$special_code = $this->_fix_params((string) $steps->preparsecode);
+			if (isset($step->preparsecode) && !empty($step->preparsecode))
+				$special_code = $this->_fix_params((string) $step->preparsecode);
 
 			$do_current = $substep >= $_GET['substep'];
 
@@ -763,9 +773,9 @@ class Importer
 				$_SESSION['import_steps'][$substep]['presql'] = true;
 			}
 			// Detect the table, then count rows.. 
-			elseif ($steps->detect)
+			elseif ($step->detect)
 			{
-				$count = $this->_fix_params((string) $steps->detect);
+				$count = $this->_fix_params((string) $step->detect);
 				$table_test = $this->db->query("
 					SELECT COUNT(*)
 					FROM $count", true);
@@ -790,9 +800,9 @@ class Importer
 			}
 
 			// pre sql queries first!!
-			if (isset($steps->presql) && !isset($_SESSION['import_steps'][$substep]['presql']))
+			if (isset($step->presql) && !isset($_SESSION['import_steps'][$substep]['presql']))
 			{
-				$presql = $this->_fix_params((string) $steps->presql);
+				$presql = $this->_fix_params((string) $step->presql);
 				$presql_array = explode(';', $presql);
 				if (isset($presql_array) && is_array($presql_array))
 				{
@@ -808,17 +818,17 @@ class Importer
 
 			if ($special_table === null)
 			{
-				$special_table = strtr(trim((string) $steps->destination), array('{$to_prefix}' => $this->to_prefix));
+				$special_table = strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix));
 				$special_limit = 500;
 			}
 			else
 				$special_table = null;
 
-			if (isset($steps->query))
-				$current_data = substr(rtrim($this->_fix_params((string) $steps->query)), 0, -1);
+			if (isset($step->query))
+				$current_data = substr(rtrim($this->_fix_params((string) $step->query)), 0, -1);
 
-			if (isset($steps->options->limit))
-				$special_limit = $steps->options->limit;
+			if (isset($step->options->limit))
+				$special_limit = $step->options->limit;
 
 			if (!$do_current)
 			{
@@ -827,10 +837,10 @@ class Importer
 			}
 
 			// codeblock?
-			if (isset($steps->code))
+			if (isset($step->code))
 			{
 				// execute our code block
-				$special_code = $this->_fix_params((string) $steps->code);
+				$special_code = $this->_fix_params((string) $step->code);
 				eval($special_code);
 				// reset some defaults
 				$current_data = '';
@@ -844,16 +854,16 @@ class Importer
 			}
 
 			// sql block?
-			if (!empty($steps->query))
+			if (!empty($step->query))
 			{
 				if (strpos($current_data, '{$') !== false)
 					$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
 
-				if (isset($steps->detect))
+				if (isset($step->detect))
 				{
 					$counter = 0;
 
-					$count = $this->_fix_params((string) $steps->detect);
+					$count = $this->_fix_params((string) $step->detect);
 					$result2 = $this->db->query("
 						SELECT COUNT(*)
 						FROM $count");
@@ -863,14 +873,14 @@ class Importer
 				}
 
 				// create some handy shortcuts
-				$ignore = ((isset($steps->options->ignore) && $steps->options->ignore == false) || isset($steps->options->replace)) ? false : true;
-				$replace = (isset($steps->options->replace) && $steps->options->replace == true) ? true : false;
-				$no_add = (isset($steps->options->no_add) && $steps->options->no_add == true) ? true : false;
-				$ignore_slashes = (isset($steps->options->ignore_slashes) && $steps->options->ignore_slashes == true) ? true : false;
+				$ignore = ((isset($step->options->ignore) && $step->options->ignore == false) || isset($step->options->replace)) ? false : true;
+				$replace = (isset($step->options->replace) && $step->options->replace == true) ? true : false;
+				$no_add = (isset($step->options->no_add) && $step->options->no_add == true) ? true : false;
+				$ignore_slashes = (isset($step->options->ignore_slashes) && $step->options->ignore_slashes == true) ? true : false;
 
 				if (isset($import_table) && $import_table !== null && strpos($current_data, '%d') !== false)
 				{
-					preg_match('~FROM [(]?([^\s,]+)~i', (string) $steps->detect, $match);
+					preg_match('~FROM [(]?([^\s,]+)~i', (string) $step->detect, $match);
 					if (!empty($match))
 					{
 						$result = $this->db->query("
@@ -938,7 +948,7 @@ class Importer
 						$rows = array();
 						$keys = array();
 
-						if (isset($steps->detect))
+						if (isset($step->detect))
 							$_SESSION['import_progress'] += $special_limit;
 
 						while ($row = $this->db->fetch_assoc($special_result))
@@ -1058,11 +1068,6 @@ class Importer
 			$_SESSION['import_steps'][$substep]['status'] = 1;
 			flush();
 		}
-
-		$_GET['substep'] = 0;
-		$_REQUEST['start'] = 0;
-
-		return $this->doStep2();
 	}
 
 	/**
