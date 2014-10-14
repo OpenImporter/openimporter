@@ -807,7 +807,6 @@ class Importer
 			$current_data = '';
 			$special_table = null;
 			$special_code = null;
-			continue;
 		}
 
 		// pre sql queries first!!
@@ -844,7 +843,6 @@ class Importer
 		if (!$do_current)
 		{
 			$current_data = '';
-			continue;
 		}
 
 		// codeblock?
@@ -861,7 +859,6 @@ class Importer
 				$this->template->status($substep, 1, false, true);
 			$_SESSION['import_steps'][$substep]['status'] = 1;
 			flush();
-			continue;
 		}
 
 		// sql block?
@@ -1097,7 +1094,7 @@ class Importer
 		{
 			$instance = new $this->xml->steps2->className($this->db, $this->to_prefix);
 
-			$methods = get_class_methods($instance)
+			$methods = get_class_methods($instance);
 			$substeps = array();
 			$substep = 0;
 			foreach ($methods as $method)

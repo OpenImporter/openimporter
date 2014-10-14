@@ -50,7 +50,7 @@ class Lang
 		}
 	}
 
-	protected registerNamespace($key)
+	protected function registerNamespace($key)
 	{
 		if (!in_array($key, $this->_ns))
 			$this->_ns[] = $key;
@@ -115,9 +115,9 @@ class Lang
 		return isset($this->_lang[$key]);
 	}
 
-	public __get($key)
+	public function __get($key)
 	{
-		foreach ($this->_ns as $sn)
+		foreach ($this->_ns as $ns)
 		{
 			if ($this->has($ns . '.' . $key))
 				return $this->get($ns . '.' . $key);
