@@ -1672,12 +1672,12 @@ class Importer
 }
 
 /**
-* Checks if we've passed a time limit..
-*
-* @param int $substep
-* @param int $stop_time
-* @return null
-*/
+ * Checks if we've passed a time limit..
+ *
+ * @param int $substep
+ * @param int $stop_time
+ * @return null
+ */
 function pastTime($substep = null, $stop_time = 5)
 {
 	global $import, $time_start;
@@ -1704,40 +1704,11 @@ function pastTime($substep = null, $stop_time = 5)
 }
 
 /**
-* helper function for old attachments
-*
-* @param string $filename
-* @param int $attachment_id
-* @return string
-*/
-function getLegacyAttachmentFilename($filename, $attachment_id)
-{
-	// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
-	$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-	$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-
-	// Get rid of dots, spaces, and other weird characters.
-	$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
-}
-
-/**
- * helper function to create an encrypted attachment name
+ * helper function, simple file copy at all
  *
  * @param string $filename
- * @return string
+ * @return boolean
  */
-function createAttachmentFilehash($filename)
-{
-	return sha1(md5($filename . time()) . mt_rand());
-}
-
-/**
-* helper function, simple file copy at all
-*
-* @param string $filename
-* @return boolean
-*/
 function copy_file($source, $destination)
 {
 	if (is_file($source))
@@ -1749,11 +1720,11 @@ function copy_file($source, $destination)
 }
 
 /**
-* // Add slashes recursively...
-*
-* @param array $var
-* @return array
-*/
+ * // Add slashes recursively...
+ *
+ * @param array $var
+ * @return array
+ */
 function addslashes_recursive($var)
 {
 	if (!is_array($var))
@@ -1767,11 +1738,11 @@ function addslashes_recursive($var)
 }
 
 /**
-* Remove slashes recursively...
-*
-* @param array $var
-* @return array
-*/
+ * Remove slashes recursively...
+ *
+ * @param array $var
+ * @return array
+ */
 function stripslashes_recursive($var, $level = 0)
 {
 	if (!is_array($var))
@@ -1785,39 +1756,6 @@ function stripslashes_recursive($var, $level = 0)
 		$new_var[stripslashes($k)] = $level > 25 ? null : stripslashes_recursive($v, $level + 1);
 
 	return $new_var;
-}
-
-/**
- * function copy_smileys is used to copy smileys from a source to destination.
- * @param type $source
- * @param type $dest
- * @return type
- */
-function copy_smileys($source, $dest)
-{
-	if (!is_dir($source) || !($dir = opendir($source)))
-		return;
-
-	while ($file = readdir($dir))
-	{
-		if ($file == '.' || $file == '..')
-			continue;
-
-		// If we have a directory create it on the destination and copy contents into it!
-		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
-		{
-			if (!is_dir($dest))
-				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
-			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-		}
-		else
-		{
-			if (!is_dir($dest))
-				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
-			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-		}
-	}
-	closedir($dir);
 }
 
 /**
@@ -1852,35 +1790,6 @@ function copy_dir($source, $dest)
 }
 
 /**
- *
- * Get the id_member associated with the specified message.
- * @global type $to_prefix
- * @global type $db
- * @param type $messageID
- * @return int
- */
-function getMsgMemberID($messageID)
-{
-	global $to_prefix, $db;
-
-	// Find the topic and make sure the member still exists.
-	$result = $this->db->query("
-		SELECT IFNULL(mem.id_member, 0)
-		FROM {$to_prefix}messages AS m
-		LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
-		WHERE m.id_msg = " . (int) $messageID . "
-		LIMIT 1");
-	if ($this->db->num_rows($result) > 0)
-		list ($memberID) = $this->db->fetch_row($result);
-	// The message doesn't even exist.
-	else
-		$memberID = 0;
-	$this->db->free_result($result);
-
-		return $memberID;
-}
-
-/**
  * detects, if a string is utf-8 or not
  * @param type $string
  * @return boolean
@@ -1891,26 +1800,26 @@ function getMsgMemberID($messageID)
 }
 
 /**
-* Function fix based on ForceUTF8 by Sebastián Grignoli <grignoli@framework2.com.ar>
-* @link http://www.framework2.com.ar/dzone/forceUTF8-es/
-* This function leaves UTF8 characters alone, while converting almost all non-UTF8 to UTF8.
-*
-* It may fail to convert characters to unicode if they fall into one of these scenarios:
-*
-* 1) when any of these characters:   ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß
-*    are followed by any of these:  ("group B")
-*                                    ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶•¸¹º»¼½¾¿
-* For example:   %ABREPR%C9SENT%C9%BB. «REPRÉSENTÉ»
-* The "«" (%AB) character will be converted, but the "É" followed by "»" (%C9%BB)
-* is also a valid unicode character, and will be left unchanged.
-*
-* 2) when any of these: àáâãäåæçèéêëìíîï  are followed by TWO chars from group B,
-* 3) when any of these: ðñòó  are followed by THREE chars from group B.
-*
-* @name fix
-* @param string $text  Any string.
-* @return string  The same string, UTF8 encoded
-*/
+ * Function fix based on ForceUTF8 by Sebastián Grignoli <grignoli@framework2.com.ar>
+ * @link http://www.framework2.com.ar/dzone/forceUTF8-es/
+ * This function leaves UTF8 characters alone, while converting almost all non-UTF8 to UTF8.
+ *
+ * It may fail to convert characters to unicode if they fall into one of these scenarios:
+ *
+ * 1) when any of these characters:   ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß
+ *    are followed by any of these:  ("group B")
+ *                                    ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶•¸¹º»¼½¾¿
+ * For example:   %ABREPR%C9SENT%C9%BB. «REPRÉSENTÉ»
+ * The "«" (%AB) character will be converted, but the "É" followed by "»" (%C9%BB)
+ * is also a valid unicode character, and will be left unchanged.
+ *
+ * 2) when any of these: àáâãäåæçèéêëìíîï  are followed by TWO chars from group B,
+ * 3) when any of these: ðñòó  are followed by THREE chars from group B.
+ *
+ * @name fix
+ * @param string $text  Any string.
+ * @return string  The same string, UTF8 encoded
+ */
 function fix_charset($text)
 {
 	if (is_array($text))
@@ -2025,11 +1934,11 @@ function fix_charset($text)
 }
 
 /**
-* helper function for storing vars that need to be global
-*
-* @param string $variable
-* @param string $value
-*/
+ * helper function for storing vars that need to be global
+ *
+ * @param string $variable
+ * @param string $value
+ */
 function store_global($variable, $value)
 {
 	$_SESSION['store_globals'][$variable] = $value;

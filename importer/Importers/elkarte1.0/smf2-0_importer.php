@@ -1,54 +1,7 @@
 <?php
 
-class elkarte_to_smf20
+class elkarte10_to_smf20
 {
-	/**
-	 * collects all the important things, the importer can't do anything
-	 * without this information.
-	 *
-	 * @global type $to_prefix
-	 * @global type $import_script
-	 * @global type $cookie
-	 * @param type $error_message
-	 * @param type $object
-	 * @return boolean|null
-	 */
-	public function doStep0($error_message = null, $object = false)
-	{
-		// If these aren't set (from an error..) default to the current directory.
-		if (!isset($_POST['path_from']))
-			$_POST['path_from'] = dirname(__FILE__);
-		if (!isset($_POST['path_to']))
-			$_POST['path_to'] = dirname(__FILE__);
-
-		$test_from = empty($this->xml->general->settings);
-
-		foreach ($this->xml->general->settings as $settings_file)
-			$test_from |= @file_exists($_POST['path_from'] . $settings_file);
-
-		$test_to = @file_exists($_POST['path_to'] . '/Settings.php');
-
-		// Was an error message specified?
-		if ($error_message !== null)
-		{
-			// @todo why not re-use $this->template?
-			$template = new Template();
-			$template->header(false);
-			$template->error($error_message);
-		}
-
-		$this->use_template = 'step0';
-		$this->params_template = array($this, $this->_find_steps(), $test_from, $test_to);
-
-		if ($error_message !== null)
-		{
-			$template->footer();
-			exit;
-		}
-
-		return;
-	}
-
 	/**
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
@@ -61,11 +14,6 @@ class elkarte_to_smf20
 	{
 		global $to_prefix;
 
-		if ($this->xml->general->globals)
-			foreach (explode(',', $this->xml->general->globals) as $global)
-				global $$global;
-
-		$this->cookie->set(array($_POST['path_to'], $_POST['path_from']));
 		$current_data = '';
 		$substep = 0;
 		$special_table = null;
@@ -1042,4 +990,95 @@ class elkarte_to_smf20
 		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		return true;
 	}
+}
+
+/**
+ * helper function for old attachments
+ *
+ * @param string $filename
+ * @param int $attachment_id
+ * @return string
+ */
+function getLegacyAttachmentFilename($filename, $attachment_id)
+{
+	// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
+	$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
+	$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+
+	// Get rid of dots, spaces, and other weird characters.
+	$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
+		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+}
+
+/**
+ * helper function to create an encrypted attachment name
+ *
+ * @param string $filename
+ * @return string
+ */
+function createAttachmentFilehash($filename)
+{
+	return sha1(md5($filename . time()) . mt_rand());
+}
+
+/**
+ * function copy_smileys is used to copy smileys from a source to destination.
+ * @param type $source
+ * @param type $dest
+ * @return type
+ */
+function copy_smileys($source, $dest)
+{
+	if (!is_dir($source) || !($dir = opendir($source)))
+		return;
+
+	while ($file = readdir($dir))
+	{
+		if ($file == '.' || $file == '..')
+			continue;
+
+		// If we have a directory create it on the destination and copy contents into it!
+		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
+		{
+			if (!is_dir($dest))
+				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
+			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
+		}
+		else
+		{
+			if (!is_dir($dest))
+				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
+			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
+		}
+	}
+	closedir($dir);
+}
+
+/**
+ *
+ * Get the id_member associated with the specified message.
+ * @global type $to_prefix
+ * @global type $db
+ * @param type $messageID
+ * @return int
+ */
+function getMsgMemberID($messageID)
+{
+	global $to_prefix, $db;
+
+	// Find the topic and make sure the member still exists.
+	$result = $this->db->query("
+		SELECT IFNULL(mem.id_member, 0)
+		FROM {$to_prefix}messages AS m
+		LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
+		WHERE m.id_msg = " . (int) $messageID . "
+		LIMIT 1");
+	if ($this->db->num_rows($result) > 0)
+		list ($memberID) = $this->db->fetch_row($result);
+	// The message doesn't even exist.
+	else
+		$memberID = 0;
+	$this->db->free_result($result);
+
+		return $memberID;
 }
