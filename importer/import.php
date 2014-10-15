@@ -134,6 +134,13 @@ class Importer
 	public $error_params = array();
 
 	/**
+	 * Data used by the script and stored in session between a reload and the
+	 * following one.
+	 * @var mixed[]
+	 */
+	public $data = array();
+
+	/**
 	 * Used to decide if the database query is INSERT or INSERT IGNORE
 	 * @var boolean
 	 */
@@ -146,16 +153,28 @@ class Importer
 	private $replace = false;
 
 	/**
-	 *
-	 * @var string The importer script which will be used for the import.
+	 * The path to the source forum.
+	 * @var string
 	 */
-	private $_script;
+	protected $path_from = '';
 
 	/**
-	 *
-	 * @var string This is the URL from our Installation. 
+	 * The path to the destination forum.
+	 * @var string
 	 */
-	private $_boardurl;
+	protected $path_to = '';
+
+	/**
+	 * The importer script which will be used for the import.
+	 * @var string
+	 */
+	private $_script = '';
+
+	/**
+	 * This is the URL from our Installation.
+	 * @var string
+	 */
+	private $_boardurl = '';
 
 	/**
 	 * initialize the main Importer object
@@ -180,26 +199,55 @@ class Importer
 		$_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
-		// Check for the password...
-		if (isset($_POST['db_pass']))
-			$_SESSION['import_db_pass'] = $_POST['db_pass'];
-		elseif (isset($_SESSION['import_db_pass']))
-			$_POST['db_pass'] = $_SESSION['import_db_pass'];
+		$this->loadPass();
 
-		if (isset($_SESSION['import_paths']) && !isset($_POST['path_from']) && !isset($_POST['path_to']))
-			list ($_POST['path_from'], $_POST['path_to']) = $_SESSION['import_paths'];
-		elseif (isset($_POST['path_from']) || isset($_POST['path_to']))
-		{
-			if (isset($_POST['path_from']))
-				$_POST['path_from'] = substr($_POST['path_from'], -1) == DIRECTORY_SEPARATOR ? substr($_POST['path_from'], 0, -1) : $_POST['path_from'];
-			if (isset($_POST['path_to']))
-				$_POST['path_to'] = substr($_POST['path_to'], -1) == DIRECTORY_SEPARATOR ? substr($_POST['path_to'], 0, -1) : $_POST['path_to'];
-
-			$_SESSION['import_paths'] = array(@$_POST['path_from'], @$_POST['path_to']);
-		}
+		$this->loadPaths();
 
 		if (!empty($this->_script))
 			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
+	}
+
+	public function __destruct()
+	{
+		$this->saveInSession();
+	}
+
+	protected function loadPass()
+	{
+		// Check for the password...
+		if (isset($_POST['db_pass']))
+			$this->data['db_pass'] = $_POST['db_pass'];
+
+		if (isset($this->data['db_pass']))
+			$this->db_pass = $this->data['db_pass'];
+	}
+
+	protected function loadPaths()
+	{
+		if (isset($this->data['import_paths']) && !isset($_POST['path_from']) && !isset($_POST['path_to']))
+			list ($this->path_from, $this->path_to) = $this->data['import_paths'];
+		elseif (isset($_POST['path_from']) || isset($_POST['path_to']))
+		{
+			if (isset($_POST['path_from']))
+				$this->path_from = rtrim($_POST['path_from'], '\\/');
+			if (isset($_POST['path_to']))
+				$this->path_to = rtrim($_POST['path_to'], '\\/');
+
+			$this->data['import_paths'] = array($this->path_from, $this->path_to);
+		}
+	}
+
+	protected function loadFromSession()
+	{
+		if (empty($_SESSION['importer_data']))
+			return;
+
+		$this->data = $_SESSION['importer_data']
+	}
+
+	protected function saveInSession()
+	{
+		$_SESSION['importer_data'] = $this->data;
 	}
 
 	/**
@@ -291,6 +339,9 @@ class Importer
 		
 		if (file_exists($possible_php))
 			require_once($possible_php);
+
+		if (isset($this->path_to) && !empty($_GET['step']))
+			$this->_loadSettings();
 	}
 
 	/**
@@ -311,9 +362,6 @@ class Importer
 		{
 			ImportException::exception_handler($e);
 		}
-
-		if (isset($_POST['path_to']) && !empty($_GET['step']))
-			$this->_loadSettings();
 	}
 
 	/**
@@ -371,7 +419,7 @@ class Importer
 		{
 			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
-				$this->_preparse_xml(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
+				$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
 			return false;
 		}
 
@@ -420,13 +468,13 @@ class Importer
 				global $$global;
 
 		// Cannot find Settings.php?
-		if (!file_exists($_POST['path_to'] . '/Settings.php'))
+		if (!file_exists($this->path_to . '/Settings.php'))
 			return $this->doStep0($this->lng->get('imp.settings_not_found'));
 
 		$found = empty($this->xml->general->settings);
 
 		foreach ($this->xml->general->settings as $file)
-			$found |= @file_exists($_POST['path_from'] . stripslashes($file));
+			$found |= @file_exists($this->path_from . stripslashes($file));
 
 		if (@ini_get('open_basedir') != '' && !$found)
 			return $this->doStep0(array($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
@@ -473,10 +521,10 @@ class Importer
 			}
 		}
 		// Everything should be alright now... no cross server includes, we hope...
-		require_once($_POST['path_to'] . '/Settings.php');
+		require_once($this->path_to . '/Settings.php');
 		$this->_boardurl = $boardurl;
 
-		if ($_SESSION['import_db_pass'] != $db_passwd)
+		if ($this->data['db_pass'] != $db_passwd)
 			return $this->doStep0($this->lng->get('imp.password_incorrect'), $this);
 
 		// Check the steps that we have decided to go through.
@@ -527,8 +575,8 @@ class Importer
 		{
 			foreach ($this->xml->general->settings as $file)
 			{
-				if (file_exists($_POST['path_from'] . $file))
-					require_once($_POST['path_from'] . $file);
+				if (file_exists($this->path_from . $file))
+					require_once($this->path_from . $file);
 			}
 		}
 
@@ -648,13 +696,13 @@ class Importer
 			return true;
 
 		// If these aren't set (from an error..) default to the current directory.
-		if (!isset($_POST['path_from']))
-			$_POST['path_from'] = dirname(__FILE__);
-		if (!isset($_POST['path_to']))
-			$_POST['path_to'] = dirname(__FILE__);
+		if (!isset($this->path_from))
+			$this->path_from = dirname(__FILE__);
+		if (!isset($this->path_to))
+			$this->path_to = dirname(__FILE__);
 
-		$test_from = $this->testFiles($this->xml->general->settings, $_POST['path_from']);
-		$test_to = $this->testFiles('Settings.php', $_POST['path_to']);
+		$test_from = $this->testFiles($this->xml->general->settings, $this->path_from);
+		$test_to = $this->testFiles('Settings.php', $this->path_to);
 
 		// Was an error message specified?
 		if ($error_message !== null)
@@ -703,7 +751,7 @@ class Importer
 			foreach (explode(',', $this->xml->general->globals) as $global)
 				global $$global;
 
-		$this->cookie->set(array($_POST['path_to'], $_POST['path_from']));
+		$this->cookie->set(array($this->path_to, $this->path_from));
 		$substep = 0;
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
 		// @TODO: check if this is needed
