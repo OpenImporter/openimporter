@@ -325,7 +325,11 @@ class Importer
 	{
 		$this->_preparse_xml($file);
 
-		// Maybe come with php helper functions?
+		// This is the helper class
+		$php_helper = str_replace('.xml', '.php', $file);
+		require_once($php_helper);
+
+		// Maybe the "destination" comes with php helper functions?
 		$path = dirname($file);
 		$possible_php = $path . '/' . basename($path) . '_importer.php';
 		
@@ -435,44 +439,40 @@ class Importer
 	{
 		global $db, $to_prefix;
 
-		if ($this->xml->general->defines)
-			foreach ($this->xml->general->defines as $define)
-			{
-				$define = explode('=', $define);
-				define($define[0], isset($define[1]) ? $define[1] : '1');
-			}
+		$this->settings = new $this->xml->general->className();
 
-		if ($this->xml->general->globals)
-			foreach (explode(',', $this->xml->general->globals) as $global)
-				global $$global;
+		if (method_exists($this->settings, 'setDefines'))
+			$this->settings->setDefines();
+
+		if (method_exists($this->settings, 'setGlobals'))
+			$this->settings->setGlobals();
 
 		//Dirty hack
 		if (isset($_SESSION['store_globals']))
+		{
 			foreach ($_SESSION['store_globals'] as $varname => $value)
 			{
 				global $$varname;
 				$$varname = $value;
 			}
+		}
 
 		// catch form elements and globalize them for later use..
 		if ($this->xml->general->form)
+		{
 			foreach ($this->xml->general->form->children() as $global)
 				global $$global;
+		}
 
-		// Cannot find Settings.php?
-		if (!file_exists($this->path_to . '/Settings.php'))
-			return $this->doStep0($this->lng->get('imp.settings_not_found'));
-
-		$found = empty($this->xml->general->settings);
-
-		foreach ($this->xml->general->settings as $file)
-			$found |= @file_exists($this->path_from . stripslashes($file));
-
-		if (@ini_get('open_basedir') != '' && !$found)
-			return $this->doStep0(array($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
+		$found = $this->settings->loadSettings($this->path_from);
 
 		if (!$found)
+		{
+			if (@ini_get('open_basedir') != '')
+				return $this->doStep0(array($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
+
 			return $this->doStep0(array($this->lng->get('imp.config_not_found'), (string) $this->xml->general->name));
+		}
 
 		// Any custom form elements to speak of?
 		if ($this->xml->general->form && !empty($_SESSION['import_parameters']))
@@ -512,6 +512,11 @@ class Importer
 					$$k = $v;
 			}
 		}
+
+		// Cannot find Settings.php?
+		if (!file_exists($this->path_to . '/Settings.php'))
+			return $this->doStep0($this->lng->get('imp.settings_not_found'));
+
 		// Everything should be alright now... no cross server includes, we hope...
 		require_once($this->path_to . '/Settings.php');
 		$this->_boardurl = $boardurl;
@@ -572,22 +577,19 @@ class Importer
 			}
 		}
 
-		if (isset($this->xml->general->from_prefix))
-		{
-			$from_prefix = eval('return "' . $this->xml->general->from_prefix . '";');
-			$this->from_prefix = eval('return "' . $this->xml->general->from_prefix . '";');
-		}
+		$this->from_prefix = $this->settings->getPrefix();
+
 		if (preg_match('~^`[^`]+`.\d~', $this->from_prefix) != 0)
 		{
-			$from_prefix = strtr($from_prefix, array('`' => ''));
 			$this->from_prefix = strtr($this->from_prefix, array('`' => ''));
 		}
 
 		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && isset($this->xml->general->table_test))
 		{
-			$result = $this->db->query("
+			$result = $this->db->query('
 				SELECT COUNT(*)
-				FROM " . eval('return "' . $this->xml->general->table_test . '";'), true);
+				FROM "' . $this->settings->getTableTest() . '"', true);
+
 			if ($result === false)
 				$this->doStep0($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name);
 
@@ -680,7 +682,7 @@ class Importer
 		global $import;
 
 		$import = isset($object) ? $object : false;
-		$this->cookie -> destroy();
+		$this->cookie->destroy();
 		//previously imported? we need to clean some variables ..
 		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
 
