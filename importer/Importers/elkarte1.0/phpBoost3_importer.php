@@ -1,10 +1,10 @@
 <?php
 
-class mybb16
+class PHPBoost3
 {
 	public function getName()
 	{
-		return 'MyBB 1.6';
+		return 'PHPBoost3';
 	}
 
 	public function getVersion()
@@ -15,9 +15,9 @@ class mybb16
 	public function loadSettings($path)
 	{
 		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/inc/config.php'))
+		if (@file_exists($path . '/config.php'))
 		{
-			require_once($path . '/inc/config.php');
+			require_once($path . '/config.php');
 			return true;
 		}
 		else
@@ -26,15 +26,15 @@ class mybb16
 
 	public function getPrefix()
 	{
-		global $config;
+		global $boost_database, $boost_prefix;
 
-		return '`' . $config['database']['database'] '`.' $config['database']['table_prefix'];
+		return '`' . $boost_database '`.' $boost_prefix;
 	}
 
 	public function getTableTest()
 	{
-		global $config;
+		global $boost_prefix;
 
-		return $config['database']['table_prefix'] . 'users';
+		return $boost_prefix . 'member';
 	}
 }

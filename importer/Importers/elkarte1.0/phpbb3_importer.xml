@@ -3,10 +3,7 @@
 	<general>
 		<name>phpBB3</name>
 		<version>ElkArte 1.0</version>
-		<settings>/config.php</settings>
-		<defines>IN_PHPBB</defines>
-		<from_prefix>`$dbname`.$table_prefix</from_prefix>
-		<table_test>{$from_prefix}users</table_test>
+		<className>phpBB3</className>
 		<custom_functions><![CDATA[
 			function percent_to_px($percent)
 			{

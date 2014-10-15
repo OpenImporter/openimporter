@@ -8,8 +8,7 @@
 			<field id="2" type="text" size="20" default="" label="PHPBoost table prefix">boost_prefix</field>
 			<field id="3" type="text" size="40" default="" label="path to PHPBoost installation">path_from</field>
 		</form>
-		<from_prefix>`$boost_database`.$boost_prefix</from_prefix>
-		<table_test>{$from_prefix}member;</table_test>
+		<className>PHPBoost3</className>
 		<ip_to_ipv6>member_ip, member_ip2, ip</ip_to_ipv6>
 		<ip_to_pointer>poster_ip</ip_to_pointer>
 		<custom_functions><![CDATA[
