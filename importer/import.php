@@ -333,7 +333,9 @@ class Importer
 		$path = dirname($file);
 		$dest_helper = $path . '/' . basename($path) . '_importer.php';
 		require_once($dest_helper);
+
 		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper));
+		$this->destination = new $this->_importer_base_class_name();
 
 		if (isset($this->path_to) && !empty($_GET['step']))
 			$this->_loadSettings();
@@ -436,7 +438,7 @@ class Importer
 	 */
 	private function _loadSettings()
 	{
-		global $db, $to_prefix;
+		global $to_prefix;
 
 		$this->settings = new $this->xml->general->className();
 
@@ -512,27 +514,26 @@ class Importer
 			}
 		}
 
-		// Cannot find Settings.php?
-		if (!file_exists($this->path_to . '/Settings.php'))
-			return $this->doStep0($this->lng->get('imp.settings_not_found'));
+		$this->_boardurl = $this->destination->getDestinationURL();
 
-		// Everything should be alright now... no cross server includes, we hope...
-		require_once($this->path_to . '/Settings.php');
-		$this->_boardurl = $boardurl;
+		if ($this->_boardurl === false)
+			return $this->doStep0($this->lng->get('imp.settings_not_found'), $this);
 
-		if ($this->data['db_pass'] != $db_passwd)
+		if (!$this->destination->verifyDbPass($this->data['db_pass']))
 			return $this->doStep0($this->lng->get('imp.password_incorrect'), $this);
 
 		// Check the steps that we have decided to go through.
 		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
+		{
 			return $this->doStep0($this->lng->get('imp.select_step'));
-
+		}
 		elseif (isset($_POST['do_steps']))
 		{
 			unset($_SESSION['do_steps']);
 			foreach ($_POST['do_steps'] as $key => $step)
 				$_SESSION['do_steps'][$key] = $step;
 		}
+
 		try
 		{
 			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
@@ -1142,7 +1143,7 @@ class Importer
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
 
 		$this->use_template = 'step3';
-		$this->params_template = array($this->xml->general->name, $boardurl, $writable);
+		$this->params_template = array($this->xml->general->name, $this->_boardurl, $writable);
 
 		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		return true;

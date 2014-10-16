@@ -10,7 +10,7 @@ class ResponseHeader
 	/**
 	 * Add an header
 	 * @param string $key
-	 * @param string|null $name (optional)
+	 * @param string|null $value (optional)
 	 */
 	public function set($key, $value = null)
 	{

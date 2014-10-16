@@ -1,5 +1,29 @@
 <?php
 
+class elkarte1_0_importer
+{
+	public function getDestinationURL($path)
+	{
+		global $boardurl;
+
+		// Cannot find Settings.php?
+		if (!file_exists($path . '/Settings.php'))
+			return false;
+
+		// Everything should be alright now... no cross server includes, we hope...
+		require_once($path . '/Settings.php');
+
+		return $boardurl;
+	}
+
+	public function verifyDbPass($pwd_to_verify)
+	{
+		global $db_passwd;
+
+		return $db_passwd != $pwd_to_verify;
+	}
+}
+
 class elkarte1_0_importer_step1 extends Step1BaseImporter
 {
 	protected $id_attach = null;
