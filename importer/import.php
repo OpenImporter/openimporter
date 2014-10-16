@@ -326,15 +326,14 @@ class Importer
 		$this->_preparse_xml($file);
 
 		// This is the helper class
-		$php_helper = str_replace('.xml', '.php', $file);
-		require_once($php_helper);
+		$source_helper = str_replace('.xml', '.php', $file);
+		require_once($source_helper);
 
 		// Maybe the "destination" comes with php helper functions?
 		$path = dirname($file);
-		$possible_php = $path . '/' . basename($path) . '_importer.php';
-		
-		if (file_exists($possible_php))
-			require_once($possible_php);
+		$dest_helper = $path . '/' . basename($path) . '_importer.php';
+		require_once($dest_helper);
+		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper));
 
 		if (isset($this->path_to) && !empty($_GET['step']))
 			$this->_loadSettings();
@@ -741,6 +740,9 @@ class Importer
 	{
 		global $to_prefix;
 
+		$step1_importer_class = $this->_importer_base_class_name . '_step1';
+		$step1_importer = new $step1_importer_class($this->db, $this->to_prefix);
+
 		if ($this->xml->general->globals)
 			foreach (explode(',', $this->xml->general->globals) as $global)
 				global $$global;
@@ -791,7 +793,7 @@ class Importer
 			$_SESSION['import_progress'] = 0;
 
 		foreach ($this->xml->steps1->step as $step)
-			$this->_processSteps($step, $substep, $do_steps);
+			$this->_processSteps($step, $substep, $do_steps, $step1_importer);
 
 		$_GET['substep'] = 0;
 		$_REQUEST['start'] = 0;
@@ -799,7 +801,7 @@ class Importer
 		return $this->doStep2();
 	}
 
-	protected function _processSteps($step, &$substep, &$do_steps)
+	protected function _processSteps($step, &$substep, &$do_steps, $step1_importer)
 	{
 		$to_prefix = $this->to_prefix;
 
@@ -951,41 +953,7 @@ class Importer
 
 			else
 			{
-				// Are we doing attachments? They're going to want a few things...
-				if ($special_table == $this->to_prefix . 'attachments')
-				{
-					if (!isset($id_attach, $attachmentUploadDir, $avatarUploadDir))
-					{
-						$result = $this->db->query("
-							SELECT MAX(id_attach) + 1
-							FROM {$to_prefix}attachments");
-						list ($id_attach) = $this->db->fetch_row($result);
-						$this->db->free_result($result);
-
-						$result = $this->db->query("
-							SELECT value
-							FROM {$to_prefix}settings
-							WHERE variable = 'attachmentUploadDir'
-							LIMIT 1");
-						list ($attachmentdir) = $this->db->fetch_row($result);
-						$attachment_UploadDir = @unserialize($attachmentdir);
-						$attachmentUploadDir = !empty($attachment_UploadDir[1]) && is_array($attachment_UploadDir[1]) ? $attachment_UploadDir[1] : $attachmentdir;
-
-						$result = $this->db->query("
-							SELECT value
-							FROM {$to_prefix}settings
-							WHERE variable = 'custom_avatar_dir'
-							LIMIT 1");
-						list ($avatarUploadDir) = $this->db->fetch_row($result);
-						$this->db->free_result($result);
-
-						if (empty($avatarUploadDir))
-							$avatarUploadDir = $attachmentUploadDir;
-
-						if (empty($id_attach))
-							$id_attach = 1;
-					}
-				}
+				$step1_importer->doSpecialTable($special_table);
 
 				while (true)
 				{
@@ -1007,18 +975,7 @@ class Importer
 						if ($special_code !== null)
 							eval($special_code);
 
-						// Here we have various bits of custom code for some known problems global to all importers.
-						if ($special_table == $this->to_prefix . 'members')
-						{
-							// Let's ensure there are no illegal characters.
-							$row['member_name'] = preg_replace('/[<>&"\'=\\\]/is', '', $row['member_name']);
-							$row['real_name'] = trim($row['real_name'], " \t\n\r\x0B\0\xA0");
-
-							if (strpos($row['real_name'], '<') !== false || strpos($row['real_name'], '>') !== false || strpos($row['real_name'], '& ') !== false)
-								$row['real_name'] = htmlspecialchars($row['real_name'], ENT_QUOTES);
-							else
-								$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
-						}
+						$row = $step1_importer->doSpecialTable($special_table, $row);
 
 						// this is wedge specific stuff and will move at some point.
 						// prepare ip address conversion
@@ -1072,14 +1029,7 @@ class Importer
 						// fixing the charset, we need proper utf-8
 						$row = fix_charset($row);
 
-						// If we have a message here, we'll want to convert <br /> to <br>.
-						if (isset($row['body']))
-							$row['body'] = str_replace(array(
-									'<br />', '&#039;', '&#39;', '&quot;'
-								), array(
-									'<br>', '\'', '\'', '"'
-								), $row['body']
-							);
+						$row = $step1_importer->fixTexts($row);
 
 						if (empty($no_add) && empty($ignore_slashes))
 							$rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
@@ -1133,35 +1083,33 @@ class Importer
 
 		$this->template->step2();
 
-		if ($this->xml->steps2->className !== null)
+		$step2_importer_class = $this->_importer_base_class_name . '_step2';
+		$instance = new $step2_importer_class($this->db, $this->to_prefix);
+
+		$methods = get_class_methods($instance);
+		$substeps = array();
+		$substep = 0;
+		foreach ($methods as $method)
 		{
-			$instance = new $this->xml->steps2->className($this->db, $this->to_prefix);
+			if (substr($method, 0, 7) !== 'substep')
+				continue;
 
-			$methods = get_class_methods($instance);
-			$substeps = array();
-			$substep = 0;
-			foreach ($methods as $method)
-			{
-				if (substr($method, 0, 7) !== 'substep')
-					continue;
-
-				$substeps[substr($method, 7)] = $method;
-			}
-			ksort($substeps);
-
-			foreach ($substeps as $key => $method)
-			{
-				if ($_GET['substep'] <= $key)
-				{
-					call_user_func(array($instance, $method));
-				}
-
-				$substep++;
-				pastTime($substep);
-			}
-
-			$this->template->status($key + 1, 1, false, true);
+			$substeps[substr($method, 7)] = $method;
 		}
+		ksort($substeps);
+
+		foreach ($substeps as $key => $method)
+		{
+			if ($_GET['substep'] <= $key)
+			{
+				call_user_func(array($instance, $method));
+			}
+
+			$substep++;
+			pastTime($substep);
+		}
+
+		$this->template->status($key + 1, 1, false, true);
 
 		return $this->doStep3();
 	}
@@ -1177,10 +1125,10 @@ class Importer
 	{
 		global $boardurl;
 
-		foreach ($this->xml->steps3->step as $step)
-		{
-			$this->_processSteps($step);
-		}
+		$step3_importer_class = $this->_importer_base_class_name . '_step3';
+		$instance = new $step3_importer_class($this->db, $this->to_prefix);
+
+		$instance->run($_SESSION['import_steps']);
 
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
 

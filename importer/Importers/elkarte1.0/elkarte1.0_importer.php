@@ -1,16 +1,91 @@
 <?php
 
-class elkarte_1_0_importer
+class elkarte1_0_importer_step1 extends Step1BaseImporter
 {
-	protected $db = null;
-	protected $to_prefix = '';
+	protected $id_attach = null;
+	protected $attachmentUploadDir = null;
+	protected $avatarUploadDir = null;
 
-	public function __construct($db, $to_prefix)
+	public function fixTexts($row)
 	{
-		$this->db = $db;
-		$this->to_prefix = $to_prefix;
+		// If we have a message here, we'll want to convert <br /> to <br>.
+		if (isset($row['body']))
+		{
+			$row['body'] = str_replace(array(
+					'<br />', '&#039;', '&#39;', '&quot;'
+				), array(
+					'<br>', '\'', '\'', '"'
+				), $row['body']
+			);
+		}
+
+		return $row;
 	}
 
+	public function doSpecialTable($special_table, $params = null)
+	{
+		// Are we doing attachments? They're going to want a few things...
+		if ($special_table == $this->to_prefix . 'attachments')
+			$this->specialAttachments();
+		// Here we have various bits of custom code for some known problems global to all importers.
+		elseif ($special_table == $this->to_prefix . 'members')
+			$this->specialMembers($params);
+	}
+
+	protected function specialMembers($row)
+	{
+		// Let's ensure there are no illegal characters.
+		$row['member_name'] = preg_replace('/[<>&"\'=\\\]/is', '', $row['member_name']);
+		$row['real_name'] = trim($row['real_name'], " \t\n\r\x0B\0\xA0");
+
+		if (strpos($row['real_name'], '<') !== false || strpos($row['real_name'], '>') !== false || strpos($row['real_name'], '& ') !== false)
+			$row['real_name'] = htmlspecialchars($row['real_name'], ENT_QUOTES);
+		else
+			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
+
+		return $row;
+	}
+
+	protected function specialAttachments()
+	{
+		$to_prefix = $this->to_prefix;
+
+		if (!isset($this->id_attach, $this->attachmentUploadDir, $this->avatarUploadDir))
+		{
+			$result = $this->db->query("
+				SELECT MAX(id_attach) + 1
+				FROM {$to_prefix}attachments");
+			list ($this->id_attach) = $this->db->fetch_row($result);
+			$this->db->free_result($result);
+
+			$result = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'attachmentUploadDir'
+				LIMIT 1");
+			list ($attachmentdir) = $this->db->fetch_row($result);
+			$attachment_UploadDir = @unserialize($attachmentdir);
+			$this->attachmentUploadDir = !empty($attachment_UploadDir[1]) && is_array($attachment_UploadDir[1]) ? $attachment_UploadDir[1] : $attachmentdir;
+
+			$result = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'custom_avatar_dir'
+				LIMIT 1");
+			list ($this->avatarUploadDir) = $this->db->fetch_row($result);
+			$this->db->free_result($result);
+
+			if (empty($this->avatarUploadDir))
+				$this->avatarUploadDir = $this->attachmentUploadDir;
+
+			if (empty($this->id_attach))
+				$this->id_attach = 1;
+		}
+	}
+}
+
+class elkarte1_0_importer_step2 extends Step2BaseImporter
+{
 	public function substep0()
 	{
 		$to_prefix = $this->to_prefix;
@@ -561,6 +636,21 @@ class elkarte_1_0_importer
 			$_REQUEST['start'] += 500;
 			pastTime(11);
 		}
+	}
+}
+
+class elkarte1_0_importer_step3 extends Step3BaseImporter
+{
+	public function run($import_script)
+	{
+		$to_prefix = $this->to_prefix;
+
+		// add some importer information.
+		$this->db->query("
+			REPLACE INTO {$to_prefix}settings (variable, value)
+				VALUES ('import_time', " . time() . "),
+					('enable_password_conversion', '1'),
+					('imported_from', '" . $import_script . "')");
 	}
 }
 

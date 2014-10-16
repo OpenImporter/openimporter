@@ -330,21 +330,4 @@
 			</query>
 		</step>
 	</steps1>
-	<steps2>
-		<className>elkarte_1_0_importer</className>
-	</steps2>
-	<steps3>
-		<step>
-			<code>
-		$to_prefix = $this->to_prefix;
-
-		// add some importer information.
-		$this->db->query("
-			REPLACE INTO {$to_prefix}settings (variable, value)
-				VALUES ('import_time', " . time() . "),
-					('enable_password_conversion', '1'),
-					('imported_from', '" . $_SESSION['import_script'] . "')");
-			</code>
-		</step>
-	</steps3>
 </importer>
