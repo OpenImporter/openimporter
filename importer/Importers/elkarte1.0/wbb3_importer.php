@@ -28,7 +28,7 @@ class wbb3_1
 	{
 		global $dbName;
 
-		return '`' . $dbName '`.';
+		return '`' . $dbName . '`.';
 	}
 
 	// @todo why $wbb_prefix is not in getPrefix?

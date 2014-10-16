@@ -28,7 +28,7 @@ class XenForo1_1
 	{
 		global $xf_database, $xf_prefix;
 
-		return '`' . $xf_database '`.' . $xf_prefix;
+		return '`' . $xf_database . '`.' . $xf_prefix;
 	}
 
 	public function getTableTest()

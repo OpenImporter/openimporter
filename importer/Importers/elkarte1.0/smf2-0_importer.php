@@ -33,7 +33,7 @@ class SMF2_0
 	{
 		global $db_name, $db_prefix;
 
-		return '`' . $db_name '`.' $db_prefix;
+		return '`' . $db_name . '`.' . $db_prefix;
 	}
 
 	public function getTableTest()

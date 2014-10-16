@@ -28,7 +28,7 @@ class vBulletin_4
 	{
 		global $config;
 
-		return '`' . $config['Database']['dbname'] '`.' $config['Database']['tableprefix'];
+		return '`' . $config['Database']['dbname'] . '`.' . $config['Database']['tableprefix'];
 	}
 
 	public function getTableTest()

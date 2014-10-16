@@ -33,7 +33,7 @@ class phpBB3
 	{
 		global $dbname, $table_prefix;
 
-		return '`' . $dbname '`.' $table_prefix;
+		return '`' . $dbname . '`.' . $table_prefix;
 	}
 
 	public function getTableTest()

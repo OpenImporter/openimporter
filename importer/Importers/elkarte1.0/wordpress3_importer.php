@@ -31,7 +31,7 @@ class WP3
 	{
 		global $wp_database, $wp_prefix;
 
-		return '`' . $wp_database '`.' . $wp_prefix;
+		return '`' . $wp_database . '`.' . $wp_prefix;
 	}
 
 	public function getTableTest()

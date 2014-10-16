@@ -28,7 +28,7 @@ class PHPBoost3
 	{
 		global $boost_database, $boost_prefix;
 
-		return '`' . $boost_database '`.' $boost_prefix;
+		return '`' . $boost_database . '`.' . $boost_prefix;
 	}
 
 	public function getTableTest()

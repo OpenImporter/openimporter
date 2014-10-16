@@ -262,7 +262,7 @@ class Importer
 		if (empty($_SESSION['importer_data']))
 			return;
 
-		$this->data = $_SESSION['importer_data']
+		$this->data = $_SESSION['importer_data'];
 	}
 
 	protected function saveInSession()

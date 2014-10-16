@@ -28,7 +28,7 @@ class mybb16
 	{
 		global $config;
 
-		return '`' . $config['database']['database'] '`.' $config['database']['table_prefix'];
+		return '`' . $config['database']['database'] . '`.' . $config['database']['table_prefix'];
 	}
 
 	public function getTableTest()
