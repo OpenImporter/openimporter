@@ -38,19 +38,19 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 
 		$this->specialAttachments();
 
-		$result = $this->query("
+		$result = $this->db->query("
 			SELECT value
 			FROM {$to_prefix}settings
 			WHERE variable = 'attachmentUploadDir'
 			LIMIT 1");
-		list ($this->attachmentUploadDir) = $this->fetch_row($result);
+		list ($this->attachmentUploadDir) = $this->db->fetch_row($result);
 		$this->free_result($result);
 
 		// !!! This should probably be done in chunks too.
-		$result = $this->query("
+		$result = $this->db->query("
 			SELECT id_attach, filename
 			FROM {$to_prefix}attachments");
-		while ($row = $this->fetch_assoc($result))
+		while ($row = $this->db->fetch_assoc($result))
 		{
 			// We're duplicating this from below because it's slightly different for getting current ones.
 			$clean_name = strtr($row['filename'], 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
