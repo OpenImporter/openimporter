@@ -12,8 +12,6 @@
 			<destination>{$to_prefix}members</destination>
 			<presql>
 				TRUNCATE {$to_prefix}members;
-				ALTER TABLE {$to_prefix}members
-					CHANGE COLUMN password_salt password_salt varchar(16) NOT NULL default '';
 			</presql>
 			<preparsecode>
 				if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))

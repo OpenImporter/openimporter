@@ -598,20 +598,6 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
-	// @todo remove
-	public function substep10()
-	{
-		$to_prefix = $this->to_prefix;
-
-		$this->db->query("
-			ALTER TABLE {$to_prefix}boards
-			ORDER BY board_order");
-
-		$this->db->query("
-			ALTER TABLE {$to_prefix}smileys
-			ORDER BY code DESC");
-	}
-
 	public function substep11()
 	{
 		$to_prefix = $this->to_prefix;

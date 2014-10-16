@@ -54,8 +54,6 @@
 			<detect>{$from_prefix}member</detect>
 			<destination>{$to_prefix}members</destination>
 			<presql>
-				ALTER TABLE {$to_prefix}members
-					CHANGE COLUMN passwd passwd varchar(64) NOT NULL default '';
 				TRUNCATE {$to_prefix}members;
 			</presql>
 			<query>

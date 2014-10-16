@@ -14,10 +14,6 @@
 			<title>Importing Members</title>
 			<detect>{$from_prefix}user</detect>
 			<destination>{$to_prefix}members</destination>
-			<presql>
-				ALTER TABLE {$to_prefix}members CHANGE COLUMN passwd passwd varchar(64) NOT NULL default '';
-				ALTER TABLE {$to_prefix}members CHANGE COLUMN password_salt password_salt varchar(64) NOT NULL default '';
-			</presql>
 			<preparsecode>
 				$pass = unserialize($row['tmp']);
 

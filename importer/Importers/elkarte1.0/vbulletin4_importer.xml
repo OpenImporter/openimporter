@@ -42,8 +42,6 @@
 			<destination>{$to_prefix}members</destination>
 			<presql>
 				TRUNCATE {$to_prefix}members;
-				ALTER TABLE {$to_prefix}members
-					CHANGE COLUMN password_salt password_salt varchar(32) NOT NULL DEFAULT ''
 			</presql>
 			<preparsecode>
 				$row['signature'] = vb4_replace_bbc($row['signature']);
@@ -106,7 +104,6 @@
 				TRUNCATE {$to_prefix}boards;
 				DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
 				ALTER TABLE {$to_prefix}boards
-					CHANGE COLUMN id_board id_board SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
 					CHANGE COLUMN id_cat id_cat SMALLINT(5) NOT NULL;
 			</presql>
 			<query>
