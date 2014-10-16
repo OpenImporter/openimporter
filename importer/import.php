@@ -632,11 +632,11 @@ class Importer
 	}
 
 	/**
-	* used to replace {$from_prefix} and {$to_prefix} with its real values.
-	*
-	* @param string string string in which parameters are replaced
-	* @return string
-	*/
+	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
+	 *
+	 * @param string string string in which parameters are replaced
+	 * @return string
+	 */
 	private function _fix_params($string)
 	{
 		if (isset($_SESSION['import_parameters']))
@@ -653,11 +653,11 @@ class Importer
 	}
 
 	/**
-	* placehoder function to convert IPV4 to IPV6
-	* @TODO convert IPV4 to IPV6
-	* @param string $ip
-	* @return string $ip
-	*/
+	 * placehoder function to convert IPV4 to IPV6
+	 * @TODO convert IPV4 to IPV6
+	 * @param string $ip
+	 * @return string $ip
+	 */
 	private function _prepare_ipv6($ip)
 	{
 		return $ip;
@@ -803,7 +803,12 @@ class Importer
 
 	protected function _processSteps($step, &$substep, &$do_steps, $step1_importer)
 	{
+		// These are temporarily needed to support the current xml importers
+		// a.k.a. There is more important stuff to do.
+		// a.k.a. I'm too lazy to change all of the now. :P
+		// @todo remove
 		$to_prefix = $this->to_prefix;
+		$db = $this->db;
 
 		// Reset some defaults
 		$current_data = '';

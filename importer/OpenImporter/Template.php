@@ -7,13 +7,13 @@
 class Template
 {
 	/**
-	* Display a specific error message.
-	*
-	* @param string $error_message
-	* @param int $trace
-	* @param int $line
-	* @param string $file
-	*/
+	 * Display a specific error message.
+	 *
+	 * @param string $error_message
+	 * @param int $trace
+	 * @param int $line
+	 * @param string $file
+	 */
 	public function error($error_message, $trace = false, $line = false, $file = false)
 	{
 		echo '
@@ -58,10 +58,10 @@ class Template
 	}
 
 	/**
-	* Show the footer.
-	*
-	* @param bol $inner
-	*/
+	 * Show the footer.
+	 *
+	 * @param bol $inner
+	 */
 	public function footer($inner = true)
 	{
 		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
@@ -75,10 +75,10 @@ class Template
 	}
 
 	/**
-	* Show the header.
-	*
-	* @param bol $inner
-	*/
+	 * Show the header.
+	 *
+	 * @param bol $inner
+	 */
 	public function header($inner = true)
 	{
 		global $time_start;
