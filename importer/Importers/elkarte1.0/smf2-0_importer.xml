@@ -223,6 +223,7 @@
 			<detect>{$from_prefix}attachments</detect>
 			<destination>{$to_prefix}attachments</destination>
 			<presql>TRUNCATE {$to_prefix}attachments;</presql>
+			<presqlMethod>removeAttachments</presqlMethod>
 			<preparsecode>
 				$request = $this->db->query("
 					SELECT value

@@ -867,6 +867,10 @@ class Importer
 			}
 			else
 				$this->db->query($presql);
+
+			if (isset($step->presqlMethod))
+				$step1_importer->beforeSql($step->presqlMethod);
+
 			// don't do this twice..
 			$_SESSION['import_steps'][$substep]['presql'] = true;
 		}
@@ -975,7 +979,7 @@ class Importer
 						if ($special_code !== null)
 							eval($special_code);
 
-						$row = $step1_importer->doSpecialTable($special_table, $row);
+						$step1_importer->doSpecialTable($special_table, $row);
 
 						// this is wedge specific stuff and will move at some point.
 						// prepare ip address conversion

@@ -7,7 +7,6 @@
  */
 class Database
 {
-
 	/**
 	 * constructor, connects to the database
 	 * @param type $db_server
@@ -15,14 +14,21 @@ class Database
 	 * @param type $db_password
 	 * @param type $db_persist
 	 */
-	var $con;
+	protected $con;
+
+	/**
+	 * Allows to run a query two times on certain errors
+	 *
+	 * @var bool
+	 */
+	protected $second_try = true;
 	
 	/**
 	 * 
 	 * @param string $db_server
 	 * @param string $db_user
 	 * @param string $db_password
-	 * @param bool $db_persist
+	 * @param bool|int $db_persist
 	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
@@ -33,91 +39,55 @@ class Database
 	}
 
 	/**
-	 * remove old attachments
-	 *
-	 * @global type $to_prefix
-	 */
-	private function _removeAttachments()
-	{
-		global $to_prefix;
-
-		$result = $this->query("
-			SELECT value
-			FROM {$to_prefix}settings
-			WHERE variable = 'attachmentUploadDir'
-			LIMIT 1");
-		list ($attachmentUploadDir) = $this->fetch_row($result);
-		$this->free_result($result);
-
-		// !!! This should probably be done in chunks too.
-		$result = $this->query("
-			SELECT id_attach, filename
-			FROM {$to_prefix}attachments");
-		while ($row = $this->fetch_assoc($result))
-		{
-			// We're duplicating this from below because it's slightly different for getting current ones.
-			$clean_name = strtr($row['filename'], 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-			$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-			$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-			$enc_name = $row['id_attach'] . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
-			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
-
-			if (file_exists($attachmentUploadDir . '/' . $enc_name))
-				$filename = $attachmentUploadDir . '/' . $enc_name;
-			else
-				$filename = $attachmentUploadDir . '/' . $clean_name;
-
-			if (is_file($filename))
-				unlink($filename);
-		}
-		$this->free_result($result);
-	}
-
-	/**
 	 * execute an SQL query
 	 *
-	 * @global type $import
-	 * @global type $to_prefix
-	 * @param type $string
-	 * @param type $return_error
+	 * @param string $string
+	 * @param bool $return_error
 	 * @return type
 	 */
 	public function query($string, $return_error = false)
 	{
-		global $import, $to_prefix;
-
 		// Debugging?
 		if (isset($_REQUEST['debug']))
 			$_SESSION['import_debug'] = !empty($_REQUEST['debug']);
 
-		if (trim($string) == 'TRUNCATE ' . $to_prefix . 'attachments;')
-			$this->_removeAttachments();
-
 		$result = @mysqli_query($this->con, $string);
 
 		if ($result !== false || $return_error)
+		{
+			$this->second_try = true;
 			return $result;
+		}
+		else
+			return $this->sendError($string);
+	}
+
+	/**
+	 * Analyze and sends an error
+	 *
+	 * @global string $import
+	 * @param string $string
+	 * @return type
+	 */
+	protected function sendError($string)
+	{
+		global $import;
 
 		$mysql_error = mysqli_error($this->con);
 		$mysql_errno = mysqli_errno($this->con);
 
-		if ($mysql_errno == 1016)
+		// 1016: Can't open file '....MYI'
+		// 2013: Lost connection to server during query.
+		if (in_array($mysql_errno, array(1016, 2013)) && $this->second_try)
 		{
-			if (preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
+			$this->second_try = false;
+
+			// Try to repair the table and run the query again.
+			if ($mysql_errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
 				mysqli_query($this->con, "
 					REPAIR TABLE $match[1]");
 
-			$result = mysql_query($string);
-
-			if ($result !== false)
-				return $result;
-		}
-		elseif ($mysql_errno == 2013)
-		{
-			$result = mysqli_query($this->con, $string);
-
-			if ($result !== false)
-				return $result;
+			return $this->query($string, false);
 		}
 
 		// Get the query string so we pass everything.
@@ -149,7 +119,6 @@ class Database
 	 * @param type $result
 	 */
 	public function free_result($result)
-
 	{
 		mysqli_free_result($result);
 	}

@@ -98,6 +98,7 @@
 				ALTER TABLE {$to_prefix}members
 					CHANGE COLUMN passwd passwd varchar(40) NOT NULL default '';
 			</presql>
+			<presqlMethod>removeAttachments</presqlMethod>
 			<preparsecode>
 				$request = $db->query("
 					SELECT groupID
