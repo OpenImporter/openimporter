@@ -402,8 +402,8 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 
 			while ($topicArray = $this->db->fetch_assoc($resultTopic))
 			{
-				$memberStartedID = $his->getMsgMemberID($topicArray['myid_first_msg']);
-				$memberUpdatedID = $his->getMsgMemberID($topicArray['myid_last_msg']);
+				$memberStartedID = getMsgMemberID($topicArray['myid_first_msg']);
+				$memberUpdatedID = getMsgMemberID($topicArray['myid_last_msg']);
 
 				$this->db->query("
 					UPDATE {$to_prefix}topics
@@ -611,7 +611,7 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 					$filename = $custom_avatar_dir . '/' . $row['filename'];
 				}
 				else
-					$filename = $this->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+					$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
 
 				// Probably not one of the imported ones, then?
 				if (!file_exists($filename))
