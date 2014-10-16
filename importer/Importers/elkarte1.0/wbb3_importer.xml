@@ -3,13 +3,11 @@
 	<general>
 		<name>Woltlab Burning Board 3.1</name>
 		<version>ElkArte 1.0</version>
-		<settings>/wcf/config.inc.php</settings>
+		<className>wbb3_1</className>
 		<form>
 			<field id="1" type="text" size="20" default="wcf1_" label="WCF table prefix">wcf_prefix</field>
 			<field id="2" type="text" size="20" default="wbb1_1_" label="WBB table prefix">wbb_prefix</field>
 		</form>
-		<from_prefix>`$dbName`.</from_prefix>
-		<table_test>{$from_prefix}{$wbb_prefix}user;</table_test>
 		<globals>userOptions</globals>
 		<custom_functions>
 			function wbb_replace_bbc($message)

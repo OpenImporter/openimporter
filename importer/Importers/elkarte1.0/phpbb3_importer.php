@@ -38,8 +38,6 @@ class phpBB3
 
 	public function getTableTest()
 	{
-		global $table_prefix;
-
-		return $table_prefix . 'users';
+		return 'users';
 	}
 }

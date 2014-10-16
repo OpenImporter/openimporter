@@ -3,10 +3,7 @@
 	<general>
 		<name>vBulletin 4</name>
 		<version>ElkArte 1.0</version>
-		<settings>/includes/config.php</settings>
-		<from_prefix>`{$config['Database']['dbname']}`.{$config['Database']['tableprefix']}</from_prefix>
-		<globals>config</globals>
-		<table_test>{$from_prefix}user</table_test>
+		<className>vBulletin_4</className>
 		<custom_functions>
 			function vb4_replace_bbc($content)
 			{

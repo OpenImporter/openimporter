@@ -3,14 +3,11 @@
 	<general>
 		<name>Wordpress 3.x</name>
 		<version>ElkArte 1.0</version>
-		<!-- We can't load wp-config.php, there's a require_once at the end of that file which would load the enire wp stuff an break our importer engine. --> 
-		<settings>/wp-includes/version.php</settings>
+		<className>WP3</className>
 		<form>
 			<field id="1" type="text" size="20" label="Wordpress database">wp_database</field>
 			<field id="2" type="text" size="10" default="wp_" label="Wordpress table prefix">wp_prefix</field>
 		</form>
-		<from_prefix>`$wp_database`.$wp_prefix</from_prefix>
-		<table_test>{$from_prefix}users;</table_test>
 	</general>
 	<steps1>
 		<step type="mandatory">

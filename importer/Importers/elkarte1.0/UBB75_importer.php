@@ -1,10 +1,10 @@
 <?php
 
-class PHPBoost3
+class UBB_7_5
 {
 	public function getName()
 	{
-		return 'PHPBoost3';
+		return 'UBB Threads 7.5.x';
 	}
 
 	public function getVersion()
@@ -15,9 +15,9 @@ class PHPBoost3
 	public function loadSettings($path)
 	{
 		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/config.php'))
+		if (@file_exists($path . '/includes/config.inc.php'))
 		{
-			require_once($path . '/config.php');
+			require_once($path . '/includes/config.inc.php');
 			return true;
 		}
 		else
@@ -26,13 +26,13 @@ class PHPBoost3
 
 	public function getPrefix()
 	{
-		global $boost_database, $boost_prefix;
+		global $db_name, $db_prefix;
 
-		return '`' . $boost_database '`.' $boost_prefix;
+		return '`' . $db_name '`.' $db_prefix;
 	}
 
 	public function getTableTest()
 	{
-		return 'member';
+		return 'USERS';
 	}
 }

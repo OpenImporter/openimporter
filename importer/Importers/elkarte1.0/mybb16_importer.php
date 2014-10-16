@@ -33,8 +33,6 @@ class mybb16
 
 	public function getTableTest()
 	{
-		global $config;
-
-		return $config['database']['table_prefix'] . 'users';
+		return 'users';
 	}
 }

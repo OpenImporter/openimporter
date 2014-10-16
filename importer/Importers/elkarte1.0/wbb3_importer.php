@@ -1,10 +1,10 @@
 <?php
 
-class PHPBoost3
+class wbb3_1
 {
 	public function getName()
 	{
-		return 'PHPBoost3';
+		return 'Woltlab Burning Board 3.1';
 	}
 
 	public function getVersion()
@@ -15,9 +15,9 @@ class PHPBoost3
 	public function loadSettings($path)
 	{
 		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/config.php'))
+		if (@file_exists($path . '/wcf/config.inc.php'))
 		{
-			require_once($path . '/config.php');
+			require_once($path . '/wcf/config.inc.php');
 			return true;
 		}
 		else
@@ -26,13 +26,16 @@ class PHPBoost3
 
 	public function getPrefix()
 	{
-		global $boost_database, $boost_prefix;
+		global $dbName;
 
-		return '`' . $boost_database '`.' $boost_prefix;
+		return '`' . $dbName '`.';
 	}
 
+	// @todo why $wbb_prefix is not in getPrefix?
 	public function getTableTest()
 	{
-		return 'member';
+		global $wbb_prefix;
+
+		return $wbb_prefix . 'user';
 	}
 }

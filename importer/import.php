@@ -587,7 +587,7 @@ class Importer
 		{
 			$result = $this->db->query('
 				SELECT COUNT(*)
-				FROM "' . $this->settings->getTableTest() . '"', true);
+				FROM "' . $this->from_prefix . $this->settings->getTableTest() . '"', true);
 
 			if ($result === false)
 				$this->doStep0($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name);

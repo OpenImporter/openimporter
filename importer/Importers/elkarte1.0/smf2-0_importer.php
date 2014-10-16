@@ -1,10 +1,10 @@
 <?php
 
-class PHPBoost3
+class SMF2_0
 {
 	public function getName()
 	{
-		return 'PHPBoost3';
+		return 'SMF2_0';
 	}
 
 	public function getVersion()
@@ -12,12 +12,17 @@ class PHPBoost3
 		return 'ElkArte 1.0';
 	}
 
+	public function setDefines()
+	{
+		define('SMF', 1);
+	}
+
 	public function loadSettings($path)
 	{
 		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/config.php'))
+		if (@file_exists($path . '/Settings.php'))
 		{
-			require_once($path . '/config.php');
+			require_once($path . '/Settings.php');
 			return true;
 		}
 		else
@@ -26,13 +31,13 @@ class PHPBoost3
 
 	public function getPrefix()
 	{
-		global $boost_database, $boost_prefix;
+		global $db_name, $db_prefix;
 
-		return '`' . $boost_database '`.' $boost_prefix;
+		return '`' . $db_name '`.' $db_prefix;
 	}
 
 	public function getTableTest()
 	{
-		return 'member';
+		return 'members';
 	}
 }

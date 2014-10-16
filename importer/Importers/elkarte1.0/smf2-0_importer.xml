@@ -3,10 +3,7 @@
 	<general>
 		<name>SMF 2.0</name>
 		<version>ElkArte 1.0</version>
-		<settings>/Settings.php</settings>
-		<from_prefix>`$db_name`.$db_prefix</from_prefix>
-		<table_test>{$from_prefix}members;</table_test>
-		<defines>SMF=1</defines>
+		<className>SMF2_0</className>
 	</general>
 	<steps1>
 		<step>
