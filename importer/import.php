@@ -556,11 +556,8 @@ class Importer
 			$to_prefix = $db_prefix;
 			$this->to_prefix = $db_prefix;
 		}
-		// Custom functions? we need eval.
 
-		if (isset($this->xml->general->custom_functions))
-			eval($this->xml->general->custom_functions);
-
+		// @todo What is the use-case for these?
 		// Custom variables from our importer?
 		if (isset($this->xml->general->variables))
 		{

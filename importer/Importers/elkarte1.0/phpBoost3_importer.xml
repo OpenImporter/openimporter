@@ -11,42 +11,6 @@
 		<className>PHPBoost3</className>
 		<ip_to_ipv6>member_ip, member_ip2, ip</ip_to_ipv6>
 		<ip_to_pointer>poster_ip</ip_to_pointer>
-		<custom_functions><![CDATA[
-			function boost_replace_bbc($content)
-			{
-				$content = preg_replace(
-					array(
-						'~<strong>~is',
-						'~</strong>~is',
-						'~<em>~is',
-						'~</em>~is',
-						'~<strike>~is',
-						'~</strike>~is',
-						'~\<h3(.+?)\>~is',
-						'~</h3>~is',
-						'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
-						'~\<div class="bb_block">(.+?)<\/div>~is',
-						'~\[style=(.+?)\](.+?)\[\/style\]~is',
-					),
-					array(
-						'[b]',
-						'[/b]',
-						'[i]',
-						'[/i]',
-						'[s]',
-						'[/s]',
-						'',
-						'',
-						'[u]%1[/u]',
-						'%1',
-						'%1',
-					),
-					trim($content)
-				);
-
-				return $content;
-			}
-		]]></custom_functions>
 	</general>
 	<steps1>
 		<step type="mandatory">

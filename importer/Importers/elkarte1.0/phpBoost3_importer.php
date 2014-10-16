@@ -36,3 +36,41 @@ class PHPBoost3
 		return 'member';
 	}
 }
+
+/**
+ * Utility functions
+ */
+function boost_replace_bbc($content)
+{
+	$content = preg_replace(
+		array(
+			'~<strong>~is',
+			'~</strong>~is',
+			'~<em>~is',
+			'~</em>~is',
+			'~<strike>~is',
+			'~</strike>~is',
+			'~\<h3(.+?)\>~is',
+			'~</h3>~is',
+			'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
+			'~\<div class="bb_block">(.+?)<\/div>~is',
+			'~\[style=(.+?)\](.+?)\[\/style\]~is',
+		),
+		array(
+			'[b]',
+			'[/b]',
+			'[i]',
+			'[/i]',
+			'[s]',
+			'[/s]',
+			'',
+			'',
+			'[u]%1[/u]',
+			'%1',
+			'%1',
+		),
+		trim($content)
+	);
+
+	return $content;
+}
