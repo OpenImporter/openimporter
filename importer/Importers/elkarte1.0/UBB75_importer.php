@@ -43,7 +43,7 @@ class UBB_7_5
 function fix_quotes($string, $new_lines = true)
 {
 	if ($new_lines)
-		return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'))
+		return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'));
 	else
 		return htmlspecialchars($string);
 }
