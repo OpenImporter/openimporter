@@ -27,10 +27,11 @@ class ImportManager
 	protected $db;
 
 	/**
-	 * The "translator" (i.e. the Lang object)
+	 * The importer that will act as interface between the manager and the
+	 * files that will do the actual import
 	 * @var object
 	 */
-	public $lng;
+	public $importer;
 
 	/**
 	 * Our cookie settings
@@ -162,14 +163,9 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($lang, $template, $cookie, $headers)
+	public function __construct($importer, $template, $cookie, $headers)
 	{
-		$this->lng = $lang;
-
-		// Load the language file and create an importer cookie.
-		$this->lng->loadLang();
-
-		// initialize some objects
+		$this->importer = $importer;
 		$this->cookie = $cookie;
 		$this->template = $template;
 		$this->headers = $headers;
@@ -399,8 +395,6 @@ class ImportManager
 	{
 		global $to_prefix;
 
-		$importer = new Importer($this->lng, $this->template, $this->cookie, $this->headers);
-
 		$this->cookie->set(array($this->path_to, $this->path_from));
 
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
@@ -415,12 +409,12 @@ class ImportManager
 
 		//calculate our overall time and create the progress bar
 		if(!isset($_SESSION['import_overall']))
-			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $importer->determineProgress();
+			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
 
 		if(!isset($_SESSION['import_progress']))
 			$_SESSION['import_progress'] = 0;
 
-		$importer->doStep1($do_steps);
+		$this->importer->doStep1($do_steps);
 
 		$_GET['substep'] = 0;
 		$_REQUEST['start'] = 0;
@@ -441,8 +435,7 @@ class ImportManager
 
 		$this->template->step2();
 
-		$importer = new Importer($this->lng, $this->template, $this->cookie, $this->headers);
-		$key = $importer->doStep2($_GET['substep']);
+		$key = $this->importer->doStep2($_GET['substep']);
 
 		$this->template->status($key + 1, 1, false, true);
 
@@ -460,8 +453,7 @@ class ImportManager
 	{
 		global $boardurl;
 
-		$importer = new Importer($this->lng, $this->template, $this->cookie, $this->headers);
-		$importer->doStep3($_SESSION['import_steps']);
+		$this->importer->doStep3($_SESSION['import_steps']);
 
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
 

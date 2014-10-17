@@ -33,12 +33,6 @@ class Importer
 	public $lng;
 
 	/**
-	 * Our cookie settings
-	 * @var object
-	 */
-	protected $cookie;
-
-	/**
 	 * The template, basically our UI.
 	 * @var object
 	 */
@@ -47,6 +41,7 @@ class Importer
 	/**
 	 * The headers of the response.
 	 * @var object
+	 * @todo probably not necessary
 	 */
 	protected $headers;
 
@@ -162,15 +157,11 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($lang, $template, $cookie, $headers)
+	public function __construct($lang, $template, $headers)
 	{
 		$this->lng = $lang;
 
-		// Load the language file and create an importer cookie.
-		$this->lng->loadLang();
-
 		// initialize some objects
-		$this->cookie = $cookie;
 		$this->template = $template;
 		$this->headers = $headers;
 

@@ -44,7 +44,11 @@ $classLoader = new SplClassLoader(null, __DIR__ . '/OpenImporter');
 $classLoader->register();
 $template = new Template();
 
-$import = new ImportManager(new Lang(__DIR__ . '/Languages'), $template, new Cookie(), new ResponseHeader());
+$lng = new Lang(__DIR__ . '/Languages');
+$lng->loadLang();
+$importer = new Importer($lng, $template);
+
+$import = new ImportManager($importer, $template, new Cookie(), new ResponseHeader());
 
 $response = $import->getResponse();
 $template->render($response);
