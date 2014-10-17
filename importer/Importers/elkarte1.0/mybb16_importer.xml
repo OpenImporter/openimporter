@@ -262,12 +262,12 @@
 					$ext = '';
 
 				$source = $mybb_attachment_dir . '/' . $row['attachname'];
-				$file_hash = helper::createAttachmentFileHash($row['filename']);
+				$file_hash = createAttachmentFileHash($row['filename']);
 				$destination = $attachmentUploadDir . '/' . $id_attach . '_' . $file_hash . '.elk';
 				$width = 0;
 				$height = 0;
 
-				helper::copy_file($source, $destination);
+				copy_file($source, $destination);
 
 				// Is image? we need a thumbnail
 				if (!empty($ext))
@@ -312,10 +312,10 @@
 				//create some useful shortcuts
 				$source = $_POST['path_from'] . strtok(ltrim($row['filename'], '.'), '?');
 				$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
-				$file_hash = helper::createAttachmentFileHash($filename);
+				$file_hash = createAttachmentFileHash($filename);
 				$destination = $attachmentUploadDir . '/' . $id_attach . '_' . $file_hash . '.elk';
 
-				helper::copy_file($source, $destination);
+				copy_file($source, $destination);
 
 				$rows[] = implode(', ', array(
 					'id_attach' => $id_attach,
