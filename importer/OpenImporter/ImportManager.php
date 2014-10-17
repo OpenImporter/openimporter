@@ -292,7 +292,7 @@ class ImportManager
 				}
 				catch (Exception $e)
 				{
-					ImportException::exception_handler($e);
+					ImportException::exception_handler($e, $this->template);
 				}
 			}
 		}

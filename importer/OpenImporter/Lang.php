@@ -10,13 +10,7 @@
 class Lang
 {
 	private $_lang = array();
-	private $_path = '';
 	protected $_ns = array();
-
-	public function __construct($path = '')
-	{
-		$this->_path = $path;
-	}
 
 	/**
 	 * Adds a new variable to lang.
@@ -30,18 +24,18 @@ class Lang
 	{
 		try
 		{
-				if (!$this->has($key))
+			if (!$this->has($key))
+			{
+				if (strpos($key, '.') !== false)
 				{
-					if (strpos($key, '.') !== false)
-					{
-						$exp = explode('.', $key);
-						$this->registerNamespace($exp[0]);
-					}
-					$this->_lang[$key] = $value;
-					return true;
+					$exp = explode('.', $key);
+					$this->registerNamespace($exp[0]);
 				}
-				else
-					throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
+				$this->_lang[$key] = $value;
+				return true;
+			}
+			else
+				throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
 		}
 		catch(Exception $e)
 		{
@@ -62,46 +56,46 @@ class Lang
 	 * @return null
 	 * @throws ImportException if the XML file has got a corrupted structure.
 	 */
-	public function loadLang()
+	public function loadLang($path)
 	{
 		// detect the browser language
 		$language = $this->detect_browser_language();
+		$lngfile = $this->findLanguage($language);
 
-		// loop through the preferred languages and try to find the related language file
-		foreach ($language as $key => $value)
-		{
-			if (file_exists($this->_path . '/import_' . $key . '.xml'))
-			{
-				$lngfile = $this->_path . '/import_' . $key . '.xml';
-				break;
-			}
-		}
-		// english is still better than nothing
-		if (!isset($lngfile))
-		{
-			if (file_exists($this->_path . '/import_en.xml'))
-				$lngfile = $this->_path . '/import_en.xml';
-		}
 		// ouch, we really should never arrive here..
 		if (!$lngfile)
 			throw new Exception('Unable to detect language file!');
 
-		try
-		{
-			if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
-				throw new ImportException('XML-Syntax error in file: ' . $lngfile);
-
-			$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA);
-		}
-		catch (Exception $e)
-		{
-			ImportException::exception_handler($e);
-		}
+		if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
+			throw new ImportException('XML-Syntax error in file: ' . $lngfile);
 
 		foreach ($langObj as $strings)
 			$this->set((string) $strings->attributes()->{'name'}, (string) $strings);
 
 		return null;
+	}
+
+	protected function findLanguage($language)
+	{
+		$lngfile = false;
+
+		// loop through the preferred languages and try to find the related language file
+		foreach ($language as $key => $value)
+		{
+			if (file_exists($path . '/import_' . $key . '.xml'))
+			{
+				$lngfile = $path . '/import_' . $key . '.xml';
+				break;
+			}
+		}
+		// english is still better than nothing
+		if (empty($lngfile))
+		{
+			if (file_exists($path . '/import_en.xml'))
+				$lngfile = $path . '/import_en.xml';
+		}
+
+		return $lngfile;
 	}
 
 	/**

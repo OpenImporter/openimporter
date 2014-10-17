@@ -17,14 +17,17 @@ class ImportException extends Exception
 	/**
 	 * @param Exception $exception
 	 */
-	public static function exception_handler($exception)
+	public static function exception_handler($exception, $template = null)
 	{
 		global $import;
+
+		if ($template === null)
+			$template = $import->template;
 
 		$message = $exception->getMessage();
 		$trace = $exception->getTrace();
 		$line = $exception->getLine();
 		$file = $exception->getFile();
-		$import->template->error($message, $trace[0]['args'][1], $line, $file);
+		$template->error($message, $trace[0]['args'][1], $line, $file);
 	}
 }

@@ -12,6 +12,9 @@
  * copyright:	2011 Simple Machines (http://www.simplemachines.org)
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
+require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
+$classLoader = new SplClassLoader(null, __DIR__ . '/OpenImporter');
+$classLoader->register();
 
 @set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exception_handler'));
@@ -39,13 +42,18 @@ if (@ini_get('session.save_handler') == 'user')
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 	$_POST = stripslashes_recursive($_POST);
 
-require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader(null, __DIR__ . '/OpenImporter');
-$classLoader->register();
 $template = new Template();
 
-$lng = new Lang(__DIR__ . '/Languages');
-$lng->loadLang();
+try
+{
+	$lng = new Lang(__DIR__ . '/Languages');
+	$lng->loadLang();
+}
+catch (Exception $e)
+{
+	ImportException::exception_handler($e, $template);
+}
+
 $importer = new Importer($lng, $template);
 
 $import = new ImportManager($importer, $template, new Cookie(), new ResponseHeader());

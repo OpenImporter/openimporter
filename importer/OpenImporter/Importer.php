@@ -240,7 +240,7 @@ class Importer
 		}
 		catch (Exception $e)
 		{
-			ImportException::exception_handler($e);
+			ImportException::exception_handler($e, $this->template);
 		}
 	}
 
@@ -360,7 +360,7 @@ class Importer
 		}
 		catch(Exception $e)
 		{
-			ImportException::exception_handler($e);
+			ImportException::exception_handler($e, $this->template);
 			die();
 		}
 
