@@ -5,12 +5,6 @@
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
  * @version 1.0 Alpha
- *
- * This file contains code based on:
- *
- * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
 $classLoader = new SplClassLoader(null, __DIR__ . '/OpenImporter');
