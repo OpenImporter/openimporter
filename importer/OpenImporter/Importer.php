@@ -179,29 +179,15 @@ class Importer
 			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
-	protected function loadPass()
+	public function setScript($script)
 	{
-		// Check for the password...
-		if (isset($_POST['db_pass']))
-			$this->data['db_pass'] = $_POST['db_pass'];
-
-		if (isset($this->data['db_pass']))
-			$this->db_pass = $this->data['db_pass'];
+		$this->_script = $script;
 	}
 
-	protected function loadPaths()
+	public function reloadImporter()
 	{
-		if (isset($this->data['import_paths']) && !isset($_POST['path_from']) && !isset($_POST['path_to']))
-			list ($this->path_from, $this->path_to) = $this->data['import_paths'];
-		elseif (isset($_POST['path_from']) || isset($_POST['path_to']))
-		{
-			if (isset($_POST['path_from']))
-				$this->path_from = rtrim($_POST['path_from'], '\\/');
-			if (isset($_POST['path_to']))
-				$this->path_to = rtrim($_POST['path_to'], '\\/');
-
-			$this->data['import_paths'] = array($this->path_from, $this->path_to);
-		}
+		if (!empty($this->_script))
+			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
 	protected function _loadImporter($file)

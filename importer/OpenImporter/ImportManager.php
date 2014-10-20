@@ -180,13 +180,37 @@ class ImportManager
 
 		$this->loadPaths();
 
-		if (!empty($this->_script))
-			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
+		$this->importer->setScript($this->_script);
 	}
 
 	public function __destruct()
 	{
 		$this->saveInSession();
+	}
+
+	protected function loadPass()
+	{
+		// Check for the password...
+		if (isset($_POST['db_pass']))
+			$this->data['db_pass'] = $_POST['db_pass'];
+
+		if (isset($this->data['db_pass']))
+			$this->db_pass = $this->data['db_pass'];
+	}
+
+	protected function loadPaths()
+	{
+		if (isset($this->data['import_paths']) && !isset($_POST['path_from']) && !isset($_POST['path_to']))
+			list ($this->path_from, $this->path_to) = $this->data['import_paths'];
+		elseif (isset($_POST['path_from']) || isset($_POST['path_to']))
+		{
+			if (isset($_POST['path_from']))
+				$this->path_from = rtrim($_POST['path_from'], '\\/');
+			if (isset($_POST['path_to']))
+				$this->path_to = rtrim($_POST['path_to'], '\\/');
+
+			$this->data['import_paths'] = array($this->path_from, $this->path_to);
+		}
 	}
 
 	protected function loadFromSession()
@@ -308,7 +332,10 @@ class ImportManager
 		{
 			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
-				$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
+			{
+				$this->importer->setScript($_SESSION['import_script']);
+				$this->reloadImporter();
+			}
 			return false;
 		}
 
