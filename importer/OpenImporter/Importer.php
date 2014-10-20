@@ -165,15 +165,9 @@ class Importer
 		$this->template = $template;
 		$this->headers = $headers;
 
-		$this->_findScript();
-
 		// The current step - starts at 0.
 		$_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
-
-		$this->loadPass();
-
-		$this->loadPaths();
 
 		if (!empty($this->_script))
 			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);

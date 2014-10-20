@@ -22,7 +22,12 @@ class ImportException extends Exception
 		global $import;
 
 		if ($template === null)
-			$template = $import->template;
+		{
+			if (isset($import))
+				$template = $import->template;
+			else
+				$template = new Template();
+		}
 
 		$message = $exception->getMessage();
 		$trace = $exception->getTrace();

@@ -60,7 +60,7 @@ class Lang
 	{
 		// detect the browser language
 		$language = $this->detect_browser_language();
-		$lngfile = $this->findLanguage($language);
+		$lngfile = $this->findLanguage($path, $language);
 
 		// ouch, we really should never arrive here..
 		if (!$lngfile)
@@ -75,7 +75,7 @@ class Lang
 		return null;
 	}
 
-	protected function findLanguage($language)
+	protected function findLanguage($path, $language)
 	{
 		$lngfile = false;
 

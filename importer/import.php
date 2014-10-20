@@ -40,15 +40,15 @@ $template = new Template();
 
 try
 {
-	$lng = new Lang(__DIR__ . '/Languages');
-	$lng->loadLang();
+	$lng = new Lang();
+	$lng->loadLang(__DIR__ . '/Languages');
 }
 catch (Exception $e)
 {
 	ImportException::exception_handler($e, $template);
 }
 
-$importer = new Importer($lng, $template);
+$importer = new Importer($lng, $template, new ResponseHeader());
 
 $import = new ImportManager($importer, $template, new Cookie(), new ResponseHeader());
 
