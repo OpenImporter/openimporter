@@ -23,7 +23,7 @@ class ImportException extends Exception
 
 		if ($template === null)
 		{
-			if (isset($import))
+			if (!empty($import))
 				$template = $import->template;
 			else
 				$template = new Template();

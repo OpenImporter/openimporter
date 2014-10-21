@@ -47,7 +47,7 @@ catch (Exception $e)
 {
 	ImportException::exception_handler($e, $template);
 }
-
+global $import;
 $importer = new Importer($lng, $template, new ResponseHeader());
 
 $import = new ImportManager($importer, $template, new Cookie(), new ResponseHeader());

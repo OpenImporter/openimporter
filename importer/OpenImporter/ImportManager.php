@@ -169,6 +169,7 @@ class ImportManager
 		$this->cookie = $cookie;
 		$this->template = $template;
 		$this->headers = $headers;
+		$this->lng = $importer->lng;
 
 		$this->_findScript();
 
