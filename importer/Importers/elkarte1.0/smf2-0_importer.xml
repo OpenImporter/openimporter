@@ -225,21 +225,7 @@
 			<presql>TRUNCATE {$to_prefix}attachments;</presql>
 			<presqlMethod>removeAttachments</presqlMethod>
 			<preparsecode>
-				$request = $this->db->query("
-					SELECT value
-					FROM {$from_prefix}settings
-					WHERE variable='attachmentUploadDir';");
-				list ($smf_attachments_dir) = $this->db->fetch_row($request);
-
-				$smf_attachments_dir =  rtrim($smf_attachments_dir, '/');
-
-				if (empty($row['file_hash']))
-				{
-					$row['file_hash'] = createAttachmentFileHash($row['filename']);
-					copy_file($smf_attachments_dir . '/' . $row['filename'], $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-				}
-				else
-					copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $attachmentUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
+				moveAttachment($row, $this->db, $from_prefix, $attachmentUploadDir);
 			</preparsecode>
 			<query>
 				SELECT
