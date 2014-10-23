@@ -46,30 +46,6 @@ class Importer
 	protected $headers;
 
 	/**
-	 * The template to use.
-	 * @var string
-	 */
-	public $use_template = '';
-
-	/**
-	 * Any param needed by the template
-	 * @var mixed[]
-	 */
-	public $params_template = array();
-
-	/**
-	 * If set to true the template should not render anything
-	 * @var bool
-	 */
-	public $no_template = false;
-
-	/**
-	 * An array of possible importer scripts
-	 * @var array
-	 */
-	public $sources;
-
-	/**
 	 * The table prefix for our destination database
 	 * @var string
 	 */
@@ -86,30 +62,6 @@ class Importer
 	 * @var Object
 	 */
 	public $xml;
-
-	/**
-	 * Is an XML response expected?
-	 * @var bool
-	 */
-	public $is_xml = false;
-
-	/**
-	 * If render a full page or just a bit
-	 * @var bool
-	 */
-	public $is_page = true;
-
-	/**
-	 * Is there an error?
-	 * @var bool
-	 */
-	public $template_error = false;
-
-	/**
-	 * List of error messages
-	 * @var mixed[]
-	 */
-	public $error_params = array();
 
 	/**
 	 * Data used by the script and stored in session between a reload and the

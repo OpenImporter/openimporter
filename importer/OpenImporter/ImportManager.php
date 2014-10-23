@@ -23,12 +23,6 @@ namespace OpenImporter;
 class ImportManager
 {
 	/**
-	 * This is our main database object.
-	 * @var object
-	 */
-	protected $db;
-
-	/**
 	 * The importer that will act as interface between the manager and the
 	 * files that will do the actual import
 	 * @var object
@@ -78,18 +72,6 @@ class ImportManager
 	public $sources;
 
 	/**
-	 * The table prefix for our destination database
-	 * @var string
-	 */
-	public $to_prefix;
-
-	/**
-	 * The table prefix for our source database
-	 * @var string
-	 */
-	public $from_prefix;
-
-	/**
 	 * The XML file which will be used from the importer.
 	 * @var Object
 	 */
@@ -125,18 +107,6 @@ class ImportManager
 	 * @var mixed[]
 	 */
 	public $data = array();
-
-	/**
-	 * Used to decide if the database query is INSERT or INSERT IGNORE
-	 * @var boolean
-	 */
-	private $ignore = true;
-
-	/**
-	 * Used to switch between INSERT and REPLACE
-	 * @var boolean
-	 */
-	private $replace = false;
 
 	/**
 	 * The path to the source forum.
@@ -379,7 +349,7 @@ class ImportManager
 		if (!isset($this->path_to))
 			$this->path_to = dirname(__FILE__);
 
-		$test_from = $this->testFiles($this->xml->general->settings, $this->path_from);
+		$test_from = $this->testFiles($this->importer->xml->general->settings, $this->path_from);
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
 
 		// Was an error message specified?
@@ -488,7 +458,7 @@ class ImportManager
 		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
 
 		$this->use_template = 'step3';
-		$this->params_template = array($this->xml->general->name, $this->_boardurl, $writable);
+		$this->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
 		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		return true;
