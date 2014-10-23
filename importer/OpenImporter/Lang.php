@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter;
+
 /**
  * Class Lang loads the appropriate language file(s)
  * if they exist. The default import_en.xml file

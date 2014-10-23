@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter;
+
 /**
  * The starting point for the first step of any importer.
  */

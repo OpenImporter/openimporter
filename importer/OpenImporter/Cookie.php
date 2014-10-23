@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter;
+
 /**
  * we need Cooooookies..
  */

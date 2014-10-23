@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter;
+
 /**
  * Object ImportManager loads the main importer.
  * It handles all steps to completion.

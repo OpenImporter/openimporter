@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter;
+
 /**
  * the database class.
  * This class provides an easy wrapper around the common database

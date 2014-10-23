@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter;
+
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.

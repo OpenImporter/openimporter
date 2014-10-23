@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter;
+
 /**
  * class ImportException extends the build-in Exception class and
  * catches potential errors
