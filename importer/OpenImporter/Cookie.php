@@ -77,7 +77,7 @@ class Cookie
 			else
 				$merged = array_merge((array) $cookie, (array) $data);
 
-			return $this->set($merged);
+			return $this->set($merged, $name);
 		}
 
 		return false;

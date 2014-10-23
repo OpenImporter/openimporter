@@ -74,7 +74,7 @@ class CookieTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals(serialize(array('testSet', 'testExtend')), $_COOKIE['openimporter_cookie']);
 
 		$cookie->set('testSet', 'another_name');
-		$result = $cookie->set('testExtend', 'another_name');
+		$result = $cookie->extend('testExtend', 'another_name');
 		$this->assertTrue($result);
 		$this->assertEquals(serialize(array('testSet', 'testExtend')), $_COOKIE['another_name']);
 
