@@ -5,6 +5,9 @@
  */
 class CookieTest extends \PHPUnit_Framework_TestCase
 {
+	/**
+	 * @runInSeparateProcess
+	 */
 	public function testSet()
 	{
 		$cookie = new Cookie();
@@ -21,6 +24,9 @@ class CookieTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($result);
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 */
 	public function testGet()
 	{
 		$cookie = new Cookie();
@@ -37,6 +43,9 @@ class CookieTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($result);
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 */
 	public function testDestroy()
 	{
 		$cookie = new Cookie();
@@ -52,6 +61,9 @@ class CookieTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse(isset($_COOKIE['another_name']));
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 */
 	public function testExtend()
 	{
 		$cookie = new Cookie();
