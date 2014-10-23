@@ -1,18 +1,10 @@
 <?php
 
-namespace OpenImporter\Tests;
-
 /**
  * we need Cooooookies..
  */
 class CookieTest extends \PHPUnit_Framework_TestCase
 {
-	public function testConstructor()
-	{
-		$cookie = new Cookie();
-		$this->assertTrue($cookie);
-	}
-
 	public function testSet()
 	{
 		$cookie = new Cookie();

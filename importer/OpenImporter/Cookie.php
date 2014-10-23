@@ -1,7 +1,5 @@
 <?php
 
-namespace OpenImporter;
-
 /**
  * we need Cooooookies..
  */
@@ -11,7 +9,7 @@ class Cookie
 	 * Constructor
 	 * @return boolean
 	 */
-	public function Cookie()
+	public function __construct()
 	{
 		return true;
 	}
@@ -72,7 +70,7 @@ class Cookie
 	{
 		$cookie = $this->get($name);
 
-		if (!empty($data)
+		if (!empty($data))
 		{
 			if ($cookie === false)
 				$merged = $data;
