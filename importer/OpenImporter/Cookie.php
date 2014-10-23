@@ -70,13 +70,18 @@ class Cookie
 	 */
 	public function extend($data, $name = 'openimporter_cookie')
 	{
-		$cookie = unserialize($_COOKIE[$name]);
-		if (!empty($cookie) && isset($data))
-			$merged = array_merge((array) $cookie, (array) $data);
+		$cookie = $this->get($name);
 
-		$this->set($merged);
-		$_COOKIE[$name] = serialize($merged);
+		if (!empty($data)
+		{
+			if ($cookie === false)
+				$merged = $data;
+			else
+				$merged = array_merge((array) $cookie, (array) $data);
 
-		return true;
+			return $this->set($merged);
+		}
+
+		return false;
 	}
 }
