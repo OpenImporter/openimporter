@@ -9,7 +9,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en-GB,en;q=0.9,it;q=0.8';
 		try
 		{
-			$lng->loadLang(BASEDIR . '/../../Languages');
+			$lng->loadLang(BASEDIR . '/Languages');
 		}
 		catch (Exception $e)
 		{
@@ -28,7 +28,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'it;q=0.8';
 
 		// A non existing directory in order to force the exception
-		$lng->loadLang(BASEDIR . '/../../NoLanguages');
+		$lng->loadLang(BASEDIR . '/NoLanguages');
 	}
 
 	/**
@@ -42,7 +42,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		$method->setAccessible(TRUE);
 
-		$path = __DIR__ . '/../../Languages';
+		$path = BASEDIR . '/Languages';
 
 		$this->assertEquals(
 			$path . '/import_en.xml', $method->invoke(new Lang, $path, array('en' => 1))
@@ -54,7 +54,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		);
 
 		// A non existing directory in order to get a false
-		$path = __DIR__ . '/../../NoLanguages';
+		$path = BASEDIR . '/NoLanguages';
 
 		$this->assertFalse(
 			$method->invoke(new Lang, $path, array('en' => 1))
