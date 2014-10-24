@@ -122,7 +122,7 @@ class Importer
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
 		if (!empty($this->_script))
-			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
 	public function setScript($script)
@@ -133,7 +133,7 @@ class Importer
 	public function reloadImporter()
 	{
 		if (!empty($this->_script))
-			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
 	protected function _loadImporter($file)
@@ -149,7 +149,7 @@ class Importer
 		$dest_helper = $path . '/' . basename($path) . '_importer.php';
 		require_once($dest_helper);
 
-		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper));
+		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
 		$this->destination = new $this->_importer_base_class_name();
 
 		if (isset($this->path_to) && !empty($_GET['step']))
@@ -176,6 +176,14 @@ class Importer
 		}
 	}
 
+	public function needSettingsPath()
+	{
+		$class = (string) $this->xml->general->className;
+		$settings = new $class();
+
+		return method_exists($settings, 'loadSettings');
+	}
+
 	/**
 	 * prepare the importer with custom settings stuff
 	 *
@@ -190,7 +198,8 @@ class Importer
 	{
 		global $to_prefix;
 
-		$this->settings = new $this->xml->general->className();
+		$class = (string) $this->xml->general->className;
+		$this->settings = new $class();
 
 		if (method_exists($this->settings, 'setDefines'))
 			$this->settings->setDefines();
@@ -215,7 +224,10 @@ class Importer
 				global $$global;
 		}
 
-		$found = $this->settings->loadSettings($this->path_from);
+		if (method_exists($this->settings, 'loadSettings'))
+			$found = $this->settings->loadSettings($this->path_from);
+		else
+			$found = true;
 
 		if (!$found)
 		{
@@ -360,7 +372,7 @@ class Importer
 	 * Looks at the importer and returns the steps that it's able to make.
 	 * @return int
 	 */
-	private function _find_steps()
+	public function find_steps()
 	{
 		$steps = array();
 		$steps_count = 0;

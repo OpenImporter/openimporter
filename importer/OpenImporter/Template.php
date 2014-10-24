@@ -410,77 +410,78 @@ class Template
 			</div>';
 	}
 
-	public function step0($object, $steps, $test_from, $test_to)
+	public function step0($object, $form)
 	{
 		echo '
 			<h2>', $this->response->lng->get('imp.before_continue'), '</h2>
 			<div class="content">
-				<p>', sprintf($this->response->lng->get('imp.before_details'), (string) $object->xml->general->name ), '</p>
+				<p>', sprintf($this->response->lng->get('imp.before_details'), (string) $object->importer->xml->general->name ), '</p>
 			</div>';
 		echo '
 			<h2>', $this->response->lng->get('imp.where'), '</h2>
 			<div class="content">
-				<form action="', $_SERVER['PHP_SELF'], '?step=1', isset($_REQUEST['debug']) ? '&amp;debug=' . $_REQUEST['debug'] : '', '" method="post">
+				<form action="', $form->action_url, '" method="post">
 					<p>', $this->response->lng->get('imp.locate_destination'), '</p>
 					<div id="toggle_button">', $this->response->lng->get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
-					<dl id="advanced_options" style="display: none; margin-top: 5px">
-						<dt><label for="path_to">', $this->response->lng->get('imp.path_to_destination'), ':</label></dt>
-						<dd>
-							<input type="text" name="path_to" id="path_to" value="', $_POST['path_to'], '" onblur="validateField(\'path_to\')" />
-							<div id="validate_path_to" class="validate">', $test_to ? $this->response->lng->get('imp.right_path') : $this->response->lng->get('imp.change_path'), '</div>
-						</dd>
+					<dl id="advanced_options" style="display: none; margin-top: 5px">';
+
+		foreach ($form->options as $option)
+		{
+			if (empty($option))
+			{
+				echo '
 					</dl>
 					<dl>';
+				continue;
+			}
 
-		if ($object->xml->general->settings)
-			echo '
-						<dt><label for="path_from">', $this->response->lng->get('imp.path_to_source'),' ', $object->xml->general->name, ':</label></dt>
-						<dd>
-							<input type="text" name="path_from" id="path_from" value="', $_POST['path_from'], '" onblur="validateField(\'path_from\')" />
-							<div id="validate_path_from" class="validate">', $test_from ? $this->response->lng->get('imp.right_path') : $this->response->lng->get('imp.change_path'), '</div>
-						</dd>';
-
-		// Any custom form elements?
-		if ($object->xml->general->form)
-		{
-			foreach ($object->xml->general->form->children() as $field)
+			switch ($option['type'])
 			{
-				if ($field->attributes()->{'type'} == 'text')
+				case 'text':
+				{
 					echo '
-						<dt><label for="field', $field->attributes()->{'id'}, '">', $field->attributes()->{'label'}, ':</label></dt>
-						<dd><input type="text" name="field', $field->attributes()->{'id'}, '" id="field', $field->attributes()->{'id'}, '" value="', isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} :'' ,'" size="', $field->attributes()->{'size'}, '" /></dd>';
-
-				elseif ($field->attributes()->{'type'}== 'checked' || $field->attributes()->{'type'} == 'checkbox')
+						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
+						<dd>
+							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', !empty($option['validate']) ? 'onblur="validateField(\'' . $option['id'] . '\')"' : '', ' class="text" />
+							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
+						</dd>';
+					break;
+				}
+				case 'checkbox':
+				{
 					echo '
 						<dt></dt>
 						<dd>
-							<label for="field', $field->attributes()->{'id'}, '">
-								<input type="checkbox" name="field', $field->attributes()->{'id'}, '" id="field', $field->attributes()->{'id'}, '" value="1"', $field->attributes()->{'type'} == 'checked' ? ' checked="checked"' : '', ' /> ', $field->attributes()->{'label'}, '
+							<label for="', $option['id'], '">', $option['label'], ':
+								<input type="checkbox" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', $option['attributes'], '/>
 							</label>
 						</dd>';
-			}
-		}
-
-		echo '
-						<dt><label for="db_pass">', $this->response->lng->get('imp.database_passwd'),':</label></dt>
+					break;
+				}
+				case 'password':
+				{
+					echo '
+						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
-							<input type="password" name="db_pass" size="30" class="text" />
-							<div style="font-style: italic; font-size: smaller">', $this->response->lng->get('imp.database_verify'),'</div>
+							<input type="password" name="', $option['id'], '" id="', $option['id'], '" class="text" />
+							<div style="font-style: italic; font-size: smaller">', $option['correct'], '</div>
 						</dd>';
-
-
-		// Now for the steps.
-		if (!empty($steps))
-		{
-			echo '
-						<dt>', $this->response->lng->get('imp.selected_only'),':</dt>
+					break;
+				}
+				case 'steps':
+				{
+					echo '
+						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>';
-			foreach ($steps as $key => $step)
-				echo '
-							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', ucfirst(str_replace('importing ', '', $step['name'])), '</label><br />';
+						foreach ($option['value'] as $key => $step)
+							echo '
+							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', $step['label'], '</label><br />';
 
-			echo '
+					echo '
 						</dd>';
+					break;
+				}
+			}
 		}
 
 		echo '

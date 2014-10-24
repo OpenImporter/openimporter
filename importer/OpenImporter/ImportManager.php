@@ -122,7 +122,7 @@ class ImportManager
 	 * The importer script which will be used for the import.
 	 * @var string
 	 */
-	private $_script = '';
+	private $_script = null;
 
 	/**
 	 * This is the URL from our Installation.
@@ -144,7 +144,7 @@ class ImportManager
 		$this->_findScript();
 
 		// The current step - starts at 0.
-		$_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
+		$_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
 		$this->loadPass();
@@ -256,10 +256,12 @@ class ImportManager
 	 */
 	private function _detect_scripts()
 	{
-		if (isset($_REQUEST['import_script']))
+		if ($this->_script !== null)
 		{
-			if ($_REQUEST['import_script'] != '' && preg_match('~^[a-z0-9\-_\.]*_importer\.xml$~i', $_REQUEST['import_script']) != 0)
-				$_SESSION['import_script'] = preg_replace('~[\.]+~', '.', $_REQUEST['import_script']);
+			if ($this->_script != '' && preg_match('~^[a-z0-9\-_\.]+\/[a-z0-9\-_\.]+_importer\.xml$~i', $this->_script) != 0)
+			{
+				$this->_script = $_SESSION['import_script'] = preg_replace('~[\.]+~', '.', $this->_script);
+			}
 			else
 				$_SESSION['import_script'] = null;
 		}
@@ -305,7 +307,7 @@ class ImportManager
 			if (substr($_SESSION['import_script'], -4) == '.xml')
 			{
 				$this->importer->setScript($_SESSION['import_script']);
-				$this->reloadImporter();
+				$this->importer->reloadImporter();
 			}
 			return false;
 		}
@@ -341,6 +343,9 @@ class ImportManager
 		if ($this->_detect_scripts())
 			return true;
 
+		$this->importer->setScript($this->_script);
+		$this->importer->reloadImporter();
+
 		// If these aren't set (from an error..) default to the current directory.
 		if (!isset($this->path_from))
 			$this->path_from = BASEDIR;
@@ -357,8 +362,10 @@ class ImportManager
 			$this->error_params[] = $error_message;
 		}
 
+		$form = $this->_prepareStep0Form($test_from, $test_to);
+
 		$this->use_template = 'step0';
-		$this->params_template = array($this, $this->_find_steps(), $test_from, $test_to);
+		$this->params_template = array($this, $form);
 
 		if ($error_message !== null)
 		{
@@ -367,6 +374,92 @@ class ImportManager
 		}
 
 		return;
+	}
+
+	protected function _prepareStep0Form($test_from, $test_to)
+	{
+		$form = new Form();
+
+		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . (isset($_REQUEST['debug']) ? '&amp;debug=' . $_REQUEST['debug'] : '');
+
+		$options = array(
+			array(
+				'id' => 'path_to',
+				'label' => $this->lng->get('imp.path_to_destination'),
+				'value' => isset($_POST['path_to']) ? htmlspecialchars($_POST['path_to']) : '',
+				'correct' => $test_to ? $this->lng->get('imp.right_path') : $this->lng->get('imp.change_path'),
+				'validate' => true,
+			),
+		);
+
+		if ($this->importer->needSettingsPath())
+		{
+			$options[] = array(
+				'id' => 'path_from',
+				'label' => $this->lng->get('imp.path_to_source') . ' ' . $this->importer->xml->general->name,
+				'value' => isset($_POST['path_from']) ? htmlspecialchars($_POST['path_from']) : '',
+				'correct' => $test_from ? $this->lng->get('imp.right_path') : $this->lng->get('imp.change_path'),
+				'validate' => true,
+			);
+		}
+
+		$options[] = array();
+
+		// Any custom form elements?
+		if ($this->importer->xml->general->form)
+		{
+			foreach ($this->importer->xml->general->form->children() as $field)
+			{
+				if ($field->attributes()->{'type'} == 'text')
+				{
+					$options[] = array(
+						'id' => 'field' . $field->attributes()->{'id'},
+						'label' => $field->attributes()->{'label'},
+						'value' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
+						'correct' => '',
+						'type' => 'text',
+					);
+				}
+				else
+				{
+					$options[] = array(
+						'id' => 'field' . $field->attributes()->{'id'},
+						'label' => $field->attributes()->{'label'},
+						'value' => 1,
+						'attributes' => $field->attributes()->{'type'} == 'checked' ? ' checked="checked"' : '',
+						'type' => 'checkbox',
+					);
+				}
+			}
+		}
+
+		$options[] = array(
+			'id' => 'db_pass',
+			'label' => $this->lng->get('imp.database_passwd'),
+			'correct' => $this->lng->get('imp.database_verify'),
+			'type' => 'password',
+		);
+
+		$steps = $this->importer->find_steps();
+		if (!empty($steps))
+		{
+			foreach ($steps as $key => $step)
+				$steps[$key]['label'] = ucfirst(str_replace('importing ', '', $step['name']));
+
+			$options[] = array(
+				'id' => 'do_steps',
+				'label' => $this->lng->get('imp.selected_only'),
+				'value' => $steps,
+				'type' => 'steps',
+			);
+		}
+
+		foreach ($options as $key => $option)
+			if (!empty($option) && !isset($option['type']))
+				$options[$key]['type'] = 'text';
+		$form->options = $options;
+
+		return $form;
 	}
 
 	protected function testFiles($files, $path)

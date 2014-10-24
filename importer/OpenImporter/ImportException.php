@@ -28,11 +28,10 @@ class ImportException extends Exception
 			else
 				$template = new Template();
 		}
-
 		$message = $exception->getMessage();
 		$trace = $exception->getTrace();
 		$line = $exception->getLine();
 		$file = $exception->getFile();
-		$template->error($message, $trace[0]['args'][1], $line, $file);
+		$template->error($message, isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $line, $file);
 	}
 }

@@ -46,7 +46,7 @@ function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
 {
 	static $smf_folders = null;
 
-	if ($smf_folders === null
+	if ($smf_folders === null)
 	{
 		$request = $db->query("
 			SELECT value
