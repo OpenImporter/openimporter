@@ -1,7 +1,5 @@
 <?php
 
-namespace OpenImporter;
-
 /**
  * Any page served needs an header.
  */

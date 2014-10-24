@@ -6,8 +6,9 @@
  *
  * @version 1.0 Alpha
  */
+
 require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader(null, __DIR__ . '/OpenImporter');
+$classLoader = new SplClassLoader(, __DIR__ . '/OpenImporter');
 $classLoader->register();
 
 @set_time_limit(600);

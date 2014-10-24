@@ -1,7 +1,5 @@
 <?php
 
-namespace OpenImporter;
-
 /**
  * this is our UI
  *
