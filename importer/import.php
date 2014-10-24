@@ -7,8 +7,10 @@
  * @version 1.0 Alpha
  */
 
-require_once(__DIR__ . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader(, __DIR__ . '/OpenImporter');
+define('BASEDIR', __DIR__);
+
+require_once(BASEDIR . '/OpenImporter/SplClassLoader.php');
+$classLoader = new SplClassLoader(null, BASEDIR . '/OpenImporter');
 $classLoader->register();
 
 @set_time_limit(600);
@@ -42,7 +44,7 @@ $template = new Template();
 try
 {
 	$lng = new Lang();
-	$lng->loadLang(__DIR__ . '/Languages');
+	$lng->loadLang(BASEDIR . '/Languages');
 }
 catch (Exception $e)
 {

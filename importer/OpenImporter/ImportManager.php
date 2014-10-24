@@ -205,7 +205,7 @@ class ImportManager
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
 			$this->_script = (string) $_REQUEST['import_script'];
-		elseif (isset($_SESSION['import_script']) && file_exists(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
+		elseif (isset($_SESSION['import_script']) && file_exists(BASEDIR . DIRECTORY_SEPARATOR . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
 			$this->_script = (string) $_SESSION['import_script'];
 		else
 		{
@@ -244,7 +244,7 @@ class ImportManager
 	{
 		@unlink(__FILE__);
 		if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			@unlink(dirname(__FILE__) . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
+			@unlink(BASEDIR . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
 		$_SESSION['import_script'] = null;
 	}
 
@@ -264,7 +264,7 @@ class ImportManager
 				$_SESSION['import_script'] = null;
 		}
 
-		$dir = dirname(__FILE__) . '/Importers/';
+		$dir = BASEDIR . '/Importers/';
 		$sources = glob($dir . '*', GLOB_ONLYDIR);
 		$all_scripts = array();
 		$scripts = array();
@@ -343,9 +343,9 @@ class ImportManager
 
 		// If these aren't set (from an error..) default to the current directory.
 		if (!isset($this->path_from))
-			$this->path_from = dirname(__FILE__);
+			$this->path_from = BASEDIR;
 		if (!isset($this->path_to))
-			$this->path_to = dirname(__FILE__);
+			$this->path_to = BASEDIR;
 
 		$test_from = $this->testFiles($this->importer->xml->general->settings, $this->path_from);
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
@@ -453,7 +453,7 @@ class ImportManager
 
 		$this->importer->doStep3($_SESSION['import_steps']);
 
-		$writable = (is_writable(dirname(__FILE__)) && is_writable(__FILE__));
+		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 
 		$this->use_template = 'step3';
 		$this->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);

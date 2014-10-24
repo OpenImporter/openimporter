@@ -9,7 +9,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en-GB,en;q=0.9,it;q=0.8';
 		try
 		{
-			$lng->loadLang(__DIR__ . '/../../Languages');
+			$lng->loadLang(BASEDIR . '/../../Languages');
 		}
 		catch (Exception $e)
 		{
@@ -28,7 +28,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'it;q=0.8';
 
 		// A non existing directory in order to force the exception
-		$lng->loadLang(__DIR__ . '/../../NoLanguages');
+		$lng->loadLang(BASEDIR . '/../../NoLanguages');
 	}
 
 	/**

@@ -122,7 +122,7 @@ class Importer
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
 		if (!empty($this->_script))
-			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
 	public function setScript($script)
@@ -133,7 +133,7 @@ class Importer
 	public function reloadImporter()
 	{
 		if (!empty($this->_script))
-			$this->_loadImporter(dirname(__FILE__) . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
 	protected function _loadImporter($file)
