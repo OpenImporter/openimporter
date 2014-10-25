@@ -188,7 +188,7 @@ class ImportManager
 	/**
 	 * Prepares the response to send to the template system
 	 */
-	public function getResponse()
+	public function process()
 	{
 		// This is really quite simple; if ?delete is on the URL, delete the importer...
 		if (isset($_GET['delete']))
@@ -198,11 +198,16 @@ class ImportManager
 			$this->response->no_template = true;
 		}
 
+		$this->populateResponseDetails();
+
 		if (isset($_GET['xml']))
 		{
 			$this->response->addHeader('Content-Type', 'text/xml');
 			$this->response->is_xml = true;
 		}
+		else
+			$this->template->header();
+
 		if (isset($_GET['action']) && $_GET['action'] == 'validate')
 			$this->validateFields();
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
@@ -212,7 +217,9 @@ class ImportManager
 
 		$this->populateResponseDetails();
 
-		return $this->response;
+		$this->template->render();
+
+		$this->template->footer();
 	}
 
 	protected function validateFields()
@@ -468,7 +475,18 @@ class ImportManager
 		if(!isset($_SESSION['import_progress']))
 			$_SESSION['import_progress'] = 0;
 
-		$this->importer->doStep1($do_steps);
+		try
+		{
+			$this->importer->doStep1($do_steps);
+		}
+		catch (DatabaseException $e)
+		{
+			$trace = $e->getTrace();
+			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+
+			// Forward back to the original caller to terminate the script
+			throw new Exception($e->getMessage());
+		}
 
 		$_GET['substep'] = 0;
 		$_REQUEST['start'] = 0;
@@ -489,7 +507,18 @@ class ImportManager
 
 		$this->template->step2();
 
-		$key = $this->importer->doStep2($_GET['substep']);
+		try
+		{
+			$key = $this->importer->doStep2($_GET['substep']);
+		}
+		catch (DatabaseException $e)
+		{
+			$trace = $e->getTrace();
+			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+
+			// Forward back to the original caller to terminate the script
+			throw new Exception($e->getMessage());
+		}
 
 		$this->template->status($key + 1, 1, false, true);
 

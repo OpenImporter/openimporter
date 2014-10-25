@@ -52,10 +52,17 @@ catch (Exception $e)
 }
 global $import;
 $importer = new Importer($lng, $template);
+$response = new HttpResponse(new ResponseHeader());
 
-$import = new ImportManager($importer, $template, new Cookie(), new HttpResponse(new ResponseHeader());
+$template->setResponse($response);
 
-$response = $import->getResponse();
-$template->render($response);
+$import = new ImportManager($importer, $template, new Cookie(), $response);
 
-die();
+try
+{
+	$import->process();
+}
+catch (Exception $e)
+{
+	// If an error is not catched, it means it's fatal and the script should die.
+}

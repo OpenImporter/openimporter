@@ -99,18 +99,15 @@ class Database
 		if (strlen($query_string) != 0)
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
 
-		echo '
+		throw new DatabaseException('
 				<b>Unsuccessful!</b><br />
 				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
 				Caused the error:<br />
 				<blockquote>' . nl2br(htmlspecialchars($mysql_error)) . '</blockquote>
-				<form action="', $_SERVER['PHP_SELF'], $query_string, '" method="post">
+				<form action="' . $_SERVER['PHP_SELF'] . $query_string . '" method="post">
 					<input type="submit" value="Try again" />
 				</form>
-			</div>';
-
-		$import->template->footer();
-		die;
+			</div>');
 	}
 
 

@@ -6,6 +6,8 @@
  */
 class Template
 {
+	protected $response = null;
+
 	/**
 	 * Display a specific error message.
 	 *
@@ -29,10 +31,13 @@ class Template
 			</div>';
 	}
 
-	public function render($response)
+	public function setResponse($response)
 	{
 		$this->response = $response;
+	}
 
+	public function render()
+	{
 		// No text? ... so sad. :(
 		if ($this->response->no_template)
 			return;
