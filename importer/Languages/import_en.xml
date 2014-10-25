@@ -50,5 +50,6 @@
 	<item name="imp.smooth_transition">We hope you had a smooth transition!</item>
 	<item name="imp.valid">installation valid</item>
 	<item name="imp.invalid">invalid path, installation could not be validated!</item>
+	<item name="imp.validated">installation validated!</item>
 	<item name="imp.overall_progress">Overall progress</item>
 </lang>

@@ -42,58 +42,22 @@ class ImportManager
 	public $template;
 
 	/**
-	 * The headers of the response.
+	 * The response object.
 	 * @var object
 	 */
-	protected $headers;
+	protected $response;
 
 	/**
-	 * The template to use.
-	 * @var string
+	 * The language object.
+	 * @var object
 	 */
-	public $use_template = '';
-
-	/**
-	 * Any param needed by the template
-	 * @var mixed[]
-	 */
-	public $params_template = array();
-
-	/**
-	 * If set to true the template should not render anything
-	 * @var bool
-	 */
-	public $no_template = false;
+	protected $lng;
 
 	/**
 	 * An array of possible importer scripts
 	 * @var array
 	 */
 	public $sources;
-
-	/**
-	 * Is an XML response expected?
-	 * @var bool
-	 */
-	public $is_xml = false;
-
-	/**
-	 * If render a full page or just a bit
-	 * @var bool
-	 */
-	public $is_page = true;
-
-	/**
-	 * Is there an error?
-	 * @var bool
-	 */
-	public $template_error = false;
-
-	/**
-	 * List of error messages
-	 * @var mixed[]
-	 */
-	public $error_params = array();
 
 	/**
 	 * Data used by the script and stored in session between a reload and the
@@ -129,18 +93,23 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($importer, $template, $cookie, $headers)
+	public function __construct($importer, $template, $cookie, $response)
 	{
+		global $time_start;
+
+		$time_start = time();
+
 		$this->importer = $importer;
 		$this->cookie = $cookie;
 		$this->template = $template;
-		$this->headers = $headers;
+		$this->response = $response;
 		$this->lng = $importer->lng;
+		$this->response->lng = $importer->lng;
 
 		$this->_findScript();
 
 		// The current step - starts at 0.
-		$_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
+		$this->response->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
 		$this->loadPass();
@@ -226,16 +195,68 @@ class ImportManager
 		{
 			$this->uninstall();
 
-			$this->no_template = true;
+			$this->response->no_template = true;
 		}
-		elseif (isset($_GET['xml']))
-			$this->is_xml = true;
+
+		if (isset($_GET['xml']))
+		{
+			$this->response->addHeader('Content-Type', 'text/xml');
+			$this->response->is_xml = true;
+		}
+		if (isset($_GET['action']) && $_GET['action'] == 'validate')
+			$this->validateFields();
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
 			call_user_func(array($this, 'doStep' . $_GET['step']));
 		else
 			call_user_func(array($this, 'doStep0'));
 
-		return $this;
+		$this->populateResponseDetails();
+
+		return $this->response;
+	}
+
+	protected function validateFields()
+	{
+		$this->_detect_scripts();
+
+		$this->importer->setScript($this->_script);
+		try
+		{
+			$this->importer->reloadImporter();
+		}
+		catch(Exception $e)
+		{
+			// Do nothing, let the code die
+		}
+
+		if (isset($_GET['path_to']))
+		{
+			$this->response->valid = $this->importer->destination->checkSettingsPath($_GET['path_to']);
+		}
+		elseif (isset($_GET['path_from']))
+		{
+			$found = false;
+			if (method_exists($this->importer->settings, 'loadSettings'))
+				$found = $this->importer->settings->loadSettings($_GET['path_from'], true);
+
+			$this->response->valid = $found;
+		}
+		else
+			$this->response->valid = false;
+	}
+
+	protected function populateResponseDetails()
+	{
+		if (isset($this->importer->xml->general->name))
+			$this->response->page_title = $this->importer->xml->general->name . ' to ' . $this->importer->destination->getName();
+		else
+			$this->response->page_title = 'OpenImporter';
+
+// 		$this->response->from = $this->importer->settings : null
+		$this->response->script = $this->_script;
+// 		$this->response->
+// 		$this->response->
+// 		$this->response->
 	}
 
 	/**
@@ -314,8 +335,8 @@ class ImportManager
 			return false;
 		}
 
-		$this->use_template = 'select_script';
-		$this->params_template = array($scripts);
+		$this->response->use_template = 'select_script';
+		$this->response->params_template = array($scripts);
 
 		return true;
 	}
@@ -346,21 +367,22 @@ class ImportManager
 			return true;
 
 		$this->importer->setScript($this->_script);
-		$this->importer->reloadImporter();
+		try
+		{
+			$this->importer->reloadImporter();
+		}
+		catch(Exception $e)
+		{
+			$this->response->template_error = true;
+			$this->response->addErrorParam($e->getMessage());
+		}
 
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
 
-		// Was an error message specified?
-		if ($error_message !== null)
-		{
-			$this->template_error = true;
-			$this->error_params[] = $error_message;
-		}
-
 		$form = $this->_prepareStep0Form($test_to);
 
-		$this->use_template = 'step0';
-		$this->params_template = array($this, $form);
+		$this->response->use_template = 'step0';
+		$this->response->params_template = array($this, $form);
 
 		if ($error_message !== null)
 		{
@@ -463,7 +485,7 @@ class ImportManager
 	 */
 	public function doStep2()
 	{
-		$_GET['step'] = '2';
+		$this->response->step = $_GET['step'] = '2';
 
 		$this->template->step2();
 
@@ -489,8 +511,8 @@ class ImportManager
 
 		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 
-		$this->use_template = 'step3';
-		$this->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
+		$this->response->use_template = 'step3';
+		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
 		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		return true;

@@ -33,17 +33,16 @@ class Importer
 	public $lng;
 
 	/**
+	 * The destination object.
+	 * @var object
+	 */
+	public $destination;
+
+	/**
 	 * The template, basically our UI.
 	 * @var object
 	 */
 	public $template;
-
-	/**
-	 * The headers of the response.
-	 * @var object
-	 * @todo probably not necessary
-	 */
-	protected $headers;
 
 	/**
 	 * The table prefix for our destination database
@@ -109,13 +108,11 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($lang, $template, $headers)
+	public function __construct($lang, $template)
 	{
-		$this->lng = $lang;
-
 		// initialize some objects
+		$this->lng = $lang;
 		$this->template = $template;
-		$this->headers = $headers;
 
 		// The current step - starts at 0.
 		$_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
@@ -152,8 +149,7 @@ class Importer
 		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
 		$this->destination = new $this->_importer_base_class_name();
 
-		if (isset($this->path_to))
-			$this->_loadSettings();
+		$this->_loadSettings();
 	}
 
 	/**
@@ -300,9 +296,11 @@ class Importer
 		if (!$found)
 		{
 			if (@ini_get('open_basedir') != '')
-				return $this->doStep0(array($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
+				throw new Exception(sprintf($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
+// 				return $this->doStep0(array($this->lng->get('imp.open_basedir'), (string) $this->xml->general->name));
 
-			return $this->doStep0(array($this->lng->get('imp.config_not_found'), (string) $this->xml->general->name));
+			throw new Exception(sprintf($this->lng->get('imp.config_not_found'), (string) $this->xml->general->name));
+// 			return $this->doStep0(array($this->lng->get('imp.config_not_found'), (string) $this->xml->general->name));
 		}
 
 		// Any custom form elements to speak of?
@@ -347,15 +345,18 @@ class Importer
 		$this->_boardurl = $this->destination->getDestinationURL();
 
 		if ($this->_boardurl === false)
-			return $this->doStep0($this->lng->get('imp.settings_not_found'), $this);
+			throw new Exception($this->lng->get('imp.settings_not_found'));
+// 			return $this->doStep0($this->lng->get('imp.settings_not_found'), $this);
 
 		if (!$this->destination->verifyDbPass($this->data['db_pass']))
-			return $this->doStep0($this->lng->get('imp.password_incorrect'), $this);
+			throw new Exception($this->lng->get('imp.password_incorrect'));
+// 			return $this->doStep0($this->lng->get('imp.password_incorrect'), $this);
 
 		// Check the steps that we have decided to go through.
 		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
 		{
-			return $this->doStep0($this->lng->get('imp.select_step'));
+			throw new Exception($this->lng->get('imp.select_step'));
+// 			return $this->doStep0($this->lng->get('imp.select_step'));
 		}
 		elseif (isset($_POST['do_steps']))
 		{
@@ -418,7 +419,8 @@ class Importer
 				FROM "' . $this->from_prefix . $this->settings->getTableTest() . '"', true);
 
 			if ($result === false)
-				$this->doStep0($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name);
+				throw new Exception(sprintf($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name));
+// 				$this->doStep0($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name);
 
 			$this->db->free_result($result);
 		}

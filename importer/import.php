@@ -51,9 +51,9 @@ catch (Exception $e)
 	ImportException::exception_handler($e, $template);
 }
 global $import;
-$importer = new Importer($lng, $template, new ResponseHeader());
+$importer = new Importer($lng, $template);
 
-$import = new ImportManager($importer, $template, new Cookie(), new ResponseHeader());
+$import = new ImportManager($importer, $template, new Cookie(), new HttpResponse(new ResponseHeader());
 
 $response = $import->getResponse();
 $template->render($response);

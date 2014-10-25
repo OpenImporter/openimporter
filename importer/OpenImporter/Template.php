@@ -36,8 +36,11 @@ class Template
 		// No text? ... so sad. :(
 		if ($this->response->no_template)
 			return;
+
+		$this->response->sendHeaders();
+
 		// XML ajax feedback? We can just skip everything else
-		elseif ($this->response->is_xml)
+		if ($this->response->is_xml)
 			$this->xml();
 		elseif ($this->response->is_page)
 		{
@@ -64,7 +67,7 @@ class Template
 	 */
 	public function footer($inner = true)
 	{
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
+		if (($this->response->step == 1 || $this->response->step == 2) && $inner == true)
 			echo '
 				</p>
 			</div>';
@@ -81,15 +84,12 @@ class Template
 	 */
 	public function header($inner = true)
 	{
-		global $time_start;
-		$time_start = time();
-
 		echo '<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $this->response->lng->get('imp.locale'), '" lang="', $this->response->lng->get('imp.locale'), '">
 	<head>
 		<meta charset="UTF-8" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>', isset($this->response->xml->general->name) ? $this->response->xml->general->name . ' to ' : '', 'OpenImporter</title>
+		<title>', $this->response->page_title, '</title>
 		<script type="text/javascript">
 			function AJAXCall(url, callback, string)
 			{
@@ -122,13 +122,10 @@ class Template
 					req.send(null);
 				};
 			}
-
 			function validateField(string)
 			{
 				var target = document.getElementById(string);
-				var from = "', isset($this->response->xml->general->settings) ? $this->response->xml->general->settings : null , '";
-				var to = "/Settings.php";
-				var url = "import.php?xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + (string == "path_to" ? to : from);
+				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&import_script=', $this->response->script , ';
 				var ajax = new AJAXCall(url, validateCallback, string);
 				ajax.doGet();
 			}
@@ -151,7 +148,7 @@ class Template
 					var field = document.getElementById(string);
 					var validate = document.getElementById(\'validate_\' + string);
 					field.className = "valid_field";
-					validate.innerHTML = "installation validated!";
+					validate.innerHTML = "', $this->response->lng->get('imp.validated') , '";
 					var submitBtn = document.getElementById("submit_button");
 					submitBtn.disabled = false;
 				}
@@ -323,7 +320,7 @@ class Template
 	</head>
 	<body>
 		<div id="header">
-			<h1 title="SMF is dead. The forks are your future :-P">', isset($this->response->xml->general->{'name'}) ? $this->response->xml->general->{'name'} . ' to ' : '', 'OpenImporter</h1>
+			<h1>', isset($this->response->importer->xml->general->{'name'}) ? $this->response->importer->xml->general->{'name'} . ' to ' : '', 'OpenImporter</h1>
 		</div>
 		<div id="main">';
 
@@ -647,15 +644,7 @@ class Template
 	 */
 	public function xml()
 	{
-		if (isset($_GET['path_to']))
-			$test_to = file_exists($_GET['path_to']);
-		elseif (isset($_GET['path_from']))
-			$test_to = file_exists($_GET['path_from']);
-		else
-			$test_to = false;
-
-		header('Content-Type: text/xml');
 		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-	<valid>', $test_to ? 'true' : 'false' ,'</valid>';
+	<valid>', $this->response->valid ? 'true' : 'false' ,'</valid>';
 	}
 }

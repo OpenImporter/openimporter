@@ -15,6 +15,16 @@
 
 class elkarte1_0_importer
 {
+	public function getName()
+	{
+		return 'ElkArte 1.0';
+	}
+
+	public function checkSettingsPath($path)
+	{
+		return file_exists($path . '/Settings.php');
+	}
+
 	public function getDestinationURL($path)
 	{
 		global $boardurl;
