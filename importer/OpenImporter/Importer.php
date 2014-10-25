@@ -86,13 +86,13 @@ class Importer
 	 * The path to the source forum.
 	 * @var string
 	 */
-	protected $path_from = '';
+	protected $path_from = null;
 
 	/**
 	 * The path to the destination forum.
 	 * @var string
 	 */
-	protected $path_to = '';
+	protected $path_to = null;
 
 	/**
 	 * The importer script which will be used for the import.
@@ -152,7 +152,7 @@ class Importer
 		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
 		$this->destination = new $this->_importer_base_class_name();
 
-		if (isset($this->path_to) && !empty($_GET['step']))
+		if (isset($this->path_to))
 			$this->_loadSettings();
 	}
 
@@ -176,12 +176,80 @@ class Importer
 		}
 	}
 
-	public function needSettingsPath()
+	public function getFormSettings()
 	{
+		$options = array();
 		$class = (string) $this->xml->general->className;
 		$settings = new $class();
+		if (!isset($this->path_from))
+			$this->path_from = BASEDIR;
 
-		return method_exists($settings, 'loadSettings');
+		if (method_exists($settings, 'loadSettings'))
+		{
+			$options = array(
+				array(
+					'id' => 'path_from',
+					'label' => $this->lng->get('imp.path_to_source') . ' ' . $this->xml->general->name,
+					'type' => 'text',
+					'correct' => $settings->loadSettings($this->path_from, true) ? $this->lng->get('imp.change_path') : $this->lng->get('imp.right_path'),
+					'validate' => true,
+				),
+			);
+		}
+
+		$options[] = array();
+
+		// Any custom form elements?
+		if ($this->xml->general->form)
+		{
+			foreach ($this->xml->general->form->children() as $field)
+			{
+				if ($field->attributes()->{'type'} == 'text')
+				{
+					$options[] = array(
+						'id' => 'field' . $field->attributes()->{'id'},
+						'label' => $field->attributes()->{'label'},
+						'value' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
+						'correct' => '',
+						'type' => 'text',
+					);
+				}
+				else
+				{
+					$options[] = array(
+						'id' => 'field' . $field->attributes()->{'id'},
+						'label' => $field->attributes()->{'label'},
+						'value' => 1,
+						'attributes' => $field->attributes()->{'type'} == 'checked' ? ' checked="checked"' : '',
+						'type' => 'checkbox',
+					);
+				}
+			}
+		}
+
+		$options[] = array(
+			'id' => 'db_pass',
+			'label' => $this->lng->get('imp.database_passwd'),
+			'correct' => $this->lng->get('imp.database_verify'),
+			'type' => 'password',
+		);
+
+		$steps = $this->find_steps();
+
+		if (!empty($steps))
+		{
+			foreach ($steps as $key => $step)
+				$steps[$key]['label'] = ucfirst(str_replace('importing ', '', $step['name']));
+
+			$options[] = array(
+				'id' => 'do_steps',
+				'label' => $this->lng->get('imp.selected_only'),
+				'value' => $steps,
+				'type' => 'steps',
+			);
+		}
+
+		return $options;
 	}
 
 	/**

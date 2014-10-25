@@ -110,13 +110,13 @@ class ImportManager
 	 * The path to the source forum.
 	 * @var string
 	 */
-	protected $path_from = '';
+	protected $path_from = null;
 
 	/**
 	 * The path to the destination forum.
 	 * @var string
 	 */
-	protected $path_to = '';
+	protected $path_to = null;
 
 	/**
 	 * The importer script which will be used for the import.
@@ -182,6 +182,12 @@ class ImportManager
 
 			$this->data['import_paths'] = array($this->path_from, $this->path_to);
 		}
+
+		// If these aren't set (from an error..) default to the current directory.
+		if (!isset($this->path_to))
+			$this->path_to = BASEDIR;
+		if (!isset($this->path_from))
+			$this->path_from = BASEDIR;
 	}
 
 	protected function loadFromSession()
@@ -346,13 +352,6 @@ class ImportManager
 		$this->importer->setScript($this->_script);
 		$this->importer->reloadImporter();
 
-		// If these aren't set (from an error..) default to the current directory.
-		if (!isset($this->path_from))
-			$this->path_from = BASEDIR;
-		if (!isset($this->path_to))
-			$this->path_to = BASEDIR;
-
-		$test_from = $this->testFiles($this->importer->xml->general->settings, $this->path_from);
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
 
 		// Was an error message specified?
@@ -362,7 +361,7 @@ class ImportManager
 			$this->error_params[] = $error_message;
 		}
 
-		$form = $this->_prepareStep0Form($test_from, $test_to);
+		$form = $this->_prepareStep0Form($test_to);
 
 		$this->use_template = 'step0';
 		$this->params_template = array($this, $form);
@@ -376,7 +375,7 @@ class ImportManager
 		return;
 	}
 
-	protected function _prepareStep0Form($test_from, $test_to)
+	protected function _prepareStep0Form($test_to)
 	{
 		$form = new Form();
 
@@ -386,77 +385,23 @@ class ImportManager
 			array(
 				'id' => 'path_to',
 				'label' => $this->lng->get('imp.path_to_destination'),
-				'value' => isset($_POST['path_to']) ? htmlspecialchars($_POST['path_to']) : '',
+				'type' => 'text',
+				'value' => isset($this->path_to) ? htmlspecialchars($this->path_to) : '',
 				'correct' => $test_to ? $this->lng->get('imp.right_path') : $this->lng->get('imp.change_path'),
 				'validate' => true,
 			),
 		);
 
-		if ($this->importer->needSettingsPath())
+		foreach ($this->importer->getFormSettings() as $key => $val)
 		{
-			$options[] = array(
-				'id' => 'path_from',
-				'label' => $this->lng->get('imp.path_to_source') . ' ' . $this->importer->xml->general->name,
-				'value' => isset($_POST['path_from']) ? htmlspecialchars($_POST['path_from']) : '',
-				'correct' => $test_from ? $this->lng->get('imp.right_path') : $this->lng->get('imp.change_path'),
-				'validate' => true,
-			);
-		}
-
-		$options[] = array();
-
-		// Any custom form elements?
-		if ($this->importer->xml->general->form)
-		{
-			foreach ($this->importer->xml->general->form->children() as $field)
+			if (!empty($val) && $val['type'] !== 'password')
 			{
-				if ($field->attributes()->{'type'} == 'text')
-				{
-					$options[] = array(
-						'id' => 'field' . $field->attributes()->{'id'},
-						'label' => $field->attributes()->{'label'},
-						'value' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
-						'correct' => '',
-						'type' => 'text',
-					);
-				}
-				else
-				{
-					$options[] = array(
-						'id' => 'field' . $field->attributes()->{'id'},
-						'label' => $field->attributes()->{'label'},
-						'value' => 1,
-						'attributes' => $field->attributes()->{'type'} == 'checked' ? ' checked="checked"' : '',
-						'type' => 'checkbox',
-					);
-				}
+				if (!empty($val) && !isset($val['value']))
+					$val['value'] = isset($this->{$val['id']}) ? htmlspecialchars($this->{$val['id']}) : '';
 			}
+			$options[] = $val;
 		}
 
-		$options[] = array(
-			'id' => 'db_pass',
-			'label' => $this->lng->get('imp.database_passwd'),
-			'correct' => $this->lng->get('imp.database_verify'),
-			'type' => 'password',
-		);
-
-		$steps = $this->importer->find_steps();
-		if (!empty($steps))
-		{
-			foreach ($steps as $key => $step)
-				$steps[$key]['label'] = ucfirst(str_replace('importing ', '', $step['name']));
-
-			$options[] = array(
-				'id' => 'do_steps',
-				'label' => $this->lng->get('imp.selected_only'),
-				'value' => $steps,
-				'type' => 'steps',
-			);
-		}
-
-		foreach ($options as $key => $option)
-			if (!empty($option) && !isset($option['type']))
-				$options[$key]['type'] = 'text';
 		$form->options = $options;
 
 		return $form;
