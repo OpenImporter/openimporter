@@ -72,12 +72,6 @@ class ImportManager
 	public $sources;
 
 	/**
-	 * The XML file which will be used from the importer.
-	 * @var Object
-	 */
-	public $xml;
-
-	/**
 	 * Is an XML response expected?
 	 * @var bool
 	 */

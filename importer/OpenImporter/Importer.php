@@ -234,7 +234,7 @@ class Importer
 			'type' => 'password',
 		);
 
-		$steps = $this->find_steps();
+		$steps = $this->_find_steps();
 
 		if (!empty($steps))
 		{
@@ -440,7 +440,7 @@ class Importer
 	 * Looks at the importer and returns the steps that it's able to make.
 	 * @return int
 	 */
-	public function find_steps()
+	protected function _find_steps()
 	{
 		$steps = array();
 		$steps_count = 0;
