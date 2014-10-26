@@ -335,7 +335,7 @@ class ImportManager
 			}
 		}
 
-		if (isset($_SESSION['import_script']))
+		if (!empty($_SESSION['import_script']))
 		{
 			if (count($all_scripts) > 1)
 				$this->sources[$from] = $scripts[$from];
@@ -384,7 +384,8 @@ class ImportManager
 		if ($this->_detect_scripts())
 			return true;
 
-		$this->importer->setScript($this->_script);
+		$this->importer->setScript($this->_script, $this->path_from, $this->path_to, $this->data);
+
 		try
 		{
 			$this->importer->reloadImporter();
@@ -395,6 +396,7 @@ class ImportManager
 			$this->response->addErrorParam($e->getMessage());
 		}
 
+		// @todo Elk/SMF-specific
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
 
 		$form = $this->_prepareStep0Form($test_to);
