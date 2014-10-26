@@ -2,6 +2,8 @@
 
 class mybb16 extends AbstractSourceImporter
 {
+	protected $setting_file = '/inc/config.php';
+
 	public function getName()
 	{
 		return 'MyBB 1.6';
@@ -10,21 +12,6 @@ class mybb16 extends AbstractSourceImporter
 	public function getVersion()
 	{
 		return 'ElkArte 1.0';
-	}
-
-	public function loadSettings($path, $test = false)
-	{
-		if ($test)
-			return @file_exists($path . '/inc/config.php');
-
-		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/inc/config.php'))
-		{
-			require_once($path . '/inc/config.php');
-			return true;
-		}
-		else
-			return false;
 	}
 
 	public function getPrefix()

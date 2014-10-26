@@ -2,6 +2,8 @@
 
 class SMF2_0 extends AbstractSourceImporter
 {
+	protected $setting_file = '/Settings.php';
+
 	protected $path = '';
 
 	public function getName()
@@ -17,21 +19,6 @@ class SMF2_0 extends AbstractSourceImporter
 	public function setDefines()
 	{
 		define('SMF', 1);
-	}
-
-	public function loadSettings($path, $test = false)
-	{
-		if ($test)
-			return @file_exists($path . '/Settings.php');
-
-		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/Settings.php'))
-		{
-			$this->path = $path;
-			return true;
-		}
-		else
-			return false;
 	}
 
 	public function getPrefix()

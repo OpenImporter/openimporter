@@ -2,6 +2,8 @@
 
 class wbb3_1 extends AbstractSourceImporter
 {
+	protected $setting_file = '/wc/config.inc.php';
+
 	public function getName()
 	{
 		return 'Woltlab Burning Board 3.1';
@@ -10,21 +12,6 @@ class wbb3_1 extends AbstractSourceImporter
 	public function getVersion()
 	{
 		return 'ElkArte 1.0';
-	}
-
-	public function loadSettings($path, $test = false)
-	{
-		if ($test)
-			return @file_exists($path . '/wc/config.inc.php');
-
-		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/wcf/config.inc.php'))
-		{
-			require_once($path . '/wcf/config.inc.php');
-			return true;
-		}
-		else
-			return false;
 	}
 
 	public function getPrefix()

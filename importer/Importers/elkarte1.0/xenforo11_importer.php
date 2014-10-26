@@ -2,6 +2,8 @@
 
 class XenForo1_1 extends AbstractSourceImporter
 {
+	protected $setting_file = '/includes/config.php';
+
 	public function getName()
 	{
 		return 'Wordpress 3.x';
@@ -10,21 +12,6 @@ class XenForo1_1 extends AbstractSourceImporter
 	public function getVersion()
 	{
 		return 'ElkArte 1.0';
-	}
-
-	public function loadSettings($path, $test = false)
-	{
-		if ($test)
-			return @file_exists($path . '/includes/config.php');
-
-		// Error silenced in case of odd server configurations (open_basedir mainly)
-		if (@file_exists($path . '/includes/config.php'))
-		{
-			require_once($path . '/includes/config.php');
-			return true;
-		}
-		else
-			return false;
 	}
 
 	public function getPrefix()
