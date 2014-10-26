@@ -34,8 +34,6 @@ class elkarte1_0_importer
 
 	public function getDestinationURL($path)
 	{
-		global $boardurl;
-
 		// Cannot find Settings.php?
 		if (!$this->checkSettingsPath($path))
 			return false;

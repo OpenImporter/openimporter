@@ -45,7 +45,7 @@ class wbb3_1
  */
 function wbb_replace_bbc($message)
 {
-	$row['body'] = preg_replace(
+	$message = preg_replace(
 		array(
 			'~\[size=(.+?)\]~is',
 			'~\[align=left\](.+?)\[\/align\]~is',
