@@ -52,6 +52,12 @@ class XmlProcessor
 	public $xml;
 
 	/**
+	 * Holds all the methods required to perform the conversion.
+	 * @var object
+	 */
+	public $step1_importer;
+
+	/**
 	 * initialize the main Importer object
 	 */
 	public function __construct($db, $to_prefix, $from_prefix, $template, $xml)
@@ -63,7 +69,12 @@ class XmlProcessor
 		$this->xml = $xml;
 	}
 
-	public function processSteps($step, &$substep, &$do_steps, $step1_importer)
+	public function setImporter($step1_importer)
+	{
+		$this->step1_importer = $step1_importer;
+	}
+
+	public function processSteps($step, &$substep, &$do_steps)
 	{
 		global $import;
 
@@ -80,69 +91,26 @@ class XmlProcessor
 		$special_table = null;
 		$special_code = null;
 
-		// Increase the substep slightly...
-		pastTime(++$substep);
-
-		$_SESSION['import_steps'][$substep]['title'] = (string) $step->title;
-		if (!isset($_SESSION['import_steps'][$substep]['status']))
-			$_SESSION['import_steps'][$substep]['status'] = 0;
-
 		// any preparsing code here?
+		// @todo any idea why this is not eval'ed here
+		// and later could be overwritten? ($step->code)
 		if (isset($step->preparsecode) && !empty($step->preparsecode))
 			$special_code = $this->fix_params((string) $step->preparsecode);
 
+		// @todo $_GET
 		$do_current = $substep >= $_GET['substep'];
 
-		if (!in_array($substep, $do_steps))
-		{
-			$_SESSION['import_steps'][$substep]['status'] = 2;
-			$_SESSION['import_steps'][$substep]['presql'] = true;
-		}
-		// Detect the table, then count rows.. 
-		elseif ($step->detect)
-		{
-			$count = $this->fix_params((string) $step->detect);
-			$table_test = $this->db->query("
-				SELECT COUNT(*)
-				FROM $count", true);
-
-			if ($table_test === false)
-			{
-				$_SESSION['import_steps'][$substep]['status'] = 3;
-				$_SESSION['import_steps'][$substep]['presql'] = true;
-			}
-		}
-
-		$this->template->status($substep, $_SESSION['import_steps'][$substep]['status'], $_SESSION['import_steps'][$substep]['title']);
+		$table_test = $this->updateStatus($step, &$substep, &$do_steps);
 
 		// do we need to skip this step?
-		if ((isset($table_test) && $table_test === false) || !in_array($substep, $do_steps))
-		{
-			// reset some defaults
-			$current_data = '';
-			$special_table = null;
-			$special_code = null;
-		}
+		if ($table_test === false || !in_array($substep, $do_steps))
+			return;
 
 		// pre sql queries first!!
-		if (isset($step->presql) && !isset($_SESSION['import_steps'][$substep]['presql']))
+		if (isset($step->presql))
 		{
-			$presql = $this->fix_params((string) $step->presql);
-			$presql_array = explode(';', $presql);
-			if (isset($presql_array) && is_array($presql_array))
-			{
-				array_pop($presql_array);
-				foreach ($presql_array as $exec)
-					$this->db->query($exec . ';');
-			}
-			else
-				$this->db->query($presql);
-
-			if (isset($step->presqlMethod))
-				$step1_importer->beforeSql($step->presqlMethod);
-
-			// don't do this twice..
-			$_SESSION['import_steps'][$substep]['presql'] = true;
+			$presqlMethod = isset($step->presqlMethod) ? $step->presqlMethod : false;
+			$this->doPresqlStep((string) $step->presql, $substep, $presqlMethod);
 		}
 
 		if ($special_table === null)
@@ -174,6 +142,7 @@ class XmlProcessor
 			$current_data = '';
 			$special_table = null;
 			$special_code = null;
+
 			if ($_SESSION['import_steps'][$substep]['status'] == 0)
 				$this->template->status($substep, 1, false, true);
 			$_SESSION['import_steps'][$substep]['status'] = 1;
@@ -187,37 +156,25 @@ class XmlProcessor
 				$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
 
 			if (isset($step->detect))
-			{
-				$count = $this->fix_params((string) $step->detect);
-				$result2 = $this->db->query("
-					SELECT COUNT(*)
-					FROM $count");
-				list ($counter) = $this->db->fetch_row($result2);
-				$import->count->$substep = $counter;
-				$this->db->free_result($result2);
-			}
+				$import->count->$substep = $this->detect((string) $step->detect);
 
 			// create some handy shortcuts
-			$ignore = ((isset($step->options->ignore) && $step->options->ignore == false) || isset($step->options->replace)) ? false : true;
-			$replace = (isset($step->options->replace) && $step->options->replace == true) ? true : false;
-			$no_add = (isset($step->options->no_add) && $step->options->no_add == true) ? true : false;
-			$ignore_slashes = (isset($step->options->ignore_slashes) && $step->options->ignore_slashes == true) ? true : false;
+			$ignore = $this->shouldIgnore($step->options);
+			$replace = $this->shouldReplace($step->options);
+			$no_add = $this->shoudNotAdd($step->options);
+			$ignore_slashes = $this->ignoreSlashes($step->options);
 
 			if ($special_table === null)
 				$this->db->query($current_data);
-
 			else
 			{
-				$step1_importer->doSpecialTable($special_table);
+				$this->step1_importer->doSpecialTable($special_table);
 
 				while (true)
 				{
 					pastTime($substep);
 
-					if (strpos($current_data, '%d') !== false)
-						$special_result = $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
-					else
-						$special_result = $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+					$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
 					$rows = array();
 					$keys = array();
@@ -230,7 +187,7 @@ class XmlProcessor
 						if ($special_code !== null)
 							eval($special_code);
 
-						$step1_importer->doSpecialTable($special_table, $row);
+						$this->step1_importer->doSpecialTable($special_table, $row);
 
 						// this is wedge specific stuff and will move at some point.
 						// prepare ip address conversion
@@ -284,7 +241,7 @@ class XmlProcessor
 						// fixing the charset, we need proper utf-8
 						$row = fix_charset($row);
 
-						$row = $step1_importer->fixTexts($row);
+						$row = $this->step1_importer->fixTexts($row);
 
 						if (empty($no_add) && empty($ignore_slashes))
 							$rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
@@ -343,5 +300,123 @@ class XmlProcessor
 		$string = strtr($string, array('{$from_prefix}' => $this->from_prefix, '{$to_prefix}' => $this->to_prefix));
 
 		return $string;
+	}
+
+	protected function updateStatus($step, &$substep, &$do_steps)
+	{
+		$table_test = true;
+
+		// Increase the substep slightly...
+		pastTime(++$substep);
+
+		$_SESSION['import_steps'][$substep]['title'] = (string) $step->title;
+		if (!isset($_SESSION['import_steps'][$substep]['status']))
+			$_SESSION['import_steps'][$substep]['status'] = 0;
+
+		if (!in_array($substep, $do_steps))
+		{
+			$_SESSION['import_steps'][$substep]['status'] = 2;
+			$_SESSION['import_steps'][$substep]['presql'] = true;
+		}
+		// Detect the table, then count rows.. 
+		elseif ($step->detect)
+		{
+			$table_test = $this->detect((string) $step->detect);
+
+			if ($table_test === false)
+			{
+				$_SESSION['import_steps'][$substep]['status'] = 3;
+				$_SESSION['import_steps'][$substep]['presql'] = true;
+			}
+		}
+
+		$this->template->status($substep, $_SESSION['import_steps'][$substep]['status'], $_SESSION['import_steps'][$substep]['title']);
+
+		return $table_test;
+	}
+
+	protected function doPresqlStep($presql, $substep, $presqlMethod)
+	{
+		if (isset($_SESSION['import_steps'][$substep]['presql']))
+			return;
+
+		$presql = $this->fix_params($presql);
+		$presql_array = explode(';', $presql);
+		if (isset($presql_array) && is_array($presql_array))
+		{
+			array_pop($presql_array);
+			foreach ($presql_array as $exec)
+				$this->db->query($exec . ';');
+		}
+		else
+			$this->db->query($presql);
+
+		if ($presqlMethod)
+			$this->step1_importer->beforeSql($presqlMethod);
+
+		// don't do this twice..
+		$_SESSION['import_steps'][$substep]['presql'] = true;
+	}
+
+	protected function detect($table)
+	{
+		$count = $this->fix_params($table);
+
+		$result = $this->db->query("
+			SELECT COUNT(*)
+			FROM $count");
+
+		if ($result === false)
+			return false;
+
+		list ($counter) = $this->db->fetch_row($result);
+		$this->db->free_result($result);
+
+		return $counter;
+	}
+
+	protected function shouldIgnore($options)
+	{
+		if (isset($options->ignore) && $options->ignore == false)
+			return false;
+
+		if (isset($options->replace))
+			return false;
+
+		return true;
+	}
+
+	protected function shouldReplace($options)
+	{
+		if (isset($options->replace) && $options->replace == true)
+			return true;
+		else
+			return false;
+	}
+
+	protected function shoudNotAdd($options)
+	{
+		if (isset($options->no_add) && $options->no_add == true)
+			return true;
+		else
+			return false;
+	}
+
+	protected function ignoreSlashes($options)
+	{
+		if (isset($options->ignore_slashes) && $options->ignore_slashes == true)
+			return true;
+		else
+			return false;
+	}
+
+	protected function prepareSpecialResult($current_data, $special_limit)
+	{
+		// @todo $_REQUEST
+		if (strpos($current_data, '%d') !== false)
+			return $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+		else
+			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+
 	}
 }

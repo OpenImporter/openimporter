@@ -528,9 +528,10 @@ class Importer
 		$substep = 0;
 
 		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template, $this->xml);
+		$xmlParser->setImporter($step1_importer);
 
 		foreach ($this->xml->steps1->step as $step)
-			$xmlParser->processSteps($step, $substep, $do_steps, $step1_importer);
+			$xmlParser->processSteps($step, $substep, $do_steps);
 	}
 
 	/**
