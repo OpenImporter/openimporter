@@ -42,7 +42,7 @@ class XmlProcessor
 	 * The template
 	 * @var object
 	 */
-	public $from_prefix;
+	public $template;
 
 	/**
 	 * The xml object containing the settings.
@@ -100,7 +100,7 @@ class XmlProcessor
 		// @todo $_GET
 		$do_current = $substep >= $_GET['substep'];
 
-		$table_test = $this->updateStatus($step, &$substep, &$do_steps);
+		$table_test = $this->updateStatus($step, $substep, $do_steps);
 
 		// do we need to skip this step?
 		if ($table_test === false || !in_array($substep, $do_steps))
