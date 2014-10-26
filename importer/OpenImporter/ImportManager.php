@@ -447,7 +447,7 @@ class ImportManager
 		{
 			if (!empty($val) && $val['type'] !== 'password' && !isset($val['value']))
 					$val['value'] = isset($this->{$val['id']}) ? htmlspecialchars($this->{$val['id']}) : '';
-			}
+
 			$options[] = $val;
 		}
 
