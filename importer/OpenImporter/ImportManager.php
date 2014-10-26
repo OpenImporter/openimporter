@@ -405,7 +405,7 @@ class ImportManager
 			$this->response->addErrorParam($e->getMessage());
 		}
 
-		$form = $this->_prepareStep0Form($test_to);
+		$form = $this->_prepareStep0Form();
 
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
@@ -419,7 +419,7 @@ class ImportManager
 		return;
 	}
 
-	protected function _prepareStep0Form($test_to)
+	protected function _prepareStep0Form()
 	{
 		$form = new Form();
 
