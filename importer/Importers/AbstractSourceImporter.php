@@ -1,6 +1,6 @@
 <?php
 
-class AbstractSourceImporter
+abstract class AbstractSourceImporter
 {
 	public abstract function getName();
 
