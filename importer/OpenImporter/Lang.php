@@ -54,6 +54,7 @@ class Lang
 	 * Loads the language xml file.
 	 *
 	 * @return null
+	 * @throws Exception if it cannot find the XML file.
 	 * @throws ImportException if the XML file has got a corrupted structure.
 	 */
 	public function loadLang($path)

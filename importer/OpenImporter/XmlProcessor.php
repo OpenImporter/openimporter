@@ -39,13 +39,20 @@ class XmlProcessor
 	public $from_prefix;
 
 	/**
+	 * The template
+	 * @var object
+	 */
+	public $from_prefix;
+
+	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $to_prefix, $from_prefix)
+	public function __construct($db, $to_prefix, $from_prefix, $template)
 	{
 		$this->db = $db;
 		$this->to_prefix = $to_prefix;
 		$this->from_prefix = $from_prefix;
+		$this->template = $template;
 	}
 
 	public function processSteps($step, &$substep, &$do_steps, $step1_importer)

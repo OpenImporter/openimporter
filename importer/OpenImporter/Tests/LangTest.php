@@ -40,7 +40,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 			'Lang', 'findLanguage'
 		);
 
-		$method->setAccessible(TRUE);
+		$method->setAccessible(true);
 
 		$path = BASEDIR . '/Languages';
 

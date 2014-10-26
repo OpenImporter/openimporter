@@ -3,7 +3,7 @@
 /**
  * Checks if we've passed a time limit..
  *
- * @param int $substep
+ * @param int|null $substep
  * @param int $stop_time
  * @return null
  */
@@ -123,7 +123,7 @@ function copy_dir($source, $dest)
  * @param type $string
  * @return boolean
  */
- function is_utf8($string)
+function is_utf8($string)
 {
 	return utf8_encode(utf8_decode($string)) == $string;
 }

@@ -106,6 +106,12 @@ class Importer
 	private $_boardurl = '';
 
 	/**
+	 * The "base" class name of the destination system.
+	 * @var string
+	 */
+	private $_importer_base_class_name = '';
+
+	/**
 	 * initialize the main Importer object
 	 */
 	public function __construct($lang, $template)
@@ -469,7 +475,7 @@ class Importer
 		$counter_current_step = 0;
 		$import_steps = array();
 
-		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix);
+		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template);
 
 		// loop through each step
 		foreach ($this->xml->steps1->step as $counts)
@@ -514,7 +520,7 @@ class Importer
 
 		$substep = 0;
 
-		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix);
+		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template);
 
 		foreach ($this->xml->steps1->step as $step)
 			$xmlParser->processSteps($step, $substep, $do_steps, $step1_importer);
