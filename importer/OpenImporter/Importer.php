@@ -287,13 +287,6 @@ class Importer
 			}
 		}
 
-		// catch form elements and globalize them for later use..
-		if ($this->xml->general->form)
-		{
-			foreach ($this->xml->general->form->children() as $global)
-				global $$global;
-		}
-
 		$this->loadSettings();
 
 		// Any custom form elements to speak of?
