@@ -65,8 +65,8 @@ class Database
 	/**
 	 * Analyze and sends an error
 	 *
-	 * @global string $import
 	 * @param string $string
+	 * @throws DatabaseException If a SQL fails
 	 * @return type
 	 */
 	protected function sendError($string)
@@ -110,7 +110,7 @@ class Database
 
 
 	/**
-	 * wrapper for mysql_free_result
+	 * wrapper for mysqli_free_result
 	 * @param type $result
 	 */
 	public function free_result($result)
@@ -119,7 +119,7 @@ class Database
 	}
 
 	/**
-	 * wrapper for mysql_fetch_assoc
+	 * wrapper for mysqli_fetch_assoc
 	 * @param type $result
 	 * @return string
 	 */
@@ -129,7 +129,7 @@ class Database
 	}
 
 	/**
-	 * wrapper for mysql_fetch_row
+	 * wrapper for mysqli_fetch_row
 	 * @param type $result
 	 * @return type
 	 */
@@ -139,7 +139,7 @@ class Database
 	}
 
 	/**
-	 * wrapper for mysql_num_rows
+	 * wrapper for mysqli_num_rows
 	 * @param type $result
 	 * @return integer
 	 */
@@ -149,11 +149,11 @@ class Database
 	}
 
 	/**
-	 * wrapper for mysql_insert_id
+	 * wrapper for mysqli_insert_id
 	 * @return integer
 	 */
 	public function insert_id()
 	{
-		return mysql_insert_id($this->con);
+		return mysqli_insert_id($this->con);
 	}
 }
