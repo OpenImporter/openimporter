@@ -9,7 +9,7 @@
 	<item name="imp.not_found"><![CDATA[The importer did not find any import data files. Please check to see if the one you want is available for download at <a href="https://github.com/eurich/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
 	<item name="imp.not_found_download"><![CDATA[After you download it, simply upload it into the same folder as <b>this import.php file</b>. If you're having any other problems with this importer, don't hesitate to look for help.]]></item>
 	<item name="imp.try_again">Try again!</item>
-	<item name="imp.settings_not_found">This importer was unable to find Wedge in the path you specified. Please double check the path, and that it is already installed there.</item>
+	<item name="imp.settings_not_found">This importer was unable to find %s in the path you specified. Please double check the path, and that it is already installed there.</item>
 	<item name="imp.open_basedir">The importer detected that your host has open_basedir enabled on this server. Please ask your host to disable this setting or try moving the contents of your %s to the public html folder of your site.</item>
 	<item name="imp.config_not_found">Unable to find the settings for %s. Please double check the path and try again.</item>
 	<item name="imp.password_incorrect">The database password you entered was incorrect. Please make sure you are using the right password and try it again. If in doubt, use the password from Settings.php.</item>

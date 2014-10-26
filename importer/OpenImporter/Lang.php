@@ -131,6 +131,7 @@ class Lang
 		if (is_array($key))
 		{
 			$l_key = array_shift($key);
+
 			if ($this->has($l_key))
 				return vsprintf($this->_lang[$l_key], $key);
 		}

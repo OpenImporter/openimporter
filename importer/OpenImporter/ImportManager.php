@@ -14,10 +14,14 @@
  */
 
 require_once(BASEDIR . '/OpenImporter/Utils.php');
+// A shortcut
+define('DS', DIRECTORY_SEPARATOR);
 
 /**
  * Object ImportManager loads the main importer.
  * It handles all steps to completion.
+ * @todo path_to should be source-specific (i.e. in /Importers/whatever/source_importer.php
+ * @todo path_from should be destination-specific (i.e. in /Importers/whatever/whatever_importer.php
  *
  */
 class ImportManager
@@ -118,7 +122,8 @@ class ImportManager
 
 		$this->loadPaths();
 
-		$this->importer->setScript($this->_script, $this->path_from, $this->path_to, $this->data);
+		$this->importer->setScript($this->_script);
+
 		$this->importer->reloadImporter();
 	}
 
@@ -152,10 +157,10 @@ class ImportManager
 		}
 
 		// If these aren't set (from an error..) default to the current directory.
-		if (!isset($this->path_to))
-			$this->path_to = BASEDIR;
-		if (!isset($this->path_from))
-			$this->path_from = BASEDIR;
+// 		if (!isset($this->path_to))
+// 			$this->path_to = BASEDIR;
+// 		if (!isset($this->path_from))
+// 			$this->path_from = BASEDIR;
 	}
 
 	protected function loadFromSession()
@@ -280,7 +285,7 @@ class ImportManager
 	{
 		@unlink(__FILE__);
 		if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			@unlink(BASEDIR . DIRECTORY_SEPARATOR . $_SESSION['import_script']);
+			@unlink(BASEDIR . DS . $_SESSION['import_script']);
 		$_SESSION['import_script'] = null;
 	}
 
@@ -288,7 +293,7 @@ class ImportManager
 	{
 		$script = preg_replace('~[\.]+~', '.', $script);
 
-		if (file_exists(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $script) && preg_match('~_importer\.xml$~', $script) != 0)
+		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script) && preg_match('~_importer\.xml$~', $script) != 0)
 			return $script;
 		else
 			return false;
@@ -325,8 +330,8 @@ class ImportManager
 						throw new ImportException('XML-Syntax error in file: ' . $entry);
 
 					$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA);
-					$scripts[$from][] = array('path' => $from . DIRECTORY_SEPARATOR . basename($entry), 'name' => $xmlObj->general->name);
-					$all_scripts[] = array('path' => $from . DIRECTORY_SEPARATOR . basename($entry), 'name' => $xmlObj->general->name);
+					$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
+					$all_scripts[] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
 				}
 				catch (Exception $e)
 				{
@@ -348,7 +353,14 @@ class ImportManager
 			if (substr($_SESSION['import_script'], -4) == '.xml')
 			{
 				$this->importer->setScript($_SESSION['import_script']);
-				$this->importer->reloadImporter();
+				try
+				{
+					$this->importer->reloadImporter();
+				}
+				catch (Exception $e)
+				{
+					$_SESSION['import_script'] = null;
+				}
 			}
 			return false;
 		}
@@ -398,7 +410,7 @@ class ImportManager
 
 		// @todo Elk/SMF-specific
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
-
+echo 1;
 		$form = $this->_prepareStep0Form($test_to);
 
 		$this->response->use_template = 'step0';
@@ -452,7 +464,7 @@ class ImportManager
 		$test = empty($files);
 
 		foreach ($files as $file)
-			$test |= @file_exists($path . DIRECTORY_SEPARATOR . $file);
+			$test |= @file_exists($path . DS . $file);
 
 		return $test;
 	}
