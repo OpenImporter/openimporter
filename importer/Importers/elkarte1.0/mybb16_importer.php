@@ -1,6 +1,6 @@
 <?php
 
-class mybb16
+class mybb16 extends AbstractSourceImporter
 {
 	public function getName()
 	{

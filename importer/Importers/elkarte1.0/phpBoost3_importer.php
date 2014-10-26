@@ -1,6 +1,6 @@
 <?php
 
-class PHPBoost3
+class PHPBoost3 extends AbstractSourceImporter
 {
 	public function getName()
 	{

@@ -1,6 +1,6 @@
 <?php
 
-class XenForo1_1
+class XenForo1_1 extends AbstractSourceImporter
 {
 	public function getName()
 	{

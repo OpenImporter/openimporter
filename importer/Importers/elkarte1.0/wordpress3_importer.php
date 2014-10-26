@@ -1,6 +1,6 @@
 <?php
 
-class WP3
+class WP3 extends AbstractSourceImporter
 {
 	public function getName()
 	{

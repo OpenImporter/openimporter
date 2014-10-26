@@ -1,6 +1,6 @@
 <?php
 
-class vBulletin_4
+class vBulletin_4 extends AbstractSourceImporter
 {
 	public function getName()
 	{

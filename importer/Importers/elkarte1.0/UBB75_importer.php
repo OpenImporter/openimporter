@@ -1,6 +1,6 @@
 <?php
 
-class UBB_7_5
+class UBB_7_5 extends AbstractSourceImporter
 {
 	public function getName()
 	{

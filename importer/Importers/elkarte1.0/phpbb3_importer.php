@@ -1,6 +1,6 @@
 <?php
 
-class phpBB3
+class phpBB3 extends AbstractSourceImporter
 {
 	public function getName()
 	{

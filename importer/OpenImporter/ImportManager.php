@@ -15,7 +15,8 @@
 
 require_once(BASEDIR . '/OpenImporter/Utils.php');
 // A shortcut
-define('DS', DIRECTORY_SEPARATOR);
+if (!defined('DS'))
+	define('DS', DIRECTORY_SEPARATOR);
 
 /**
  * Object ImportManager loads the main importer.
@@ -410,7 +411,7 @@ class ImportManager
 
 		// @todo Elk/SMF-specific
 		$test_to = $this->testFiles('Settings.php', $this->path_to);
-echo 1;
+
 		$form = $this->_prepareStep0Form($test_to);
 
 		$this->response->use_template = 'step0';

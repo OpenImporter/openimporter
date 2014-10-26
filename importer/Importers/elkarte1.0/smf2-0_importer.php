@@ -1,6 +1,6 @@
 <?php
 
-class SMF2_0
+class SMF2_0 extends AbstractSourceImporter
 {
 	protected $path = '';
 

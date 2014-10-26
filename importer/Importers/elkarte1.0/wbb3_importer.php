@@ -1,6 +1,6 @@
 <?php
 
-class wbb3_1
+class wbb3_1 extends AbstractSourceImporter
 {
 	public function getName()
 	{
