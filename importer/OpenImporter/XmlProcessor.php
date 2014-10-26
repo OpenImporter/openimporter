@@ -45,14 +45,22 @@ class XmlProcessor
 	public $from_prefix;
 
 	/**
+	 * The xml object containing the settings.
+	 * Required (for now) to convert IPs (v4/6)
+	 * @var object
+	 */
+	public $xml;
+
+	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $to_prefix, $from_prefix, $template)
+	public function __construct($db, $to_prefix, $from_prefix, $template, $xml)
 	{
 		$this->db = $db;
 		$this->to_prefix = $to_prefix;
 		$this->from_prefix = $from_prefix;
 		$this->template = $template;
+		$this->xml = $xml;
 	}
 
 	public function processSteps($step, &$substep, &$do_steps, $step1_importer)
