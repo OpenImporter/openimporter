@@ -88,26 +88,35 @@ class Database
 			return $this->query($string, false);
 		}
 
-		// Get the query string so we pass everything.
-		if (isset($_REQUEST['start']))
-			$_GET['start'] = $_REQUEST['start'];
-		$query_string = '';
-		foreach ($_GET as $k => $v)
-			$query_string .= '&' . $k . '=' . $v;
-		if (strlen($query_string) != 0)
-			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
+		$action_url = $this->buildActionUrl();
 
 		throw new DatabaseException('
 				<b>Unsuccessful!</b><br />
 				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
 				Caused the error:<br />
 				<blockquote>' . nl2br(htmlspecialchars($mysql_error)) . '</blockquote>
-				<form action="' . $_SERVER['PHP_SELF'] . $query_string . '" method="post">
+				<form action="' . $action_url . '" method="post">
 					<input type="submit" value="Try again" />
 				</form>
 			</div>');
 	}
 
+	protected function buildActionUrl()
+	{
+		// @todo $_GET and $_REQUEST
+		// Get the query string so we pass everything.
+		if (isset($_REQUEST['start']))
+			$_GET['start'] = $_REQUEST['start'];
+
+		$query_string = '';
+		foreach ($_GET as $k => $v)
+			$query_string .= '&' . $k . '=' . $v;
+
+		if (strlen($query_string) != 0)
+			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
+
+		return $_SERVER['PHP_SELF'] . $query_string;
+	}
 
 	/**
 	 * wrapper for mysqli_free_result
