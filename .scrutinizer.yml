@@ -42,3 +42,12 @@ checks:
     php:
         code_rating: true
         duplication: true
+
+build:
+    tests:
+        override:
+            -
+                command: 'phpunit --coverage-clover=some-file --bootstrap bootstrap.php importer/OpenImporter/Tests/'
+                coverage:
+                    file: 'some-file'
+                    format: 'php-clover'
