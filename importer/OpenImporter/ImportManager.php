@@ -405,9 +405,6 @@ class ImportManager
 			$this->response->addErrorParam($e->getMessage());
 		}
 
-		// @todo Elk/SMF-specific
-		$test_to = $this->testFiles('Settings.php', $this->path_to);
-
 		$form = $this->_prepareStep0Form($test_to);
 
 		$this->response->use_template = 'step0';
@@ -428,17 +425,10 @@ class ImportManager
 
 		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . $this->debugUrl();
 
-		$options = array(
-			array(
-				'id' => 'path_to',
-				'label' => $this->lng->get('imp.path_to_destination'),
-				'type' => 'text',
-				'value' => isset($this->path_to) ? htmlspecialchars($this->path_to) : '',
-				'correct' => $test_to ? $this->lng->get('imp.right_path') : $this->lng->get('imp.change_path'),
-				'validate' => true,
-			),
-		);
+		// This is any form element required by the destination system
+		$options = $this->importer->destination->getFormFields($this->lng, $this->path_to);
 
+		// Any field required by the source system
 		foreach ($this->importer->getFormSettings() as $key => $val)
 		{
 			if (!empty($val) && $val['type'] !== 'password' && !isset($val['value']))

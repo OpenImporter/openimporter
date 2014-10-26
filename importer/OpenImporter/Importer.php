@@ -197,7 +197,7 @@ class Importer
 			$options = array(
 				array(
 					'id' => 'path_from',
-					'label' => $this->lng->get(array('imp.path_to_source', $this->xml->general->name)),
+					'label' => $this->lng->get(array('imp.path_from', $this->xml->general->name)),
 					'type' => 'text',
 					'correct' => $path_from ? $this->lng->get('imp.change_path') : $this->lng->get('imp.right_path'),
 					'validate' => true,

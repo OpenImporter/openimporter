@@ -42,6 +42,21 @@ class elkarte1_0_importer
 		return $this->fetchSetting('boardurl');
 	}
 
+	public function getFormFields($lng, $path_to = '')
+	{
+		return array(
+			array(
+				'id' => 'path_to',
+				'label' => $lng->get('imp.path_to_destination'),
+				'type' => 'text',
+				'value' => htmlspecialchars($path_to),
+				'correct' => $this->checkSettingsPath($path_to) ? $lng->get('imp.right_path') : $lng->get('imp.change_path'),
+				'validate' => true,
+			),
+		);
+	}
+
+
 	public function verifyDbPass($pwd_to_verify)
 	{
 		if ($this->path === null)
