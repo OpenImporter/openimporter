@@ -57,6 +57,8 @@ class XmlProcessor
 
 	public function processSteps($step, &$substep, &$do_steps, $step1_importer)
 	{
+		global $import;
+
 		// These are temporarily needed to support the current xml importers
 		// a.k.a. There is more important stuff to do.
 		// a.k.a. I'm too lazy to change all of them now. :P
@@ -178,14 +180,12 @@ class XmlProcessor
 
 			if (isset($step->detect))
 			{
-				$counter = 0;
-
 				$count = $this->fix_params((string) $step->detect);
 				$result2 = $this->db->query("
 					SELECT COUNT(*)
 					FROM $count");
 				list ($counter) = $this->db->fetch_row($result2);
-				//$this->count->$substep = $counter;
+				$import->count->$substep = $counter;
 				$this->db->free_result($result2);
 			}
 
