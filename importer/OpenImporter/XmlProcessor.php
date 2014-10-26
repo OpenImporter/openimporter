@@ -82,8 +82,8 @@ class XmlProcessor
 		// a.k.a. There is more important stuff to do.
 		// a.k.a. I'm too lazy to change all of them now. :P
 		// @todo remove
+		// Both used in eval'ed code
 		$to_prefix = $this->to_prefix;
-		// Used in eval'ed code
 		$db = $this->db;
 
 		// Reset some defaults
@@ -159,8 +159,7 @@ class XmlProcessor
 				$import->count->$substep = $this->detect((string) $step->detect);
 
 			// create some handy shortcuts
-			$ignore = $this->shouldIgnore($step->options);
-			$replace = $this->shouldReplace($step->options);
+			$insert_statement = $this->insertStatement($step->options);
 			$no_add = $this->shoudNotAdd($step->options);
 			$ignore_slashes = $this->ignoreSlashes($step->options);
 
@@ -187,57 +186,21 @@ class XmlProcessor
 						if ($special_code !== null)
 							eval($special_code);
 
-						$this->step1_importer->doSpecialTable($special_table, $row);
+						$row = $this->step1_importer->doSpecialTable($special_table, $row);
 
-						// this is wedge specific stuff and will move at some point.
+						// ip_to_ipv6 and ip_to_pointer are Wedge-specific cases,
+						// once a Wedge importer will be ready, the two should be merged
+						// into a more neutral "ip_processing" and the decision when to act
+						// will be delegated to the importing method.
+
 						// prepare ip address conversion
 						if (isset($this->xml->general->ip_to_ipv6))
-						{
-							$convert_ips = explode(',', $this->xml->general->ip_to_ipv6);
-							foreach ($convert_ips as $ip)
-							{
-								$ip = trim($ip);
-								if (array_key_exists($ip, $row))
-									$row[$ip] = $this->_prepare_ipv6($row[$ip]);
-							}
-						}
+							$row = $this->doIpConvertion($row, explode(',', $this->xml->general->ip_to_ipv6));
+
 						// prepare ip address conversion to a pointer
 						if (isset($this->xml->general->ip_to_pointer))
-						{
-							$ips_to_pointer = explode(',', $this->xml->general->ip_to_pointer);
-							foreach ($ips_to_pointer as $ip)
-							{
-								$ip = trim($ip);
-								if (array_key_exists($ip, $row))
-								{
-									$ipv6ip = $this->_prepare_ipv6($row[$ip]);
+							$row = $this->doIpPointer($row, explode(',', $this->xml->general->ip_to_pointer));
 
-									$request2 = $this->db->query("
-										SELECT id_ip
-										FROM {$to_prefix}log_ips
-										WHERE member_ip = '" . $ipv6ip . "'
-										LIMIT 1");
-									// IP already known?
-									if ($this->db->num_rows($request2) != 0)
-									{
-										list ($id_ip) = $this->db->fetch_row($request2);
-										$row[$ip] = $id_ip;
-									}
-									// insert the new ip
-									else
-									{
-										$this->db->query("
-											INSERT INTO {$to_prefix}log_ips
-												(member_ip)
-											VALUES ('$ipv6ip')");
-										$pointer = $this->db->insert_id();
-										$row[$ip] = $pointer;
-									}
-
-									$this->db->free_result($request2);
-								}
-							}
-						}
 						// fixing the charset, we need proper utf-8
 						$row = fix_charset($row);
 
@@ -254,26 +217,27 @@ class XmlProcessor
 							$keys = array_keys($row);
 					}
 
-					$insert_ignore = (isset($ignore) && $ignore == true) ? 'IGNORE' : '';
-					$insert_replace = (isset($replace) && $replace == true) ? 'REPLACE' : 'INSERT';
-
 					if (!empty($rows))
 						$this->db->query("
-							$insert_replace $insert_ignore INTO $special_table
+							$insert_statement INTO $special_table
 								(" . implode(', ', $keys) . ")
 							VALUES (" . implode('),
 								(', $rows) . ")");
+
 					$_REQUEST['start'] += $special_limit;
+
 					if ($this->db->num_rows($special_result) < $special_limit)
 						break;
 
 					$this->db->free_result($special_result);
 				}
 			}
+
 			$_REQUEST['start'] = 0;
 			$special_code = null;
 			$current_data = '';
 		}
+
 		if ($_SESSION['import_steps'][$substep]['status'] == 0)
 			$this->template->status($substep, 1, false, true);
 
@@ -410,6 +374,17 @@ class XmlProcessor
 			return false;
 	}
 
+	protected function insertStatement($options)
+	{
+		$ignore = $this->shouldIgnore($options);
+		$replace = $this->shouldReplace($options);
+
+		$insert_ignore = (isset($ignore) && $ignore == true) ? 'IGNORE' : '';
+		$insert_replace = (isset($replace) && $replace == true) ? 'REPLACE' : 'INSERT';
+
+		return $insert_replace . ' ' . $insert_ignore;
+	}
+
 	protected function prepareSpecialResult($current_data, $special_limit)
 	{
 		// @todo $_REQUEST
@@ -418,5 +393,75 @@ class XmlProcessor
 		else
 			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
 
+	}
+
+	/**
+	 * @todo Wedge-specific code, to be moved outside when Wedge is imlemented
+	 */
+	protected function doIpConvertion($row, $convert_ips)
+	{
+		foreach ($convert_ips as $ip)
+		{
+			$ip = trim($ip);
+			if (array_key_exists($ip, $row))
+				$row[$ip] = $this->_prepare_ipv6($row[$ip]);
+		}
+
+		return $row;
+	}
+
+	/**
+	 * @todo Wedge-specific code, to be moved outside when Wedge is imlemented
+	 */
+	protected function doIpPointer($row, $ips_to_pointer)
+	{
+		$to_prefix = $this->to_prefix;
+
+		foreach ($ips_to_pointer as $ip)
+		{
+			$ip = trim($ip);
+			if (array_key_exists($ip, $row))
+			{
+				$ipv6ip = $this->_prepare_ipv6($row[$ip]);
+
+				$request2 = $this->db->query("
+					SELECT id_ip
+					FROM {$to_prefix}log_ips
+					WHERE member_ip = '" . $ipv6ip . "'
+					LIMIT 1");
+				// IP already known?
+				if ($this->db->num_rows($request2) != 0)
+				{
+					list ($id_ip) = $this->db->fetch_row($request2);
+					$row[$ip] = $id_ip;
+				}
+				// insert the new ip
+				else
+				{
+					$this->db->query("
+						INSERT INTO {$to_prefix}log_ips
+							(member_ip)
+						VALUES ('$ipv6ip')");
+					$pointer = $this->db->insert_id();
+					$row[$ip] = $pointer;
+				}
+
+				$this->db->free_result($request2);
+			}
+		}
+
+		return $row;
+	}
+
+	/**
+	 * placehoder function to convert IPV4 to IPV6
+	 * @todo convert IPV4 to IPV6
+	 * @todo move to source file, because it depends on the source for any specific destination
+	 * @param string $ip
+	 * @return string $ip
+	 */
+	private function _prepare_ipv6($ip)
+	{
+		return $ip;
 	}
 }

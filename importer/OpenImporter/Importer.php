@@ -465,17 +465,6 @@ class Importer
 		return $steps;
 	}
 
-	/**
-	 * placehoder function to convert IPV4 to IPV6
-	 * @TODO convert IPV4 to IPV6
-	 * @param string $ip
-	 * @return string $ip
-	 */
-	private function _prepare_ipv6($ip)
-	{
-		return $ip;
-	}
-
 	public function determineProgress()
 	{
 		$progress_counter = 0;
