@@ -88,7 +88,8 @@ class XmlProcessor
 
 		// Reset some defaults
 		$current_data = '';
-		$special_table = null;
+		$special_table = strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix));
+		$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
 		$special_code = null;
 
 		// any preparsing code here?
@@ -96,9 +97,6 @@ class XmlProcessor
 		// and later could be overwritten? ($step->code)
 		if (isset($step->preparsecode) && !empty($step->preparsecode))
 			$special_code = $this->fix_params((string) $step->preparsecode);
-
-		// @todo $_GET
-		$do_current = $substep >= $_GET['substep'];
 
 		$table_test = $this->updateStatus($step, $substep, $do_steps);
 
@@ -113,24 +111,9 @@ class XmlProcessor
 			$this->doPresqlStep((string) $step->presql, $substep, $presqlMethod);
 		}
 
-		if ($special_table === null)
-		{
-			$special_table = strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix));
-			$special_limit = 500;
-		}
-		else
-			$special_table = null;
-
-		if (isset($step->query))
+		// @todo $_GET
+		if ($substep >= $_GET['substep'] && isset($step->query))
 			$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
-
-		if (isset($step->options->limit))
-			$special_limit = $step->options->limit;
-
-		if (!$do_current)
-		{
-			$current_data = '';
-		}
 
 		// codeblock?
 		if (isset($step->code))
@@ -143,10 +126,7 @@ class XmlProcessor
 			$special_table = null;
 			$special_code = null;
 
-			if ($_SESSION['import_steps'][$substep]['status'] == 0)
-				$this->template->status($substep, 1, false, true);
-			$_SESSION['import_steps'][$substep]['status'] = 1;
-			flush();
+			$this->advanceSubstep($substep);
 		}
 
 		// sql block?
@@ -183,28 +163,7 @@ class XmlProcessor
 
 					while ($row = $this->db->fetch_assoc($special_result))
 					{
-						if ($special_code !== null)
-							eval($special_code);
-
-						$row = $this->step1_importer->doSpecialTable($special_table, $row);
-
-						// ip_to_ipv6 and ip_to_pointer are Wedge-specific cases,
-						// once a Wedge importer will be ready, the two should be merged
-						// into a more neutral "ip_processing" and the decision when to act
-						// will be delegated to the importing method.
-
-						// prepare ip address conversion
-						if (isset($this->xml->general->ip_to_ipv6))
-							$row = $this->doIpConvertion($row, explode(',', $this->xml->general->ip_to_ipv6));
-
-						// prepare ip address conversion to a pointer
-						if (isset($this->xml->general->ip_to_pointer))
-							$row = $this->doIpPointer($row, explode(',', $this->xml->general->ip_to_pointer));
-
-						// fixing the charset, we need proper utf-8
-						$row = fix_charset($row);
-
-						$row = $this->step1_importer->fixTexts($row);
+						$row = $this->prepareRow($row, $special_code, $special_table);
 
 						if (empty($no_add) && empty($ignore_slashes))
 							$rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
@@ -234,10 +193,38 @@ class XmlProcessor
 			}
 
 			$_REQUEST['start'] = 0;
-			$special_code = null;
-			$current_data = '';
 		}
 
+		$this->advanceSubstep($substep);
+	}
+
+	protected function prepareRow($row, $special_code, $special_table)
+	{
+		// These are temporarily needed to support the current xml importers
+		// a.k.a. There is more important stuff to do.
+		// a.k.a. I'm too lazy to change all of them now. :P
+		// @todo remove
+		// Both used in eval'ed code
+		$to_prefix = $this->to_prefix;
+		$db = $this->db;
+
+		if ($special_code !== null)
+			eval($special_code);
+
+		$row = $this->step1_importer->doSpecialTable($special_table, $row);
+
+		$row = $this->processIPs($row, $this->xml->general);
+
+		// fixing the charset, we need proper utf-8
+		$row = fix_charset($row);
+
+		$row = $this->step1_importer->fixTexts($row);
+
+		return $row;
+	}
+
+	protected function advanceSubstep($substep)
+	{
 		if ($_SESSION['import_steps'][$substep]['status'] == 0)
 			$this->template->status($substep, 1, false, true);
 
@@ -463,5 +450,22 @@ class XmlProcessor
 	private function _prepare_ipv6($ip)
 	{
 		return $ip;
+	}
+
+	protected function processIPs($row, $general)
+	{
+		// ip_to_ipv6 and ip_to_pointer are Wedge-specific cases,
+		// once a Wedge importer will be ready, the two should be merged
+		// into a more neutral "ip_processing" and the decision when to act
+		// will be delegated to the importing method.
+
+		// prepare ip address conversion
+		if (isset($general->ip_to_ipv6))
+			$row = $this->doIpConvertion($row, explode(',', $general->ip_to_ipv6));
+
+		// prepare ip address conversion to a pointer
+		if (isset($general->ip_to_pointer))
+			$row = $this->doIpPointer($row, explode(',', $general->ip_to_pointer));
+
 	}
 }

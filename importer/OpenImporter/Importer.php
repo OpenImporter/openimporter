@@ -188,6 +188,7 @@ class Importer
 		$options = array();
 		$class = (string) $this->xml->general->className;
 		$settings = new $class();
+
 		if (!isset($this->path_from))
 			$this->path_from = BASEDIR;
 

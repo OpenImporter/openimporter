@@ -146,7 +146,7 @@ function is_utf8($string)
  * 3) when any of these: ðñòó  are followed by THREE chars from group B.
  *
  * @name fix
- * @param string $text  Any string.
+ * @param string|string[] $text  Any string.
  * @return string  The same string, UTF8 encoded
  */
 function fix_charset($text)
