@@ -188,23 +188,6 @@ class XmlProcessor
 			$no_add = (isset($step->options->no_add) && $step->options->no_add == true) ? true : false;
 			$ignore_slashes = (isset($step->options->ignore_slashes) && $step->options->ignore_slashes == true) ? true : false;
 
-			if (isset($import_table) && $import_table !== null && strpos($current_data, '%d') !== false)
-			{
-				preg_match('~FROM [(]?([^\s,]+)~i', (string) $step->detect, $match);
-				if (!empty($match))
-				{
-					$result = $this->db->query("
-						SELECT COUNT(*)
-						FROM $match[1]");
-					list ($special_max) = $this->db->fetch_row($result);
-					$this->db->free_result($result);
-				}
-				else
-					$special_max = 0;
-			}
-			else
-				$special_max = 0;
-
 			if ($special_table === null)
 				$this->db->query($current_data);
 
@@ -309,10 +292,9 @@ class XmlProcessor
 							VALUES (" . implode('),
 								(', $rows) . ")");
 					$_REQUEST['start'] += $special_limit;
-					if (empty($special_max) && $this->db->num_rows($special_result) < $special_limit)
+					if ($this->db->num_rows($special_result) < $special_limit)
 						break;
-					elseif (!empty($special_max) && $this->db->num_rows($special_result) == 0 && $_REQUEST['start'] > $special_max)
-						break;
+
 					$this->db->free_result($special_result);
 				}
 			}
