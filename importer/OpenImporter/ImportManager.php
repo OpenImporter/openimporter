@@ -378,7 +378,7 @@ class ImportManager
 	 *
 	 * @global object $import
 	 * @param string|null $error_message
-	 * @param object|null $object
+	 * @param object|null|false $object
 	 * @return boolean|null
 	 */
 	public function doStep0($error_message = null, $object = false)
