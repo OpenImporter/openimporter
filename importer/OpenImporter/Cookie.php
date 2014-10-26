@@ -16,8 +16,8 @@ class Cookie
 
 	/**
 	 * set a cookie
-	 * @param type $data
-	 * @param type $name
+	 * @param mixed[] $data
+	 * @param string $name
 	 * @return boolean
 	 */
 	public function set($data, $name = 'openimporter_cookie')
@@ -33,7 +33,7 @@ class Cookie
 
 	/**
 	 * get our cookie
-	 * @param type $name
+	 * @param string $name
 	 * @return boolean
 	 */
 	public function get($name = 'openimporter_cookie')
@@ -49,7 +49,7 @@ class Cookie
 
 	/**
 	 * once we are done, we should destroy our cookie
-	 * @param type $name
+	 * @param string $name
 	 * @return boolean
 	 */
 	public function destroy($name = 'openimporter_cookie')
@@ -62,8 +62,8 @@ class Cookie
 
 	/**
 	 * extend the cookie with new infos
-	 * @param type $data
-	 * @param type $name
+	 * @param mixed[] $data
+	 * @param string $name
 	 * @return boolean
 	 */
 	public function extend($data, $name = 'openimporter_cookie')
