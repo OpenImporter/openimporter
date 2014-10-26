@@ -467,5 +467,6 @@ class XmlProcessor
 		if (isset($general->ip_to_pointer))
 			$row = $this->doIpPointer($row, explode(',', $general->ip_to_pointer));
 
+		return $row;
 	}
 }
