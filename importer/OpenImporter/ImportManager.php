@@ -313,7 +313,7 @@ class ImportManager
 			$this->_script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
 		}
 
-		$dir = BASEDIR . DS . 'Importers' . ;
+		$dir = BASEDIR . DS . 'Importers' . DS;
 		$sources = glob($dir . '*', GLOB_ONLYDIR);
 		$all_scripts = array();
 		$scripts = array();

@@ -4,7 +4,7 @@ class AbstractSourceImporter
 {
 	public abstract function getName();
 
-	public abstract function getVersion()
+	public abstract function getVersion();
 
 	public abstract function getPrefix();
 
