@@ -313,7 +313,7 @@ class ImportManager
 			$this->_script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
 		}
 
-		$dir = BASEDIR . '/Importers/';
+		$dir = BASEDIR . DS . 'Importers' . ;
 		$sources = glob($dir . '*', GLOB_ONLYDIR);
 		$all_scripts = array();
 		$scripts = array();
@@ -321,7 +321,7 @@ class ImportManager
 		{
 			$from = basename($source);
 			$scripts[$from] = array();
-			$possible_scripts = glob($source . '/*_importer.xml');
+			$possible_scripts = glob($source . DS . '*_importer.xml');
 
 			foreach ($possible_scripts as $entry)
 			{
@@ -430,7 +430,7 @@ class ImportManager
 	{
 		$form = new Form();
 
-		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . (isset($_REQUEST['debug']) ? '&amp;debug=' . $_REQUEST['debug'] : '');
+		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . $this->debugUrl();
 
 		$options = array(
 			array(
@@ -445,9 +445,7 @@ class ImportManager
 
 		foreach ($this->importer->getFormSettings() as $key => $val)
 		{
-			if (!empty($val) && $val['type'] !== 'password')
-			{
-				if (!empty($val) && !isset($val['value']))
+			if (!empty($val) && $val['type'] !== 'password' && !isset($val['value']))
 					$val['value'] = isset($this->{$val['id']}) ? htmlspecialchars($this->{$val['id']}) : '';
 			}
 			$options[] = $val;
@@ -456,6 +454,11 @@ class ImportManager
 		$form->options = $options;
 
 		return $form;
+	}
+
+	protected function debugUrl()
+	{
+		return isset($_REQUEST['debug']) ? '&amp;debug=' . $_REQUEST['debug'] : '';
 	}
 
 	protected function testFiles($files, $path)

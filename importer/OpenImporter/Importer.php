@@ -128,7 +128,7 @@ class Importer
 		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
 		if (!empty($this->_script))
-			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->_script);
 	}
 
 	public function setScript($script)
@@ -139,7 +139,7 @@ class Importer
 	public function reloadImporter()
 	{
 		if (!empty($this->_script))
-			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $this->_script);
+			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->_script);
 	}
 
 	protected function _loadImporter($file)
@@ -154,7 +154,7 @@ class Importer
 
 		// Maybe the "destination" comes with php helper functions?
 		$path = dirname($file);
-		$dest_helper = $path . '/' . basename($path) . '_importer.php';
+		$dest_helper = $path . DS . basename($path) . '_importer.php';
 		require_once($dest_helper);
 
 		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
