@@ -125,7 +125,7 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 			WHERE variable = 'attachmentUploadDir'
 			LIMIT 1");
 		list ($this->attachmentUploadDir) = $this->db->fetch_row($result);
-		$this->free_result($result);
+		$this->db->free_result($result);
 
 		// !!! This should probably be done in chunks too.
 		$result = $this->db->query("
@@ -148,7 +148,7 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 			if (is_file($filename))
 				unlink($filename);
 		}
-		$this->free_result($result);
+		$this->db->free_result($result);
 	}
 
 	protected function specialMembers($row)
