@@ -10,7 +10,7 @@ class HttpResponse
 	 */
 	protected $data = array();
 
-	protected $headers = array();
+	protected $headers = null;
 
 	protected $error_params = array();
 
