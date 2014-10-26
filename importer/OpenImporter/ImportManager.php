@@ -99,6 +99,8 @@ class ImportManager
 
 		$time_start = time();
 
+		$this->loadFromSession();
+
 		$this->importer = $importer;
 		$this->cookie = $cookie;
 		$this->template = $template;
@@ -116,7 +118,8 @@ class ImportManager
 
 		$this->loadPaths();
 
-		$this->importer->setScript($this->_script);
+		$this->importer->setScript($this->_script, $this->path_from, $this->path_to, $this->data);
+		$this->importer->reloadImporter();
 	}
 
 	public function __destruct()
@@ -175,13 +178,15 @@ class ImportManager
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
-			$this->_script = (string) $_REQUEST['import_script'];
-		elseif (isset($_SESSION['import_script']) && file_exists(BASEDIR . DIRECTORY_SEPARATOR . $_SESSION['import_script']) && preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			$this->_script = (string) $_SESSION['import_script'];
+			$_SESSION['import_script'] = $this->_script = (string) $_REQUEST['import_script'];
+		elseif (isset($_SESSION['import_script']))
+		{
+			$this->_script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
+		}
 		else
 		{
 			$this->_script = '';
-			unset($_SESSION['import_script']);
+			$_SESSION['import_script'] = null;
 		}
 	}
 
@@ -219,7 +224,8 @@ class ImportManager
 
 		$this->template->render();
 
-		$this->template->footer();
+		if (!isset($_GET['xml']))
+			$this->template->footer();
 	}
 
 	protected function validateFields()
@@ -278,6 +284,16 @@ class ImportManager
 		$_SESSION['import_script'] = null;
 	}
 
+	protected function validateScript($script)
+	{
+		$script = preg_replace('~[\.]+~', '.', $script);
+
+		if (file_exists(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $script) && preg_match('~_importer\.xml$~', $script) != 0)
+			return $script;
+		else
+			return false;
+	}
+
 	/**
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
@@ -288,12 +304,7 @@ class ImportManager
 	{
 		if ($this->_script !== null)
 		{
-			if ($this->_script != '' && preg_match('~^[a-z0-9\-_\.]+\/[a-z0-9\-_\.]+_importer\.xml$~i', $this->_script) != 0)
-			{
-				$this->_script = $_SESSION['import_script'] = preg_replace('~[\.]+~', '.', $this->_script);
-			}
-			else
-				$_SESSION['import_script'] = null;
+			$this->_script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
 		}
 
 		$dir = BASEDIR . '/Importers/';

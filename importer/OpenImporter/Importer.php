@@ -122,9 +122,12 @@ class Importer
 			$this->_loadImporter(BASEDIR . DIRECTORY_SEPARATOR . 'Importers' . DIRECTORY_SEPARATOR . $this->_script);
 	}
 
-	public function setScript($script)
+	public function setScript($script, $path_from, $path_to, $data)
 	{
 		$this->_script = $script;
+		$this->path_from = $path_from;
+		$this->path_to = $path_to;
+		$this->data = $data;
 	}
 
 	public function reloadImporter()
@@ -342,7 +345,7 @@ class Importer
 			}
 		}
 
-		$this->_boardurl = $this->destination->getDestinationURL();
+		$this->_boardurl = $this->destination->getDestinationURL($this->path_to);
 
 		if ($this->_boardurl === false)
 			throw new Exception($this->lng->get('imp.settings_not_found'));
@@ -367,6 +370,7 @@ class Importer
 
 		try
 		{
+			list ($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name) = $this->destination->dbConnectionData();
 			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$this->db->query('SET NAMES \'utf8\'');

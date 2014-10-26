@@ -2,6 +2,8 @@
 
 class SMF2_0
 {
+	protected $path = '';
+
 	public function getName()
 	{
 		return 'SMF2_0';
@@ -25,7 +27,7 @@ class SMF2_0
 		// Error silenced in case of odd server configurations (open_basedir mainly)
 		if (@file_exists($path . '/Settings.php'))
 		{
-			require_once($path . '/Settings.php');
+			$this->path = $path;
 			return true;
 		}
 		else
@@ -34,14 +36,27 @@ class SMF2_0
 
 	public function getPrefix()
 	{
-		global $db_name, $db_prefix;
-
+		$db_name = $this->fetchSetting('db_name');
+		$db_prefix = $this->fetchSetting('db_prefix');
 		return '`' . $db_name . '`.' . $db_prefix;
 	}
 
 	public function getTableTest()
 	{
 		return 'members';
+	}
+
+	protected function fetchSetting($name)
+	{
+		static $content = null;
+
+		if ($content === null)
+			$content = file_get_contents($this->path . '/Settings.php');
+
+		$match = array();
+		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 }
 

@@ -130,7 +130,7 @@ class Template
 			function validateField(string)
 			{
 				var target = document.getElementById(string);
-				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&import_script=', $this->response->script , ';
+				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&import_script=', $this->response->script , '";
 				var ajax = new AJAXCall(url, validateCallback, string);
 				ajax.doGet();
 			}

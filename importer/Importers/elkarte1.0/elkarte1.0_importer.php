@@ -15,6 +15,8 @@
 
 class elkarte1_0_importer
 {
+	protected $path = null;
+
 	public function getName()
 	{
 		return 'ElkArte 1.0';
@@ -22,7 +24,12 @@ class elkarte1_0_importer
 
 	public function checkSettingsPath($path)
 	{
-		return file_exists($path . '/Settings.php');
+		$found = file_exists($path . '/Settings.php');
+
+		if ($found && $this->path === null)
+			$this->path = $path;
+
+		return $found;
 	}
 
 	public function getDestinationURL($path)
@@ -30,20 +37,49 @@ class elkarte1_0_importer
 		global $boardurl;
 
 		// Cannot find Settings.php?
-		if (!file_exists($path . '/Settings.php'))
+		if (!$this->checkSettingsPath($path))
 			return false;
 
 		// Everything should be alright now... no cross server includes, we hope...
-		require_once($path . '/Settings.php');
-
-		return $boardurl;
+		return $this->fetchSetting('boardurl');
 	}
 
 	public function verifyDbPass($pwd_to_verify)
 	{
-		global $db_passwd;
+		if ($this->path === null)
+			return false;
 
-		return $db_passwd != $pwd_to_verify;
+		$db_passwd = $this->fetchSetting('db_passwd');
+
+		return $db_passwd == $pwd_to_verify;
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		$db_server = $this->fetchSetting('db_server');
+		$db_user = $this->fetchSetting('db_user');
+		$db_passwd = $this->fetchSetting('db_passwd');
+		$db_persist = $this->fetchSetting('db_persist');
+		$db_prefix = $this->fetchSetting('db_prefix');
+		$db_name = $this->fetchSetting('db_name');
+
+		return array($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name);
+	}
+
+	protected function fetchSetting($name)
+	{
+		static $content = null;
+
+		if ($content === null)
+			$content = file_get_contents($this->path . '/Settings.php');
+
+		$match = array();
+		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 }
 
