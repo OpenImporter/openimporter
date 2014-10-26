@@ -12,8 +12,11 @@ class mybb16 extends AbstractSourceImporter
 		return 'ElkArte 1.0';
 	}
 
-	public function loadSettings($path)
+	public function loadSettings($path, $test = false)
 	{
+		if ($test)
+			return @file_exists($path . '/inc/config.php');
+
 		// Error silenced in case of odd server configurations (open_basedir mainly)
 		if (@file_exists($path . '/inc/config.php'))
 		{

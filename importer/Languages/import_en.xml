@@ -24,7 +24,7 @@
 	<item name="imp.locate_source">The importer need to know in to which software you are importing your forum.</item>
 	<item name="imp.advanced_options">Advanced options</item>
 	<item name="imp.path_to_destination">Path to destination</item>
-	<item name="imp.path_to_source">Path to</item>
+	<item name="imp.path_to_source">Path to %s</item>
 	<item name="imp.restart_after">pause script after (seconds)</item>
 	<item name="imp.countdown">Javascript countdown (sleep)</item>
 	<item name="imp.right_path">This may be the right path.</item>

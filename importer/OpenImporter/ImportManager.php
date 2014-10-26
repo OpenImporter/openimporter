@@ -376,13 +376,9 @@ class ImportManager
 	 * collects all the important things, the importer can't do anything
 	 * without this information.
 	 *
-	 * @global Database $db
-	 * @global type $to_prefix
-	 * @global type $import_script
-	 * @global type $cookie
-	 * @global type $import
-	 * @param type $error_message
-	 * @param type $object
+	 * @global object $import
+	 * @param string|null $error_message
+	 * @param object|null $object
 	 * @return boolean|null
 	 */
 	public function doStep0($error_message = null, $object = false)

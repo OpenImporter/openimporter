@@ -10,9 +10,9 @@ abstract class AbstractSourceImporter
 
 	public abstract function getTableTest();
 
-	public function loadSettings($path)
+	public function loadSettings($path, $test = false)
 	{
-		return true;
+		return null;
 	}
 
 	public function setDefines()

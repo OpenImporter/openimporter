@@ -191,14 +191,15 @@ class Importer
 		if (!isset($this->path_from))
 			$this->path_from = BASEDIR;
 
-		if (method_exists($settings, 'loadSettings'))
+		$path_from = $settings->loadSettings($this->path_from, true);
+		if ($path_from !== null)
 		{
 			$options = array(
 				array(
 					'id' => 'path_from',
-					'label' => $this->lng->get('imp.path_to_source') . ' ' . $this->xml->general->name,
+					'label' => $this->lng->get(array('imp.path_to_source', $this->xml->general->name)),
 					'type' => 'text',
-					'correct' => $settings->loadSettings($this->path_from, true) ? $this->lng->get('imp.change_path') : $this->lng->get('imp.right_path'),
+					'correct' => $path_from ? $this->lng->get('imp.change_path') : $this->lng->get('imp.right_path'),
 					'validate' => true,
 				),
 			);
@@ -347,7 +348,7 @@ class Importer
 		else
 			$found = true;
 
-		if (!$found)
+		if ($found === false)
 		{
 			if (@ini_get('open_basedir') != '')
 				throw new Exception($this->lng->get(array('imp.open_basedir', (string) $this->xml->general->name)));

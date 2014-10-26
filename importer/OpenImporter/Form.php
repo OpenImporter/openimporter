@@ -10,7 +10,7 @@ class Form
 	/**
 	 * The bare minimum required to have a form: an url to post to.
 	 */
-	public $action_rul = '';
+	public $action_url = '';
 
 	public function __set($key, $val)
 	{
