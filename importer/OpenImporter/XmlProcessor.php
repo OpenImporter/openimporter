@@ -18,7 +18,7 @@
  * It detects and initializes the script to run.
  *
  */
-class XMLProcessor
+class XmlProcessor
 {
 	/**
 	 * This is our main database object.
@@ -52,9 +52,10 @@ class XMLProcessor
 	{
 		// These are temporarily needed to support the current xml importers
 		// a.k.a. There is more important stuff to do.
-		// a.k.a. I'm too lazy to change all of the now. :P
+		// a.k.a. I'm too lazy to change all of them now. :P
 		// @todo remove
 		$to_prefix = $this->to_prefix;
+		// Used in eval'ed code
 		$db = $this->db;
 
 		// Reset some defaults

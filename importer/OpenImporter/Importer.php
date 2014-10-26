@@ -469,7 +469,7 @@ class Importer
 		$counter_current_step = 0;
 		$import_steps = array();
 
-		$xmlParser = new XMLProcessor($this->db, $this->to_prefix, $this->from_prefix);
+		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix);
 
 		// loop through each step
 		foreach ($this->xml->steps1->step as $counts)
@@ -497,14 +497,13 @@ class Importer
 	}
 
 	/**
-	 * the important one, transfer the content from the source forum to our
-	 * destination system
+	 * The important one, transfer the content from the source forum to our
+	 * destination system.
 	 *
-	 * @global type $to_prefix
-	 * @global type $global
+	 * @param int $do_steps
 	 * @return boolean
 	 */
-	public function doStep1()
+	public function doStep1($do_steps)
 	{
 		$step1_importer_class = $this->_importer_base_class_name . '_step1';
 		$step1_importer = new $step1_importer_class($this->db, $this->to_prefix);
@@ -515,7 +514,7 @@ class Importer
 
 		$substep = 0;
 
-		$xmlParser = new XMLProcessor($this->db, $this->to_prefix, $this->from_prefix);
+		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix);
 
 		foreach ($this->xml->steps1->step as $step)
 			$xmlParser->processSteps($step, $substep, $do_steps, $step1_importer);
@@ -568,8 +567,6 @@ class Importer
 	 */
 	public function doStep3($import_steps)
 	{
-		global $boardurl;
-
 		$step3_importer_class = $this->_importer_base_class_name . '_step3';
 		$instance = new $step3_importer_class($this->db, $this->to_prefix);
 

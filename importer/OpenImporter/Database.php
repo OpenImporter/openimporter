@@ -71,8 +71,6 @@ class Database
 	 */
 	protected function sendError($string)
 	{
-		global $import;
-
 		$mysql_error = mysqli_error($this->con);
 		$mysql_errno = mysqli_errno($this->con);
 

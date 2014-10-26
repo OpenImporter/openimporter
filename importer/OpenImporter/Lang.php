@@ -80,7 +80,7 @@ class Lang
 		$lngfile = false;
 
 		// loop through the preferred languages and try to find the related language file
-		foreach ($language as $key => $value)
+		foreach ($language as $key)
 		{
 			if (file_exists($path . '/import_' . $key . '.xml'))
 			{
@@ -186,6 +186,6 @@ class Lang
 		else
 			$preferred = array();
 
-		return $preferred;
+		return array_keys($preferred);
 	}
 }

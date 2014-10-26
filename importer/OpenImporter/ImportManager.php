@@ -479,8 +479,6 @@ echo 1;
 	 */
 	public function doStep1()
 	{
-		global $to_prefix;
-
 		$this->cookie->set(array($this->path_to, $this->path_from));
 
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
@@ -559,8 +557,6 @@ echo 1;
 	 */
 	public function doStep3()
 	{
-		global $boardurl;
-
 		$this->importer->doStep3($_SESSION['import_steps']);
 
 		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
