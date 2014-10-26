@@ -128,8 +128,17 @@ class Lang
 	 */
 	public function get($key)
 	{
-		if ($this->has($key))
-			return $this->_lang[$key];
+		if (is_array($key))
+		{
+			$l_key = array_shift($key);
+			if ($this->has($l_key))
+				return vsprintf($this->_lang[$l_key], $key);
+		}
+		else
+		{
+			if ($this->has($key))
+				return $this->_lang[$key];
+		}
 
 		return null;
 	}
