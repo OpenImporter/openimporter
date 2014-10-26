@@ -269,11 +269,9 @@ class Importer
 		$class = (string) $this->xml->general->className;
 		$this->settings = new $class();
 
-		if (method_exists($this->settings, 'setDefines'))
-			$this->settings->setDefines();
+		$this->settings->setDefines();
 
-		if (method_exists($this->settings, 'setGlobals'))
-			$this->settings->setGlobals();
+		$this->settings->setGlobals();
 
 		//Dirty hack
 		if (isset($_SESSION['store_globals']))
@@ -291,21 +289,10 @@ class Importer
 				global $$global;
 		}
 
-		if (method_exists($this->settings, 'loadSettings') && !empty($this->path_from))
-			$found = $this->settings->loadSettings($this->path_from);
-		else
-			$found = true;
-
-		if (!$found)
-		{
-			if (@ini_get('open_basedir') != '')
-				throw new Exception($this->lng->get(array('imp.open_basedir', (string) $this->xml->general->name)));
-
-			throw new Exception($this->lng->get(array('imp.config_not_found', (string) $this->xml->general->name)));
-		}
+		$this->loadSettings();
 
 		// Any custom form elements to speak of?
-		$this-init_form_data();
+		$this->init_form_data();
 
 		$this->_boardurl = $this->destination->getDestinationURL($this->path_to);
 
@@ -337,16 +324,37 @@ class Importer
 				eval($eval_me);
 		}
 
-		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && isset($this->xml->general->table_test))
+		$this->testTable();
+	}
+
+	protected function testTable()
+	{
+		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
 		{
 			$result = $this->db->query('
 				SELECT COUNT(*)
 				FROM "' . $this->from_prefix . $this->settings->getTableTest() . '"', true);
 
 			if ($result === false)
-				throw new Exception(sprintf($this->lng->get('imp.permission_denied') . mysqli_error($this->db->con), (string) $this->xml->general->name));
+				throw new Exception($this->lng->get(array('imp.permission_denied' . mysqli_error($this->db->con), (string) $this->xml->general->name)));
 
 			$this->db->free_result($result);
+		}
+	}
+
+	protected function loadSettings()
+	{
+		if (!empty($this->path_from))
+			$found = $this->settings->loadSettings($this->path_from);
+		else
+			$found = true;
+
+		if (!$found)
+		{
+			if (@ini_get('open_basedir') != '')
+				throw new Exception($this->lng->get(array('imp.open_basedir', (string) $this->xml->general->name)));
+
+			throw new Exception($this->lng->get(array('imp.config_not_found', (string) $this->xml->general->name)));
 		}
 	}
 
