@@ -9,7 +9,7 @@
  */
 class Lang
 {
-	private $_lang = array();
+	protected $_lang = array();
 	protected $_ns = array();
 
 	/**
@@ -24,18 +24,17 @@ class Lang
 	{
 		try
 		{
-			if (!$this->has($key))
-			{
-				if (strpos($key, '.') !== false)
-				{
-					$exp = explode('.', $key);
-					$this->registerNamespace($exp[0]);
-				}
-				$this->_lang[$key] = $value;
-				return true;
-			}
-			else
+			if ($this->has($key))
 				throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
+
+			if (strpos($key, '.') !== false)
+			{
+				$exp = explode('.', $key);
+				$this->registerNamespace($exp[0]);
+			}
+
+			$this->_lang[$key] = $value;
+			return true;
 		}
 		catch(Exception $e)
 		{
@@ -67,6 +66,8 @@ class Lang
 		if (!$lngfile)
 			throw new Exception('Unable to detect language file!');
 
+		// Silence simplexml errors because we take care of them by ourselves
+		libxml_use_internal_errors(true);
 		if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
 			throw new ImportException('XML-Syntax error in file: ' . $lngfile);
 
