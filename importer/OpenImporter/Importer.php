@@ -185,7 +185,8 @@ class Importer
 
 	public function populateFormFields($form)
 	{
-		$form->addOption($this->destination->getFormFields($this->path_to));
+		$form_path  =isset($this->path_to) ? $this->path_to : BASEDIR;
+		$form->addOption($this->destination->getFormFields($form_path));
 
 		$class = (string) $this->xml->general->className;
 		$settings = new $class();
@@ -199,6 +200,7 @@ class Importer
 			$form->addOption(array(
 				'id' => 'path_from',
 				'label' => array('imp.path_from', $this->xml->general->name),
+				'default' => $this->path_from,
 				'type' => 'text',
 				'correct' => $path_from ? 'imp.change_path' : 'imp.right_path',
 				'validate' => true,

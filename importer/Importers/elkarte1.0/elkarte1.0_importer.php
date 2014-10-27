@@ -42,7 +42,7 @@ class elkarte1_0_importer
 		return $this->fetchSetting('boardurl');
 	}
 
-	public function getFormFields($lng, $path_to = '')
+	public function getFormFields($path_to = '')
 	{
 		return array(
 			'id' => 'path_to',
