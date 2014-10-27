@@ -76,13 +76,13 @@ class Importer
 	 * Used to decide if the database query is INSERT or INSERT IGNORE
 	 * @var boolean
 	 */
-	private $ignore = true;
+	protected $ignore = true;
 
 	/**
 	 * Used to switch between INSERT and REPLACE
 	 * @var boolean
 	 */
-	private $replace = false;
+	protected $replace = false;
 
 	/**
 	 * The path to the source forum.
@@ -100,19 +100,25 @@ class Importer
 	 * The importer script which will be used for the import.
 	 * @var string
 	 */
-	private $_script = '';
+	protected $_script = '';
 
 	/**
 	 * This is the URL from our Installation.
 	 * @var string
 	 */
-	private $_boardurl = '';
+	protected $_boardurl = '';
 
 	/**
 	 * The "base" class name of the destination system.
 	 * @var string
 	 */
-	private $_importer_base_class_name = '';
+	protected $_importer_base_class_name = '';
+
+	/**
+	 * Holds the object that contains the settings of the source system
+	 * @var object
+	 */
+	protected $settings  = null;
 
 	/**
 	 * initialize the main Importer object
@@ -356,12 +362,14 @@ class Importer
 
 		if (strpos($db_prefix, '.') === false)
 		{
-			$this->to_prefix = is_numeric(substr($db_prefix, 0, 1)) ? $db_name . '.' . $db_prefix : '`' . $db_name . '`.' . $db_prefix;
-			$to_prefix = is_numeric(substr($db_prefix, 0, 1)) ? $db_name . '.' . $db_prefix : '`' . $db_name . '`.' . $db_prefix;
+			// @todo ???
+			if (is_numeric(substr($db_prefix, 0, 1)))
+				$this->to_prefix = $db_name . '.' . $db_prefix;
+			else
+				$this->to_prefix = '`' . $db_name . '`.' . $db_prefix;
 		}
 		else
 		{
-			$to_prefix = $db_prefix;
 			$this->to_prefix = $db_prefix;
 		}
 
@@ -511,7 +519,7 @@ class Importer
 	 * @global type $to_prefix
 	 * @return boolean
 	 */
-	public function doStep2($substep = 0)
+	public function doStep2()
 	{
 		$step2_importer_class = $this->_importer_base_class_name . '_step2';
 		$instance = new $step2_importer_class($this->db, $this->to_prefix);

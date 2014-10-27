@@ -12,9 +12,9 @@ class Template
 	 * Display a specific error message.
 	 *
 	 * @param string $error_message
-	 * @param int $trace
-	 * @param int $line
-	 * @param string $file
+	 * @param int|bool $trace
+	 * @param int|bool $line
+	 * @param string|bool $file
 	 */
 	public function error($error_message, $trace = false, $line = false, $file = false)
 	{
@@ -68,7 +68,7 @@ class Template
 	/**
 	 * Show the footer.
 	 *
-	 * @param bol $inner
+	 * @param bool $inner
 	 */
 	public function footer($inner = true)
 	{
@@ -85,7 +85,7 @@ class Template
 	/**
 	 * Show the header.
 	 *
-	 * @param bol $inner
+	 * @param bool $inner
 	 */
 	public function header($inner = true)
 	{

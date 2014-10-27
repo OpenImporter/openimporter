@@ -87,13 +87,19 @@ class ImportManager
 	 * The importer script which will be used for the import.
 	 * @var string
 	 */
-	private $_script = null;
+	protected $_script = null;
 
 	/**
 	 * This is the URL from our Installation.
 	 * @var string
 	 */
-	private $_boardurl = '';
+	protected $_boardurl = '';
+
+	/**
+	 * The database password?
+	 * @var string
+	 */
+	protected $db_pass = '';
 
 	/**
 	 * initialize the main Importer object
@@ -449,8 +455,7 @@ class ImportManager
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
 	 *
-	 * @global type $to_prefix
-	 * @global type $global
+	 * @throws Exception
 	 * @return boolean
 	 */
 	public function doStep1()
@@ -496,8 +501,7 @@ class ImportManager
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
-	 * @global Database $db
-	 * @global type $to_prefix
+	 * @throws Exception
 	 * @return boolean
 	 */
 	public function doStep2()
@@ -527,8 +531,6 @@ class ImportManager
 	/**
 	 * we are done :)
 	 *
-	 * @global Database $db
-	 * @global type $boardurl
 	 * @return boolean
 	 */
 	public function doStep3()
@@ -541,6 +543,7 @@ class ImportManager
 		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
 		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
+
 		return true;
 	}
 }
