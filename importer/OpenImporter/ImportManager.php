@@ -166,8 +166,7 @@ class ImportManager
 			$this->data['import_paths'] = array($this->path_from, $this->path_to);
 		}
 
-		if (isset($this->importer))
-			$this->importer->setData($this->data);
+		$this->importer->setData($this->data);
 		// If these aren't set (from an error..) default to the current directory.
 // 		if (!isset($this->path_to))
 // 			$this->path_to = BASEDIR;
