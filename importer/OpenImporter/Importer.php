@@ -137,6 +137,13 @@ class Importer
 			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->_script);
 	}
 
+	public function setData($data)
+	{
+		$this->path_from = $data['import_paths'][0];
+		$this->path_to = $data['import_paths'][1];
+		$this->data = $data;
+	}
+
 	public function setScript($script)
 	{
 		$this->_script = $script;
@@ -191,7 +198,7 @@ class Importer
 
 	public function populateFormFields($form)
 	{
-		$form_path  =isset($this->path_to) ? $this->path_to : BASEDIR;
+		$form_path = isset($this->path_to) ? $this->path_to : BASEDIR;
 		$form->addOption($this->destination->getFormFields($form_path));
 
 		$class = (string) $this->xml->general->className;
@@ -319,10 +326,10 @@ class Importer
 		{
 			$result = $this->db->query('
 				SELECT COUNT(*)
-				FROM "' . $this->from_prefix . $this->settings->getTableTest() . '"', true);
+				FROM ' . $this->from_prefix . $this->settings->getTableTest(), true);
 
 			if ($result === false)
-				throw new Exception($this->lng->get(array('imp.permission_denied' . mysqli_error($this->db->con), (string) $this->xml->general->name)));
+				throw new Exception($this->lng->get(array('imp.permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
 
 			$this->db->free_result($result);
 		}

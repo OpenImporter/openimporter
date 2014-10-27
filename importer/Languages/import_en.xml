@@ -14,7 +14,7 @@
 	<item name="imp.config_not_found">Unable to find the settings for %s. Please double check the path and try again.</item>
 	<item name="imp.password_incorrect">The database password you entered was incorrect. Please make sure you are using the right password and try it again. If in doubt, use the password from Settings.php.</item>
 	<item name="imp.select_step">You must select at least one step to import.</item>
-	<item name="imp.permission_denied"><![CDATA[Sorry, the database connection information used in the specified installation of your forum cannot access the installation of %1. This may either mean that the installation doesn't exist, or that the MySQL account used does not have permissions to access it.<br /><br />The error MySQL gave was: ']]></item>
+	<item name="imp.permission_denied"><![CDATA[Sorry, the database connection information used in the specified installation of your forum cannot access the installation of %2$s. This may either mean that the installation doesn't exist, or that the MySQL account used does not have permissions to access it.<br /><br />The error MySQL gave was: %1$s']]></item>
 	<item name="imp.before_continue">Before you continue</item>
 	<item name="imp.before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly. It copies members, posts and other data from your &quot;source&quot; installation of %s into the destination forum, so it won't work without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.</p>]]></item>
 	<item name="imp.destination_installed">Try again!</item>

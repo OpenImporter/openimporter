@@ -4,8 +4,6 @@ class SMF2_0 extends AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 
-	protected $path = '';
-
 	public function getName()
 	{
 		return 'SMF2_0';

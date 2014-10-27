@@ -62,6 +62,11 @@ class Database
 			return $this->sendError($string);
 	}
 
+	public function getLastError()
+	{
+		return mysqli_error($this->con);
+	}
+
 	/**
 	 * Analyze and sends an error
 	 *
