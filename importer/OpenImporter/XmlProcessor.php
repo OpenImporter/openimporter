@@ -308,21 +308,13 @@ class XmlProcessor
 			return;
 
 		$presql = $this->fix_params((string) $step->presql);
-		$presqlMethod = isset($step->presqlMethod) ? $step->presqlMethod : false;
+		$presql_array = array_filter(explode(';', $presql));
 
-		$presql_array = explode(';', $presql);
+		foreach ($presql_array as $exec)
+			$this->db->query($exec . ';');
 
-		if (!empty($presql_array))
-		{
-			foreach ($presql_array as $exec)
-			{
-				if (!empty($exec))
-					$this->db->query($exec . ';');
-			}
-		}
-
-		if ($presqlMethod)
-			$this->step1_importer->beforeSql($presqlMethod);
+		if (isset($step->presqlMethod))
+			$this->step1_importer->beforeSql((string) $step->presqlMethod);
 
 		// don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
