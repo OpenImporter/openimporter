@@ -76,8 +76,6 @@ class XmlProcessor
 
 	public function processSteps($step, &$substep, &$do_steps)
 	{
-		global $import;
-
 		// These are temporarily needed to support the current xml importers
 		// a.k.a. There is more important stuff to do.
 		// a.k.a. I'm too lazy to change all of them now. :P
@@ -88,15 +86,11 @@ class XmlProcessor
 
 		// Reset some defaults
 		$current_data = '';
-		$special_table = strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix));
+		$special_table = isset($step->destination) ? strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix)) : null;
 		$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
-		$special_code = null;
 
-		// any preparsing code here?
-		// @todo any idea why this is not eval'ed here
-		// and later could be overwritten? ($step->code)
-		if (isset($step->preparsecode) && !empty($step->preparsecode))
-			$special_code = $this->fix_params((string) $step->preparsecode);
+		// any preparsing code? Loaded here to be used later.
+		$special_code = $this->getPreparsecode($step);
 
 		$table_test = $this->updateStatus($step, $substep, $do_steps);
 
@@ -105,38 +99,25 @@ class XmlProcessor
 			return;
 
 		// pre sql queries first!!
-		if (isset($step->presql))
-		{
-			$presqlMethod = isset($step->presqlMethod) ? $step->presqlMethod : false;
-			$this->doPresqlStep((string) $step->presql, $substep, $presqlMethod);
-		}
+		$this->doPresqlStep($step, $substep);
 
 		// @todo $_GET
 		if ($substep >= $_GET['substep'] && isset($step->query))
 			$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
 
-		// codeblock?
-		if (isset($step->code))
+		// Codeblock? Then no query.
+		if ($this->doCode($step, $substep))
 		{
-			// execute our code block
-			$special_code = $this->fix_params((string) $step->code);
-			eval($special_code);
-			// reset some defaults
-			$current_data = '';
-			$special_table = null;
-			$special_code = null;
-
 			$this->advanceSubstep($substep);
+			return;
 		}
 
 		// sql block?
 		if (!empty($step->query))
 		{
-			if (strpos($current_data, '{$') !== false)
-				$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
+			$current_data = $this->fixCurrentData($current_data);
 
-			if (isset($step->detect))
-				$import->count->$substep = $this->detect((string) $step->detect);
+			$this->doDetect($step, $substep);
 
 			// create some handy shortcuts
 			$insert_statement = $this->insertStatement($step->options);
@@ -163,25 +144,20 @@ class XmlProcessor
 
 					while ($row = $this->db->fetch_assoc($special_result))
 					{
-						$row = $this->prepareRow($row, $special_code, $special_table);
-
-						if (empty($no_add) && empty($ignore_slashes))
-							$rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
-						elseif (empty($no_add) && !empty($ignore_slashes))
-							$rows[] = "'" . implode("', '", $row) . "'";
+						if ($no_add)
+						{
+							eval($special_code);
+						}
 						else
-							$no_add = false;
+						{
+							$row = $this->prepareRow($row, $special_code, $special_table);
 
-						if (empty($keys))
-							$keys = array_keys($row);
+							if (empty($keys))
+								$keys = array_keys($row);
+						}
 					}
 
-					if (!empty($rows))
-						$this->db->query("
-							$insert_statement INTO $special_table
-								(" . implode(', ', $keys) . ")
-							VALUES (" . implode('),
-								(', $rows) . ")");
+					$this->insertRows($rows, $keys, $ignore_slashes, $insert_statement, $special_table);
 
 					$_REQUEST['start'] += $special_limit;
 
@@ -196,6 +172,35 @@ class XmlProcessor
 		}
 
 		$this->advanceSubstep($substep);
+	}
+
+	protected function fixCurrentData($current_data)
+	{
+		if (strpos($current_data, '{$') !== false)
+			$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
+
+		return $current_data;
+	}
+
+	protected function insertRows($rows, $keys, $ignore_slashes, $insert_statement, $special_table)
+	{
+		if (empty($rows))
+			return;
+
+		$insert_rows = array();
+		foreach ($rows as $row)
+		{
+			if (empty($ignore_slashes))
+				$insert_rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
+			else
+				$insert_rows[] = "'" . implode("', '", $row) . "'";
+		}
+
+		$this->db->query("
+			$insert_statement INTO $special_table
+				(" . implode(', ', $keys) . ")
+			VALUES (" . implode('),
+				(', $rows) . ")");
 	}
 
 	protected function prepareRow($row, $special_code, $special_table)
@@ -221,6 +226,14 @@ class XmlProcessor
 		$row = $this->step1_importer->fixTexts($row);
 
 		return $row;
+	}
+
+	protected function getPreparsecode($step)
+	{
+		if (isset($step->preparsecode) && !empty($step->preparsecode))
+			return $this->fix_params((string) $step->preparsecode);
+		else
+			return null;
 	}
 
 	protected function advanceSubstep($substep)
@@ -286,14 +299,19 @@ class XmlProcessor
 		return $table_test;
 	}
 
-	protected function doPresqlStep($presql, $substep, $presqlMethod)
+	protected function doPresqlStep($step, $substep)
 	{
+		if (!isset($step->presql))
+			return;
+
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
-		$presql = $this->fix_params($presql);
+		$presql = $this->fix_params((string) $step->presql);
+		$presqlMethod = isset($step->presqlMethod) ? $step->presqlMethod : false;
+
 		$presql_array = explode(';', $presql);
-		if (isset($presql_array) && is_array($presql_array))
+		if (is_array($presql_array))
 		{
 			array_pop($presql_array);
 			foreach ($presql_array as $exec)
@@ -307,6 +325,36 @@ class XmlProcessor
 
 		// don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
+	}
+
+	protected function doDetect($step, $substep)
+	{
+		global $import;
+
+		if (isset($step->detect))
+			$import->count->$substep = $this->detect((string) $step->detect);
+	}
+
+	protected function doCode($step)
+	{
+		if (isset($step->code))
+		{
+			// These are temporarily needed to support the current xml importers
+			// a.k.a. There is more important stuff to do.
+			// a.k.a. I'm too lazy to change all of them now. :P
+			// @todo remove
+			// Both used in eval'ed code
+			$to_prefix = $this->to_prefix;
+			$db = $this->db;
+
+			// execute our code block
+			$special_code = $this->fix_params((string) $step->code);
+			eval($special_code);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	protected function detect($table)
