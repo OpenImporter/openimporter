@@ -330,7 +330,6 @@ class ImportManager
 					if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
 						throw new ImportException('XML-Syntax error in file: ' . $entry);
 
-					$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA);
 					$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
 					$all_scripts[] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
 				}
