@@ -421,7 +421,6 @@ class ImportManager
 
 	protected function _prepareStep0Form($form)
 	{
-
 		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . $this->debugUrl();
 
 		$this->importer->populateFormFields($form);
