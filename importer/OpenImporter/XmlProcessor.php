@@ -311,14 +311,15 @@ class XmlProcessor
 		$presqlMethod = isset($step->presqlMethod) ? $step->presqlMethod : false;
 
 		$presql_array = explode(';', $presql);
-		if (is_array($presql_array))
+
+		if (!empty($presql_array))
 		{
-			array_pop($presql_array);
 			foreach ($presql_array as $exec)
-				$this->db->query($exec . ';');
+			{
+				if (!empty($exec))
+					$this->db->query($exec . ';');
+			}
 		}
-		else
-			$this->db->query($presql);
 
 		if ($presqlMethod)
 			$this->step1_importer->beforeSql($presqlMethod);
