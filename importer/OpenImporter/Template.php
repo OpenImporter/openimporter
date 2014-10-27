@@ -20,13 +20,22 @@ class Template
 	{
 		echo '
 			<div class="error_message">
-				<div class="error_text">', isset($trace) && !empty($trace) ? 'Message: ' : '', is_array($error_message) ? sprintf($error_message[0], $error_message[1]) : $error_message , '</div>';
-		if (isset($trace) && !empty($trace))
-			echo '<div class="error_text">Trace: ', $trace , '</div>';
-		if (isset($line) && !empty($line))
-			echo '<div class="error_text">Line: ', $line , '</div>';
-		if (isset($file) && !empty($file))
-			echo '<div class="error_text">File: ', $file , '</div>';
+				<div class="error_text">
+					', !empty($trace) ? $this->response->lng(array('error_message', $error_message)) : $error_message, '
+				</div>';
+
+		if (!empty($trace))
+			echo '
+				<div class="error_text">', $this->response->lng(array('imp.error_trace', $trace)), '</div>';
+
+		if (!empty($line))
+			echo '
+				<div class="error_text">', $this->response->lng(array('imp.error_line', $line)), '</div>';
+
+		if (!empty($file))
+			echo '
+				<div class="error_text">', $this->response->lng(array('imp.error_file', $file)), '</div>';
+
 		echo '
 			</div>';
 	}
@@ -53,7 +62,7 @@ class Template
 
 			if ($this->response->template_error)
 			{
-				foreach ($this->response->error_params as $msg)
+				foreach ($this->response->getErrors() as $msg)
 					$this->error($msg);
 			}
 

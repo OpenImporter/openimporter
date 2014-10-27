@@ -52,4 +52,8 @@
 	<item name="imp.invalid">invalid path, installation could not be validated!</item>
 	<item name="imp.validated">installation validated!</item>
 	<item name="imp.overall_progress">Overall progress</item>
+	<item name="imp.error_message">Message: %s</item>
+	<item name="imp.error_trace">Trace: %s</item>
+	<item name="imp.error_line">Line: %s</item>
+	<item name="imp.error_file">File: %s</item>
 </lang>

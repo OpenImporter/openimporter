@@ -47,4 +47,18 @@ class HttpResponse
 	{
 		$this->error_params[] = $error_message;
 	}
+
+	public function getErrors()
+	{
+		$return = array();
+		foreach ($this->error_params as $msg)
+		{
+			if (is_array($msg))
+				$return[] = sprintf($msg[0], $msg[1]);
+			else
+				$return[] = $msg;
+		}
+
+		return $return;
+	}
 }
