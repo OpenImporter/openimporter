@@ -106,7 +106,7 @@ class XmlProcessor
 			$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
 
 		// Codeblock? Then no query.
-		if ($this->doCode($step, $substep))
+		if ($this->doCode($step))
 		{
 			$this->advanceSubstep($substep);
 			return;
@@ -379,45 +379,37 @@ class XmlProcessor
 		if (isset($options->ignore) && $options->ignore == false)
 			return false;
 
-		if (isset($options->replace))
-			return false;
-
-		return true;
+		return !isset($options->replace);
 	}
 
 	protected function shouldReplace($options)
 	{
-		if (isset($options->replace) && $options->replace == true)
-			return true;
-		else
-			return false;
+		return isset($options->replace) && $options->replace == true;
 	}
 
 	protected function shoudNotAdd($options)
 	{
-		if (isset($options->no_add) && $options->no_add == true)
-			return true;
-		else
-			return false;
+		return isset($options->no_add) && $options->no_add == true;
 	}
 
 	protected function ignoreSlashes($options)
 	{
-		if (isset($options->ignore_slashes) && $options->ignore_slashes == true)
-			return true;
-		else
-			return false;
+		return isset($options->ignore_slashes) && $options->ignore_slashes == true;
 	}
 
 	protected function insertStatement($options)
 	{
-		$ignore = $this->shouldIgnore($options);
-		$replace = $this->shouldReplace($options);
+		if ($this->shouldIgnore($options))
+			$ignore = 'IGNORE';
+		else
+			$ignore = '';
 
-		$insert_ignore = (isset($ignore) && $ignore == true) ? 'IGNORE' : '';
-		$insert_replace = (isset($replace) && $replace == true) ? 'REPLACE' : 'INSERT';
+		if ($this->shouldReplace($options))
+			$replace = 'REPLACE';
+		else
+			$replace = 'INSERT';
 
-		return $insert_replace . ' ' . $insert_ignore;
+		return $replace . ' ' . $ignore;
 	}
 
 	protected function prepareSpecialResult($current_data, $special_limit)
