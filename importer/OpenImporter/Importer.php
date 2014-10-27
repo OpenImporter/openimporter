@@ -183,9 +183,10 @@ class Importer
 		}
 	}
 
-	public function getFormSettings()
+	public function populateFormFields($form)
 	{
-		$options = array();
+		$form->addOption($this->destination->getFormFields($this->path_to));
+
 		$class = (string) $this->xml->general->className;
 		$settings = new $class();
 
@@ -195,53 +196,28 @@ class Importer
 		$path_from = $settings->loadSettings($this->path_from, true);
 		if ($path_from !== null)
 		{
-			$options = array(
-				array(
-					'id' => 'path_from',
-					'label' => $this->lng->get(array('imp.path_from', $this->xml->general->name)),
-					'type' => 'text',
-					'correct' => $path_from ? $this->lng->get('imp.change_path') : $this->lng->get('imp.right_path'),
-					'validate' => true,
-				),
-			);
+			$form->addOption(array(
+				'id' => 'path_from',
+				'label' => array('imp.path_from', $this->xml->general->name),
+				'type' => 'text',
+				'correct' => $path_from ? 'imp.change_path' : 'imp.right_path',
+				'validate' => true,
+			));
 		}
-
-		$options[] = array();
 
 		// Any custom form elements?
 		if ($this->xml->general->form)
 		{
 			foreach ($this->xml->general->form->children() as $field)
-			{
-				if ($field->attributes()->{'type'} == 'text')
-				{
-					$options[] = array(
-						'id' => 'field' . $field->attributes()->{'id'},
-						'label' => $field->attributes()->{'label'},
-						'value' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
-						'correct' => '',
-						'type' => 'text',
-					);
-				}
-				else
-				{
-					$options[] = array(
-						'id' => 'field' . $field->attributes()->{'id'},
-						'label' => $field->attributes()->{'label'},
-						'value' => 1,
-						'attributes' => $field->attributes()->{'type'} == 'checked' ? ' checked="checked"' : '',
-						'type' => 'checkbox',
-					);
-				}
-			}
+				$form->addField($field);
 		}
 
-		$options[] = array(
+		$form->addOption(array(
 			'id' => 'db_pass',
 			'label' => $this->lng->get('imp.database_passwd'),
-			'correct' => $this->lng->get('imp.database_verify'),
+			'correct' => 'imp.database_verify',
 			'type' => 'password',
-		);
+		));
 
 		$steps = $this->_find_steps();
 
@@ -250,12 +226,12 @@ class Importer
 			foreach ($steps as $key => $step)
 				$steps[$key]['label'] = ucfirst(str_replace('importing ', '', $step['name']));
 
-			$options[] = array(
+			$form->addOption(array(
 				'id' => 'do_steps',
-				'label' => $this->lng->get('imp.selected_only'),
-				'value' => $steps,
+				'label' => 'imp.selected_only',
+				'default' => $steps,
 				'type' => 'steps',
-			);
+			));
 		}
 
 		return $options;

@@ -405,7 +405,8 @@ class ImportManager
 			$this->response->addErrorParam($e->getMessage());
 		}
 
-		$form = $this->_prepareStep0Form();
+		$form = new Form($this->lng);
+		$this->_prepareStep0Form($form);
 
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
@@ -419,25 +420,12 @@ class ImportManager
 		return;
 	}
 
-	protected function _prepareStep0Form()
+	protected function _prepareStep0Form($form)
 	{
-		$form = new Form();
 
 		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . $this->debugUrl();
 
-		// This is any form element required by the destination system
-		$options = $this->importer->destination->getFormFields($this->lng, $this->path_to);
-
-		// Any field required by the source system
-		foreach ($this->importer->getFormSettings() as $key => $val)
-		{
-			if (!empty($val) && $val['type'] !== 'password' && !isset($val['value']))
-					$val['value'] = isset($this->{$val['id']}) ? htmlspecialchars($this->{$val['id']}) : '';
-
-			$options[] = $val;
-		}
-
-		$form->options = $options;
+		$this->importer->populateFormFields($form);
 
 		return $form;
 	}

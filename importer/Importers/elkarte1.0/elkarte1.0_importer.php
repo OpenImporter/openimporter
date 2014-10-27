@@ -45,14 +45,12 @@ class elkarte1_0_importer
 	public function getFormFields($lng, $path_to = '')
 	{
 		return array(
-			array(
-				'id' => 'path_to',
-				'label' => $lng->get('imp.path_to_destination'),
-				'type' => 'text',
-				'value' => htmlspecialchars($path_to),
-				'correct' => $this->checkSettingsPath($path_to) ? $lng->get('imp.right_path') : $lng->get('imp.change_path'),
-				'validate' => true,
-			),
+			'id' => 'path_to',
+			'label' => 'imp.path_to_destination',
+			'type' => 'text',
+			'default' => htmlspecialchars($path_to),
+			'correct' => $this->checkSettingsPath($path_to) ? 'imp.right_path' : 'imp.change_path',
+			'validate' => true,
 		);
 	}
 
