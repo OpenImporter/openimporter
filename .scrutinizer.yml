@@ -51,3 +51,6 @@ build:
                 coverage:
                     file: 'some-file'
                     format: 'php-clover'
+filter:
+    excluded_paths:
+        - importer/OpenImporter/Tests/*
