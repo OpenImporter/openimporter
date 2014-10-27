@@ -39,8 +39,6 @@ if (@ini_get('session.save_handler') == 'user')
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 	$_POST = stripslashes_recursive($_POST);
 
-$template = new Template();
-
 try
 {
 	$lng = new Lang();
@@ -48,8 +46,11 @@ try
 }
 catch (Exception $e)
 {
-	ImportException::exception_handler($e, $template);
+	ImportException::exception_handler($e);
 }
+
+$template = new Template($lng);
+
 global $import;
 $importer = new Importer($lng, $template);
 $response = new HttpResponse(new ResponseHeader());

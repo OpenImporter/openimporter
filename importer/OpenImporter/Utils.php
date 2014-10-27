@@ -27,6 +27,7 @@ function pastTime($substep = null, $stop_time = 5)
 	if (time() - $time_start < $stop_time)
 		return;
 
+	// @todo maybe throw an exception?
 	$import->template->time_limit($bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
 	$import->template->footer();
 	exit;

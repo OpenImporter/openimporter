@@ -462,22 +462,7 @@ class ImportManager
 	{
 		$this->cookie->set(array($this->path_to, $this->path_from));
 
-		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
-		// @TODO: check if this is needed
-		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
-
-		// Skipping steps?
-		if (isset($_SESSION['do_steps']))
-			$do_steps = $_SESSION['do_steps'];
-		else
-			$do_steps = array();
-
-		//calculate our overall time and create the progress bar
-		if(!isset($_SESSION['import_overall']))
-			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
-
-		if(!isset($_SESSION['import_progress']))
-			$_SESSION['import_progress'] = 0;
+		$do_steps = $this->step1Progress();
 
 		try
 		{
@@ -496,6 +481,29 @@ class ImportManager
 		$_REQUEST['start'] = 0;
 
 		return $this->doStep2();
+	}
+
+	protected function step1Progress()
+	{
+
+		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
+		// @TODO: check if this is needed
+		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
+
+		// Skipping steps?
+		if (isset($_SESSION['do_steps']))
+			$do_steps = $_SESSION['do_steps'];
+		else
+			$do_steps = array();
+
+		//calculate our overall time and create the progress bar
+		if(!isset($_SESSION['import_overall']))
+			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
+
+		if(!isset($_SESSION['import_progress']))
+			$_SESSION['import_progress'] = 0;
+
+		return $do_steps;
 	}
 
 	/**

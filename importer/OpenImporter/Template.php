@@ -9,6 +9,14 @@ class Template
 	protected $response = null;
 	protected $lng = null;
 
+	public function __construct($lng)
+	{
+		if ($lng === null)
+			$lng = new DummyLang();
+
+		$this->lng = $lng;
+	}
+
 	/**
 	 * Display a specific error message.
 	 *
@@ -44,7 +52,6 @@ class Template
 	public function setResponse($response)
 	{
 		$this->response = $response;
-		$this->lng = $response->lng;
 	}
 
 	public function render()
@@ -430,78 +437,14 @@ class Template
 			<div class="content">
 				<p>', sprintf($this->lng->get('imp.before_details'), (string) $object->importer->xml->general->name ), '</p>
 			</div>';
-		echo '
-			<h2>', $this->lng->get('imp.where'), '</h2>
-			<div class="content">
-				<form action="', $form->action_url, '" method="post">
-					<p>', $this->lng->get('imp.locate_destination'), '</p>
-					<dl>';
 
-		foreach ($form->options as $option)
-		{
-			if (empty($option))
-			{
-				echo '
-					</dl>
-					<div id="toggle_button">', $this->lng->get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
-					<dl id="advanced_options" style="display: none; margin-top: 5px">';
-				continue;
-			}
-
-			switch ($option['type'])
-			{
-				case 'text':
-				{
-					echo '
-						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
-						<dd>
-							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', !empty($option['validate']) ? 'onblur="validateField(\'' . $option['id'] . '\')"' : '', ' class="text" />
-							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
-						</dd>';
-					break;
-				}
-				case 'checkbox':
-				{
-					echo '
-						<dt></dt>
-						<dd>
-							<label for="', $option['id'], '">', $option['label'], ':
-								<input type="checkbox" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', $option['attributes'], '/>
-							</label>
-						</dd>';
-					break;
-				}
-				case 'password':
-				{
-					echo '
-						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
-						<dd>
-							<input type="password" name="', $option['id'], '" id="', $option['id'], '" class="text" />
-							<div style="font-style: italic; font-size: smaller">', $option['correct'], '</div>
-						</dd>';
-					break;
-				}
-				case 'steps':
-				{
-					echo '
-						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
-						<dd>';
-						foreach ($option['value'] as $key => $step)
-							echo '
-							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', $step['label'], '</label><br />';
-
-					echo '
-						</dd>';
-					break;
-				}
-			}
-		}
-
-		echo '
-					</dl>
-					<div class="button"><input id="submit_button" name="submit_button" type="submit" value="', $this->lng->get('imp.continue'),'" class="submit" /></div>
-				</form>
-			</div>';
+		$form->title = $this->lng->get('imp.where');
+		$form->description = $this->lng->get('imp.locate_destination');
+		$form->submit = array(
+			'name' => 'submit_button',
+			'value' => $this->lng->get('imp.continue'),
+		);
+		$this->renderForm($form);
 
 		if (!empty($object->possible_scripts))
 		{
@@ -511,33 +454,6 @@ class Template
 				<p>', sprintf($this->lng->get('imp.pick_different'), $_SERVER['PHP_SELF']), '</p>
 			</div>';
 		}
-
-		echo '
-			<script type="text/javascript">
-				document.getElementById(\'toggle_button\').onclick = function ()
-				{
-					var elem = document.getElementById(\'advanced_options\');
-					var arrow_up = document.getElementById(\'arrow_up\');
-					var arrow_down = document.getElementById(\'arrow_down\');
-					if (!elem)
-						return true;
-
-					if (elem.style.display == \'none\')
-					{
-						elem.style.display = \'block\';
-						arrow_down.style.display = \'none\';
-						arrow_up.style.display = \'inline\';
-					}
-					else
-					{
-						elem.style.display = \'none\';
-						arrow_down.style.display = \'inline\';
-						arrow_up.style.display = \'none\';
-					}
-
-					return true;
-				}
-			</script>';
 	}
 
 	/**
@@ -662,5 +578,112 @@ class Template
 	{
 		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	<valid>', $this->response->valid ? 'true' : 'false' ,'</valid>';
+	}
+
+	public function renderForm($form)
+	{
+		$toggle = false;
+
+		echo '
+			<h2>', $form->title, '</h2>
+			<div class="content">
+				<form action="', $form->action_url, '" method="post">
+					<p>', $form->description, '</p>
+					<dl>';
+
+		foreach ($form->options as $option)
+		{
+			if (empty($option))
+			{
+				$toggle = true;
+				echo '
+					</dl>
+					<div id="toggle_button">', $this->lng->get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
+					<dl id="advanced_options" style="display: none; margin-top: 5px">';
+				continue;
+			}
+
+			switch ($option['type'])
+			{
+				case 'text':
+				{
+					echo '
+						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
+						<dd>
+							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', !empty($option['validate']) ? 'onblur="validateField(\'' . $option['id'] . '\')"' : '', ' class="text" />
+							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
+						</dd>';
+					break;
+				}
+				case 'checkbox':
+				{
+					echo '
+						<dt></dt>
+						<dd>
+							<label for="', $option['id'], '">', $option['label'], ':
+								<input type="checkbox" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', $option['attributes'], '/>
+							</label>
+						</dd>';
+					break;
+				}
+				case 'password':
+				{
+					echo '
+						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
+						<dd>
+							<input type="password" name="', $option['id'], '" id="', $option['id'], '" class="text" />
+							<div style="font-style: italic; font-size: smaller">', $option['correct'], '</div>
+						</dd>';
+					break;
+				}
+				case 'steps':
+				{
+					echo '
+						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
+						<dd>';
+						foreach ($option['value'] as $key => $step)
+							echo '
+							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', $step['label'], '</label><br />';
+
+					echo '
+						</dd>';
+					break;
+				}
+			}
+		}
+
+		echo '
+					</dl>
+					<div class="button"><input id="submit_button" name="', $form->submit['name'], '" type="submit" value="', $form->submit['value'],'" class="submit" /></div>
+				</form>
+			</div>';
+
+		if ($toggle)
+			echo '
+			<script type="text/javascript">
+				document.getElementById(\'toggle_button\').onclick = function ()
+				{
+					var elem = document.getElementById(\'advanced_options\');
+					var arrow_up = document.getElementById(\'arrow_up\');
+					var arrow_down = document.getElementById(\'arrow_down\');
+					if (!elem)
+						return true;
+
+					if (elem.style.display == \'none\')
+					{
+						elem.style.display = \'block\';
+						arrow_down.style.display = \'none\';
+						arrow_up.style.display = \'inline\';
+					}
+					else
+					{
+						elem.style.display = \'none\';
+						arrow_down.style.display = \'inline\';
+						arrow_up.style.display = \'none\';
+					}
+
+					return true;
+				}
+			</script>';
 	}
 }

@@ -12,6 +12,8 @@ class HttpResponse
 
 	protected $headers = null;
 
+	public $lng = null;
+
 	protected $error_params = array();
 
 	public function __construct($headers)

@@ -26,7 +26,7 @@ class ImportException extends Exception
 			if (!empty($import))
 				$template = $import->template;
 			else
-				$template = new Template();
+				$template = new Template(null);
 		}
 		$message = $exception->getMessage();
 		$trace = $exception->getTrace();
