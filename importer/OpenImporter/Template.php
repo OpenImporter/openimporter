@@ -424,8 +424,7 @@ class Template
 			<div class="content">
 				<form action="', $form->action_url, '" method="post">
 					<p>', $this->response->lng->get('imp.locate_destination'), '</p>
-					<div id="toggle_button">', $this->response->lng->get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
-					<dl id="advanced_options" style="display: none; margin-top: 5px">';
+					<dl>';
 
 		foreach ($form->options as $option)
 		{
@@ -433,7 +432,8 @@ class Template
 			{
 				echo '
 					</dl>
-					<dl>';
+					<div id="toggle_button">', $this->response->lng->get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
+					<dl id="advanced_options" style="display: none; margin-top: 5px">';
 				continue;
 			}
 

@@ -214,10 +214,12 @@ class Importer
 
 		$form->addOption(array(
 			'id' => 'db_pass',
-			'label' => $this->lng->get('imp.database_passwd'),
+			'label' => 'imp.database_passwd',
 			'correct' => 'imp.database_verify',
 			'type' => 'password',
 		));
+
+		$form->addSeparator();
 
 		$steps = $this->_find_steps();
 
@@ -233,8 +235,6 @@ class Importer
 				'type' => 'steps',
 			));
 		}
-
-		return $options;
 	}
 
 	/**
@@ -270,6 +270,8 @@ class Importer
 		// Any custom form elements to speak of?
 		$this->init_form_data();
 
+		if (empty($this->path_to))
+			return;
 		$this->_boardurl = $this->destination->getDestinationURL($this->path_to);
 
 		if ($this->_boardurl === false)

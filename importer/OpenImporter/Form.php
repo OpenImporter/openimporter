@@ -48,6 +48,7 @@ class Form
 					'validate' => !empty($field['validate']),
 					'type' => 'text',
 				);
+				break;
 			}
 			case 'password':
 			{
@@ -57,6 +58,7 @@ class Form
 					'correct' => $this->lng->get($field['correct']),
 					'type' => 'password',
 				);
+				break;
 			}
 			case 'steps':
 			{
@@ -66,6 +68,7 @@ class Form
 					'value' => $field['default'],
 					'type' => 'steps',
 				);
+				break;
 			}
 			default:
 			{
@@ -78,6 +81,11 @@ class Form
 				);
 			}
 		}
+	}
+
+	public function addSeparator()
+	{
+		$this->data['options'][] = array();
 	}
 
 	public function addField($field)

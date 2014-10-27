@@ -123,9 +123,12 @@ class ImportManager
 
 		$this->loadPaths();
 
-		$this->importer->setScript($this->_script);
+		if (!empty($this->_script))
+		{
+			$this->importer->setScript($this->_script);
 
-		$this->importer->reloadImporter();
+			$this->importer->reloadImporter();
+		}
 	}
 
 	public function __destruct()
@@ -304,7 +307,6 @@ class ImportManager
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
 	 * @return boolean
-	 * @throws ImportException
 	 */
 	private function _detect_scripts()
 	{
@@ -323,20 +325,18 @@ class ImportManager
 			$scripts[$from] = array();
 			$possible_scripts = glob($source . DS . '*_importer.xml');
 
+			// Silence simplexml errors
+			libxml_use_internal_errors(true);
 			foreach ($possible_scripts as $entry)
 			{
-				try
+				// If a script is broken simply skip it.
+				if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
 				{
-					if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
-						throw new ImportException('XML-Syntax error in file: ' . $entry);
+					continue;
+				}
 
-					$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
-					$all_scripts[] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
-				}
-				catch (Exception $e)
-				{
-					ImportException::exception_handler($e, $this->template);
-				}
+				$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
+				$all_scripts[] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
 			}
 		}
 
