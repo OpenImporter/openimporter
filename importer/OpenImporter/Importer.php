@@ -118,7 +118,7 @@ class Importer
 	 * Holds the object that contains the settings of the source system
 	 * @var object
 	 */
-	protected $settings  = null;
+	public $settings  = null;
 
 	/**
 	 * initialize the main Importer object
