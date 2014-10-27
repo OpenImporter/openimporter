@@ -22,20 +22,20 @@ class Template
 		echo '
 			<div class="error_message">
 				<div class="error_text">
-					', !empty($trace) ? $this->lng(array('error_message', $error_message)) : $error_message, '
+					', !empty($trace) ? $this->lng->get(array('error_message', $error_message)) : $error_message, '
 				</div>';
 
 		if (!empty($trace))
 			echo '
-				<div class="error_text">', $this->lng(array('imp.error_trace', $trace)), '</div>';
+				<div class="error_text">', $this->lng->get(array('imp.error_trace', $trace)), '</div>';
 
 		if (!empty($line))
 			echo '
-				<div class="error_text">', $this->lng(array('imp.error_line', $line)), '</div>';
+				<div class="error_text">', $this->lng->get(array('imp.error_line', $line)), '</div>';
 
 		if (!empty($file))
 			echo '
-				<div class="error_text">', $this->lng(array('imp.error_file', $file)), '</div>';
+				<div class="error_text">', $this->lng->get(array('imp.error_file', $file)), '</div>';
 
 		echo '
 			</div>';
