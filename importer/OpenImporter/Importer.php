@@ -255,11 +255,7 @@ class Importer
 	/**
 	 * prepare the importer with custom settings stuff
 	 *
-	 * @global Database $db
-	 * @global type $to_prefix
-	 * @global type $global
-	 * @global type $varname
-	 * @global type $global
+	 * @throws Exception
 	 * @return boolean|null
 	 */
 	private function _loadSettings()

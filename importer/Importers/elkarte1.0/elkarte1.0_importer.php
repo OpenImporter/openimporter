@@ -97,7 +97,7 @@ class elkarte1_0_importer
 class elkarte1_0_importer_step1 extends Step1BaseImporter
 {
 	protected $id_attach = null;
-	protected $attachmentUploadDir = null;
+	protected $attachmentUploadDirs = null;
 	protected $avatarUploadDir = null;
 
 	public function fixTexts($row)
