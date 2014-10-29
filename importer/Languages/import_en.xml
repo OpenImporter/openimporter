@@ -56,4 +56,5 @@
 	<item name="imp.error_trace">Trace: %s</item>
 	<item name="imp.error_line">Line: %s</item>
 	<item name="imp.error_file">File: %s</item>
+	<item name="imp.imported_from">Forum imported from %s</item>
 </lang>

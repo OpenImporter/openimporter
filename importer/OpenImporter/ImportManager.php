@@ -154,9 +154,7 @@ class ImportManager
 
 	protected function loadPaths()
 	{
-		if (isset($this->data['import_paths']) && !isset($_POST['path_from']) && !isset($_POST['path_to']))
-			list ($this->path_from, $this->path_to) = $this->data['import_paths'];
-		elseif (isset($_POST['path_from']) || isset($_POST['path_to']))
+		if (isset($_POST['path_from']) || isset($_POST['path_to']))
 		{
 			if (isset($_POST['path_from']))
 				$this->path_from = rtrim($_POST['path_from'], '\\/');
@@ -165,13 +163,11 @@ class ImportManager
 
 			$this->data['import_paths'] = array($this->path_from, $this->path_to);
 		}
+		elseif (isset($this->data['import_paths']))
+			list ($this->path_from, $this->path_to) = $this->data['import_paths'];
 
-		$this->importer->setData($this->data);
-		// If these aren't set (from an error..) default to the current directory.
-// 		if (!isset($this->path_to))
-// 			$this->path_to = BASEDIR;
-// 		if (!isset($this->path_from))
-// 			$this->path_from = BASEDIR;
+		if (!empty($this->data))
+			$this->importer->setData($this->data);
 	}
 
 	protected function loadFromSession()
@@ -544,7 +540,7 @@ class ImportManager
 	 */
 	public function doStep3()
 	{
-		$this->importer->doStep3($_SESSION['import_steps']);
+		$this->importer->doStep3();
 
 		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 

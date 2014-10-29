@@ -150,7 +150,7 @@ class XmlProcessor
 						}
 						else
 						{
-							$row = $this->prepareRow($row, $special_code, $special_table);
+							$rows[] = $this->prepareRow($row, $special_code, $special_table);
 
 							if (empty($keys))
 								$keys = array_keys($row);
@@ -200,19 +200,11 @@ class XmlProcessor
 			$insert_statement INTO $special_table
 				(" . implode(', ', $keys) . ")
 			VALUES (" . implode('),
-				(', $rows) . ")");
+				(', $insert_rows) . ")");
 	}
 
 	protected function prepareRow($row, $special_code, $special_table)
 	{
-		// These are temporarily needed to support the current xml importers
-		// a.k.a. There is more important stuff to do.
-		// a.k.a. I'm too lazy to change all of them now. :P
-		// @todo remove
-		// Both used in eval'ed code
-		$to_prefix = $this->to_prefix;
-		$db = $this->db;
-
 		if ($special_code !== null)
 			eval($special_code);
 
@@ -324,7 +316,7 @@ class XmlProcessor
 	{
 		global $import;
 
-		if (isset($step->detect))
+		if (isset($step->detect) && isset($import->count))
 			$import->count->$substep = $this->detect((string) $step->detect);
 	}
 

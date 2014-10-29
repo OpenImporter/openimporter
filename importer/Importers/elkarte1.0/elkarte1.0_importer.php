@@ -119,14 +119,19 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 	public function doSpecialTable($special_table, $params = null)
 	{
 		// Are we doing attachments? They're going to want a few things...
-		if ($special_table == $this->to_prefix . 'attachments')
+		if ($special_table == $this->to_prefix . 'attachments' && $params === null)
+		{
 			$this->specialAttachments();
+			return $params;
+		}
 		// Here we have various bits of custom code for some known problems global to all importers.
-		elseif ($special_table == $this->to_prefix . 'members')
-			$this->specialMembers($params);
+		elseif ($special_table == $this->to_prefix . 'members' && $params !== null)
+			return $this->specialMembers($params);
+
+		return $params;
 	}
 
-	protected function removeAttachments()
+	public function removeAttachments()
 	{
 		$to_prefix = $this->to_prefix;
 
@@ -164,6 +169,19 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 		$this->db->free_result($result);
 	}
 
+	public function getAttachDir($row)
+	{
+		if (!empty($row['id_folder']) && !empty($this->attachmentUploadDirs[$row['id_folder']]))
+			return $this->attachmentUploadDirs[$row['id_folder']];
+		else
+			return $this->attachmentUploadDirs[1];
+	}
+
+	public function getAvatarDir()
+	{
+		return $this->avatarUploadDir;
+	}
+
 	protected function specialMembers($row)
 	{
 		// Let's ensure there are no illegal characters.
@@ -182,7 +200,7 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 	{
 		$to_prefix = $this->to_prefix;
 
-		if (!isset($this->id_attach, $this->attachmentUploadDir, $this->avatarUploadDir))
+		if (!isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
 		{
 			$result = $this->db->query("
 				SELECT MAX(id_attach) + 1
@@ -197,7 +215,8 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 				LIMIT 1");
 			list ($attachmentdir) = $this->db->fetch_row($result);
 			$attachment_UploadDir = @unserialize($attachmentdir);
-			$this->attachmentUploadDir = !empty($attachment_UploadDir[1]) && is_array($attachment_UploadDir[1]) ? $attachment_UploadDir[1] : $attachmentdir;
+
+			$this->attachmentUploadDirs = !empty($attachment_UploadDir) ? $attachment_UploadDir : array(1 => $attachmentdir);
 
 			$result = $this->db->query("
 				SELECT value
@@ -363,8 +382,16 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 			FROM {$to_prefix}members
 			ORDER BY id_member DESC
 			LIMIT 1");
+
 		if ($this->db->num_rows($result))
+		{
 			$row += $this->db->fetch_assoc($result);
+		}
+		else
+		{
+			$row += array('latestMember' => '', 'latestreal_name' => '');
+		}
+
 		$this->db->free_result($result);
 
 		// Update the member count.

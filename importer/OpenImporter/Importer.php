@@ -564,11 +564,11 @@ class Importer
 	 * @global type $boardurl
 	 * @return boolean
 	 */
-	public function doStep3($import_steps)
+	public function doStep3()
 	{
 		$step3_importer_class = $this->_importer_base_class_name . '_step3';
 		$instance = new $step3_importer_class($this->db, $this->to_prefix);
 
-		$instance->run($import_steps);
+		$instance->run($this->lng->get(array('imp.imported_from', $this->xml->general->name)));
 	}
 }

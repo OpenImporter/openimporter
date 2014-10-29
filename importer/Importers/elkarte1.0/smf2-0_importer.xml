@@ -225,7 +225,7 @@
 			<presql>TRUNCATE {$to_prefix}attachments;</presql>
 			<presqlMethod>removeAttachments</presqlMethod>
 			<preparsecode>
-				moveAttachment($row, $this->db, $from_prefix, $attachmentUploadDir);
+				moveAttachment($row, $this->db, $this->from_prefix, $this->step1_importer->getAttachDir($row));
 			</preparsecode>
 			<query>
 				SELECT
@@ -256,7 +256,8 @@
 					list ($smf_attachments_dir) = $this->db->fetch_row($request);
 				}
 
-				if ($avatarUploadDir == $attachmentUploadDir)
+				$avatarUploadDir = $this->step1_importer->getAvatarDir();
+				if ($avatarUploadDir == $this->step1_importer->getAttachDir($row))
 					$row['attachment_type'] = 0;
 
 				if (empty($row['file_hash']))
