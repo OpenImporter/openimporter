@@ -204,7 +204,7 @@ class XmlProcessor
 		}
 
 		$this->db->query("
-			$insert_statement INTO $special_table
+			$insert_statement $special_table
 				(" . implode(', ', $keys) . ")
 			VALUES (" . implode('),
 				(', $insert_rows) . ")");
@@ -401,7 +401,7 @@ class XmlProcessor
 		else
 			$replace = 'INSERT';
 
-		return $replace . ' ' . $ignore;
+		return $replace . ' ' . $ignore . ' INTO';
 	}
 
 	protected function prepareSpecialResult($current_data, $special_limit)

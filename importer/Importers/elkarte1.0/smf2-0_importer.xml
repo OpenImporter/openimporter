@@ -266,7 +266,9 @@
 					copy_file($smf_attachments_dir . '/' . $row['filename'], $avatarUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 				}
 				else
+				{
 					copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $avatarUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
+				}
 			</preparsecode>
 			<query>
 				SELECT

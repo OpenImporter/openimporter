@@ -263,6 +263,7 @@
 
 				$source = $mybb_attachment_dir . '/' . $row['attachname'];
 				$file_hash = createAttachmentFileHash($row['filename']);
+				$id_attach = $this->step1_importer->newIdAttach();
 				$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 				$width = 0;
 				$height = 0;
@@ -291,8 +292,6 @@
 					'width' => $width,
 					'height' => $height,
 				));
-
-				$id_attach++;
 			</preparsecode>
 			<query>
 				SELECT pid AS id_msg, downloads, filename, filesize, attachname
@@ -307,25 +306,25 @@
 				<no_add>true</no_add>
 			</options>
 			<preparsecode>
-				$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
-
 				//create some useful shortcuts
 				$source = $this->path_from . strtok(ltrim($row['filename'], '.'), '?');
 				$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
-				$file_hash = createAttachmentFileHash($filename);
-				$destination = $this->step1_importer->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
+
+				$upload_result = $this->step1_importer->moveAvatar($row, $source, $filename);
+
+				if (empty($upload_result))
+				{
+					// Ensure nothing is updated.
+					$rows = array();
+				}
+				else
+				{
+					$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
+
+					$rows[] = $upload_result;
+				}
 
 				copy_file($source, $destination);
-
-				$rows[] = implode(', ', array(
-					'id_attach' => $id_attach,
-					'size' => filesize($destination),
-					'filename' => '\'' . $row['filename'] . '\'',
-					'file_hash' => '\'' . $file_hash . '\'',
-					'id_member' => $row['id_member'],
-				));
-
-				$id_attach++;
 			</preparsecode>
 			<query>
 				SELECT uid AS id_member, avatar AS filename

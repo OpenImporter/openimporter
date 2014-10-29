@@ -184,6 +184,79 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 			return $this->avatarUploadDir;
 	}
 
+	public function getAvatarFolderId($row)
+	{
+		// @todo in theory we could be able to find the "current" directory
+		if ($this->avatarUploadDir === null)
+			return 1;
+		else
+			return false;
+	}
+
+	public function newIdAttach()
+	{
+		// The one to return
+		$current = $this->id_attach;
+
+		// Increase preparing for the next one
+		$this->id_attach++;
+
+		return $current;
+	}
+
+	public function moveAvatar($row, $source, $filename)
+	{
+		$avatar_attach_folder = $this->getAvatarFolderId($row);
+
+		if ($avatar_attach_folder === false)
+		{
+			// Ensure nothing is updated.
+			$rows = array();
+
+			$extensions = array(
+				'1' => 'gif',
+				'2' => 'jpg',
+				'3' => 'png',
+				'6' => 'bmp'
+			);
+
+			$sizes = @getimagesize($source);
+			$extension = isset($extensions[$sizes[2]]) ? $extensions[$sizes[2]] : 'bmp';
+			$file_hash = 'avatar_' . $row['id_member'] . '_' . time() . '.' . $extension;
+
+			$this->db->query("
+				UPDATE {$this->to_prefix}members
+				SET avatar = '$file_hash'
+				WHERE id_member = $row[id_member]");
+
+			$destination = $this->step1_importer->getAvatarDir($row) . '/' . $file_hash;
+
+			$return = false;
+		}
+		else
+		{
+			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
+
+			$file_hash = createAttachmentFileHash($filename);
+			$id_attach = $this->step1_importer->newIdAttach();
+
+			$destination = $this->step1_importer->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
+
+			$return = array(
+				'id_attach' => $id_attach,
+				'size' => filesize($destination),
+				'filename' => '\'' . $row['filename'] . '\'',
+				'file_hash' => '\'' . $file_hash . '\'',
+				'id_member' => $row['id_member'],
+				'id_folder' => $avatar_attach_folder,
+			);
+		}
+
+		copy_file($source, $destination);
+
+		return $return;
+	}
+
 	protected function specialMembers($row)
 	{
 		// Let's ensure there are no illegal characters.
