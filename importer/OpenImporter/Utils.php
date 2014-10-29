@@ -36,17 +36,30 @@ function pastTime($substep = null, $stop_time = 5)
 /**
  * helper function, simple file copy at all
  *
- * @param string $filename
+ * @param string $source
+ * @param string $destination
  * @return boolean
  */
 function copy_file($source, $destination)
 {
+	create_folders_recursive(dirname($destination));
+
 	if (is_file($source))
 	{
 		copy($source, $destination);
 		return false;
 	}
 	return true;
+}
+
+function create_folders_recursive($path)
+{
+	$parent = dirname($path);
+
+	if (!file_exists($parent))
+		create_folders_recursive($parent);
+
+	@mkdir($path, 0755);
 }
 
 /**
@@ -98,21 +111,23 @@ function copy_dir($source, $dest)
 {
 	if (!is_dir($source) || !($dir = opendir($source)))
 		return;
-		while ($file = readdir($dir))
+
+	while ($file = readdir($dir))
 	{
 		if ($file == '.' || $file == '..')
 			continue;
+
 			// If we have a directory create it on the destination and copy contents into it!
 		if (is_dir($source . DIRECTORY_SEPARATOR. $file))
 		{
 			if (!is_dir($dest))
-				@mkdir($dest, 0777);
+				@mkdir($dest, 0755);
 			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
 		}
 		else
 		{
 			if (!is_dir($dest))
-				@mkdir($dest, 0777);
+				@mkdir($dest, 0755);
 			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
 		}
 	}

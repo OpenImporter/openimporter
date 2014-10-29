@@ -321,7 +321,7 @@
 					SELECT value
 					FROM {$to_prefix}settings
 					WHERE variable='smileys_dir';");
-				list ($we_smileys_dir) = $db->fetch_row($request);
+				list ($smileys_dir) = $db->fetch_row($request);
 
 				$request = $db->query("
 					SELECT value
@@ -329,7 +329,7 @@
 					WHERE variable='smileys_dir';");
 				list ($smf_smileys_dir) = $db->fetch_row($request);
 
-				copy_smileys($smf_smileys_dir, $we_smileys_dir);
+				copy_smileys($smf_smileys_dir, $smileys_dir);
 			</code>
 		</step>
 		

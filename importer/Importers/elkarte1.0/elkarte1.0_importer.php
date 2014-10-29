@@ -346,6 +346,7 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 			SELECT id_group
 			FROM {$to_prefix}membergroups
 			WHERE min_posts = -1");
+
 		$all_groups = array();
 		while ($row = $this->db->fetch_assoc($request))
 			$all_groups[] = $row['id_group'];
@@ -355,12 +356,15 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 			SELECT id_board, member_groups
 			FROM {$to_prefix}boards
 			WHERE FIND_IN_SET(0, member_groups)");
+
 		while ($row = $this->db->fetch_assoc($request))
+		{
 			$this->db->query("
 				UPDATE {$to_prefix}boards
 				SET member_groups = '" . implode(',', array_unique(array_merge($all_groups, explode(',', $row['member_groups'])))) . "'
 				WHERE id_board = $row[id_board]
 				LIMIT 1");
+		}
 		$this->db->free_result($request);
 	}
 
@@ -867,27 +871,5 @@ function createAttachmentFilehash($filename)
  */
 function copy_smileys($source, $dest)
 {
-	if (!is_dir($source) || !($dir = opendir($source)))
-		return;
-
-	while ($file = readdir($dir))
-	{
-		if ($file == '.' || $file == '..')
-			continue;
-
-		// If we have a directory create it on the destination and copy contents into it!
-		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
-		{
-			if (!is_dir($dest))
-				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
-			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-		}
-		else
-		{
-			if (!is_dir($dest))
-				@mkdir($dest . DIRECTORY_SEPARATOR . $file, 0777);
-			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-		}
-	}
-	closedir($dir);
+	copy_dir($source, $dest);
 }
