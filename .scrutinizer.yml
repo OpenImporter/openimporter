@@ -47,7 +47,7 @@ build:
     tests:
         override:
             -
-                command: 'phpunit --coverage-clover=some-file --bootstrap bootstrap.php importer/OpenImporter/Tests/'
+                command: 'phpunit --coverage-clover=some-file --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/'
                 coverage:
                     file: 'some-file'
                     format: 'php-clover'

@@ -4,4 +4,4 @@ php:
   - 5.4
   - 5.3
 
-script: phpunit --bootstrap bootstrap.php importer/OpenImporter/Tests/
+script: phpunit --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/
