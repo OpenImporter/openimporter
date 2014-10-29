@@ -256,7 +256,7 @@
 					list ($smf_attachments_dir) = $this->db->fetch_row($request);
 				}
 
-				$avatarUploadDir = $this->step1_importer->getAvatarDir();
+				$avatarUploadDir = $this->step1_importer->getAvatarDir($row);
 				if ($avatarUploadDir == $this->step1_importer->getAttachDir($row))
 					$row['attachment_type'] = 0;
 

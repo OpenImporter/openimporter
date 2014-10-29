@@ -176,9 +176,12 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 			return $this->attachmentUploadDirs[1];
 	}
 
-	public function getAvatarDir()
+	public function getAvatarDir($row)
 	{
-		return $this->avatarUploadDir;
+		if ($this->avatarUploadDir === null)
+			return $this->getAttachDir($row);
+		else
+			return $this->avatarUploadDir;
 	}
 
 	protected function specialMembers($row)
@@ -226,7 +229,7 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 			$this->db->free_result($result);
 
 			if (empty($this->avatarUploadDir))
-				$this->avatarUploadDir = $this->attachmentUploadDir;
+				$this->avatarUploadDir = null;
 
 			if (empty($this->id_attach))
 				$this->id_attach = 1;

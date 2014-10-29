@@ -313,7 +313,7 @@
 				$source = $this->path_from . strtok(ltrim($row['filename'], '.'), '?');
 				$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
 				$file_hash = createAttachmentFileHash($filename);
-				$destination = $this->step1_importer->getAvatarDir() . '/' . $id_attach . '_' . $file_hash . '.elk';
+				$destination = $this->step1_importer->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 
 				copy_file($source, $destination);
 
