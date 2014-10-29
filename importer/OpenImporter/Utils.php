@@ -248,20 +248,55 @@ function fix_charset($text)
 		$buf = mb_decode_numericentity($buf, array(0x80, 0x2ffff, 0, 0xffff), 'UTF-8');
 	else
 	{
-		// Take care of html entities..
-		$entity_replace = create_function('$num', '
-			return $num < 0x20 || $num > 0x10FFFF || ($num >= 0xD800 && $num <= 0xDFFF) ? \'\' :
-				  ($num < 0x80 ? \'&#\' . $num . \';\' : ($num < 0x800 ? chr(192 | $num >> 6) . chr(128 | $num & 63) :
-				  ($num < 0x10000 ? chr(224 | $num >> 12) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63) :
-				  chr(240 | $num >> 18) . chr(128 | $num >> 12 & 63) . chr(128 | $num >> 6 & 63) . chr(128 | $num & 63))));');
-
-		// @todo use preg_replace_callback
-		$buf = preg_replace('~(&#(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(\\2)', $buf);
-		$buf = preg_replace('~(&#x(\d{1,7}|x[0-9a-fA-F]{1,6});)~e', '$entity_replace(0x\\2)', $buf);
+		preg_replace_callback('~(&#(\d{1,7}|x[0-9a-fA-F]{1,6});)~', 'replaceEntities__callback', $buf);
 	}
 
 	// surprise, surprise... the string
 	return $buf;
+}
+
+/**
+ * Decode numeric html entities to their UTF8 equivalent character.
+ *
+ * What it does:
+ * - Callback function for preg_replace_callback in subs-members
+ * - Uses capture group 2 in the supplied array
+ * - Does basic scan to ensure characters are inside a valid range
+ *
+ * @param mixed[] $matches matches from a preg_match_all
+ * @return string $string
+ */
+function replaceEntities__callback($matches)
+{
+	if (!isset($matches[2]))
+		return '';
+
+	$num = $matches[2][0] === 'x' ? hexdec(substr($matches[2], 1)) : (int) $matches[2];
+
+	// remove left to right / right to left overrides
+	if ($num === 0x202D || $num === 0x202E)
+		return '';
+
+	// Quote, Ampersand, Apostrophe, Less/Greater Than get html replaced
+	if (in_array($num, array(0x22, 0x26, 0x27, 0x3C, 0x3E)))
+		return '&#' . $num . ';';
+
+	// <0x20 are control characters, 0x20 is a space, > 0x10FFFF is past the end of the utf8 character set
+	// 0xD800 >= $num <= 0xDFFF are surrogate markers (not valid for utf8 text)
+	if ($num < 0x20 || $num > 0x10FFFF || ($num >= 0xD800 && $num <= 0xDFFF))
+		return '';
+	// <0x80 (or less than 128) are standard ascii characters a-z A-Z 0-9 and puncuation
+	elseif ($num < 0x80)
+		return chr($num);
+	// <0x800 (2048)
+	elseif ($num < 0x800)
+		return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+	// < 0x10000 (65536)
+	elseif ($num < 0x10000)
+		return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+	// <= 0x10FFFF (1114111)
+	else
+		return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
 }
 
 /**
