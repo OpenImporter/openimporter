@@ -27,16 +27,22 @@ class XmlProcessor
 	protected $db;
 
 	/**
-	 * The table prefix for our destination database
+	 * The table prefix for our destination database.
 	 * @var string
 	 */
 	public $to_prefix;
 
 	/**
-	 * The table prefix for our source database
+	 * The table prefix for our source database.
 	 * @var string
 	 */
 	public $from_prefix;
+
+	/**
+	 * The path to the source script.
+	 * @var string
+	 */
+	public $path_from;
 
 	/**
 	 * The template
@@ -60,13 +66,14 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $to_prefix, $from_prefix, $template, $xml)
+	public function __construct($db, $to_prefix, $from_prefix, $template, $xml, $path_from)
 	{
 		$this->db = $db;
 		$this->to_prefix = $to_prefix;
 		$this->from_prefix = $from_prefix;
 		$this->template = $template;
 		$this->xml = $xml;
+		$this->path_from = $path_from;
 	}
 
 	public function setImporter($step1_importer)

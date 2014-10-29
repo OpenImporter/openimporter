@@ -253,7 +253,7 @@
 					list ($mybb_attachment_dir) = $db->fetch_row($result);
 					$db->free_result($result);
 
-					$mybb_attachment_dir = $_POST['path_from'] . ltrim($mybb_attachment_dir, '.');
+					$mybb_attachment_dir = $this->path_from . ltrim($mybb_attachment_dir, '.');
 				}
 
 				//create some useful shortcuts, we start with images..
@@ -263,7 +263,7 @@
 
 				$source = $mybb_attachment_dir . '/' . $row['attachname'];
 				$file_hash = createAttachmentFileHash($row['filename']);
-				$destination = $attachmentUploadDir . '/' . $id_attach . '_' . $file_hash . '.elk';
+				$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 				$width = 0;
 				$height = 0;
 
@@ -310,10 +310,10 @@
 				$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
 
 				//create some useful shortcuts
-				$source = $_POST['path_from'] . strtok(ltrim($row['filename'], '.'), '?');
+				$source = $this->path_from . strtok(ltrim($row['filename'], '.'), '?');
 				$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
 				$file_hash = createAttachmentFileHash($filename);
-				$destination = $attachmentUploadDir . '/' . $id_attach . '_' . $file_hash . '.elk';
+				$destination = $this->step1_importer->getAvatarDir() . '/' . $id_attach . '_' . $file_hash . '.elk';
 
 				copy_file($source, $destination);
 

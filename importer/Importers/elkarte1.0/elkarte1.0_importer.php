@@ -137,35 +137,34 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 
 		$this->specialAttachments();
 
-		$result = $this->db->query("
-			SELECT value
-			FROM {$to_prefix}settings
-			WHERE variable = 'attachmentUploadDir'
-			LIMIT 1");
-		list ($this->attachmentUploadDir) = $this->db->fetch_row($result);
-		$this->db->free_result($result);
-
 		// !!! This should probably be done in chunks too.
+		// attachment_type = 1 are avatars.
 		$result = $this->db->query("
-			SELECT id_attach, filename
-			FROM {$to_prefix}attachments");
+			SELECT id_attach, filename, id_folder
+			FROM {$to_prefix}attachments
+			WHERE attachment_type != 1");
+
 		while ($row = $this->db->fetch_assoc($result))
 		{
 			// We're duplicating this from below because it's slightly different for getting current ones.
 			$clean_name = strtr($row['filename'], 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
 			$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+
 			$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
 			$enc_name = $row['id_attach'] . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
 			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
 
-			if (file_exists($this->attachmentUploadDir . '/' . $enc_name))
-				$filename = $this->attachmentUploadDir . '/' . $enc_name;
+			$attach_dir = $this->getAttachDir($row);
+
+			if (file_exists($attach_dir . '/' . $enc_name))
+				$filename = $attach_dir . '/' . $enc_name;
 			else
-				$filename = $this->attachmentUploadDir . '/' . $clean_name;
+				$filename = $attach_dir . '/' . $clean_name;
 
 			if (is_file($filename))
-				unlink($filename);
+				@unlink($filename);
 		}
+
 		$this->db->free_result($result);
 	}
 
@@ -826,9 +825,11 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
 		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
 		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+
 			// Get rid of dots, spaces, and other weird characters.
 		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+
+		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
 	}
 }
 
