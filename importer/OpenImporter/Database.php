@@ -195,4 +195,125 @@ class Database
 	{
 		return mysqli_insert_id($this->con);
 	}
+
+	/**
+	 * Add an index.
+	 *
+	 * @param string $table_name
+	 * @param mixed[] $index_info
+	 * @param mixed[] $parameters default array()
+	 * @param string $if_exists default 'update'
+	 * @param string $error default 'fatal'
+	 */
+	public function add_index($table_name, $index_info)
+	{
+		// No columns = no index.
+		if (empty($index_info['columns']))
+			return false;
+		$columns = implode(',', $index_info['columns']);
+
+		// No name - make it up!
+		if (empty($index_info['name']))
+		{
+			// No need for primary.
+			if (isset($index_info['type']) && $index_info['type'] == 'primary')
+				$index_info['name'] = '';
+			else
+				$index_info['name'] = implode('_', $index_info['columns']);
+		}
+		else
+			$index_info['name'] = $index_info['name'];
+
+		// Let's get all our indexes.
+		$indexes = $this->list_indexes($table_name, true);
+
+		// Do we already have it?
+		foreach ($indexes as $index)
+		{
+			if ($index['name'] == $index_info['name'] || ($index['type'] == 'primary' && isset($index_info['type']) && $index_info['type'] == 'primary'))
+			{
+				return false;
+			}
+		}
+
+		// If we're here we know we don't have the index - so just add it.
+		if (!empty($index_info['type']) && $index_info['type'] == 'primary')
+		{
+			$this->query('', '
+				ALTER TABLE ' . $table_name . '
+				ADD PRIMARY KEY (' . $columns . ')',
+				array(
+					'security_override' => true,
+				)
+			);
+		}
+		else
+		{
+			if (!isset($index_info['type'] || !in_array($index_info['type'], array('unique', 'index', 'key'))))
+				$type = 'INDEX';
+			else
+				$type = strtoupper($index_info['type']);
+
+			$this->query('', '
+				ALTER TABLE ' . $table_name . '
+				ADD ' . $type . ' ' . $index_info['name'] . ' (' . $columns . ')',
+				array(
+					'security_override' => true,
+				)
+			);
+		}
+	}
+	/**
+	 * Get index information.
+	 *
+	 * @param string $table_name
+	 * @param bool $detail
+	 * @param mixed[] $parameters
+	 * @return mixed
+	 */
+	public function list_indexes($table_name, $detail = false, $parameters = array())
+	{
+		$result = $this->query('', "
+			SHOW KEYS
+			FROM {$table_name}");
+
+		$indexes = array();
+		while ($row = $this->fetch_assoc($result))
+		{
+			if (!$detail)
+				$indexes[] = $row['Key_name'];
+			else
+			{
+				// What is the type?
+				if ($row['Key_name'] == 'PRIMARY')
+					$type = 'primary';
+				elseif (empty($row['Non_unique']))
+					$type = 'unique';
+				elseif (isset($row['Index_type']) && $row['Index_type'] == 'FULLTEXT')
+					$type = 'fulltext';
+				else
+					$type = 'index';
+
+				// This is the first column we've seen?
+				if (empty($indexes[$row['Key_name']]))
+				{
+					$indexes[$row['Key_name']] = array(
+						'name' => $row['Key_name'],
+						'type' => $type,
+						'columns' => array(),
+					);
+				}
+
+				// Is it a partial index?
+				if (!empty($row['Sub_part']))
+					$indexes[$row['Key_name']]['columns'][] = $row['Column_name'] . '(' . $row['Sub_part'] . ')';
+				else
+					$indexes[$row['Key_name']]['columns'][] = $row['Column_name'];
+			}
+		}
+		$this->free_result($result);
+
+		return $indexes;
+	}
+
 }
