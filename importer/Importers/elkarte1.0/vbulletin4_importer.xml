@@ -5,293 +5,291 @@
 		<version>ElkArte 1.0</version>
 		<className>vBulletin_4</className>
 	</general>
-	<steps1>
+	<step type="mandatory">
 		<title>Importing Members</title>
-		<step type="mandatory">
-			<detect>{$from_prefix}user</detect>
-			<destination>{$to_prefix}members</destination>
-			<presql>
-				TRUNCATE {$to_prefix}members;
-			</presql>
-			<preparsecode>
-				$row['signature'] = vb4_replace_bbc($row['signature']);
-			</preparsecode>
-			<query>
-				SELECT
-					u.userid AS id_member, SUBSTRING(u.username, 1, 80) AS member_name,
-					SUBSTRING(u.username, 1, 255) AS real_name,
-					SUBSTRING(u.password, 1, 64) AS passwd,
-					SUBSTRING(u.email, 1, 255) AS email_address,
-					SUBSTRING(u.homepage, 1, 255) AS website_title,
-					SUBSTRING(u.homepage, 1, 255) AS website_url,
-					SUBSTRING(IF(u.customtitle, u.usertitle, ''), 1, 255) AS usertitle,
-					u.lastvisit AS last_login, u.joindate AS date_registered, u.posts,
-					u.birthday_search AS birthdate,
-					SUBSTRING(u.ipaddress, 1, 255) AS member_ip,
-					SUBSTRING(u.ipaddress, 1, 255) AS member_ip2,
-					CASE
-						WHEN u.usergroupid = 6 THEN 1
-						WHEN u.usergroupid = 5 THEN 2
-						WHEN u.usergroupid = 7 THEN 2
-						ELSE 0
-					END AS id_group,
-					CASE WHEN u.usergroupid IN (3, 4) THEN 0 ELSE 1 END AS is_activated,
-					SUBSTRING(u.salt, 1, 5) AS password_salt,
-					SUBSTRING(ut.signature, 1, 65534) AS signature, '' AS lngfile,
-					'' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
-					'' AS personal_text, '' AS time_format, '' AS avatar, '' AS secret_question,
-					'' AS secret_answer, '' AS validation_code, '' AS additional_groups,
-					'' AS smiley_set, salt AS password_salt, '' AS ignore_boards
-				FROM {$from_prefix}user AS u
-					LEFT JOIN {$from_prefix}usertextfield AS ut ON (ut.userid = u.userid)
-				WHERE u.userid != 0;
-			</query>
-		</step>
-		<step>
-			<title>Importing Categories</title>
-			<detect>{$from_prefix}forum</detect>
-			<destination>{$to_prefix}categories</destination>
-			<presql>
-				TRUNCATE {$to_prefix}categories;
-				ALTER TABLE {$to_prefix}categories
-					CHANGE COLUM id_cat id_cat SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
-					CHANGE COLUMN cat_order cat_order SMALLINT(5) NOT NULL
-			</presql>
-			<query>
-				SELECT
-					forumid AS id_cat, SUBSTRING(title, 1, 255) AS name,
-					displayorder AS cat_order, 0 AS can_collapse
+		<detect>{$from_prefix}user</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			TRUNCATE {$to_prefix}members;
+		</presql>
+		<preparsecode>
+			$row['signature'] = vb4_replace_bbc($row['signature']);
+		</preparsecode>
+		<query>
+			SELECT
+				u.userid AS id_member, SUBSTRING(u.username, 1, 80) AS member_name,
+				SUBSTRING(u.username, 1, 255) AS real_name,
+				SUBSTRING(u.password, 1, 64) AS passwd,
+				SUBSTRING(u.email, 1, 255) AS email_address,
+				SUBSTRING(u.homepage, 1, 255) AS website_title,
+				SUBSTRING(u.homepage, 1, 255) AS website_url,
+				SUBSTRING(IF(u.customtitle, u.usertitle, ''), 1, 255) AS usertitle,
+				u.lastvisit AS last_login, u.joindate AS date_registered, u.posts,
+				u.birthday_search AS birthdate,
+				SUBSTRING(u.ipaddress, 1, 255) AS member_ip,
+				SUBSTRING(u.ipaddress, 1, 255) AS member_ip2,
+				CASE
+					WHEN u.usergroupid = 6 THEN 1
+					WHEN u.usergroupid = 5 THEN 2
+					WHEN u.usergroupid = 7 THEN 2
+					ELSE 0
+				END AS id_group,
+				CASE WHEN u.usergroupid IN (3, 4) THEN 0 ELSE 1 END AS is_activated,
+				SUBSTRING(u.salt, 1, 5) AS password_salt,
+				SUBSTRING(ut.signature, 1, 65534) AS signature, '' AS lngfile,
+				'' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
+				'' AS personal_text, '' AS time_format, '' AS avatar, '' AS secret_question,
+				'' AS secret_answer, '' AS validation_code, '' AS additional_groups,
+				'' AS smiley_set, salt AS password_salt, '' AS ignore_boards
+			FROM {$from_prefix}user AS u
+				LEFT JOIN {$from_prefix}usertextfield AS ut ON (ut.userid = u.userid)
+			WHERE u.userid != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}forum</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>
+			TRUNCATE {$to_prefix}categories;
+			ALTER TABLE {$to_prefix}categories
+				CHANGE COLUM id_cat id_cat SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+				CHANGE COLUMN cat_order cat_order SMALLINT(5) NOT NULL
+		</presql>
+		<query>
+			SELECT
+				forumid AS id_cat, SUBSTRING(title, 1, 255) AS name,
+				displayorder AS cat_order, 0 AS can_collapse
+			FROM {$from_prefix}forum
+			WHERE parentid = -1
+			ORDER BY cat_order;
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}forum</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+			ALTER TABLE {$to_prefix}boards
+				CHANGE COLUMN id_cat id_cat SMALLINT(5) NOT NULL;
+		</presql>
+		<query>
+			SELECT
+				forumid AS id_board, 1 AS id_cat, SUBSTRING(title, 1, 255) AS name,
+				SUBSTRING(description, 1, 65534) AS description,
+				displayorder AS board_order, replycount AS num_posts,
+				threadcount AS num_topics, parentid AS id_parent, '-1,0' AS member_groups
+			FROM {$from_prefix}forum
+			WHERE parentid != -1;
+		</query>
+	</step>
+	<step>
+		<title>Assgining Boards to Categories</title>
+		<detect>{$from_prefix}forum</detect>
+		<code>
+			$request = $db->query("
+				SELECT forumid AS id_cat
 				FROM {$from_prefix}forum
-				WHERE parentid = -1
-				ORDER BY cat_order;
-			</query>
-		</step>
-		<step>
-			<title>Importing Boards</title>
-			<detect>{$from_prefix}forum</detect>
-			<destination>{$to_prefix}boards</destination>
-			<presql>
-				TRUNCATE {$to_prefix}boards;
-				DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
-				ALTER TABLE {$to_prefix}boards
-					CHANGE COLUMN id_cat id_cat SMALLINT(5) NOT NULL;
-			</presql>
-			<query>
-				SELECT
-					forumid AS id_board, 1 AS id_cat, SUBSTRING(title, 1, 255) AS name,
-					SUBSTRING(description, 1, 65534) AS description,
-					displayorder AS board_order, replycount AS num_posts,
-					threadcount AS num_topics, parentid AS id_parent, '-1,0' AS member_groups
+				WHERE parentid = '-1'");
+
+			$cats = array();
+			while ($row = $db->fetch_assoc($request))
+				$cats[$row['id_cat']] = $row['id_cat'];
+			$db->free_result($request);
+
+			// Get the boards now
+			$request = $db->query("
+				SELECT forumid AS id_board, parentid AS id_cat
 				FROM {$from_prefix}forum
-				WHERE parentid != -1;
-			</query>
-		</step>
-		<step>
-			<title>Assgining Boards to Categories</title>
-			<detect>{$from_prefix}forum</detect>
-			<code>
-				$request = $db->query("
-					SELECT forumid AS id_cat
-					FROM {$from_prefix}forum
-					WHERE parentid = '-1'");
+				WHERE parentid != '-1'");
 
-				$cats = array();
-				while ($row = $db->fetch_assoc($request))
-					$cats[$row['id_cat']] = $row['id_cat'];
-				$db->free_result($request);
-
-				// Get the boards now
-				$request = $db->query("
-					SELECT forumid AS id_board, parentid AS id_cat
-					FROM {$from_prefix}forum
-					WHERE parentid != '-1'");
-
-				while ($row = $db->fetch_assoc($request))
+			while ($row = $db->fetch_assoc($request))
+			{
+				foreach ($cats as $key => $value)
 				{
-					foreach ($cats as $key => $value)
-					{
-						if ($key == $row['id_cat'])	
-							$db->query("
-								UPDATE {$to_prefix}boards
-								SET id_cat = '$key'
-								WHERE id_board = '$row[id_board]'");
-					}
+					if ($key == $row['id_cat'])	
+						$db->query("
+							UPDATE {$to_prefix}boards
+							SET id_cat = '$key'
+							WHERE id_board = '$row[id_board]'");
 				}
-				$db->free_result($request);
+			}
+			$db->free_result($request);
 
-				// id_parent is 0 when the id_cat and id_parent are equal.
-				$db->query("
-					UPDATE {$to_prefix}boards
-					SET id_parent = 0
-					WHERE id_parent = id_cat");
-			</code>
-		</step>
-		<step>
-			<title>Importing Topics</title>
-			<detect>{$from_prefix}thread</detect>
-			<destination>{$to_prefix}topics</destination>
-			<presql>
-				TRUNCATE {$to_prefix}topics;
-				TRUNCATE {$to_prefix}log_topics;
-				TRUNCATE {$to_prefix}log_boards;
-				TRUNCATE {$to_prefix}log_mark_read;
-			</presql>
-			<query>
-				SELECT
-					t.threadid AS id_topic, t.forumid AS id_board, t.sticky AS is_sticky,
-					t.pollid AS id_poll, t.views AS num_views, t.postuserid AS id_member_started,
-					CASE WHEN (ISNULL(ul.userid) OR TRIM(ul.userid) = '') THEN 0 ELSE ul.userid END AS id_member_updated,
-					t.replycount AS num_replies,
-					IF(t.open, 0, 1) AS locked, MIN(p.postid) AS id_first_msg,
-					MAX(p.postid) AS id_last_msg
-				FROM {$from_prefix}thread AS t
-					INNER JOIN {$from_prefix}post AS p ON (p.threadid = t.threadid)
-					LEFT JOIN {$from_prefix}user AS ul ON (ul.username = t.lastposter)
-				GROUP BY t.threadid
-				HAVING id_first_msg != 0
-					AND id_last_msg != 0;
-			</query>
-		</step>
-		<step>
-			<title>Importing Messages</title>
-			<detect> {$from_prefix}post</detect>
-			<destination>{$to_prefix}messages</destination>
-			<presql>TRUNCATE {$to_prefix}messages;</presql>
-			<options>
-				<ignore>true</ignore>
-				<slashes>true</slashes>
-				<limit>100</limit>
-			</options>
-			<preparsecode>
-				$row['body'] = vb4_replace_bbc($row['body']);
-			</preparsecode>
-			<query>
-				SELECT
-					p.postid AS id_msg, p.threadid AS id_topic, p.dateline AS poster_time,
-					p.userid AS id_member,
-					SUBSTRING(IF(p.title = '', t.title, p.title), 1, 255) AS subject,
-					SUBSTRING(p.username, 1, 255) AS poster_name,
-					p.ipaddress AS poster_ip, t.forumid AS id_board,
-					p.allowsmilie AS smileys_enabled,
-					p.pagetext AS body, '' AS poster_email,
-					'' AS modified_name, 'xx' AS icon
-				FROM {$from_prefix}post AS p
-					INNER JOIN {$from_prefix}thread AS t ON t.threadid = p.threadid;
-			</query>
-		</step>
-		<step>
-			<title>Importing polls</title>
-			<detect>{$from_prefix}poll</detect>
-			<destination>{$to_prefix}polls</destination>
-			<presql>
-				TRUNCATE {$to_prefix}polls;
-				TRUNCATE {$to_prefix}poll_choices;
-				TRUNCATE {$to_prefix}log_polls;
-			</presql>
-			<options>
-				<ignore>true</ignore>
-			</options>
-			<query>
-				SELECT
-					p.pollid AS id_poll, SUBSTRING(p.question, 1, 255) AS question,
-					IF(p.active = 0, 1, 0) AS voting_locked, p.multiple AS max_votes,
-					SUBSTRING(IFNULL(t.postusername, 'Guest'), 1, 255) AS poster_name,
-					IF(p.timeout = 0, 0, p.dateline + p.timeout * 86400) AS expire_time,
-					CASE WHEN (ISNULL(t.postuserid) OR TRIM(t.postuserid) = '') THEN 0 ELSE t.postuserid END AS id_member
-				FROM {$from_prefix}poll AS p
-					LEFT JOIN {$from_prefix}thread AS t ON (t.pollid = p.pollid);
-			</query>
-		</step>
-		<step>
-			<title>Importing poll choices</title>
-			<detect>{$from_prefix}poll</detect>
-			<destination>{$to_prefix}poll_choices</destination>
-			<options>
-				<no_add>true</no_add>
-			</options>
-			<preparsecode><![CDATA[
-				$keys = array('id_poll', 'id_choice', 'label', 'votes');
+			// id_parent is 0 when the id_cat and id_parent are equal.
+			$db->query("
+				UPDATE {$to_prefix}boards
+				SET id_parent = 0
+				WHERE id_parent = id_cat");
+		</code>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}thread</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<query>
+			SELECT
+				t.threadid AS id_topic, t.forumid AS id_board, t.sticky AS is_sticky,
+				t.pollid AS id_poll, t.views AS num_views, t.postuserid AS id_member_started,
+				CASE WHEN (ISNULL(ul.userid) OR TRIM(ul.userid) = '') THEN 0 ELSE ul.userid END AS id_member_updated,
+				t.replycount AS num_replies,
+				IF(t.open, 0, 1) AS locked, MIN(p.postid) AS id_first_msg,
+				MAX(p.postid) AS id_last_msg
+			FROM {$from_prefix}thread AS t
+				INNER JOIN {$from_prefix}post AS p ON (p.threadid = t.threadid)
+				LEFT JOIN {$from_prefix}user AS ul ON (ul.username = t.lastposter)
+			GROUP BY t.threadid
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}post</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<ignore>true</ignore>
+			<slashes>true</slashes>
+			<limit>100</limit>
+		</options>
+		<preparsecode>
+			$row['body'] = vb4_replace_bbc($row['body']);
+		</preparsecode>
+		<query>
+			SELECT
+				p.postid AS id_msg, p.threadid AS id_topic, p.dateline AS poster_time,
+				p.userid AS id_member,
+				SUBSTRING(IF(p.title = '', t.title, p.title), 1, 255) AS subject,
+				SUBSTRING(p.username, 1, 255) AS poster_name,
+				p.ipaddress AS poster_ip, t.forumid AS id_board,
+				p.allowsmilie AS smileys_enabled,
+				p.pagetext AS body, '' AS poster_email,
+				'' AS modified_name, 'xx' AS icon
+			FROM {$from_prefix}post AS p
+				INNER JOIN {$from_prefix}thread AS t ON t.threadid = p.threadid;
+		</query>
+	</step>
+	<step>
+		<title>Importing polls</title>
+		<detect>{$from_prefix}poll</detect>
+		<destination>{$to_prefix}polls</destination>
+		<presql>
+			TRUNCATE {$to_prefix}polls;
+			TRUNCATE {$to_prefix}poll_choices;
+			TRUNCATE {$to_prefix}log_polls;
+		</presql>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT
+				p.pollid AS id_poll, SUBSTRING(p.question, 1, 255) AS question,
+				IF(p.active = 0, 1, 0) AS voting_locked, p.multiple AS max_votes,
+				SUBSTRING(IFNULL(t.postusername, 'Guest'), 1, 255) AS poster_name,
+				IF(p.timeout = 0, 0, p.dateline + p.timeout * 86400) AS expire_time,
+				CASE WHEN (ISNULL(t.postuserid) OR TRIM(t.postuserid) = '') THEN 0 ELSE t.postuserid END AS id_member
+			FROM {$from_prefix}poll AS p
+				LEFT JOIN {$from_prefix}thread AS t ON (t.pollid = p.pollid);
+		</query>
+	</step>
+	<step>
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}poll</detect>
+		<destination>{$to_prefix}poll_choices</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode><![CDATA[
+			$keys = array('id_poll', 'id_choice', 'label', 'votes');
 
-				$options = explode('|||', $row['options']);
-				$votes = explode('|||', $row['votes']);
+			$options = explode('|||', $row['options']);
+			$votes = explode('|||', $row['votes']);
 
-				$id_poll = $row['id_poll'];
-				for ($i = 0, $n = count($options); $i < $n; $i++)
-				{
-					$rows[] = array(
-						'id_poll' => $id_poll,
-						'id_choice' => ($i + 1),
-						'label' => substr(addslashes($options[$i]), 1, 255),
-						'votes' => (is_numeric($votes[$i]) ? $votes[$i] : 0),
-					);
-				}
-			]]></preparsecode>
-			<query>
-				SELECT pollid AS id_poll, options, votes
-				FROM {$from_prefix}poll;
-			</query>
-		</step>
-		<step>
-			<title>Importing poll votes</title>
-			<detect>{$from_prefix}pollvote</detect>
-			<destination>{$to_prefix}log_polls</destination>
-			<query>
-				SELECT pollid AS id_poll, IFNULL(userid, 0) AS id_member, voteoption AS id_choice
-				FROM {$from_prefix}pollvote;
-			</query>
-		</step>
-		<step>
-			<title>Importing personal messages</title>
-			<detect>{$from_prefix}pm</detect>
-			<destination>{$to_prefix}personal_messages</destination>
-			<presql>
-				TRUNCATE {$to_prefix}personal_messages;
-				TRUNCATE {$to_prefix}pm_recipients;
-			</presql>
-			<preparsecode>
-				$row['body'] = vb4_replace_bbc($row['body']);
-			</preparsecode>
-			<query>
-				SELECT
-					pm.pmid AS id_pm, pmt.fromuserid AS id_member_from, pmt.dateline AS msgtime,
-					SUBSTRING(pmt.fromusername, 1, 255) AS from_name,
-					SUBSTRING(pmt.title, 1, 255) AS subject,
-					pmt.message AS body
-				FROM {$from_prefix}pm AS pm
-					INNER JOIN {$from_prefix}pmtext AS pmt
-				WHERE pmt.pmtextid = pm.pmtextid
-					AND pm.folderid != -1;
-			</query>
-		</step>
-		<step>
-			<title>Importing pm recipients</title>
-			<detect>{$from_prefix}pm</detect>
-			<destination>{$to_prefix}pm_recipients</destination>
-			<query>
-				SELECT pmid AS id_pm, userid AS id_member, messageread != 0 AS is_read, '-1' AS labels
-				FROM {$from_prefix}pm;
-			</query>
-		</step>
-		<step>
-			<title>Importing topic notifications</title>
-			<detect>{$from_prefix}subscribethread</detect>
-			<destination>{$to_prefix}log_notify</destination>
-			<presql>
-				TRUNCATE {$to_prefix}log_notify;
-			</presql>
-			<query>
-				SELECT userid AS id_member, threadid AS id_topic
-				FROM {$from_prefix}subscribethread;
-			</query>
-		</step>
-		<step>
-			<title>Importing board notifications</title>
-			<detect>{$from_prefix}subscribeforum</detect>
-			<destination>{$to_prefix}log_notify</destination>
-			<query>
-				SELECT userid AS id_member, forumid AS id_board
-				FROM {$from_prefix}subscribeforum;
-			</query>
-		</step>
-	</steps1>
+			$id_poll = $row['id_poll'];
+			for ($i = 0, $n = count($options); $i < $n; $i++)
+			{
+				$rows[] = array(
+					'id_poll' => $id_poll,
+					'id_choice' => ($i + 1),
+					'label' => substr(addslashes($options[$i]), 1, 255),
+					'votes' => (is_numeric($votes[$i]) ? $votes[$i] : 0),
+				);
+			}
+		]]></preparsecode>
+		<query>
+			SELECT pollid AS id_poll, options, votes
+			FROM {$from_prefix}poll;
+		</query>
+	</step>
+	<step>
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}pollvote</detect>
+		<destination>{$to_prefix}log_polls</destination>
+		<query>
+			SELECT pollid AS id_poll, IFNULL(userid, 0) AS id_member, voteoption AS id_choice
+			FROM {$from_prefix}pollvote;
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}pm</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>
+			TRUNCATE {$to_prefix}personal_messages;
+			TRUNCATE {$to_prefix}pm_recipients;
+		</presql>
+		<preparsecode>
+			$row['body'] = vb4_replace_bbc($row['body']);
+		</preparsecode>
+		<query>
+			SELECT
+				pm.pmid AS id_pm, pmt.fromuserid AS id_member_from, pmt.dateline AS msgtime,
+				SUBSTRING(pmt.fromusername, 1, 255) AS from_name,
+				SUBSTRING(pmt.title, 1, 255) AS subject,
+				pmt.message AS body
+			FROM {$from_prefix}pm AS pm
+				INNER JOIN {$from_prefix}pmtext AS pmt
+			WHERE pmt.pmtextid = pm.pmtextid
+				AND pm.folderid != -1;
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}pm</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<query>
+			SELECT pmid AS id_pm, userid AS id_member, messageread != 0 AS is_read, '-1' AS labels
+			FROM {$from_prefix}pm;
+		</query>
+	</step>
+	<step>
+		<title>Importing topic notifications</title>
+		<detect>{$from_prefix}subscribethread</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<presql>
+			TRUNCATE {$to_prefix}log_notify;
+		</presql>
+		<query>
+			SELECT userid AS id_member, threadid AS id_topic
+			FROM {$from_prefix}subscribethread;
+		</query>
+	</step>
+	<step>
+		<title>Importing board notifications</title>
+		<detect>{$from_prefix}subscribeforum</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<query>
+			SELECT userid AS id_member, forumid AS id_board
+			FROM {$from_prefix}subscribeforum;
+		</query>
+	</step>
 </importer>

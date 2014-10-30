@@ -9,166 +9,164 @@
 			<field id="2" type="text" size="20" default="xenforo" label="Xenforo database">xf_database</field>
 		</form>
 	</general>
-	<steps1>
-		<step type="mandatory">
-			<title>Importing Members</title>
-			<detect>{$from_prefix}user</detect>
-			<destination>{$to_prefix}members</destination>
-			<preparsecode>
-				$pass = unserialize($row['tmp']);
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}user</detect>
+		<destination>{$to_prefix}members</destination>
+		<preparsecode>
+			$pass = unserialize($row['tmp']);
 
-				if (isset($pass['hash']))
-					$row['passwd'] = $pass['hash'];
-				else
-					$row['passwd'] = sha1(md5(mktime()));
-		
-				if	(isset($pass['salt']))
-					$row['password_salt'] = $pass['salt'];
-				else
-					$row['password_salt'] = '';
-				unset($row['tmp']);
-			</preparsecode>
-			<query>
-				SELECT
-					m.user_id AS id_member, SUBSTRING(m.username, 1, 80) AS member_name,
-					SUBSTRING(m.username, 1, 255) AS real_name,
-					m.message_count AS posts, '' AS passwd, '' AS password_salt,
-					SUBSTRING(m.email, 1, 255) AS email_address,
-					'' AS openid_uri, m.register_date AS date_registered,
-					m.last_activity AS last_login, '' AS ignore_boards,
-					1 AS hide_email, details.homepage AS website_title,
-					details.homepage AS website_url, IF(m.is_admin = 1, 1, 0) AS id_group, 
-					details.location AS location,
-					'' AS lngfile, '' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
-					'' AS personal_text, '' AS time_format, '' AS avatar,
-					'' AS usertitle, '' AS member_ip, '' AS secret_question, '' AS secret_answer,
-					'' AS validation_code, '' AS additional_groups, '' AS smiley_set, '' AS member_ip2,
-					p.data AS tmp, details.signature AS signature
-				FROM {$from_prefix}user AS m
-					INNER JOIN {$from_prefix}user_authenticate AS p ON (m.user_id = p.user_id)
-					LEFT JOIN {$from_prefix}user_profile AS details ON (m.user_id = details.user_id)
-				WHERE m.user_state != 'email_confirm';
-			</query>
-		</step>
-		<step>
-			<title>Importing Categories</title>
-			<detect>{$from_prefix}node WHERE node_type_id = 'Category'</detect>
-			<destination>{$to_prefix}categories</destination>
-			<presql>TRUNCATE {$to_prefix}categories;</presql>
-			<query>
-				SELECT 
-					node_id AS id_cat, SUBSTRING(title, 1, 255) AS name, display_order AS cat_order
-				FROM {$from_prefix}node
-				WHERE node_type_id = 'Category';
-			</query>
-		</step>
-		<step>
-			<title>Importing Boards</title>
-			<detect>{$from_prefix}node WHERE node_type_id = 'Forum'</detect>
-			<destination>{$to_prefix}boards</destination>
-			<options>
-				<slashes>true</slashes>
-			</options>
-			<presql>
-				TRUNCATE {$to_prefix}boards;
-				DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
-			</presql>
-			<preparsecode>
-			$request = $db->query("
-				SELECT 
-					thread_id, last_post_id
-				FROM {$from_prefix}thread
-				WHERE node_id  = $row[id_board]
-				ORDER BY thread_id DESC
-				LIMIT 1");
+			if (isset($pass['hash']))
+				$row['passwd'] = $pass['hash'];
+			else
+				$row['passwd'] = sha1(md5(mktime()));
+	
+			if	(isset($pass['salt']))
+				$row['password_salt'] = $pass['salt'];
+			else
+				$row['password_salt'] = '';
+			unset($row['tmp']);
+		</preparsecode>
+		<query>
+			SELECT
+				m.user_id AS id_member, SUBSTRING(m.username, 1, 80) AS member_name,
+				SUBSTRING(m.username, 1, 255) AS real_name,
+				m.message_count AS posts, '' AS passwd, '' AS password_salt,
+				SUBSTRING(m.email, 1, 255) AS email_address,
+				'' AS openid_uri, m.register_date AS date_registered,
+				m.last_activity AS last_login, '' AS ignore_boards,
+				1 AS hide_email, details.homepage AS website_title,
+				details.homepage AS website_url, IF(m.is_admin = 1, 1, 0) AS id_group, 
+				details.location AS location,
+				'' AS lngfile, '' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
+				'' AS personal_text, '' AS time_format, '' AS avatar,
+				'' AS usertitle, '' AS member_ip, '' AS secret_question, '' AS secret_answer,
+				'' AS validation_code, '' AS additional_groups, '' AS smiley_set, '' AS member_ip2,
+				p.data AS tmp, details.signature AS signature
+			FROM {$from_prefix}user AS m
+				INNER JOIN {$from_prefix}user_authenticate AS p ON (m.user_id = p.user_id)
+				LEFT JOIN {$from_prefix}user_profile AS details ON (m.user_id = details.user_id)
+			WHERE m.user_state != 'email_confirm';
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}node WHERE node_type_id = 'Category'</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT 
+				node_id AS id_cat, SUBSTRING(title, 1, 255) AS name, display_order AS cat_order
+			FROM {$from_prefix}node
+			WHERE node_type_id = 'Category';
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}node WHERE node_type_id = 'Forum'</detect>
+		<destination>{$to_prefix}boards</destination>
+		<options>
+			<slashes>true</slashes>
+		</options>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+		</presql>
+		<preparsecode>
+		$request = $db->query("
+			SELECT 
+				thread_id, last_post_id
+			FROM {$from_prefix}thread
+			WHERE node_id  = $row[id_board]
+			ORDER BY thread_id DESC
+			LIMIT 1");
 
-				list($tmp, $row['id_last_msg']) = $db->fetch_row($request);
-				$db->free_result($request);
-			</preparsecode>
-			<query>
-				SELECT
-					node_id AS id_board, parent_node_id AS id_cat, display_order AS board_order,
-					SUBSTRING(title, 1, 255) AS name,
-					SUBSTRING(description, 1, 65534) AS description, '-1,0' AS member_groups
-				FROM {$from_prefix}node
-				WHERE node_type_id = 'Forum';
-			</query>
-		</step>
-		<step>
-			<title>Importing Topics</title>
-			<detect>{$from_prefix}thread</detect>
-			<destination>{$to_prefix}topics</destination>
-			<presql>
-				TRUNCATE {$to_prefix}topics;
-				TRUNCATE {$to_prefix}log_topics;
-				TRUNCATE {$to_prefix}log_boards;
-				TRUNCATE {$to_prefix}log_mark_read;
-			</presql>
-			<query>
-				SELECT
-					t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky, 
-					IF(t.discussion_open = 1, 0, 1) AS locked, t.last_post_user_id AS id_member_updated,
-					t.view_count AS num_views, t.reply_count AS num_replies, t.user_id AS id_member_started,
-					t.first_post_id id_first_msg, t.last_post_id AS id_last_msg
-				FROM {$from_prefix}thread AS t
-				WHERE t.discussion_state != 'deleted';
-			</query>
-		</step>
-		<step>
-			<title>Importing Messages</title>
-			<detect> {$from_prefix}post</detect>
-			<destination>{$to_prefix}messages</destination>
-			<presql>TRUNCATE {$to_prefix}messages;</presql>
-			<options>
-				<slashes>false</slashes>
-				<ignore>true</ignore>
-				<limit>100</limit>
-			</options>
-			<query>
-				SELECT
-					m.post_id AS id_msg, m.thread_id AS id_topic, m.post_date AS poster_time,
-					SUBSTRING(t.title, 1, 255) AS subject, m.user_id AS id_member,
-					SUBSTRING(m.username, 1, 255) AS poster_name,
-					SUBSTRING(m.username, 1, 255) AS poster_email,
-					SUBSTRING(m.ip_id, 1, 255) AS poster_ip, 0 AS id_board,
-					SUBSTRING(m.message, 1, 65534) AS body, '' AS modified_name, 'xx' AS icon
-				FROM {$from_prefix}post AS m
-					INNER JOIN {$from_prefix}thread AS t ON (m.thread_id = t.thread_id)
-				WHERE t.discussion_state != 'deleted';
-			</query>
-		</step>
-		<step>
-			<title>Importing personal messages</title>
-			<detect>{$from_prefix}conversation_message</detect>
-			<destination>{$to_prefix}personal_messages</destination>
-			<presql>
-				TRUNCATE {$to_prefix}personal_messages;
-				TRUNCATE {$to_prefix}pm_recipients;
-			</presql>
-			<query>
-				SELECT
-					msg.message_id AS id_pm, msg.user_id AS id_member_from, msg.message_date AS msgtime,
-					0 AS deleted_by_sender, msg.conversation_id AS id_pm_head,
-					SUBSTRING(IFNULL(msg.username, "Guest"), 1, 255) AS from_name,
-					SUBSTRING(mt.title, 1, 255) AS subject,
-					SUBSTRING(msg.message, 1, 65534) AS body
-				FROM {$from_prefix}conversation_message as msg
-					INNER JOIN {$from_prefix}conversation_master AS mt ON (mt.conversation_id = msg.conversation_id);
-			</query>
-		</step>
-		<step>
-			<title>Importing pm recipients</title>
-			<detect>{$from_prefix}conversation_recipient</detect>
-			<destination>{$to_prefix}pm_recipients</destination>
-			<query>
-				SELECT
-					msg.message_id AS id_pm, r.user_id AS id_member, 1 AS is_read,
-					0 AS deleted, '-1' AS labels
-				FROM {$from_prefix}conversation_message AS msg
-					INNER JOIN {$from_prefix}conversation_recipient AS r ON (r.conversation_id = msg.conversation_id)
-				WHERE msg.user_id != r.user_id
-				ORDER BY id_pm;
-			</query>
-		</step>
-	</steps1>
+			list($tmp, $row['id_last_msg']) = $db->fetch_row($request);
+			$db->free_result($request);
+		</preparsecode>
+		<query>
+			SELECT
+				node_id AS id_board, parent_node_id AS id_cat, display_order AS board_order,
+				SUBSTRING(title, 1, 255) AS name,
+				SUBSTRING(description, 1, 65534) AS description, '-1,0' AS member_groups
+			FROM {$from_prefix}node
+			WHERE node_type_id = 'Forum';
+		</query>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}thread</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<query>
+			SELECT
+				t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky, 
+				IF(t.discussion_open = 1, 0, 1) AS locked, t.last_post_user_id AS id_member_updated,
+				t.view_count AS num_views, t.reply_count AS num_replies, t.user_id AS id_member_started,
+				t.first_post_id id_first_msg, t.last_post_id AS id_last_msg
+			FROM {$from_prefix}thread AS t
+			WHERE t.discussion_state != 'deleted';
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}post</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<slashes>false</slashes>
+			<ignore>true</ignore>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				m.post_id AS id_msg, m.thread_id AS id_topic, m.post_date AS poster_time,
+				SUBSTRING(t.title, 1, 255) AS subject, m.user_id AS id_member,
+				SUBSTRING(m.username, 1, 255) AS poster_name,
+				SUBSTRING(m.username, 1, 255) AS poster_email,
+				SUBSTRING(m.ip_id, 1, 255) AS poster_ip, 0 AS id_board,
+				SUBSTRING(m.message, 1, 65534) AS body, '' AS modified_name, 'xx' AS icon
+			FROM {$from_prefix}post AS m
+				INNER JOIN {$from_prefix}thread AS t ON (m.thread_id = t.thread_id)
+			WHERE t.discussion_state != 'deleted';
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}conversation_message</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>
+			TRUNCATE {$to_prefix}personal_messages;
+			TRUNCATE {$to_prefix}pm_recipients;
+		</presql>
+		<query>
+			SELECT
+				msg.message_id AS id_pm, msg.user_id AS id_member_from, msg.message_date AS msgtime,
+				0 AS deleted_by_sender, msg.conversation_id AS id_pm_head,
+				SUBSTRING(IFNULL(msg.username, "Guest"), 1, 255) AS from_name,
+				SUBSTRING(mt.title, 1, 255) AS subject,
+				SUBSTRING(msg.message, 1, 65534) AS body
+			FROM {$from_prefix}conversation_message as msg
+				INNER JOIN {$from_prefix}conversation_master AS mt ON (mt.conversation_id = msg.conversation_id);
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}conversation_recipient</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<query>
+			SELECT
+				msg.message_id AS id_pm, r.user_id AS id_member, 1 AS is_read,
+				0 AS deleted, '-1' AS labels
+			FROM {$from_prefix}conversation_message AS msg
+				INNER JOIN {$from_prefix}conversation_recipient AS r ON (r.conversation_id = msg.conversation_id)
+			WHERE msg.user_id != r.user_id
+			ORDER BY id_pm;
+		</query>
+	</step>
 </importer>

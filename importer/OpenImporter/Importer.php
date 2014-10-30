@@ -443,7 +443,7 @@ class Importer
 		$steps = array();
 		$steps_count = 0;
 
-		foreach ($this->xml->steps1->step as $xml_steps)
+		foreach ($this->xml->step as $xml_steps)
 		{
 			$steps_count++;
 
@@ -466,7 +466,7 @@ class Importer
 		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template, $this->xml, $this->path_from);
 
 		// loop through each step
-		foreach ($this->xml->steps1->step as $counts)
+		foreach ($this->xml->step as $counts)
 		{
 			if ($counts->detect)
 			{
@@ -511,7 +511,7 @@ class Importer
 		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template, $this->xml, $this->path_from);
 		$xmlParser->setImporter($step1_importer);
 
-		foreach ($this->xml->steps1->step as $step)
+		foreach ($this->xml->step as $step)
 			$xmlParser->processSteps($step, $substep, $do_steps);
 	}
 
