@@ -13,6 +13,10 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+/**
+ * The class contains code that allows the Importer to obtain settings
+ * from the ElkArte installation.
+ */
 class elkarte1_0_importer
 {
 	protected $path = null;
@@ -146,20 +150,18 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 
 		while ($row = $this->db->fetch_assoc($result))
 		{
-			// We're duplicating this from below because it's slightly different for getting current ones.
-			$clean_name = strtr($row['filename'], 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-			$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-
-			$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-			$enc_name = $row['id_attach'] . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
-			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
+			$enc_name = $this->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
 
 			$attach_dir = $this->getAttachDir($row);
 
 			if (file_exists($attach_dir . '/' . $enc_name))
 				$filename = $attach_dir . '/' . $enc_name;
 			else
+			{
+				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
+				$clean_name = $this->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
 				$filename = $attach_dir . '/' . $clean_name;
+			}
 
 			if (is_file($filename))
 				@unlink($filename);
@@ -894,13 +896,14 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 	}
 
 	/**
-	 * helper function for old attachments
+	 * helper function for old (SMF) attachments and some new ones
 	 *
 	 * @param string $filename
 	 * @param int $attachment_id
+	 * @param bool $legacy if true returns legacy SMF file name (default true)
 	 * @return string
 	 */
-	protected function getLegacyAttachmentFilename($filename, $attachment_id)
+	protected function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
 	{
 		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
 		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
@@ -909,7 +912,16 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 			// Get rid of dots, spaces, and other weird characters.
 		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
 
-		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+		if ($legacy)
+		{
+			// @todo not sure about that one
+			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
+			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+		}
+		else
+		{
+			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
+		}
 	}
 }
 

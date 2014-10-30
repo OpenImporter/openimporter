@@ -1,7 +1,17 @@
 <?php
+/**
+ * @name      OpenImporter
+ * @copyright OpenImporter contributors
+ * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ *
+ * @version 1.0 Alpha
+ */
 
 /**
  * The starting point for the first step of any importer.
+ * Step 1 is where the actual conversion happens, where the data are moved
+ * from the source system to the destination one.
+ * It's the only step that <b>shall</s> know about both the systems.
  */
 abstract class Step1BaseImporter extends BaseImporter
 {

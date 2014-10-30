@@ -1,11 +1,17 @@
 <?php
+/**
+ * @name      OpenImporter
+ * @copyright OpenImporter contributors
+ * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ *
+ * @version 1.0 Alpha
+ */
 
 /**
- * Class Lang loads the appropriate language file(s)
- * if they exist. The default import_en.xml file
- * contains the English strings used by the importer.
+ * Class Lang loads the appropriate language file(s) if they exist.
  *
- * @var array $lang
+ * The default import_en.xml file contains the English strings used by the
+ * importer.
  */
 class Lang
 {

@@ -1,14 +1,23 @@
 <?php
+/**
+ * @name      OpenImporter
+ * @copyright OpenImporter contributors
+ * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ *
+ * @version 1.0 Alpha
+ */
 
 /**
- * the database class.
+ * The database class.
+ *
  * This class provides an easy wrapper around the common database
- *  functions we work with.
+ * functions we work with.
  */
 class Database
 {
 	/**
-	 * constructor, connects to the database
+	 * Constructor, connects to the database.
+	 *
 	 * @param type $db_server
 	 * @param type $db_user
 	 * @param type $db_password
@@ -17,7 +26,7 @@ class Database
 	protected $con;
 
 	/**
-	 * Allows to run a query two times on certain errors
+	 * Allows to run a query two times on certain errors.
 	 *
 	 * @var bool
 	 */
@@ -39,7 +48,7 @@ class Database
 	}
 
 	/**
-	 * execute an SQL query
+	 * Execute an SQL query.
 	 *
 	 * @param string $string
 	 * @param bool $return_error
@@ -62,13 +71,18 @@ class Database
 			return $this->sendError($string);
 	}
 
+	/**
+	 * Returns the last MySQL error occurrend with the current connection.
+	 *
+	 * @return string
+	 */
 	public function getLastError()
 	{
 		return mysqli_error($this->con);
 	}
 
 	/**
-	 * Analyze and sends an error
+	 * Analyze and sends an error.
 	 *
 	 * @param string $string
 	 * @throws DatabaseException If a SQL fails
@@ -106,6 +120,12 @@ class Database
 			</div>');
 	}
 
+	/**
+	 * Puts together the url used in the DatabaseException of sendError to go
+	 * back to the last step.
+	 *
+	 * @return string
+	 */
 	protected function buildActionUrl()
 	{
 		// @todo $_GET and $_REQUEST
@@ -124,8 +144,9 @@ class Database
 	}
 
 	/**
-	 * wrapper for mysqli_free_result
-	 * @param type $result
+	 * Wrapper for mysqli_free_result.
+	 *
+	 * @param object $result
 	 */
 	public function free_result($result)
 	{
@@ -133,9 +154,10 @@ class Database
 	}
 
 	/**
-	 * wrapper for mysqli_fetch_assoc
-	 * @param type $result
-	 * @return string
+	 * Wrapper for mysqli_fetch_assoc.
+	 *
+	 * @param object $result
+	 * @return mixed[]
 	 */
 	public function fetch_assoc($result)
 	{
@@ -144,8 +166,9 @@ class Database
 
 	/**
 	 * wrapper for mysqli_fetch_row
-	 * @param type $result
-	 * @return type
+	 *
+	 * @param object $result
+	 * @return mixed[]
 	 */
 	public function fetch_row($result)
 	{
@@ -154,7 +177,8 @@ class Database
 
 	/**
 	 * wrapper for mysqli_num_rows
-	 * @param type $result
+	 *
+	 * @param object $result
 	 * @return integer
 	 */
 	public function num_rows($result)
@@ -164,6 +188,7 @@ class Database
 
 	/**
 	 * wrapper for mysqli_insert_id
+	 *
 	 * @return integer
 	 */
 	public function insert_id()
