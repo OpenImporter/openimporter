@@ -424,16 +424,11 @@ class ImportManager
 
 	protected function _prepareStep0Form($form)
 	{
-		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1' . $this->debugUrl();
+		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1';
 
 		$this->importer->populateFormFields($form);
 
 		return $form;
-	}
-
-	protected function debugUrl()
-	{
-		return isset($_REQUEST['debug']) ? '&amp;debug=' . $_REQUEST['debug'] : '';
 	}
 
 	protected function testFiles($files, $path)

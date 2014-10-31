@@ -56,10 +56,6 @@ class Database
 	 */
 	public function query($string, $return_error = false)
 	{
-		// Debugging?
-		if (isset($_REQUEST['debug']))
-			$_SESSION['import_debug'] = !empty($_REQUEST['debug']);
-
 		$result = @mysqli_query($this->con, $string);
 
 		if ($result !== false || $return_error)
