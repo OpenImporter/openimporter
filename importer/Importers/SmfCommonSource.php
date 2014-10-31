@@ -15,7 +15,7 @@
 
 /**
  * The class contains code that allows the Importer to obtain settings
- * from the ElkArte installation.
+ * from softwares that still have an SMF heritage.
  */
 abstract class SmfCommonSource
 {
@@ -322,15 +322,13 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			SELECT id_board, MAX(id_msg) AS id_last_msg, MAX(modified_time) AS last_edited
 			FROM {$to_prefix}messages
 			GROUP BY id_board");
+
 		$modifyData = array();
 		$modifyMsg = array();
 		while ($row = $this->db->fetch_assoc($request))
 		{
-			$this->db->query("
-				UPDATE {$to_prefix}boards
-				SET id_last_msg = $row[id_last_msg], id_msg_updated = $row[id_last_msg]
-				WHERE id_board = $row[id_board]
-				LIMIT 1");
+			$this->setBoardProperty($row['id_board'], array('id_last_msg' => $row['id_last_msg'], 'id_msg_updated' => $row['id_last_msg']));
+
 			$modifyData[$row['id_board']] = array(
 				'last_msg' => $row['id_last_msg'],
 				'last_edited' => $row['last_edited'],
@@ -361,17 +359,38 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 					{
 						list ($id_msg) = $this->db->fetch_row($request2);
 
-						$this->db->query("
-							UPDATE {$to_prefix}boards
-							SET id_msg_updated = $id_msg
-							WHERE id_board = $row[id_board]
-							LIMIT 1");
+						$this->setBoardProperty($row['id_board'], array('id_msg_updated' => $id_msg));
 					}
 					$this->db->free_result($request2);
 				}
 			}
 			$this->db->free_result($request);
 		}
+	}
+
+	protected function setBoardProperty($board, $property, $where = null)
+	{
+		$to_prefix = $this->to_prefix;
+
+		$sets = array();
+		foreach ($property as $k => $v)
+		{
+			$sets[] = $k . ' = ' . $v;
+		}
+		$set = implode(', ', $sets);
+
+		if ($where === null)
+		{
+			if (empty($board))
+				return;
+
+			$where = "id_board = $board";
+		}
+
+		$this->db->query("
+			UPDATE {$to_prefix}boards
+			SET $set
+			WHERE $where");
 	}
 
 	public function substep2()
@@ -395,11 +414,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		while ($row = $this->db->fetch_assoc($request))
 		{
-			$this->db->query("
-				UPDATE {$to_prefix}boards
-				SET member_groups = '" . implode(',', array_unique(array_merge($all_groups, explode(',', $row['member_groups'])))) . "'
-				WHERE id_board = $row[id_board]
-				LIMIT 1");
+			$member_groups = implode(',', array_unique(array_merge($all_groups, explode(',', $row['member_groups']))));
+			$this->setBoardProperty($row['id_board'], array('member_groups', $member_groups));
 		}
 		$this->db->free_result($request);
 	}
@@ -534,11 +550,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$this->db->free_result($result_posts);
 
 			// Fix the board's totals.
-			$this->db->query("
-				UPDATE {$to_prefix}boards
-				SET num_topics = $num_topics, num_posts = $num_posts
-				WHERE id_board = $id_board
-				LIMIT 1");
+			$this->setBoardProperty($id_board, array('num_topics' => $num_topics, 'num_posts' => $num_posts));
 		}
 	}
 
@@ -656,6 +668,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		return $memberID;
 	}
 
+	/**
+	 * Fix the board parents.
+	 */
 	public function substep8()
 	{
 		$to_prefix = $this->to_prefix;
@@ -664,6 +679,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$request = $this->db->query("
 			SELECT id_board, id_parent, id_cat
 			FROM {$to_prefix}boards");
+
 		$child_map = array();
 		$cat_map = array();
 		while ($row = $this->db->fetch_assoc($request))
@@ -704,27 +720,18 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			{
 				if ($parent != 0)
 					$cat_map[$board] = $cat_map[$parent];
-				$fixed_boards[$board] = array($parent, $cat_map[$board], $level);
+
+				$this->setBoardProperty((int) $board, array('id_parent' => (int) $parent, 'id_cat' => (int) $cat_map[$board], 'child_level' => (int) $level));
+
+				$fixed_boards[] = $board;
 				$solid_parents[] = array($board, $level + 1);
 			}
-		}
-
-		foreach ($fixed_boards as $board => $fix)
-		{
-			$this->db->query("
-				UPDATE {$to_prefix}boards
-				SET id_parent = " . (int) $fix[0] . ", id_cat = " . (int) $fix[1] . ", child_level = " . (int) $fix[2] . "
-				WHERE id_board = " . (int) $board . "
-				LIMIT 1");
 		}
 
 		// Leftovers should be brought to the root. They had weird parents we couldn't find.
 		if (count($fixed_boards) < count($cat_map))
 		{
-			$this->db->query("
-				UPDATE {$to_prefix}boards
-				SET child_level = 0, id_parent = 0" . (empty($fixed_boards) ? '' : "
-				WHERE id_board NOT IN (" . implode(', ', array_keys($fixed_boards)) . ")"));
+			$this->setBoardProperty(0, array('child_level' => 0, 'id_parent' => 0, 'child_level' => (int) $level), empty($fixed_boards) ? "1=1" : "id_board NOT IN (" . implode(', ', $fixed_boards) . ")");
 		}
 
 		// Last check: any boards not in a good category?
@@ -751,13 +758,13 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 				VALUES ('General Category')");
 			$catch_cat = mysqli_insert_id($this->db->con);
 
-			$this->db->query("
-				UPDATE {$to_prefix}boards
-				SET id_cat = " . (int) $catch_cat . "
-				WHERE id_cat IN (" . implode(', ', array_unique($fix_cats)) . ")");
+			$this->setBoardProperty(0, array('id_cat' => (int) $catch_cat), "id_cat IN (" . implode(', ', array_unique($fix_cats)) . ")");
 		}
 	}
 
+	/**
+	 * Adjust boards and categories orders.
+	 */
 	public function substep9()
 	{
 		$to_prefix = $this->to_prefix;
@@ -783,11 +790,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 						LIMIT 1");
 			}
 			if (!empty($row['id_board']) && ++$board_order != $row['board_order'])
-				$this->db->query("
-					UPDATE {$to_prefix}boards
-					SET board_order = $board_order
-					WHERE id_board = $row[id_board]
-					LIMIT 1");
+				$this->setBoardProperty($row['id_board'], array('board_order' => $board_order));
 		}
 		$this->db->free_result($request);
 	}
