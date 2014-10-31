@@ -23,6 +23,19 @@ abstract class SmfCommonSource
 
 	protected $path = null;
 
+	public $id_attach = null;
+	public $attachmentUploadDirs = null;
+	public $avatarUploadDir = null;
+
+	protected $to_prefix = '';
+	protected $db = null;
+
+	public function setParam($db, $to_prefix)
+	{
+		$this->db = $db;
+		$this->to_prefix = $to_prefix;
+	}
+
 	abstract public function getName();
 
 	public function checkSettingsPath($path)
@@ -94,14 +107,77 @@ abstract class SmfCommonSource
 
 		return isset($match[1]) ? $match[1] : '';
 	}
+
+	/**
+	 * helper function for old (SMF) attachments and some new ones
+	 *
+	 * @param string $filename
+	 * @param int $attachment_id
+	 * @param bool $legacy if true returns legacy SMF file name (default true)
+	 * @return string
+	 */
+	public function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
+	{
+		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
+		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
+		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+
+			// Get rid of dots, spaces, and other weird characters.
+		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
+
+		if ($legacy)
+		{
+			// @todo not sure about that one
+			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
+			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+		}
+		else
+		{
+			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.' . $this->attach_extension;
+		}
+	}
+
+	public function specialAttachments()
+	{
+		$to_prefix = $this->to_prefix;
+
+		if (!isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
+		{
+			$result = $this->db->query("
+				SELECT MAX(id_attach) + 1
+				FROM {$to_prefix}attachments");
+			list ($this->id_attach) = $this->db->fetch_row($result);
+			$this->db->free_result($result);
+
+			$result = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'attachmentUploadDir'
+				LIMIT 1");
+			list ($attachmentdir) = $this->db->fetch_row($result);
+			$attachment_UploadDir = @unserialize($attachmentdir);
+
+			$this->attachmentUploadDirs = !empty($attachment_UploadDir) ? $attachment_UploadDir : array(1 => $attachmentdir);
+
+			$result = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'custom_avatar_dir'
+				LIMIT 1");
+			list ($this->avatarUploadDir) = $this->db->fetch_row($result);
+			$this->db->free_result($result);
+
+			if (empty($this->avatarUploadDir))
+				$this->avatarUploadDir = null;
+
+			if (empty($this->id_attach))
+				$this->id_attach = 1;
+		}
+	}
 }
 
 abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 {
-	protected $id_attach = null;
-	protected $attachmentUploadDirs = null;
-	protected $avatarUploadDir = null;
-
 	public function fixTexts($row)
 	{
 		// If we have a message here, we'll want to convert <br /> to <br>.
@@ -123,7 +199,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		// Are we doing attachments? They're going to want a few things...
 		if ($special_table == $this->to_prefix . 'attachments' && $params === null)
 		{
-			$this->specialAttachments();
+			$this->settings->specialAttachments();
 			return $params;
 		}
 		// Here we have various bits of custom code for some known problems global to all importers.
@@ -137,8 +213,6 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	{
 		$to_prefix = $this->to_prefix;
 
-		$this->specialAttachments();
-
 		// !!! This should probably be done in chunks too.
 		// attachment_type = 1 are avatars.
 		$result = $this->db->query("
@@ -148,7 +222,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		while ($row = $this->db->fetch_assoc($result))
 		{
-			$enc_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->settings->attach_extension, false);
+			$enc_name = $this->settings->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
 
 			$attach_dir = $this->getAttachDir($row);
 
@@ -157,7 +231,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			else
 			{
 				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
-				$clean_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->settings->attach_extension, true);
+				$clean_name = $this->settings->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
 				$filename = $attach_dir . '/' . $clean_name;
 			}
 
@@ -170,24 +244,24 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 	public function getAttachDir($row)
 	{
-		if (!empty($row['id_folder']) && !empty($this->attachmentUploadDirs[$row['id_folder']]))
-			return $this->attachmentUploadDirs[$row['id_folder']];
+		if (!empty($row['id_folder']) && !empty($this->settings->attachmentUploadDirs[$row['id_folder']]))
+			return $this->settings->attachmentUploadDirs[$row['id_folder']];
 		else
-			return $this->attachmentUploadDirs[1];
+			return $this->settings->attachmentUploadDirs[1];
 	}
 
 	public function getAvatarDir($row)
 	{
-		if ($this->avatarUploadDir === null)
+		if ($this->settings->avatarUploadDir === null)
 			return $this->getAttachDir($row);
 		else
-			return $this->avatarUploadDir;
+			return $this->settings->avatarUploadDir;
 	}
 
 	public function getAvatarFolderId($row)
 	{
 		// @todo in theory we could be able to find the "current" directory
-		if ($this->avatarUploadDir === null)
+		if ($this->settings->avatarUploadDir === null)
 			return 1;
 		else
 			return false;
@@ -196,10 +270,10 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	public function newIdAttach()
 	{
 		// The one to return
-		$current = $this->id_attach;
+		$current = $this->settings->id_attach;
 
 		// Increase preparing for the next one
-		$this->id_attach++;
+		$this->settings->id_attach++;
 
 		return $current;
 	}
@@ -264,44 +338,6 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
 
 		return $row;
-	}
-
-	protected function specialAttachments()
-	{
-		$to_prefix = $this->to_prefix;
-
-		if (!isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
-		{
-			$result = $this->db->query("
-				SELECT MAX(id_attach) + 1
-				FROM {$to_prefix}attachments");
-			list ($this->id_attach) = $this->db->fetch_row($result);
-			$this->db->free_result($result);
-
-			$result = $this->db->query("
-				SELECT value
-				FROM {$to_prefix}settings
-				WHERE variable = 'attachmentUploadDir'
-				LIMIT 1");
-			list ($attachmentdir) = $this->db->fetch_row($result);
-			$attachment_UploadDir = @unserialize($attachmentdir);
-
-			$this->attachmentUploadDirs = !empty($attachment_UploadDir) ? $attachment_UploadDir : array(1 => $attachmentdir);
-
-			$result = $this->db->query("
-				SELECT value
-				FROM {$to_prefix}settings
-				WHERE variable = 'custom_avatar_dir'
-				LIMIT 1");
-			list ($this->avatarUploadDir) = $this->db->fetch_row($result);
-			$this->db->free_result($result);
-
-			if (empty($this->avatarUploadDir))
-				$this->avatarUploadDir = null;
-
-			if (empty($this->id_attach))
-				$this->id_attach = 1;
-		}
 	}
 }
 
@@ -796,34 +832,31 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		list ($attachments) = $this->db->fetch_row($request);
 		$this->db->free_result($request);
 
+		$request2 = $this->db->query("
+			SELECT value
+			FROM {$to_prefix}settings
+			WHERE variable = 'custom_avatar_dir'
+			LIMIT 1");
+		list ($custom_avatar_dir) = $this->db->fetch_row($request2);
+		$this->db->free_result($request2);
+
 		while ($_REQUEST['start'] < $attachments)
 		{
 			$request = $this->db->query("
-				SELECT id_attach, filename, attachment_type
+				SELECT id_attach, filename, attachment_type, id_folder
 				FROM {$to_prefix}attachments
 				WHERE id_thumb = 0
 					AND (RIGHT(filename, 4) IN ('.gif', '.jpg', '.png', '.bmp') OR RIGHT(filename, 5) = '.jpeg')
 					AND width = 0
 					AND height = 0
 				LIMIT $_REQUEST[start], 500");
+
 			if ($this->db->num_rows($request) == 0)
 				break;
+
 			while ($row = $this->db->fetch_assoc($request))
 			{
-				if ($row['attachment_type'] == 1)
-				{
-					$request2 = $this->db->query("
-						SELECT value
-						FROM {$to_prefix}settings
-						WHERE variable = 'custom_avatar_dir'
-						LIMIT 1");
-					list ($custom_avatar_dir) = $this->db->fetch_row($request2);
-					$this->db->free_result($request2);
-
-					$filename = $custom_avatar_dir . '/' . $row['filename'];
-				}
-				else
-					$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->settings->attach_extension);
+				$filename = $this->avatarFullPath($row);
 
 				// Probably not one of the imported ones, then?
 				if (!file_exists($filename))
@@ -849,6 +882,25 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			pastTime(11);
 		}
 	}
+
+	protected function avatarFullPath($row)
+	{
+		$dir = $this->getAvatarDir($row);
+
+		if ($row['attachment_type'] == 1)
+		{
+			// @todo Honestly I'm not sure what the final name looks like
+			// I'm pretty sure there could be at least three options:
+			//   1) filename
+			//   2) avatar_{id_member}_{time()}.{file_extension}
+			//   3) {id_attach}_{file_hash}.{->attach_extension}
+			$filename = $row['filename'];
+		}
+		else
+			$filename = $this->settings->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+
+		return $dir . '/' . $filename;
+	}
 }
 
 abstract class SmfCommonSourceStep3 extends Step3BaseImporter
@@ -863,36 +915,6 @@ abstract class SmfCommonSourceStep3 extends Step3BaseImporter
 				VALUES ('import_time', " . time() . "),
 					('enable_password_conversion', '1'),
 					('imported_from', '" . $import_script . "')");
-	}
-}
-
-/**
- * helper function for old (SMF) attachments and some new ones
- *
- * @param string $filename
- * @param int $attachment_id
- * @param string $ext the file extension
- * @param bool $legacy if true returns legacy SMF file name (default true)
- * @return string
- */
-function getLegacyAttachmentFilename($filename, $attachment_id, $ext, $legacy = true)
-{
-	// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
-	$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-	$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-
-		// Get rid of dots, spaces, and other weird characters.
-	$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-
-	if ($legacy)
-	{
-		// @todo not sure about that one
-		$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
-		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
-	}
-	else
-	{
-		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.' . $ext;
 	}
 }
 

@@ -261,6 +261,8 @@
 			if ($avatarUploadDir == $this->step1_importer->getAttachDir($row))
 				$row['attachment_type'] = 0;
 
+			// @todo based on the assumption that we are using attachments for avatars.
+			// Consider using SmfCommonSourceStep1::moveAvatar at some point
 			if (empty($row['file_hash']))
 			{
 				$row['file_hash'] = createAttachmentFileHash($row['filename']);

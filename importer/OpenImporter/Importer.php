@@ -172,6 +172,8 @@ class Importer
 		$this->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
+
+		$this->destination->setParam($this->db, $this->to_prefix);
 	}
 
 	/**
@@ -498,7 +500,7 @@ class Importer
 	public function doStep1($do_steps)
 	{
 		$step1_importer_class = $this->_importer_base_class_name . '_step1';
-		$step1_importer = new $step1_importer_class($this->db, $this->to_prefix, $this->settings);
+		$step1_importer = new $step1_importer_class($this->db, $this->to_prefix, $this->destination);
 
 		if ($this->xml->general->globals)
 			foreach (explode(',', $this->xml->general->globals) as $global)
@@ -523,7 +525,7 @@ class Importer
 	public function doStep2()
 	{
 		$step2_importer_class = $this->_importer_base_class_name . '_step2';
-		$instance = new $step2_importer_class($this->db, $this->to_prefix, $this->settings);
+		$instance = new $step2_importer_class($this->db, $this->to_prefix, $this->destination);
 
 		$methods = get_class_methods($instance);
 		$substeps = array();
@@ -561,7 +563,7 @@ class Importer
 	public function doStep3()
 	{
 		$step3_importer_class = $this->_importer_base_class_name . '_step3';
-		$instance = new $step3_importer_class($this->db, $this->to_prefix, $this->settings);
+		$instance = new $step3_importer_class($this->db, $this->to_prefix, $this->destination);
 
 		$instance->run($this->lng->get(array('imp.imported_from', $this->xml->general->name)));
 	}
