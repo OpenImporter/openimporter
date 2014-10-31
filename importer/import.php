@@ -65,5 +65,9 @@ try
 }
 catch (Exception $e)
 {
+	// Debug, remember to remove before PR
+	echo '<br>' . $e->getMessage() . '<br>';
+	echo $e->getFile() . '<br>';
+	echo $e->getLine() . '<br>';
 	// If an error is not catched, it means it's fatal and the script should die.
 }
