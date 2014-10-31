@@ -239,13 +239,9 @@ class Database
 		// If we're here we know we don't have the index - so just add it.
 		if (!empty($index_info['type']) && $index_info['type'] == 'primary')
 		{
-			$this->query('', '
+			$this->query('
 				ALTER TABLE ' . $table_name . '
-				ADD PRIMARY KEY (' . $columns . ')',
-				array(
-					'security_override' => true,
-				)
-			);
+				ADD PRIMARY KEY (' . $columns . ')');
 		}
 		else
 		{
@@ -254,13 +250,9 @@ class Database
 			else
 				$type = strtoupper($index_info['type']);
 
-			$this->query('', '
+			$this->query('
 				ALTER TABLE ' . $table_name . '
-				ADD ' . $type . ' ' . $index_info['name'] . ' (' . $columns . ')',
-				array(
-					'security_override' => true,
-				)
-			);
+				ADD ' . $type . ' ' . $index_info['name'] . ' (' . $columns . ')');
 		}
 	}
 	/**
@@ -273,7 +265,7 @@ class Database
 	 */
 	public function list_indexes($table_name, $detail = false, $parameters = array())
 	{
-		$result = $this->query('', "
+		$result = $this->query("
 			SHOW KEYS
 			FROM {$table_name}");
 

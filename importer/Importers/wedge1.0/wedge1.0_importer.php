@@ -1046,7 +1046,7 @@ class wedge1_0_importer_step3 extends Step3BaseImporter
  * @param bool $legacy if true returns legacy SMF file name (default true)
  * @return string
  */
-protected function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
+function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
 {
 	// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
 	$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
