@@ -17,7 +17,7 @@
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
  */
-abstract class SmfCommonAncestor
+abstract class SmfCommonSource
 {
 	protected $path = null;
 
@@ -94,7 +94,7 @@ abstract class SmfCommonAncestor
 	}
 }
 
-abstract class SmfCommonAncestorStep1 extends Step1BaseImporter
+abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 {
 	protected $attach_extension = '';
 
@@ -310,7 +310,7 @@ abstract class SmfCommonAncestorStep1 extends Step1BaseImporter
 	}
 }
 
-abstract class SmfCommonAncestorStep2 extends Step2BaseImporter
+abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
 
@@ -854,7 +854,7 @@ abstract class SmfCommonAncestorStep2 extends Step2BaseImporter
 	}
 }
 
-abstract class SmfCommonAncestorStep3 extends Step3BaseImporter
+abstract class SmfCommonSourceStep3 extends Step3BaseImporter
 {
 	public function run($import_script)
 	{

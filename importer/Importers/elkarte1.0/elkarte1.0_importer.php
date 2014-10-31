@@ -17,7 +17,7 @@
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
  */
-class elkarte1_0_importer extends SmfCommonAncestor
+class elkarte1_0_importer extends SmfCommonSource
 {
 	public function getName()
 	{
@@ -25,12 +25,12 @@ class elkarte1_0_importer extends SmfCommonAncestor
 	}
 }
 
-class elkarte1_0_importer_step1 extends SmfCommonAncestorStep1
+class elkarte1_0_importer_step1 extends SmfCommonSourceStep1
 {
 	protected $attach_extension = 'elk';
 }
 
-class elkarte1_0_importer_step2 extends SmfCommonAncestorStep2
+class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 {
 	public function substep0()
 	{
@@ -75,6 +75,6 @@ class elkarte1_0_importer_step2 extends SmfCommonAncestorStep2
 	}
 }
 
-class elkarte1_0_importer_step3 extends SmfCommonAncestorStep3
+class elkarte1_0_importer_step3 extends SmfCommonSourceStep3
 {
 }
