@@ -209,29 +209,10 @@ class Database
 			return false;
 		$columns = implode(',', $index_info['columns']);
 
-		// No name - make it up!
-		if (empty($index_info['name']))
-		{
-			// No need for primary.
-			if (isset($index_info['type']) && $index_info['type'] == 'primary')
-				$index_info['name'] = '';
-			else
-				$index_info['name'] = implode('_', $index_info['columns']);
-		}
-		else
-			$index_info['name'] = $index_info['name'];
+		$index_info['name'] = $this->calculateIndexName($index_info);
 
-		// Let's get all our indexes.
-		$indexes = $this->list_indexes($table_name, true);
-
-		// Do we already have it?
-		foreach ($indexes as $index)
-		{
-			if ($index['name'] == $index_info['name'] || ($index['type'] == 'primary' && isset($index_info['type']) && $index_info['type'] == 'primary'))
-			{
-				return false;
-			}
-		}
+		if ($this->indexExists($table_name, $index_info))
+			return false;
 
 		// If we're here we know we don't have the index - so just add it.
 		if (!empty($index_info['type']) && $index_info['type'] == 'primary')
@@ -252,6 +233,39 @@ class Database
 				ADD ' . $type . ' ' . $index_info['name'] . ' (' . $columns . ')');
 		}
 	}
+
+	protected function calculateIndexName($index_info)
+	{
+		// No name - make it up!
+		if (empty($index_info['name']))
+		{
+			// No need for primary.
+			if (isset($index_info['type']) && $index_info['type'] == 'primary')
+				return '';
+			else
+				return implode('_', $index_info['columns']);
+		}
+		else
+			return $index_info['name'];
+	}
+
+	protected function indexExists($table_name, $index_info)
+	{
+		// Let's get all our indexes.
+		$indexes = $this->list_indexes($table_name, true);
+
+		// Do we already have it?
+		foreach ($indexes as $index)
+		{
+			if ($index['name'] == $index_info['name'] || ($index['type'] == 'primary' && isset($index_info['type']) && $index_info['type'] == 'primary'))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * Get index information.
 	 *
@@ -272,22 +286,12 @@ class Database
 				$indexes[] = $row['Key_name'];
 			else
 			{
-				// What is the type?
-				if ($row['Key_name'] == 'PRIMARY')
-					$type = 'primary';
-				elseif (empty($row['Non_unique']))
-					$type = 'unique';
-				elseif (isset($row['Index_type']) && $row['Index_type'] == 'FULLTEXT')
-					$type = 'fulltext';
-				else
-					$type = 'index';
-
 				// This is the first column we've seen?
 				if (empty($indexes[$row['Key_name']]))
 				{
 					$indexes[$row['Key_name']] = array(
 						'name' => $row['Key_name'],
-						'type' => $type,
+						'type' => $this->determineIndexType($row),
 						'columns' => array(),
 					);
 				}
@@ -302,5 +306,22 @@ class Database
 		$this->free_result($result);
 
 		return $indexes;
+	}
+
+	/**
+	 * What is the type?
+	 *
+	 * @param string[] $row
+	 */
+	protected function determineIndexType($row)
+	{
+		if ($row['Key_name'] == 'PRIMARY')
+			return 'primary';
+		elseif (empty($row['Non_unique']))
+			return 'unique';
+		elseif (isset($row['Index_type']) && $row['Index_type'] == 'FULLTEXT')
+			return 'fulltext';
+		else
+			return 'index';
 	}
 }
