@@ -901,7 +901,7 @@ class wedge1_0_importer_step2 extends Step2BaseImporter
 		}
 	}
 
-	public function substep12
+	public function substep12()
 	{
 		$to_prefix = $this->to_prefix;
 
@@ -960,7 +960,7 @@ class wedge1_0_importer_step2 extends Step2BaseImporter
 		pastTime(13);
 	}
 
-	public function substep13
+	public function substep13()
 	{
 		$indexes = array(
 			'id_msg' => array(
