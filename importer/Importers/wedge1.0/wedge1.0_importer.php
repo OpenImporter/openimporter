@@ -22,6 +22,8 @@
  */
 class wedge1_0_importer extends SmfCommonSource
 {
+	protected $attach_extension = 'ext';
+
 	public function getName()
 	{
 		return 'Wedge 1.0';
@@ -30,7 +32,6 @@ class wedge1_0_importer extends SmfCommonSource
 
 class wedge1_0_importer_step1 extends SmfCommonSourceStep1
 {
-	protected $attach_extension = 'ext';
 }
 
 class wedge1_0_importer_step2 extends SmfCommonSourceStep2

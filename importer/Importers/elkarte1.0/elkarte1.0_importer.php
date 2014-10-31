@@ -19,6 +19,8 @@
  */
 class elkarte1_0_importer extends SmfCommonSource
 {
+	protected $attach_extension = 'elk';
+
 	public function getName()
 	{
 		return 'ElkArte 1.0';
@@ -27,7 +29,6 @@ class elkarte1_0_importer extends SmfCommonSource
 
 class elkarte1_0_importer_step1 extends SmfCommonSourceStep1
 {
-	protected $attach_extension = 'elk';
 }
 
 class elkarte1_0_importer_step2 extends SmfCommonSourceStep2

@@ -19,6 +19,8 @@
  */
 abstract class SmfCommonSource
 {
+	protected $attach_extension = '';
+
 	protected $path = null;
 
 	abstract public function getName();
@@ -96,8 +98,6 @@ abstract class SmfCommonSource
 
 abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 {
-	protected $attach_extension = '';
-
 	protected $id_attach = null;
 	protected $attachmentUploadDirs = null;
 	protected $avatarUploadDir = null;
@@ -148,7 +148,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		while ($row = $this->db->fetch_assoc($result))
 		{
-			$enc_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->attach_extension, false);
+			$enc_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->settings->attach_extension, false);
 
 			$attach_dir = $this->getAttachDir($row);
 
@@ -157,7 +157,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			else
 			{
 				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
-				$clean_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->attach_extension, true);
+				$clean_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->settings->attach_extension, true);
 				$filename = $attach_dir . '/' . $clean_name;
 			}
 
@@ -240,7 +240,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			$file_hash = createAttachmentFileHash($filename);
 			$id_attach = $this->newIdAttach();
 
-			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.' . $this->attach_extension;
+			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.' . $this->settings->attach_extension;
 
 			$return = array(
 				'id_attach' => $id_attach,
@@ -468,14 +468,17 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			FROM {$to_prefix}membergroups
 			WHERE min_posts != -1
 			ORDER BY min_posts DESC");
+
 		$post_groups = array();
 		while ($row = $this->db->fetch_assoc($request))
 			$post_groups[$row['min_posts']] = $row['id_group'];
 		$this->db->free_result($request);
 
+		// @todo a CASE WHEN may simplify the whole thing and be more time-friendly
 		$request = $this->db->query("
 			SELECT id_member, posts
 			FROM {$to_prefix}members");
+
 		$mg_updates = array();
 		while ($row = $this->db->fetch_assoc($request))
 		{
@@ -826,7 +829,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 					$filename = $custom_avatar_dir . '/' . $row['filename'];
 				}
 				else
-					$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->attach_extension);
+					$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], $this->settings->attach_extension);
 
 				// Probably not one of the imported ones, then?
 				if (!file_exists($filename))
