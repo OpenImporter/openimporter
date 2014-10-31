@@ -122,27 +122,24 @@ class XmlProcessor
 		$to_prefix = $this->to_prefix;
 		$db = $this->db;
 
-		// Reset some defaults
-		$special_table = isset($step->destination) ? strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix)) : null;
-		$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
-
-		// any preparsing code? Loaded here to be used later.
-		$special_code = $this->getPreparsecode($step);
-
 		$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
 		$current_data = $this->fixCurrentData($current_data);
 
 		$this->doDetect($step, $substep);
 
-		// create some handy shortcuts
-		$insert_statement = $this->insertStatement($step->options);
-		$no_add = $this->shoudNotAdd($step->options);
-		$ignore_slashes = $this->ignoreSlashes($step->options);
-
-		if ($special_table === null)
+		if (!isset($step->destination))
 			$this->db->query($current_data);
 		else
 		{
+			$special_table = strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix));
+			$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
+
+			// any preparsing code? Loaded here to be used later.
+			$special_code = $this->getPreparsecode($step);
+
+			// create some handy shortcuts
+			$no_add = $this->shoudNotAdd($step->options);
+
 			$this->step1_importer->doSpecialTable($special_table);
 
 			while (true)
@@ -172,7 +169,7 @@ class XmlProcessor
 					}
 				}
 
-				$this->insertRows($rows, $keys, $ignore_slashes, $insert_statement, $special_table);
+				$this->insertRows($rows, $keys, $special_table);
 
 				// @todo $_REQUEST
 				$_REQUEST['start'] += $special_limit;
@@ -193,10 +190,13 @@ class XmlProcessor
 		return $current_data;
 	}
 
-	protected function insertRows($rows, $keys, $ignore_slashes, $insert_statement, $special_table)
+	protected function insertRows($rows, $keys, $special_table)
 	{
 		if (empty($rows))
 			return;
+
+		$insert_statement = $this->insertStatement($step->options);
+		$ignore_slashes = $this->ignoreSlashes($step->options);
 
 		$insert_rows = array();
 		foreach ($rows as $row)
