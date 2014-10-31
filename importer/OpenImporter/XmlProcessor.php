@@ -83,22 +83,6 @@ class XmlProcessor
 
 	public function processSteps($step, &$substep, &$do_steps)
 	{
-		// These are temporarily needed to support the current xml importers
-		// a.k.a. There is more important stuff to do.
-		// a.k.a. I'm too lazy to change all of them now. :P
-		// @todo remove
-		// Both used in eval'ed code
-		$to_prefix = $this->to_prefix;
-		$db = $this->db;
-
-		// Reset some defaults
-		$current_data = '';
-		$special_table = isset($step->destination) ? strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix)) : null;
-		$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
-
-		// any preparsing code? Loaded here to be used later.
-		$special_code = $this->getPreparsecode($step);
-
 		$table_test = $this->updateStatus($step, $substep, $do_steps);
 
 		// do we need to skip this step?
@@ -108,9 +92,6 @@ class XmlProcessor
 		// pre sql queries first!!
 		$this->doPresqlStep($step, $substep);
 
-		// @todo $_GET
-		if ($substep >= $_GET['substep'] && isset($step->query))
-			$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
 
 		// Codeblock? Then no query.
 		if ($this->doCode($step))
@@ -120,65 +101,88 @@ class XmlProcessor
 		}
 
 		// sql block?
-		if (!empty($current_data))
+		// @todo $_GET
+		if ($substep >= $_GET['substep'] && isset($step->query))
 		{
-			$current_data = $this->fixCurrentData($current_data);
-
-			$this->doDetect($step, $substep);
-
-			// create some handy shortcuts
-			$insert_statement = $this->insertStatement($step->options);
-			$no_add = $this->shoudNotAdd($step->options);
-			$ignore_slashes = $this->ignoreSlashes($step->options);
-
-			if ($special_table === null)
-				$this->db->query($current_data);
-			else
-			{
-				$this->step1_importer->doSpecialTable($special_table);
-
-				while (true)
-				{
-					pastTime($substep);
-
-					$special_result = $this->prepareSpecialResult($current_data, $special_limit);
-
-					$rows = array();
-					$keys = array();
-
-					if (isset($step->detect))
-						$_SESSION['import_progress'] += $special_limit;
-
-					while ($row = $this->db->fetch_assoc($special_result))
-					{
-						if ($no_add)
-						{
-							eval($special_code);
-						}
-						else
-						{
-							$rows[] = $this->prepareRow($row, $special_code, $special_table);
-
-							if (empty($keys))
-								$keys = array_keys($row);
-						}
-					}
-
-					$this->insertRows($rows, $keys, $ignore_slashes, $insert_statement, $special_table);
-
-					$_REQUEST['start'] += $special_limit;
-
-					if ($this->db->num_rows($special_result) < $special_limit)
-						break;
-
-					$this->db->free_result($special_result);
-				}
-			}
+			$this->doSql($step, $substep);
 
 			$_REQUEST['start'] = 0;
 		}
 
 		$this->advanceSubstep($substep);
+	}
+
+	protected function doSql($step, $substep)
+	{
+		// These are temporarily needed to support the current xml importers
+		// a.k.a. There is more important stuff to do.
+		// a.k.a. I'm too lazy to change all of them now. :P
+		// @todo remove
+		// Both used in eval'ed code
+		$to_prefix = $this->to_prefix;
+		$db = $this->db;
+
+		// Reset some defaults
+		$special_table = isset($step->destination) ? strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix)) : null;
+		$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
+
+		// any preparsing code? Loaded here to be used later.
+		$special_code = $this->getPreparsecode($step);
+
+		$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
+		$current_data = $this->fixCurrentData($current_data);
+
+		$this->doDetect($step, $substep);
+
+		// create some handy shortcuts
+		$insert_statement = $this->insertStatement($step->options);
+		$no_add = $this->shoudNotAdd($step->options);
+		$ignore_slashes = $this->ignoreSlashes($step->options);
+
+		if ($special_table === null)
+			$this->db->query($current_data);
+		else
+		{
+			$this->step1_importer->doSpecialTable($special_table);
+
+			while (true)
+			{
+				pastTime($substep);
+
+				$special_result = $this->prepareSpecialResult($current_data, $special_limit);
+
+				$rows = array();
+				$keys = array();
+
+				if (isset($step->detect))
+					$_SESSION['import_progress'] += $special_limit;
+
+				while ($row = $this->db->fetch_assoc($special_result))
+				{
+					if ($no_add)
+					{
+						eval($special_code);
+					}
+					else
+					{
+						$rows[] = $this->prepareRow($row, $special_code, $special_table);
+
+						if (empty($keys))
+							$keys = array_keys($row);
+					}
+				}
+
+				$this->insertRows($rows, $keys, $ignore_slashes, $insert_statement, $special_table);
+
+				// @todo $_REQUEST
+				$_REQUEST['start'] += $special_limit;
+
+				if ($this->db->num_rows($special_result) < $special_limit)
+					break;
+
+				$this->db->free_result($special_result);
+			}
+		}
 	}
 
 	protected function fixCurrentData($current_data)
