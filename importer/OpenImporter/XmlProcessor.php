@@ -120,7 +120,7 @@ class XmlProcessor
 		}
 
 		// sql block?
-		if (!empty($step->query))
+		if (!empty($current_data))
 		{
 			$current_data = $this->fixCurrentData($current_data);
 
