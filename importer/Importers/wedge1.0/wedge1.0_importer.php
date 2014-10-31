@@ -237,7 +237,7 @@ class wedge1_0_importer_step1 extends Step1BaseImporter
 				SET avatar = '$file_hash'
 				WHERE id_member = $row[id_member]");
 
-			$destination = $this->step1_importer->getAvatarDir($row) . '/' . $file_hash;
+			$destination = $this->getAvatarDir($row) . '/' . $file_hash;
 
 			$return = false;
 		}
@@ -246,9 +246,9 @@ class wedge1_0_importer_step1 extends Step1BaseImporter
 			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
 
 			$file_hash = createAttachmentFileHash($filename);
-			$id_attach = $this->step1_importer->newIdAttach();
+			$id_attach = $this->newIdAttach();
 
-			$destination = $this->step1_importer->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.ext';
+			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.ext';
 
 			$return = array(
 				'id_attach' => $id_attach,
