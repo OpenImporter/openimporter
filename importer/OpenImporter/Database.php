@@ -201,9 +201,6 @@ class Database
 	 *
 	 * @param string $table_name
 	 * @param mixed[] $index_info
-	 * @param mixed[] $parameters default array()
-	 * @param string $if_exists default 'update'
-	 * @param string $error default 'fatal'
 	 */
 	public function add_index($table_name, $index_info)
 	{
@@ -260,10 +257,9 @@ class Database
 	 *
 	 * @param string $table_name
 	 * @param bool $detail
-	 * @param mixed[] $parameters
 	 * @return mixed
 	 */
-	public function list_indexes($table_name, $detail = false, $parameters = array())
+	public function list_indexes($table_name, $detail = false)
 	{
 		$result = $this->query("
 			SHOW KEYS
@@ -307,5 +303,4 @@ class Database
 
 		return $indexes;
 	}
-
 }
