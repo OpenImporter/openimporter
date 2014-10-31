@@ -159,8 +159,6 @@ class Importer
 	{
 		$this->_preparse_xml($file);
 
-		require_once(BASEDIR . DS . 'Importers' . DS . 'AbstractSourceImporter.php');
-
 		// This is the helper class
 		$source_helper = str_replace('.xml', '.php', $file);
 		require_once($source_helper);
