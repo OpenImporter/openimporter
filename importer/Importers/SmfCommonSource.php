@@ -409,8 +409,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		while ($row = $this->db->fetch_assoc($request))
 		{
-			$member_groups = implode(',', array_unique(array_merge($all_groups, explode(',', $row['member_groups']))));
-			$this->setBoardProperty($row['id_board'], array('member_groups', $member_groups));
+			$member_groups = "'" . implode(',', array_unique(array_merge($all_groups, explode(',', $row['member_groups'])))) . "'";
+			$this->setBoardProperty($row['id_board'], array('member_groups' => $member_groups));
 		}
 		$this->db->free_result($request);
 	}
