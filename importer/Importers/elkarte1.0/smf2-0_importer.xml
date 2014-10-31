@@ -182,10 +182,12 @@
 			while ($row = $this->db->fetch_assoc($request))
 			{
 				if (in_array($row['variable'], $do_import))
+				{
 					$this->db->query("
 						REPLACE INTO {$to_prefix}settings
 							(variable, value)
-						VALUES('$row[variable]', '$row[value]')");
+						VALUES('$row[variable]', '" . addcslashes($row['value'], '\'\\"') . "')");
+				}
 
 				if ($row['variable'] == 'pretty_board_urls')
 				{

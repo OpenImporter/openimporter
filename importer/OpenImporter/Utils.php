@@ -72,7 +72,8 @@ function create_folders_recursive($path)
 	if (!file_exists($parent))
 		create_folders_recursive($parent);
 
-	@mkdir($path, 0755);
+	if (!file_exists($path))
+		@mkdir($path, 0755);
 }
 
 /**

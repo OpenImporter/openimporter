@@ -249,7 +249,7 @@ class Database
 		}
 		else
 		{
-			if (!isset($index_info['type'] || !in_array($index_info['type'], array('unique', 'index', 'key'))))
+			if (!isset($index_info['type']) || !in_array($index_info['type'], array('unique', 'index', 'key')))
 				$type = 'INDEX';
 			else
 				$type = strtoupper($index_info['type']);

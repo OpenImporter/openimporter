@@ -15,6 +15,9 @@ class ImportException extends Exception
 {
 	public static function error_handler_callback($code, $string, $file, $line)
 	{
+		if (error_reporting() == 0)
+			return;
+
 		$e = new self($string, $code);
 		$e->line = $line;
 		$e->file = $file;
@@ -27,6 +30,9 @@ class ImportException extends Exception
 	public static function exception_handler($exception, $template = null)
 	{
 		global $import;
+
+		if (error_reporting() == 0)
+			return;
 
 		if ($template === null)
 		{
