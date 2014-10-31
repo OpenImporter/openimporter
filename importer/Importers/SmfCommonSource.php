@@ -174,6 +174,22 @@ abstract class SmfCommonSource
 				$this->id_attach = 1;
 		}
 	}
+
+	public function getAvatarDir($row)
+	{
+		if ($this->avatarUploadDir === null)
+			return $this->getAttachDir($row);
+		else
+			return $this->avatarUploadDir;
+	}
+
+	public function getAttachDir($row)
+	{
+		if (!empty($row['id_folder']) && !empty($this->attachmentUploadDirs[$row['id_folder']]))
+			return $this->attachmentUploadDirs[$row['id_folder']];
+		else
+			return $this->attachmentUploadDirs[1];
+	}
 }
 
 abstract class SmfCommonSourceStep1 extends Step1BaseImporter
@@ -244,18 +260,12 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 	public function getAttachDir($row)
 	{
-		if (!empty($row['id_folder']) && !empty($this->settings->attachmentUploadDirs[$row['id_folder']]))
-			return $this->settings->attachmentUploadDirs[$row['id_folder']];
-		else
-			return $this->settings->attachmentUploadDirs[1];
+		return $this->settings->getAttachDir($row);
 	}
 
 	public function getAvatarDir($row)
 	{
-		if ($this->settings->avatarUploadDir === null)
-			return $this->getAttachDir($row);
-		else
-			return $this->settings->avatarUploadDir;
+		return $this->settings->getAvatarDir($row);
 	}
 
 	public function getAvatarFolderId($row)
@@ -832,14 +842,6 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		list ($attachments) = $this->db->fetch_row($request);
 		$this->db->free_result($request);
 
-		$request2 = $this->db->query("
-			SELECT value
-			FROM {$to_prefix}settings
-			WHERE variable = 'custom_avatar_dir'
-			LIMIT 1");
-		list ($custom_avatar_dir) = $this->db->fetch_row($request2);
-		$this->db->free_result($request2);
-
 		while ($_REQUEST['start'] < $attachments)
 		{
 			$request = $this->db->query("
@@ -885,7 +887,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	protected function avatarFullPath($row)
 	{
-		$dir = $this->getAvatarDir($row);
+		$dir = $this->settings->getAvatarDir($row);
 
 		if ($row['attachment_type'] == 1)
 		{
