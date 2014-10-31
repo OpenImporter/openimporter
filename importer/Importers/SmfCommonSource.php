@@ -210,9 +210,6 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		if ($avatar_attach_folder === false)
 		{
-			// Ensure nothing is updated.
-			$rows = array();
-
 			$extensions = array(
 				'1' => 'gif',
 				'2' => 'jpg',
@@ -235,8 +232,6 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		}
 		else
 		{
-			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
-
 			$file_hash = createAttachmentFileHash($filename);
 			$id_attach = $this->newIdAttach();
 
@@ -475,6 +470,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 				('disableHashTime', " . (time() + 7776000) . ")");
 	}
 
+	/**
+	 * Fix the post-based membergroups
+	 */
 	public function substep4()
 	{
 		$to_prefix = $this->to_prefix;
@@ -486,71 +484,64 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			ORDER BY min_posts DESC");
 
 		$post_groups = array();
+		$max = $this->db->fetch_assoc($request);
 		while ($row = $this->db->fetch_assoc($request))
-			$post_groups[$row['min_posts']] = $row['id_group'];
+			$post_groups[] = $row;
 		$this->db->free_result($request);
 
-		// @todo a CASE WHEN may simplify the whole thing and be more time-friendly
-		$request = $this->db->query("
-			SELECT id_member, posts
-			FROM {$to_prefix}members");
+		$case = "CASE WHEN posts > " . $max['min_posts'] . " THEN " . $max['id_group'];
 
-		$mg_updates = array();
-		while ($row = $this->db->fetch_assoc($request))
+		$first = true;
+		foreach ($post_groups as $id => $group)
 		{
-			$group = 4;
-			foreach ($post_groups as $min_posts => $group_id)
-				if ($row['posts'] >= $min_posts)
-				{
-					$group = $group_id;
-					break;
-				}
-
-			$mg_updates[$group][] = $row['id_member'];
+			if ($first)
+			{
+				$case .= " WHEN posts BETWEEN " . $group['min_posts'] . " AND " . $max['min_posts'] . " THEN " . $group['id_group'];
+				$first = false;
+			}
+			else
+				$case .= " WHEN posts BETWEEN " . $group['min_posts'] . " AND " . $post_groups[$id - 1]['min_posts'] . " THEN " . $group['id_group'];
 		}
-		$this->db->free_result($request);
+		$case .= " ELSE 4 END";
 
-		foreach ($mg_updates as $group_to => $update_members)
-			$this->db->query("
-				UPDATE {$to_prefix}members
-				SET id_post_group = $group_to
-				WHERE id_member IN (" . implode(', ', $update_members) . ")
-				LIMIT " . count($update_members));
+		$this->db->query("
+			UPDATE {$to_prefix}members
+			SET id_post_group = $case");
 	}
 
+	/**
+	 * Fix the boards total posts and topics.
+	 */
 	public function substep5()
 	{
 		$to_prefix = $this->to_prefix;
 
-		// Needs to be done separately for each board.
-		$result_boards = $this->db->query("
-			SELECT id_board
-			FROM {$to_prefix}boards");
-		$boards = array();
-		while ($row_boards = $this->db->fetch_assoc($result_boards))
-			$boards[] = $row_boards['id_board'];
-		$this->db->free_result($result_boards);
+		$result_topics = $this->db->query("
+			SELECT id_board, COUNT(*) as num_topics
+			FROM {$to_prefix}topics
+			GROUP BY id_board");
 
-		foreach ($boards as $id_board)
+		$updates = array();
+		while ($row = $this->db->fetch_assoc($result_topics))
+			$updates[$row['id_board']] = array(
+				'num_topics' => $row['num_topics']
+			);
+		$this->db->free_result($result_topics);
+
+		// Find how many messages are in the board.
+		$result_posts = $this->db->query("
+			SELECT id_board, COUNT(*) as num_posts
+			FROM {$to_prefix}messages
+			GROUP BY id_board");
+
+		while ($row = $this->db->fetch_assoc($result_posts))
+			$updates[$row['id_board']]['num_posts'] = $row['num_posts'];
+		$this->db->free_result($result_posts);
+
+		// Fix the board's totals.
+		foreach ($updates as $id_board => $vals)
 		{
-			// Get the number of topics, and iterate through them.
-			$result_topics = $this->db->query("
-				SELECT COUNT(*)
-				FROM {$to_prefix}topics
-				WHERE id_board = $id_board");
-			list ($num_topics) = $this->db->fetch_row($result_topics);
-			$this->db->free_result($result_topics);
-
-			// Find how many messages are in the board.
-			$result_posts = $this->db->query("
-				SELECT COUNT(*)
-				FROM {$to_prefix}messages
-				WHERE id_board = $id_board");
-			list ($num_posts) = $this->db->fetch_row($result_posts);
-			$this->db->free_result($result_posts);
-
-			// Fix the board's totals.
-			$this->setBoardProperty($id_board, array('num_topics' => $num_topics, 'num_posts' => $num_posts));
+			$this->setBoardProperty($id_board, $vals);
 		}
 	}
 
