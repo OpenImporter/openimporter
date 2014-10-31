@@ -150,7 +150,7 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 
 		while ($row = $this->db->fetch_assoc($result))
 		{
-			$enc_name = $this->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
+			$enc_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
 
 			$attach_dir = $this->getAttachDir($row);
 
@@ -159,7 +159,7 @@ class elkarte1_0_importer_step1 extends Step1BaseImporter
 			else
 			{
 				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
-				$clean_name = $this->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
+				$clean_name = getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
 				$filename = $attach_dir . '/' . $clean_name;
 			}
 
@@ -868,7 +868,7 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 					$filename = $custom_avatar_dir . '/' . $row['filename'];
 				}
 				else
-					$filename = $this->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+					$filename = getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
 
 				// Probably not one of the imported ones, then?
 				if (!file_exists($filename))
@@ -894,35 +894,6 @@ class elkarte1_0_importer_step2 extends Step2BaseImporter
 			pastTime(11);
 		}
 	}
-
-	/**
-	 * helper function for old (SMF) attachments and some new ones
-	 *
-	 * @param string $filename
-	 * @param int $attachment_id
-	 * @param bool $legacy if true returns legacy SMF file name (default true)
-	 * @return string
-	 */
-	protected function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
-	{
-		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
-		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
-		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
-
-			// Get rid of dots, spaces, and other weird characters.
-		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
-
-		if ($legacy)
-		{
-			// @todo not sure about that one
-			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
-			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
-		}
-		else
-		{
-			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
-		}
-	}
 }
 
 class elkarte1_0_importer_step3 extends Step3BaseImporter
@@ -937,6 +908,35 @@ class elkarte1_0_importer_step3 extends Step3BaseImporter
 				VALUES ('import_time', " . time() . "),
 					('enable_password_conversion', '1'),
 					('imported_from', '" . $import_script . "')");
+	}
+}
+
+/**
+ * helper function for old (SMF) attachments and some new ones
+ *
+ * @param string $filename
+ * @param int $attachment_id
+ * @param bool $legacy if true returns legacy SMF file name (default true)
+ * @return string
+ */
+function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
+{
+	// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
+	$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
+	$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+
+		// Get rid of dots, spaces, and other weird characters.
+	$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
+
+	if ($legacy)
+	{
+		// @todo not sure about that one
+		$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
+		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
+	}
+	else
+	{
+		return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.ext';
 	}
 }
 
