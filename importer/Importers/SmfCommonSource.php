@@ -771,6 +771,17 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$this->setBoardProperty(0, array('child_level' => 0, 'id_parent' => 0, 'child_level' => (int) $level), empty($fixed_boards) ? "1=1" : "id_board NOT IN (" . implode(', ', $fixed_boards) . ")");
 		}
 
+		$this->fixInexistentCategories($cat_map);
+	}
+
+	/**
+	 * Assigns any board belonging to a category that doesn't exist
+	 * to a newly created category.
+	 */
+	protected function fixInexistentCategories($cat_map)
+	{
+		$to_prefix = $this->to_prefix;
+
 		// Last check: any boards not in a good category?
 		$request = $this->db->query("
 			SELECT id_cat
@@ -781,7 +792,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 
 		$fix_cats = array();
-		foreach ($cat_map as $board => $cat)
+		foreach ($cat_map as $cat)
 		{
 			if (!in_array($cat, $real_cats))
 				$fix_cats[] = $cat;
