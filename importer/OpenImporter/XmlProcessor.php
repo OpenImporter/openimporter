@@ -58,6 +58,12 @@ class XmlProcessor
 	public $xml;
 
 	/**
+	 * The step running in this very moment.
+	 * @var object
+	 */
+	public $current_step;
+
+	/**
 	 * Holds all the methods required to perform the conversion.
 	 * @var object
 	 */
@@ -83,18 +89,19 @@ class XmlProcessor
 
 	public function processSteps($step, &$substep, &$do_steps)
 	{
-		$table_test = $this->updateStatus($step, $substep, $do_steps);
+		$this->current_step = $step;
+		$table_test = $this->updateStatus($substep, $do_steps);
 
 		// do we need to skip this step?
 		if ($table_test === false || !in_array($substep, $do_steps))
 			return;
 
 		// pre sql queries first!!
-		$this->doPresqlStep($step, $substep);
+		$this->doPresqlStep($substep);
 
 
 		// Codeblock? Then no query.
-		if ($this->doCode($step))
+		if ($this->doCode())
 		{
 			$this->advanceSubstep($substep);
 			return;
@@ -102,9 +109,9 @@ class XmlProcessor
 
 		// sql block?
 		// @todo $_GET
-		if ($substep >= $_GET['substep'] && isset($step->query))
+		if ($substep >= $_GET['substep'] && isset($this->current_step->query))
 		{
-			$this->doSql($step, $substep);
+			$this->doSql($substep);
 
 			$_REQUEST['start'] = 0;
 		}
@@ -112,7 +119,7 @@ class XmlProcessor
 		$this->advanceSubstep($substep);
 	}
 
-	protected function doSql($step, $substep)
+	protected function doSql($substep)
 	{
 		// These are temporarily needed to support the current xml importers
 		// a.k.a. There is more important stuff to do.
@@ -122,23 +129,23 @@ class XmlProcessor
 		$to_prefix = $this->to_prefix;
 		$db = $this->db;
 
-		$current_data = substr(rtrim($this->fix_params((string) $step->query)), 0, -1);
+		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
 		$current_data = $this->fixCurrentData($current_data);
 
-		$this->doDetect($step, $substep);
+		$this->doDetect($substep);
 
-		if (!isset($step->destination))
+		if (!isset($this->current_step->destination))
 			$this->db->query($current_data);
 		else
 		{
-			$special_table = strtr(trim((string) $step->destination), array('{$to_prefix}' => $this->to_prefix));
-			$special_limit = isset($step->options->limit) ? $step->options->limit : 500;
+			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->to_prefix));
+			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
 			// any preparsing code? Loaded here to be used later.
-			$special_code = $this->getPreparsecode($step);
+			$special_code = $this->getPreparsecode();
 
 			// create some handy shortcuts
-			$no_add = $this->shoudNotAdd($step->options);
+			$no_add = $this->shoudNotAdd($this->current_step->options);
 
 			$this->step1_importer->doSpecialTable($special_table);
 
@@ -151,7 +158,7 @@ class XmlProcessor
 				$rows = array();
 				$keys = array();
 
-				if (isset($step->detect))
+				if (isset($this->current_step->detect))
 					$_SESSION['import_progress'] += $special_limit;
 
 				while ($row = $this->db->fetch_assoc($special_result))
@@ -195,8 +202,8 @@ class XmlProcessor
 		if (empty($rows))
 			return;
 
-		$insert_statement = $this->insertStatement($step->options);
-		$ignore_slashes = $this->ignoreSlashes($step->options);
+		$insert_statement = $this->insertStatement($this->current_step->options);
+		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
 
 		$insert_rows = array();
 		foreach ($rows as $row)
@@ -231,10 +238,10 @@ class XmlProcessor
 		return $row;
 	}
 
-	protected function getPreparsecode($step)
+	protected function getPreparsecode()
 	{
-		if (isset($step->preparsecode) && !empty($step->preparsecode))
-			return $this->fix_params((string) $step->preparsecode);
+		if (!empty($this->current_step->preparsecode))
+			return $this->fix_params((string) $this->current_step->preparsecode);
 		else
 			return null;
 	}
@@ -269,14 +276,14 @@ class XmlProcessor
 		return $string;
 	}
 
-	protected function updateStatus($step, &$substep, &$do_steps)
+	protected function updateStatus(&$substep, &$do_steps)
 	{
 		$table_test = true;
 
 		// Increase the substep slightly...
 		pastTime(++$substep);
 
-		$_SESSION['import_steps'][$substep]['title'] = (string) $step->title;
+		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
 		if (!isset($_SESSION['import_steps'][$substep]['status']))
 			$_SESSION['import_steps'][$substep]['status'] = 0;
 
@@ -286,9 +293,9 @@ class XmlProcessor
 			$_SESSION['import_steps'][$substep]['presql'] = true;
 		}
 		// Detect the table, then count rows.. 
-		elseif ($step->detect)
+		elseif ($this->current_step->detect)
 		{
-			$table_test = $this->detect((string) $step->detect);
+			$table_test = $this->detect((string) $this->current_step->detect);
 
 			if ($table_test === false)
 			{
@@ -302,38 +309,38 @@ class XmlProcessor
 		return $table_test;
 	}
 
-	protected function doPresqlStep($step, $substep)
+	protected function doPresqlStep($substep)
 	{
-		if (!isset($step->presql))
+		if (!isset($this->current_step->presql))
 			return;
 
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
-		$presql = $this->fix_params((string) $step->presql);
+		$presql = $this->fix_params((string) $this->current_step->presql);
 		$presql_array = array_filter(explode(';', $presql));
 
 		foreach ($presql_array as $exec)
 			$this->db->query($exec . ';');
 
-		if (isset($step->presqlMethod))
-			$this->step1_importer->beforeSql((string) $step->presqlMethod);
+		if (isset($this->current_step->presqlMethod))
+			$this->step1_importer->beforeSql((string) $this->current_step->presqlMethod);
 
 		// don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
-	protected function doDetect($step, $substep)
+	protected function doDetect($substep)
 	{
 		global $import;
 
-		if (isset($step->detect) && isset($import->count))
-			$import->count->$substep = $this->detect((string) $step->detect);
+		if (isset($this->current_step->detect) && isset($import->count))
+			$import->count->$substep = $this->detect((string) $this->current_step->detect);
 	}
 
-	protected function doCode($step)
+	protected function doCode()
 	{
-		if (isset($step->code))
+		if (isset($this->current_step->code))
 		{
 			// These are temporarily needed to support the current xml importers
 			// a.k.a. There is more important stuff to do.
@@ -344,7 +351,7 @@ class XmlProcessor
 			$db = $this->db;
 
 			// execute our code block
-			$special_code = $this->fix_params((string) $step->code);
+			$special_code = $this->fix_params((string) $this->current_step->code);
 			eval($special_code);
 
 			return true;
