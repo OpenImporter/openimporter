@@ -983,7 +983,7 @@ class wedge1_0_importer_step2 extends Step2BaseImporter
 				'columns' => array('id_member', 'id_msg'),
 				'type' => 'unique',
 			),
-k			'ip_index' => array(
+			'ip_index' => array(
 				'name' => 'ip_index',
 				'columns' => array('poster_ip(15)', 'id_topic'),
 				'type' => 'key',
@@ -1037,7 +1037,6 @@ class wedge1_0_importer_step3 extends Step3BaseImporter
 					('imported_from', '" . $import_script . "')");
 	}
 }
-
 
 /**
  * helper function for old (SMF) attachments and some new ones
