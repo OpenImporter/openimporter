@@ -32,9 +32,7 @@
 		<destination>{$to_prefix}members</destination>
 		<presql>
 			TRUNCATE {$to_prefix}members;
-			TRUNCATE {$to_prefix}attachments;
 		</presql>
-		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
 			$request = $db->query("
 				SELECT groupID
