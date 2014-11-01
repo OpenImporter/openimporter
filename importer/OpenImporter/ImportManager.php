@@ -41,6 +41,12 @@ class ImportManager
 	protected $cookie;
 
 	/**
+	 * The configurator that holds all the settings
+	 * @var object
+	 */
+	protected $config;
+
+	/**
 	 * The template, basically our UI.
 	 * @var object
 	 */
@@ -132,8 +138,6 @@ class ImportManager
 
 		if (!empty($this->config->script))
 		{
-			$this->importer->setScript($this->config->script);
-
 			$this->importer->reloadImporter();
 		}
 	}
@@ -245,7 +249,6 @@ class ImportManager
 	{
 		$this->_detect_scripts();
 
-		$this->importer->setScript($this->config->script);
 		try
 		{
 			$this->importer->reloadImporter();
@@ -354,7 +357,6 @@ class ImportManager
 			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
 			{
-				$this->importer->setScript($_SESSION['import_script']);
 				try
 				{
 					$this->importer->reloadImporter();
@@ -393,8 +395,6 @@ class ImportManager
 
 		if ($this->_detect_scripts())
 			return true;
-
-		$this->importer->setScript($this->config->script);
 
 		try
 		{

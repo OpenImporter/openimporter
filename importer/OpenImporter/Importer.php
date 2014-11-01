@@ -140,27 +140,19 @@ class Importer
 		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
 		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
-		if (!empty($this->config->_script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->_script);
+		if (!empty($this->config->script))
+			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->script);
 	}
 
 	public function setData($data)
 	{
-// 		$this->config->path_from = $data['import_paths'][0];
-// 		$this->config->path_to = $data['import_paths'][1];
 		$this->data = $data;
-	}
-
-	// @todo probably no more necessary
-	public function setScript($script)
-	{
-		$this->config->_script = $script;
 	}
 
 	public function reloadImporter()
 	{
-		if (!empty($this->config->_script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->_script);
+		if (!empty($this->config->script))
+			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->script);
 	}
 
 	protected function _loadImporter($file)
