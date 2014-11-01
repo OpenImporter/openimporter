@@ -4,9 +4,9 @@
 	<item name="imp.which_software">Which software are you using?</item>
 	<item name="imp.multiple_files">The importer found multiple import data files. Please choose the one you wish to use.</item>
 	<item name="imp.not_here">It's not here!</item>
-	<item name="imp.check_more"><![CDATA[If the software you're looking for doesn't appear above, please check to see if it is available for download at <a href="https://github.com/eurich/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
+	<item name="imp.check_more"><![CDATA[If the software you're looking for doesn't appear above, please check to see if it is available for download at <a href="https://github.com/openimporter/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
 	<item name="imp.having_problems"><![CDATA[If you're having any other problems with this importer, don't hesitate to look for help.]]></item>
-	<item name="imp.not_found"><![CDATA[The importer did not find any import data files. Please check to see if the one you want is available for download at <a href="https://github.com/eurich/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
+	<item name="imp.not_found"><![CDATA[The importer did not find any import data files. Please check to see if the one you want is available for download at <a href="https://github.com/openimporter/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></item>
 	<item name="imp.not_found_download"><![CDATA[After you download it, simply upload it into the same folder as <b>this import.php file</b>. If you're having any other problems with this importer, don't hesitate to look for help.]]></item>
 	<item name="imp.try_again">Try again!</item>
 	<item name="imp.settings_not_found">This importer was unable to find %s in the path you specified. Please double check the path, and that it is already installed there.</item>

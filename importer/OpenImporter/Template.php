@@ -346,6 +346,46 @@ class Template
 			{
 				font-size: 8pt;
 			}
+			#destinations ul, #source
+			{
+				padding: 0 1em;
+			}
+			#destinations ul li a
+			{
+				display: block;
+				margin-bottom: 3px;
+				padding-bottom: 3px;
+			}
+			#destinations ul li, #source li
+			{
+				cursor: pointer;
+				float: left;
+				list-style: none;
+				padding: 0.5em;
+				margin: 0 0.5em;
+				border: 1px solid #abadb3;
+				border-radius: 3px;
+			}
+			#destinations ul li
+			{
+				width: 20%;
+				float: none;
+				display: inline-block;
+				height: 4em;
+				cursor: default;
+				vertical-align: middle;
+				margin-top: 1em;
+			}
+			#destinations ul li.active, #source li.active
+			{
+				background-color: #fff;
+			}
+			#destinations ul:after, #source:after
+			{
+				content: "";
+				display: block;
+				clear: both;
+			}
 		</style>
 	</head>
 	<body>
@@ -365,20 +405,20 @@ class Template
 	 *
 	 * @param array $scripts
 	 */
-	public function select_script($scripts)
+	public function select_script($scripts, $destination_names)
 	{
 		echo '
 			<h2>', $this->lng->get('imp.to_what'), '</h2>
 			<div class="content">
 				<p><label for="source">', $this->lng->get('imp.locate_source'), '</label></p>
-				<select onchange="toggle_to(this);" name="source" id="source">';
+				<ul id="source">';
 
-		foreach ($scripts as $key => $values)
+		foreach ($destination_names as $key => $values)
 			echo '
-					<option value="', preg_replace('~[^\w\d]~', '_', $key), '">', $key, '</option>';
+					<li onclick="toggle_to(this);" data-value="', preg_replace('~[^\w\d]~', '_', $key), '">', $values, '</li>';
 
 		echo '
-				</select>
+				</ul>
 			</div>';
 
 		echo '
@@ -427,12 +467,20 @@ class Template
 				{
 					var dest_container = document.getElementById(\'destinations\');
 					var dests = dest_container.getElementsByTagName(\'ul\');
+					var sources = document.getElementById(\'source\').getElementsByTagName(\'li\');
+
 					for (var i = 0; i < dests.length; i++)
 						dests[i].style.display = \'none\';
 
-					document.getElementById(e.value).style.display = \'block\';
+					if (typeof e === \'undefined\')
+						e = sources[0];
+
+					for (var i = 0; i < sources.length; i++)
+						sources[i].removeAttribute("class");
+					e.setAttribute("class", "active");
+					document.getElementById(e.getAttribute(\'data-value\')).style.display = \'block\';
 				}
-				toggle_to(document.getElementById(\'source\'));
+				toggle_to();
 			</script>
 			</div>';
 	}

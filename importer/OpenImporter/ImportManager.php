@@ -320,10 +320,10 @@ class ImportManager
 			$this->config->script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
 		}
 
-		$dir = BASEDIR . DS . 'Importers' . DS;
-		$sources = glob($dir . '*', GLOB_ONLYDIR);
-		$all_scripts = array();
+		$sources = glob(BASEDIR . DS . 'Importers' . DS . '*', GLOB_ONLYDIR);
+		$count_scripts = 0;
 		$scripts = array();
+		$destination_names = array();
 		foreach ($sources as $source)
 		{
 			$from = basename($source);
@@ -340,19 +340,20 @@ class ImportManager
 					continue;
 				}
 
-				$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
-				$all_scripts[] = array('path' => $from . DS . basename($entry), 'name' => $xmlObj->general->name);
+				$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => (string) $xmlObj->general->name);
+				$destination_names[$from] = (string) $xmlObj->general->version;
+				$count_scripts++;
 			}
 		}
 
 		if (!empty($_SESSION['import_script']))
 		{
-			if (count($all_scripts) > 1)
+			if ($count_scripts > 1)
 				$this->sources[$from] = $scripts[$from];
 			return false;
 		}
 
-		if (count($all_scripts) == 1)
+		if ($count_scripts == 1)
 		{
 			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
 			if (substr($_SESSION['import_script'], -4) == '.xml')
@@ -368,9 +369,13 @@ class ImportManager
 			}
 			return false;
 		}
+		foreach ($scripts as $key => $val)
+			usort($scripts[$key], function ($v1, $v2) {
+				return strcasecmp($v1['name'], $v2['name']);
+			});
 
 		$this->response->use_template = 'select_script';
-		$this->response->params_template = array($scripts);
+		$this->response->params_template = array($scripts, $destination_names);
 
 		return true;
 	}
