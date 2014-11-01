@@ -252,7 +252,7 @@
 				list ($mybb_attachment_dir) = $db->fetch_row($result);
 				$db->free_result($result);
 
-				$mybb_attachment_dir = $this->path_from . ltrim($mybb_attachment_dir, '.');
+				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
 			}
 
 			//create some useful shortcuts, we start with images..
@@ -306,7 +306,7 @@
 		</options>
 		<preparsecode>
 			//create some useful shortcuts
-			$source = $this->path_from . strtok(ltrim($row['filename'], '.'), '?');
+			$source = $this->config->path_from . strtok(ltrim($row['filename'], '.'), '?');
 			$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
 
 			$upload_result = $this->step1_importer->moveAvatar($row, $source, $filename);

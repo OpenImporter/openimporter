@@ -22,7 +22,7 @@
  */
 class wedge1_0_importer extends SmfCommonSource
 {
-	protected $attach_extension = 'ext';
+	public $attach_extension = 'ext';
 
 	public function getName()
 	{
@@ -38,7 +38,7 @@ class wedge1_0_importer_step2 extends SmfCommonSourceStep2
 {
 	public function substep0()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// Get all members with wrong number of personal messages.
 		$request = $this->db->query("
@@ -80,7 +80,7 @@ class wedge1_0_importer_step2 extends SmfCommonSourceStep2
 
 	public function substep12()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$indexes = array(
 			'id_topic' => array(
@@ -204,7 +204,7 @@ class wedge1_0_importer_step3 extends SmfCommonSourceStep3
 {
 	public function run($import_script)
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// add some importer information.
 		$this->db->query("

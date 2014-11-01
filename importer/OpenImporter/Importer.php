@@ -36,6 +36,12 @@ class Importer
 	public $lng;
 
 	/**
+	 * Contains any kind of configuration.
+	 * @var object
+	 */
+	public $config;
+
+	/**
 	 * The destination object.
 	 * @var object
 	 */
@@ -123,36 +129,38 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($lang, $template)
+	public function __construct($config, $lang, $template)
 	{
 		// initialize some objects
+		$this->config = $config;
 		$this->lng = $lang;
 		$this->template = $template;
 
 		// The current step - starts at 0.
-		$_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
-		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
+		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
+		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
-		if (!empty($this->_script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->_script);
+		if (!empty($this->config->_script))
+			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->_script);
 	}
 
 	public function setData($data)
 	{
-		$this->path_from = $data['import_paths'][0];
-		$this->path_to = $data['import_paths'][1];
+// 		$this->config->path_from = $data['import_paths'][0];
+// 		$this->config->path_to = $data['import_paths'][1];
 		$this->data = $data;
 	}
 
+	// @todo probably no more necessary
 	public function setScript($script)
 	{
-		$this->_script = $script;
+		$this->config->_script = $script;
 	}
 
 	public function reloadImporter()
 	{
-		if (!empty($this->_script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->_script);
+		if (!empty($this->config->_script))
+			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->_script);
 	}
 
 	protected function _loadImporter($file)
@@ -169,11 +177,11 @@ class Importer
 		require_once($dest_helper);
 
 		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
-		$this->destination = new $this->_importer_base_class_name();
+		$this->config->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
 
-		$this->destination->setParam($this->db, $this->to_prefix);
+		$this->config->destination->setParam($this->db, $this->config);
 	}
 
 	/**
@@ -198,22 +206,22 @@ class Importer
 
 	public function populateFormFields($form)
 	{
-		$form_path = isset($this->path_to) ? $this->path_to : BASEDIR;
-		$form->addOption($this->destination->getFormFields($form_path));
+		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
+		$form->addOption($this->config->destination->getFormFields($form_path));
 
 		$class = (string) $this->xml->general->className;
 		$settings = new $class();
 
-		if (!isset($this->path_from))
-			$this->path_from = BASEDIR;
+		if (!isset($this->config->path_from))
+			$this->config->path_from = BASEDIR;
 
-		$path_from = $settings->loadSettings($this->path_from, true);
+		$path_from = $settings->loadSettings($this->config->path_from, true);
 		if ($path_from !== null)
 		{
 			$form->addOption(array(
 				'id' => 'path_from',
 				'label' => array('imp.path_from', $this->xml->general->name),
-				'default' => $this->path_from,
+				'default' => $this->config->path_from,
 				'type' => 'text',
 				'correct' => $path_from ? 'imp.change_path' : 'imp.right_path',
 				'validate' => true,
@@ -253,7 +261,7 @@ class Importer
 	}
 
 	/**
-	 * prepare the importer with custom settings stuff
+	 * Prepare the importer with custom settings of the source
 	 *
 	 * @throws Exception
 	 * @return boolean|null
@@ -261,11 +269,11 @@ class Importer
 	private function _loadSettings()
 	{
 		$class = (string) $this->xml->general->className;
-		$this->settings = new $class();
+		$this->config->source = new $class();
 
-		$this->settings->setDefines();
+		$this->config->source->setDefines();
 
-		$this->settings->setGlobals();
+		$this->config->source->setGlobals();
 
 		//Dirty hack
 		if (isset($_SESSION['store_globals']))
@@ -281,14 +289,14 @@ class Importer
 		// Any custom form elements to speak of?
 		$this->init_form_data();
 
-		if (empty($this->path_to))
+		if (empty($this->config->path_to))
 			return;
-		$this->_boardurl = $this->destination->getDestinationURL($this->path_to);
+		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 
-		if ($this->_boardurl === false)
-			throw new Exception($this->lng->get(array('imp.settings_not_found', $this->destination->getName())));
+		if ($this->config->boardurl === false)
+			throw new Exception($this->lng->get(array('imp.settings_not_found', $this->config->destination->getName())));
 
-		if (!$this->destination->verifyDbPass($this->data['db_pass']))
+		if (!$this->config->destination->verifyDbPass($this->data['db_pass']))
 			throw new Exception($this->lng->get('imp.password_incorrect'));
 
 		// Check the steps that we have decided to go through.
@@ -322,7 +330,7 @@ class Importer
 		{
 			$result = $this->db->query('
 				SELECT COUNT(*)
-				FROM ' . $this->from_prefix . $this->settings->getTableTest(), true);
+				FROM ' . $this->config->from_prefix . $this->config->source->getTableTest(), true);
 
 			if ($result === false)
 				throw new Exception($this->lng->get(array('imp.permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
@@ -333,8 +341,8 @@ class Importer
 
 	protected function loadSettings()
 	{
-		if (!empty($this->path_from))
-			$found = $this->settings->loadSettings($this->path_from);
+		if (!empty($this->config->path_from))
+			$found = $this->config->source->loadSettings($this->config->path_from);
 		else
 			$found = true;
 
@@ -351,7 +359,7 @@ class Importer
 	{
 		try
 		{
-			list ($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name) = $this->destination->dbConnectionData();
+			list ($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name) = $this->config->destination->dbConnectionData();
 
 			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
 			//We want UTF8 only, let's set our mysql connetction to utf8
@@ -367,20 +375,20 @@ class Importer
 		{
 			// @todo ???
 			if (is_numeric(substr($db_prefix, 0, 1)))
-				$this->to_prefix = $db_name . '.' . $db_prefix;
+				$this->config->to_prefix = $db_name . '.' . $db_prefix;
 			else
-				$this->to_prefix = '`' . $db_name . '`.' . $db_prefix;
+				$this->config->to_prefix = '`' . $db_name . '`.' . $db_prefix;
 		}
 		else
 		{
-			$this->to_prefix = $db_prefix;
+			$this->config->to_prefix = $db_prefix;
 		}
 
-		$this->from_prefix = $this->settings->getPrefix();
+		$this->config->from_prefix = $this->config->source->getPrefix();
 
-		if (preg_match('~^`[^`]+`.\d~', $this->from_prefix) != 0)
+		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
 		{
-			$this->from_prefix = strtr($this->from_prefix, array('`' => ''));
+			$this->config->from_prefix = strtr($this->config->from_prefix, array('`' => ''));
 		}
 
 		// SQL_BIG_SELECTS: If set to 0, MySQL aborts SELECT statements that are
@@ -463,7 +471,7 @@ class Importer
 		$counter_current_step = 0;
 		$import_steps = array();
 
-		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template, $this->xml, $this->path_from);
+		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
 
 		// loop through each step
 		foreach ($this->xml->step as $counts)
@@ -500,7 +508,7 @@ class Importer
 	public function doStep1($do_steps)
 	{
 		$step1_importer_class = $this->_importer_base_class_name . '_step1';
-		$step1_importer = new $step1_importer_class($this->db, $this->to_prefix, $this->destination);
+		$step1_importer = new $step1_importer_class($this->db, $this->config);
 
 		if ($this->xml->general->globals)
 			foreach (explode(',', $this->xml->general->globals) as $global)
@@ -508,7 +516,7 @@ class Importer
 
 		$substep = 0;
 
-		$xmlParser = new XmlProcessor($this->db, $this->to_prefix, $this->from_prefix, $this->template, $this->xml, $this->path_from);
+		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
 		$xmlParser->setImporter($step1_importer);
 
 		foreach ($this->xml->step as $step)
@@ -525,7 +533,7 @@ class Importer
 	public function doStep2()
 	{
 		$step2_importer_class = $this->_importer_base_class_name . '_step2';
-		$instance = new $step2_importer_class($this->db, $this->to_prefix, $this->destination);
+		$instance = new $step2_importer_class($this->db, $this->config);
 
 		$methods = get_class_methods($instance);
 		$substeps = array();
@@ -563,7 +571,7 @@ class Importer
 	public function doStep3()
 	{
 		$step3_importer_class = $this->_importer_base_class_name . '_step3';
-		$instance = new $step3_importer_class($this->db, $this->to_prefix, $this->destination);
+		$instance = new $step3_importer_class($this->db, $this->config);
 
 		$instance->run($this->lng->get(array('imp.imported_from', $this->xml->general->name)));
 	}

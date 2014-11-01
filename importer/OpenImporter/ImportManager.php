@@ -104,7 +104,7 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($importer, $template, $cookie, $response)
+	public function __construct($config, $importer, $template, $cookie, $response)
 	{
 		global $time_start;
 
@@ -112,6 +112,7 @@ class ImportManager
 
 		$this->loadFromSession();
 
+		$this->config = $config;
 		$this->importer = $importer;
 		$this->cookie = $cookie;
 		$this->template = $template;
@@ -129,9 +130,9 @@ class ImportManager
 
 		$this->loadPaths();
 
-		if (!empty($this->_script))
+		if (!empty($this->config->script))
 		{
-			$this->importer->setScript($this->_script);
+			$this->importer->setScript($this->config->script);
 
 			$this->importer->reloadImporter();
 		}
@@ -157,14 +158,14 @@ class ImportManager
 		if (isset($_POST['path_from']) || isset($_POST['path_to']))
 		{
 			if (isset($_POST['path_from']))
-				$this->path_from = rtrim($_POST['path_from'], '\\/');
+				$this->config->path_from = rtrim($_POST['path_from'], '\\/');
 			if (isset($_POST['path_to']))
-				$this->path_to = rtrim($_POST['path_to'], '\\/');
+				$this->config->path_to = rtrim($_POST['path_to'], '\\/');
 
-			$this->data['import_paths'] = array($this->path_from, $this->path_to);
+			$this->data['import_paths'] = array($this->config->path_from, $this->config->path_to);
 		}
 		elseif (isset($this->data['import_paths']))
-			list ($this->path_from, $this->path_to) = $this->data['import_paths'];
+			list ($this->config->path_from, $this->config->path_to) = $this->data['import_paths'];
 
 		if (!empty($this->data))
 			$this->importer->setData($this->data);
@@ -190,14 +191,14 @@ class ImportManager
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
-			$_SESSION['import_script'] = $this->_script = (string) $_REQUEST['import_script'];
+			$_SESSION['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
 		elseif (isset($_SESSION['import_script']))
 		{
-			$this->_script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
+			$this->config->script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
 		}
 		else
 		{
-			$this->_script = '';
+			$this->config->script = '';
 			$_SESSION['import_script'] = null;
 		}
 	}
@@ -244,7 +245,7 @@ class ImportManager
 	{
 		$this->_detect_scripts();
 
-		$this->importer->setScript($this->_script);
+		$this->importer->setScript($this->config->script);
 		try
 		{
 			$this->importer->reloadImporter();
@@ -256,29 +257,27 @@ class ImportManager
 
 		if (isset($_GET['path_to']))
 		{
-			$this->response->valid = $this->importer->destination->checkSettingsPath($_GET['path_to']);
+			$this->response->valid = $this->config->destination->checkSettingsPath($_GET['path_to']);
 		}
 		elseif (isset($_GET['path_from']))
 		{
-			$found = false;
-			if (method_exists($this->importer->settings, 'loadSettings'))
-				$found = $this->importer->settings->loadSettings($_GET['path_from'], true);
-
-			$this->response->valid = $found;
+			$this->response->valid = $this->config->source->loadSettings($_GET['path_from'], true);
 		}
 		else
+		{
 			$this->response->valid = false;
+		}
 	}
 
 	protected function populateResponseDetails()
 	{
 		if (isset($this->importer->xml->general->name))
-			$this->response->page_title = $this->importer->xml->general->name . ' to ' . $this->importer->destination->getName();
+			$this->response->page_title = $this->importer->xml->general->name . ' to ' . $this->config->destination->getName();
 		else
 			$this->response->page_title = 'OpenImporter';
 
 // 		$this->response->from = $this->importer->settings : null
-		$this->response->script = $this->_script;
+		$this->response->script = $this->config->script;
 // 		$this->response->
 // 		$this->response->
 // 		$this->response->
@@ -313,9 +312,9 @@ class ImportManager
 	 */
 	private function _detect_scripts()
 	{
-		if ($this->_script !== null)
+		if ($this->config->script !== null)
 		{
-			$this->_script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
+			$this->config->script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
 		}
 
 		$dir = BASEDIR . DS . 'Importers' . DS;
@@ -395,7 +394,7 @@ class ImportManager
 		if ($this->_detect_scripts())
 			return true;
 
-		$this->importer->setScript($this->_script, $this->path_from, $this->path_to, $this->data);
+		$this->importer->setScript($this->config->script);
 
 		try
 		{
@@ -452,7 +451,7 @@ class ImportManager
 	 */
 	public function doStep1()
 	{
-		$this->cookie->set(array($this->path_to, $this->path_from));
+		$this->cookie->set(array($this->config->path_to, $this->config->path_from));
 
 		$do_steps = $this->step1Progress();
 

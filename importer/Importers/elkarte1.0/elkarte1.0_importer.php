@@ -19,7 +19,7 @@
  */
 class elkarte1_0_importer extends SmfCommonSource
 {
-	protected $attach_extension = 'elk';
+	public $attach_extension = 'elk';
 
 	public function getName()
 	{
@@ -35,7 +35,7 @@ class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 {
 	public function substep0()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// Get all members with wrong number of personal messages.
 		$request = $this->db->query("

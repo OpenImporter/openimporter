@@ -13,13 +13,11 @@
 abstract class BaseImporter
 {
 	protected $db = null;
-	protected $to_prefix = null;
-	protected $settings = null;
+	protected $config = null;
 
-	public function __construct($db, $to_prefix, $destination)
+	public function __construct($db, $config)
 	{
 		$this->db = $db;
-		$this->to_prefix = $to_prefix;
-		$this->settings = $destination;
+		$this->config = $config;
 	}
 }

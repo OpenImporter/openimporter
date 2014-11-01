@@ -19,7 +19,7 @@
  */
 abstract class SmfCommonSource
 {
-	protected $attach_extension = '';
+	public $attach_extension = '';
 
 	protected $path = null;
 
@@ -27,13 +27,13 @@ abstract class SmfCommonSource
 	public $attachmentUploadDirs = null;
 	public $avatarUploadDir = null;
 
-	protected $to_prefix = '';
+	protected $config = null;
 	protected $db = null;
 
-	public function setParam($db, $to_prefix)
+	public function setParam($db, $config)
 	{
 		$this->db = $db;
-		$this->to_prefix = $to_prefix;
+		$this->config = $config;
 	}
 
 	abstract public function getName();
@@ -139,7 +139,7 @@ abstract class SmfCommonSource
 
 	public function specialAttachments()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		if (!isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
 		{
@@ -213,13 +213,13 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	public function doSpecialTable($special_table, $params = null)
 	{
 		// Are we doing attachments? They're going to want a few things...
-		if ($special_table == $this->to_prefix . 'attachments' && $params === null)
+		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
 		{
-			$this->settings->specialAttachments();
+			$this->config->destination->specialAttachments();
 			return $params;
 		}
 		// Here we have various bits of custom code for some known problems global to all importers.
-		elseif ($special_table == $this->to_prefix . 'members' && $params !== null)
+		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
 			return $this->specialMembers($params);
 
 		return $params;
@@ -227,7 +227,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 	public function removeAttachments()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// !!! This should probably be done in chunks too.
 		// attachment_type = 1 are avatars.
@@ -238,7 +238,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		while ($row = $this->db->fetch_assoc($result))
 		{
-			$enc_name = $this->settings->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
+			$enc_name = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
 
 			$attach_dir = $this->getAttachDir($row);
 
@@ -247,7 +247,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			else
 			{
 				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
-				$clean_name = $this->settings->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
+				$clean_name = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
 				$filename = $attach_dir . '/' . $clean_name;
 			}
 
@@ -260,18 +260,18 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 	public function getAttachDir($row)
 	{
-		return $this->settings->getAttachDir($row);
+		return $this->config->destination->getAttachDir($row);
 	}
 
 	public function getAvatarDir($row)
 	{
-		return $this->settings->getAvatarDir($row);
+		return $this->config->destination->getAvatarDir($row);
 	}
 
 	public function getAvatarFolderId($row)
 	{
 		// @todo in theory we could be able to find the "current" directory
-		if ($this->settings->avatarUploadDir === null)
+		if ($this->config->destination->avatarUploadDir === null)
 			return 1;
 		else
 			return false;
@@ -280,10 +280,10 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	public function newIdAttach()
 	{
 		// The one to return
-		$current = $this->settings->id_attach;
+		$current = $this->config->destination->id_attach;
 
 		// Increase preparing for the next one
-		$this->settings->id_attach++;
+		$this->config->destination->id_attach++;
 
 		return $current;
 	}
@@ -306,7 +306,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			$file_hash = 'avatar_' . $row['id_member'] . '_' . time() . '.' . $extension;
 
 			$this->db->query("
-				UPDATE {$this->to_prefix}members
+				UPDATE {$this->config->to_prefix}members
 				SET avatar = '$file_hash'
 				WHERE id_member = $row[id_member]");
 
@@ -319,7 +319,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			$file_hash = createAttachmentFileHash($filename);
 			$id_attach = $this->newIdAttach();
 
-			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.' . $this->settings->attach_extension;
+			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.' . $this->config->destination->attach_extension;
 
 			$return = array(
 				'id_attach' => $id_attach,
@@ -357,7 +357,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	public function substep1()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
 			SELECT id_board, MAX(id_msg) AS id_last_msg, MAX(modified_time) AS last_edited
@@ -411,7 +411,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	protected function setBoardProperty($board, $property, $where = null)
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$sets = array();
 		foreach ($property as $k => $v)
@@ -436,7 +436,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	public function substep2()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
 			SELECT id_group
@@ -463,7 +463,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	public function substep3()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// Get the number of messages...
 		$result = $this->db->query("
@@ -521,7 +521,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	 */
 	public function substep4()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
 			SELECT id_group, min_posts
@@ -560,7 +560,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	 */
 	public function substep5()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$result_topics = $this->db->query("
 			SELECT id_board, COUNT(*) as num_topics
@@ -593,7 +593,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	public function substep6()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		while (true)
 		{
@@ -633,7 +633,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	public function substep7()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		while (true)
 		{
@@ -684,7 +684,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	 */
 	protected function getMsgMemberID($messageID)
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 			// Find the topic and make sure the member still exists.
 		$result = $this->db->query("
@@ -710,7 +710,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	 */
 	public function substep8()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// First, let's get an array of boards and parents.
 		$request = $this->db->query("
@@ -780,7 +780,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	 */
 	protected function fixInexistentCategories($cat_map)
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// Last check: any boards not in a good category?
 		$request = $this->db->query("
@@ -815,7 +815,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	 */
 	public function substep9()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
 			SELECT c.id_cat, c.cat_order, b.id_board, b.board_order
@@ -845,7 +845,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	public function substep11()
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
 			SELECT COUNT(*)
@@ -898,7 +898,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 	protected function avatarFullPath($row)
 	{
-		$dir = $this->settings->getAvatarDir($row);
+		$dir = $this->config->destination->getAvatarDir($row);
 
 		if ($row['attachment_type'] == 1)
 		{
@@ -910,7 +910,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$filename = $row['filename'];
 		}
 		else
-			$filename = $this->settings->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+			$filename = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
 
 		return $dir . '/' . $filename;
 	}
@@ -920,7 +920,7 @@ abstract class SmfCommonSourceStep3 extends Step3BaseImporter
 {
 	public function run($import_script)
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		// add some importer information.
 		$this->db->query("

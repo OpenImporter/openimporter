@@ -27,22 +27,10 @@ class XmlProcessor
 	protected $db;
 
 	/**
-	 * The table prefix for our destination database.
-	 * @var string
+	 * Contains any kind of configuration.
+	 * @var object
 	 */
-	public $to_prefix;
-
-	/**
-	 * The table prefix for our source database.
-	 * @var string
-	 */
-	public $from_prefix;
-
-	/**
-	 * The path to the source script.
-	 * @var string
-	 */
-	public $path_from;
+	public $config;
 
 	/**
 	 * The template
@@ -72,14 +60,12 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $to_prefix, $from_prefix, $template, $xml, $path_from)
+	public function __construct($db, $config, $template, $xml)
 	{
 		$this->db = $db;
-		$this->to_prefix = $to_prefix;
-		$this->from_prefix = $from_prefix;
+		$this->config = $config;
 		$this->template = $template;
 		$this->xml = $xml;
-		$this->path_from = $path_from;
 	}
 
 	public function setImporter($step1_importer)
@@ -98,7 +84,6 @@ class XmlProcessor
 
 		// pre sql queries first!!
 		$this->doPresqlStep($substep);
-
 
 		// Codeblock? Then no query.
 		if ($this->doCode())
@@ -126,7 +111,7 @@ class XmlProcessor
 		// a.k.a. I'm too lazy to change all of them now. :P
 		// @todo remove
 		// Both used in eval'ed code
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 		$db = $this->db;
 
 		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
@@ -138,7 +123,7 @@ class XmlProcessor
 			$this->db->query($current_data);
 		else
 		{
-			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->to_prefix));
+			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
 			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
 			// any preparsing code? Loaded here to be used later.
@@ -271,7 +256,7 @@ class XmlProcessor
 					$string = strtr($string, array('{$' . $key . '}' => $value));
 			}
 		}
-		$string = strtr($string, array('{$from_prefix}' => $this->from_prefix, '{$to_prefix}' => $this->to_prefix));
+		$string = strtr($string, array('{$from_prefix}' => $this->config->from_prefix, '{$to_prefix}' => $this->config->to_prefix));
 
 		return $string;
 	}
@@ -347,7 +332,7 @@ class XmlProcessor
 			// a.k.a. I'm too lazy to change all of them now. :P
 			// @todo remove
 			// Both used in eval'ed code
-			$to_prefix = $this->to_prefix;
+			$to_prefix = $this->config->to_prefix;
 			$db = $this->db;
 
 			// execute our code block
@@ -445,7 +430,7 @@ class XmlProcessor
 	 */
 	protected function doIpPointer($row, $ips_to_pointer)
 	{
-		$to_prefix = $this->to_prefix;
+		$to_prefix = $this->config->to_prefix;
 
 		foreach ($ips_to_pointer as $ip)
 		{
