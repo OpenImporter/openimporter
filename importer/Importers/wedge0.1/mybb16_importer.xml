@@ -1,0 +1,359 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>MyBB 1.6</name>
+		<version>Wedge 0.1</version>
+		<className>mybb16</className>
+		<ip_to_ipv6>member_ip, member_ip2</ip_to_ipv6>
+		<ip_to_pointer>poster_ip</ip_to_pointer>
+	</general>
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}users</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			TRUNCATE {$to_prefix}members;
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN password_salt password_salt varchar(16) NOT NULL default '';
+		</presql>
+		<preparsecode>
+			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
+				$row['birthdate'] = '0001-01-01';
+
+			// data field is used temporary to dertermine the type of avatar
+			if ($row['data'] != 'remote')
+				$row['avatar'] = '';
+
+			$row['data'] = '';
+		</preparsecode>
+		<query>
+			SELECT
+				uid AS id_member, SUBSTRING(username, 1, 255) AS member_name,
+				SUBSTRING(username, 1, 255) AS real_name, email AS email_address,
+				SUBSTRING(password, 1, 64) AS passwd, SUBSTRING(salt, 1, 8) AS password_salt,
+				postnum AS posts, SUBSTRING(usertitle, 1, 255) AS usertitle,
+				lastvisit AS last_login, IF(usergroup = 4, 1, 0) AS id_group,
+				regdate AS date_registered, SUBSTRING(website, 1, 255) AS website_url,
+				SUBSTRING(website, 1, 255) AS website_title, '' AS message_labels,
+				SUBSTRING(signature, 1, 65534) AS signature, hideemail AS hide_email,
+				SUBSTRING(buddylist, 1, 255) AS buddy_list, '' AS ignore_boards,
+				SUBSTRING(regip, 1, 255) AS member_ip, SUBSTRING(regip, 1, 255) AS member_ip2,
+				SUBSTRING(ignorelist, 1, 255) AS pm_ignore_list, avatar,
+				timeonline AS total_time_logged_in, birthday AS birthdate, avatartype AS data
+			FROM {$from_prefix}users;
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}forums</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT fid AS id_cat, SUBSTRING(name, 1, 255) AS name, disporder AS cat_order
+			FROM {$from_prefix}forums
+			WHERE type = 'c';	
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}forums</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+		</presql>
+		<preparsecode>
+			$row['url'] = substr($this->config->boardurl, strpos($this->config->boardurl, '://') + 3) . '/board' . $row['url'];
+			$row['urllen'] = strlen($row['url']);
+
+			if (!empty($row['member_groups']))
+			{
+				$permissions = explode(',', $row['member_groups']);
+				foreach ($permissions as $allowed)
+					$db->query("
+						REPLACE INTO {$to_prefix}board_groups
+							(id_group, id_board, view_perm, enter_perm)
+						VALUES ('$allowed', $row[id_board], 'allow', 'allow')
+					");
+			}
+		</preparsecode>
+		<query>
+			SELECT
+				fid AS id_board, SUBSTRING(name, 1, 255) AS name, fid AS url,
+				SUBSTRING(description, 1, 65534) AS description, disporder AS board_order,
+				posts AS num_posts, threads AS num_topics, pid AS id_cat,
+				usepostcounts AS count_posts, '-1,0' AS member_groups
+			FROM {$from_prefix}forums
+			WHERE type = 'f';
+		</query>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}threads</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<query>
+			SELECT
+				t.tid AS id_topic, t.fid AS id_board, t.sticky AS is_pinned,
+				t.poll AS id_poll, t.views AS num_views, IFNULL(t.uid, 0) AS id_member_started,
+				IFNULL(ul.uid, 0) AS id_member_updated, t.replies AS num_replies,
+				CASE
+					WHEN (t.closed = '1') THEN 1
+					ELSE 0
+				END AS locked,
+				MIN(p.pid) AS id_first_msg, MAX(p.pid) AS id_last_msg
+			FROM {$from_prefix}threads AS t
+				INNER JOIN {$from_prefix}posts AS p
+				LEFT JOIN {$from_prefix}users AS ul ON (BINARY ul.username = t.lastposter)
+			WHERE p.tid = t.tid
+			GROUP BY t.tid
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}posts</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<slashes>true</slashes>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				p.pid AS id_msg, p.tid AS id_topic, t.fid AS id_board, p.uid AS id_member,
+				SUBSTRING(p.username, 1, 255) AS poster_name, p.dateline AS poster_time,
+				SUBSTRING(p.ipaddress, 1, 255) AS poster_ip,
+				SUBSTRING(IF(p.subject = '', t.subject, p.subject), 1, 255) AS subject,
+				SUBSTRING(IF(p.uid > 0, u.email, ''), 1, 255) AS poster_email,
+				p.smilieoff = 'no' AS smileys_enabled,
+				SUBSTRING(IF(p.edituid > 0, edit_u.username, 0), 1, 255) AS modified_name,
+				p.edittime AS modified_time, SUBSTRING(p.message, 1, 65534) AS body, 'xx' AS icon
+			FROM {$from_prefix}posts AS p
+				INNER JOIN {$from_prefix}threads AS t
+				LEFT JOIN {$from_prefix}users AS u ON (u.uid = p.uid)
+				LEFT JOIN {$from_prefix}users AS edit_u ON (edit_u.uid = p.edituid)
+			WHERE t.tid = p.tid;
+		</query>
+	</step>
+	<step>
+		<title>Importing polls</title>
+		<detect>{$from_prefix}polls</detect>
+		<destination>{$to_prefix}polls</destination>
+		<presql>
+			TRUNCATE {$to_prefix}polls;
+			TRUNCATE {$to_prefix}poll_choices;
+			TRUNCATE {$to_prefix}log_polls;
+		</presql>
+		<query>
+			SELECT
+				p.pid AS id_poll, SUBSTRING(p.question, 1, 255) AS question, p.closed AS voting_locked,
+				t.uid AS id_member,	IF(p.timeout = 0, 0, p.dateline + p.timeout * 86400) AS expire_time,
+				SUBSTRING(t.username, 1, 255) AS poster_name
+			FROM {$from_prefix}polls AS p
+				LEFT JOIN {$from_prefix}threads AS t ON (t.tid = p.tid);
+		</query>
+	</step>
+	<step>
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}polls</detect>
+		<destination>{$to_prefix}poll_choices</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode><![CDATA[
+			$keys = array('id_poll', 'id_choice', 'label', 'votes');
+
+			$options = explode('||~|~||', $row['opt']);
+			$votes = explode('||~|~||', $row['votes']);
+
+			$id_poll = $row['id_poll'];
+			for ($i = 0, $n = count($options); $i < $n; $i++)
+			{
+				$rows[] = implode(', ', array(
+					'id_poll' => $id_poll,
+					'id_choice' => ($i + 1),
+					'label' => '"'. addslashes($options[$i]). '"',
+					'votes' => @$votes[$i],
+				));
+			}
+		]]></preparsecode>
+		<query>
+			SELECT pid AS id_poll, options AS opt, votes
+			FROM {$from_prefix}polls;
+		</query>
+	</step>
+	<step>
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}pollvotes</detect>
+		<destination>{$to_prefix}log_polls</destination>
+		<query>
+			SELECT pid AS id_poll, uid AS id_member, voteoption AS id_choice
+			FROM {$from_prefix}pollvotes;
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}privatemessages</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>
+			TRUNCATE {$to_prefix}personal_messages;
+			TRUNCATE {$to_prefix}pm_recipients;
+		</presql>
+		<preparsecode>
+			if(empty($row['from_name']))
+				$row['from_name'] = 'Guest';
+		</preparsecode>
+		<query>
+			SELECT
+				pm.pmid AS id_pm, pm.fromid AS id_member_from, pm.dateline AS msgtime,
+				SUBSTRING(uf.username, 1, 255) AS from_name, SUBSTRING(pm.subject, 1, 255) AS subject,
+				SUBSTRING(pm.message, 1, 65534) AS body
+			FROM {$from_prefix}privatemessages AS pm
+				LEFT JOIN {$from_prefix}users AS uf ON (uf.uid = pm.fromid)
+			WHERE pm.folder != 2;
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}privatemessages</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<query>
+			SELECT pmid AS id_pm, toid AS id_member, readtime != 0 AS is_read, '-1' AS labels
+			FROM {$from_prefix}privatemessages
+			WHERE folder != 2;
+		</query>
+	</step>
+	<step>
+		<title>Importing topic notifications</title>
+		<detect>{$from_prefix}threadsubscriptions</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<presql>
+			TRUNCATE {$to_prefix}log_notify;
+		</presql>
+		<query>
+			SELECT uid AS id_member, tid AS id_topic
+			FROM {$from_prefix}threadsubscriptions;
+		</query>
+	</step>
+	<step>
+		<title>Importing board notifications</title>
+		<detect>{$from_prefix}forumsubscriptions</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT uid AS id_member, fid AS id_board
+			FROM {$from_prefix}forumsubscriptions;
+		</query>
+	</step>
+	<step>
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}attachments</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode>
+			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_msg', 'downloads', 'width', 'height');
+
+			if (!isset($mybb_attachment_dir))
+			{
+				$result = $db->query("
+					SELECT value
+					FROM {$from_prefix}settings
+					WHERE name = 'uploadspath'
+					LIMIT 1");
+				list ($mybb_attachment_dir) = $db->fetch_row($result);
+				$db->free_result($result);
+
+				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
+			}
+
+			//create some useful shortcuts, we start with images..
+			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
+			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png')))
+				$ext = '';
+
+			$source = $mybb_attachment_dir . '/' . $row['attachname'];
+			$file_hash = createAttachmentFileHash($row['filename']);
+			$id_attach = $this->step1_importer->newIdAttach();
+			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.ext';
+			$width = 0;
+			$height = 0;
+
+			copy_file($source, $destination);
+
+			// Is image? we need a thumbnail
+			if (!empty($ext))
+			{
+				list ($width, $height) = getimagesize($destination);
+				if(empty($width))
+				{
+					$width = 0;
+					$height = 0;
+				}
+			}
+
+			//prepare our insert
+			$rows[] = implode(', ', array(
+				'id_attach' => $id_attach,
+				'size' => filesize($destination),
+				'filename' => '\'' . $row['filename'] . '\'',
+				'file_hash' => '\'' . $file_hash . '\'',
+				'id_msg' => $row['id_msg'],
+				'downloads' => $row['downloads'],
+				'width' => $width,
+				'height' => $height,
+			));
+		</preparsecode>
+		<query>
+			SELECT pid AS id_msg, downloads, filename, filesize, attachname
+			FROM {$from_prefix}attachments;
+		</query>
+	</step>
+	<step>
+		<title>Importing avatars</title>
+		<detect>{$from_prefix}users</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode>
+			//create some useful shortcuts
+			$source = $this->config->path_from . strtok(ltrim($row['filename'], '.'), '?');
+			$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
+
+			$upload_result = $this->step1_importer->moveAvatar($row, $source, $filename);
+
+			if (empty($upload_result))
+			{
+				// Ensure nothing is updated.
+				$rows = array();
+			}
+			else
+			{
+				$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
+
+				$rows[] = $upload_result;
+			}
+
+			copy_file($source, $destination);
+		</preparsecode>
+		<query>
+			SELECT uid AS id_member, avatar AS filename
+			FROM {$from_prefix}users
+			WHERE avatartype = 'upload'
+			OR avatartype = 'gallery';
+		</query>
+	</step>
+</importer>

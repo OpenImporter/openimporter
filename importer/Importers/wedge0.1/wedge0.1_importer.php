@@ -20,21 +20,21 @@
  * The class contains code that allows the Importer to obtain settings
  * from the Wedge installation.
  */
-class wedge1_0_importer extends SmfCommonSource
+class wedge0_1_importer extends SmfCommonSource
 {
 	public $attach_extension = 'ext';
 
 	public function getName()
 	{
-		return 'Wedge 1.0';
+		return 'Wedge 0.1';
 	}
 }
 
-class wedge1_0_importer_step1 extends SmfCommonSourceStep1
+class wedge0_1_importer_step1 extends SmfCommonSourceStep1
 {
 }
 
-class wedge1_0_importer_step2 extends SmfCommonSourceStep2
+class wedge0_1_importer_step2 extends SmfCommonSourceStep2
 {
 	public function substep0()
 	{
@@ -200,7 +200,7 @@ class wedge1_0_importer_step2 extends SmfCommonSourceStep2
 	}
 }
 
-class wedge1_0_importer_step3 extends SmfCommonSourceStep3
+class wedge0_1_importer_step3 extends SmfCommonSourceStep3
 {
 	public function run($import_script)
 	{
