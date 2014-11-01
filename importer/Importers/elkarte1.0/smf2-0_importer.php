@@ -69,7 +69,11 @@ function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
 			$smf_folders = array(1 => $smf_attachments_dir);
 	}
 
-	$smf_attachments_dir = $smf_folders[$row['id_folder']];
+	// If something is broken, better account for it as well.
+	if (isset($smc_folders[$row['id_folder']]))
+		$smf_attachments_dir = $smf_folders[$row['id_folder']];
+	else
+		$smf_attachments_dir = $smf_folders[1];
 
 	if (empty($row['file_hash']))
 	{
