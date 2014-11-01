@@ -648,5 +648,30 @@
 				add_groups, active, repeatable, allow_partial, reminder, email_complete
 			FROM {$from_prefix}subscriptions;
 		</query>
-</step>
+	</step>
+	<step>
+		<title>Importing custom fields</title>
+		<detect>{$from_prefix}custom_fields</detect>
+		<destination>{$to_prefix}custom_fields</destination>
+		<presql>TRUNCATE {$to_prefix}custom_fields;</presql>
+		<query>
+			SELECT
+				id_field, col_name, field_name, field_desc, field_type, field_length,
+				field_options, mask, show_reg, show_display, show_profile, private,
+				active, bbc, can_search, default_value, enclose, placement
+			FROM {$from_prefix}custom_fields;
+		</query>
+	</step>
+	<step>
+		<title>Importing custom fields data</title>
+		<detect>{$from_prefix}custom_fields</detect>
+		<destination>{$to_prefix}custom_fields_data</destination>
+		<presql>TRUNCATE {$to_prefix}custom_fields_data;</presql>
+		<query>
+			SELECT
+				id_member, variable, value
+			FROM {$from_prefix}themes
+			WHERE variable LIKE 'cust\_%';
+		</query>
+	</step>
 </importer>
