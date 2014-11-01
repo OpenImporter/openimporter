@@ -213,8 +213,6 @@ class XmlProcessor
 
 		$row = $this->step1_importer->doSpecialTable($special_table, $row);
 
-		$row = $this->processIPs($row, $this->xml->general);
-
 		// fixing the charset, we need proper utf-8
 		$row = fix_charset($row);
 
@@ -408,93 +406,5 @@ class XmlProcessor
 		else
 			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
 
-	}
-
-	/**
-	 * @todo Wedge-specific code, to be moved outside when Wedge is imlemented
-	 */
-	protected function doIpConvertion($row, $convert_ips)
-	{
-		foreach ($convert_ips as $ip)
-		{
-			$ip = trim($ip);
-			if (array_key_exists($ip, $row))
-				$row[$ip] = $this->_prepare_ipv6($row[$ip]);
-		}
-
-		return $row;
-	}
-
-	/**
-	 * @todo Wedge-specific code, to be moved outside when Wedge is imlemented
-	 */
-	protected function doIpPointer($row, $ips_to_pointer)
-	{
-		$to_prefix = $this->config->to_prefix;
-
-		foreach ($ips_to_pointer as $ip)
-		{
-			$ip = trim($ip);
-			if (array_key_exists($ip, $row))
-			{
-				$ipv6ip = $this->_prepare_ipv6($row[$ip]);
-
-				$request2 = $this->db->query("
-					SELECT id_ip
-					FROM {$to_prefix}log_ips
-					WHERE member_ip = '" . $ipv6ip . "'
-					LIMIT 1");
-				// IP already known?
-				if ($this->db->num_rows($request2) != 0)
-				{
-					list ($id_ip) = $this->db->fetch_row($request2);
-					$row[$ip] = $id_ip;
-				}
-				// insert the new ip
-				else
-				{
-					$this->db->query("
-						INSERT INTO {$to_prefix}log_ips
-							(member_ip)
-						VALUES ('$ipv6ip')");
-					$pointer = $this->db->insert_id();
-					$row[$ip] = $pointer;
-				}
-
-				$this->db->free_result($request2);
-			}
-		}
-
-		return $row;
-	}
-
-	/**
-	 * placehoder function to convert IPV4 to IPV6
-	 * @todo convert IPV4 to IPV6
-	 * @todo move to source file, because it depends on the source for any specific destination
-	 * @param string $ip
-	 * @return string $ip
-	 */
-	private function _prepare_ipv6($ip)
-	{
-		return $ip;
-	}
-
-	protected function processIPs($row, $general)
-	{
-		// ip_to_ipv6 and ip_to_pointer are Wedge-specific cases,
-		// once a Wedge importer will be ready, the two should be merged
-		// into a more neutral "ip_processing" and the decision when to act
-		// will be delegated to the importing method.
-
-		// prepare ip address conversion
-		if (isset($general->ip_to_ipv6))
-			$row = $this->doIpConvertion($row, explode(',', $general->ip_to_ipv6));
-
-		// prepare ip address conversion to a pointer
-		if (isset($general->ip_to_pointer))
-			$row = $this->doIpPointer($row, explode(',', $general->ip_to_pointer));
-
-		return $row;
 	}
 }

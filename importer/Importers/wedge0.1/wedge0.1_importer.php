@@ -32,6 +32,81 @@ class wedge0_1_importer extends SmfCommonSource
 
 class wedge0_1_importer_step1 extends SmfCommonSourceStep1
 {
+	public function doSpecialTable($special_table, $params = null)
+	{
+		// If there is an IP, better convert it to "something"
+		$params = $this->doIpConvertion($params);
+		$params = $this->doIpPointer($params);
+
+		return parent::doSpecialTable($special_table, $params);
+	}
+
+	protected function doIpConvertion($row)
+	{
+		$convert_ips = array('member_ip', 'member_ip2');
+
+		foreach ($convert_ips as $ip)
+		{
+			if (array_key_exists($ip, $row))
+				$row[$ip] = $this->_prepare_ipv6($row[$ip]);
+		}
+
+		return $row;
+	}
+
+	protected function doIpPointer($row)
+	{
+		$to_prefix = $this->config->to_prefix;
+		$ips_to_pointer = array('poster_ip');
+
+		foreach ($ips_to_pointer as $ip)
+		{
+			if (array_key_exists($ip, $row))
+			{
+				$ipv6ip = $this->_prepare_ipv6($row[$ip]);
+
+				$request2 = $this->db->query("
+					SELECT id_ip
+					FROM {$to_prefix}log_ips
+					WHERE member_ip = '" . $ipv6ip . "'
+					LIMIT 1");
+
+				// IP already known?
+				if ($this->db->num_rows($request2) != 0)
+				{
+					list ($id_ip) = $this->db->fetch_row($request2);
+					$row[$ip] = $id_ip;
+				}
+				// insert the new ip
+				else
+				{
+					$this->db->query("
+						INSERT INTO {$to_prefix}log_ips
+							(member_ip)
+						VALUES ('$ipv6ip')");
+
+					$pointer = $this->db->insert_id();
+					$row[$ip] = $pointer;
+				}
+
+				$this->db->free_result($request2);
+			}
+		}
+
+		return $row;
+	}
+
+	/**
+	 * placehoder function to convert IPV4 to IPV6
+	 * @todo convert IPV4 to IPV6
+	 * @todo move to source file, because it depends on the source for any specific destination
+	 * @param string $ip
+	 * @return string $ip
+	 */
+	private function _prepare_ipv6($ip)
+	{
+		return $ip;
+	}
 }
 
 class wedge0_1_importer_step2 extends SmfCommonSourceStep2
