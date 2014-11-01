@@ -4,8 +4,6 @@
 		<name>MyBB 1.6</name>
 		<version>Wedge 0.1</version>
 		<className>mybb16</className>
-		<ip_to_ipv6>member_ip, member_ip2</ip_to_ipv6>
-		<ip_to_pointer>poster_ip</ip_to_pointer>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>

@@ -9,8 +9,6 @@
 			<field id="3" type="text" size="40" default="" label="path to PHPBoost installation">path_from</field>
 		</form>
 		<className>PHPBoost3</className>
-		<ip_to_ipv6>member_ip, member_ip2, ip</ip_to_ipv6>
-		<ip_to_pointer>poster_ip</ip_to_pointer>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>

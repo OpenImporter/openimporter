@@ -4,8 +4,6 @@
 		<name>SMF 2.0</name>
 		<version>Wedge 0.1</version>
 		<className>SMF2_0</className>
-		<ip_to_ipv6>member_ip, member_ip2, ip</ip_to_ipv6>
-		<ip_to_pointer>poster_ip</ip_to_pointer>
 	</general>
 	<step>
 		<title>Importing settings</title>
