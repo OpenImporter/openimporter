@@ -195,15 +195,15 @@ class ImportManager
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
-			$_SESSION['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
-		elseif (isset($_SESSION['import_script']))
+			$this->data['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
+		elseif (isset($this->data['import_script']))
 		{
-			$this->config->script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
+			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
 		}
 		else
 		{
 			$this->config->script = '';
-			$_SESSION['import_script'] = null;
+			$this->data['import_script'] = null;
 		}
 	}
 
@@ -293,9 +293,9 @@ class ImportManager
 	protected function uninstall()
 	{
 		@unlink(__FILE__);
-		if (preg_match('~_importer\.xml$~', $_SESSION['import_script']) != 0)
-			@unlink(BASEDIR . DS . $_SESSION['import_script']);
-		$_SESSION['import_script'] = null;
+		if (preg_match('~_importer\.xml$~', $this->data['import_script']) != 0)
+			@unlink(BASEDIR . DS . $this->data['import_script']);
+		$this->data['import_script'] = null;
 	}
 
 	protected function validateScript($script)
@@ -317,7 +317,7 @@ class ImportManager
 	{
 		if ($this->config->script !== null)
 		{
-			$this->config->script = $_SESSION['import_script'] = $this->validateScript($_SESSION['import_script']);
+			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
 		}
 
 		$sources = glob(BASEDIR . DS . 'Importers' . DS . '*', GLOB_ONLYDIR);
@@ -346,7 +346,7 @@ class ImportManager
 			}
 		}
 
-		if (!empty($_SESSION['import_script']))
+		if (!empty($this->data['import_script']))
 		{
 			if ($count_scripts > 1)
 				$this->sources[$from] = $scripts[$from];
@@ -355,8 +355,8 @@ class ImportManager
 
 		if ($count_scripts == 1)
 		{
-			$_SESSION['import_script'] = basename($scripts[$from][0]['path']);
-			if (substr($_SESSION['import_script'], -4) == '.xml')
+			$this->data['import_script'] = basename($scripts[$from][0]['path']);
+			if (substr($this->data['import_script'], -4) == '.xml')
 			{
 				try
 				{
@@ -364,7 +364,7 @@ class ImportManager
 				}
 				catch (Exception $e)
 				{
-					$_SESSION['import_script'] = null;
+					$this->data['import_script'] = null;
 				}
 			}
 			return false;
@@ -547,6 +547,7 @@ class ImportManager
 		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
 		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
+		$this->data = null;
 
 		return true;
 	}
