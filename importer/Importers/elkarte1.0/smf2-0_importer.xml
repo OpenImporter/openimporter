@@ -232,54 +232,46 @@
 			SELECT
 				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
 				width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments
-			WHERE id_msg != 0;
+			FROM {$from_prefix}attachments;
 		</query>
 	</step>
 	<step>
 		<title>Importing avatars</title>
-		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<preparsecode>
-			// Try custom_avatar_dir first
-			$request = $this->db->query("
+		<code>
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$from_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			if (!empty($smf_avatarg) and !empty($elk_avatarg))
+				copy_dir_recursive($smf_avatarg, $elk_avatarg);
+
+			$avatarg = $this->db->query("
 				SELECT value
 				FROM {$from_prefix}settings
 				WHERE variable = 'custom_avatar_dir';");
-			list ($smf_attachments_dir) = $this->db->fetch_row($request);
+			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
 
-			if (empty($smf_attachments_dir))
-			{
-				$request = $this->db->query("
-					SELECT value
-					FROM {$from_prefix}settings
-					WHERE variable='attachmentUploadDir';");
-				list ($smf_attachments_dir) = $this->db->fetch_row($request);
-			}
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'custom_avatar_dir';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
 
-			$avatarUploadDir = $this->step1_importer->getAvatarDir($row);
-			if ($avatarUploadDir == $this->step1_importer->getAttachDir($row))
-				$row['attachment_type'] = 0;
-
-			// @todo based on the assumption that we are using attachments for avatars.
-			// Consider using SmfCommonSourceStep1::moveAvatar at some point
-			if (empty($row['file_hash']))
-			{
-				$row['file_hash'] = createAttachmentFileHash($row['filename']);
-				copy_file($smf_attachments_dir . '/' . $row['filename'], $avatarUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-			}
-			else
-			{
-				copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $avatarUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-			}
-		</preparsecode>
-		<query>
-			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments
-			WHERE id_member != 0;
-		</query>
+			if (!empty($smf_avatarg) and !empty($elk_avatarg))
+				copy_dir_recursive($smf_avatarg, $elk_avatarg);
+		</code>
 	</step>
 	<step>
 		<title>Importing categories</title>

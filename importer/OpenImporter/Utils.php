@@ -65,6 +65,24 @@ function copy_file($source, $destination)
 	return true;
 }
 
+function copy_dir_recursive($source, $destination)
+{
+	$source = rtrim($source, '\\/') . DIRECTORY_SEPARATOR;
+	$destination = rtrim($destination, '\\/') . DIRECTORY_SEPARATOR;
+	$dir = opendir($source);
+	create_folders_recursive($destination);
+	while ($file = readdir($dir))
+	{
+		if ($file == '.' || $file == '..')
+			continue;
+
+		if (is_dir($source . $file))
+			copy_dir_recursive($source . $file, $destination . $file);
+		else
+			copy($source . $file, $destination . $file);
+	}
+}
+
 function create_folders_recursive($path)
 {
 	$parent = dirname($path);
