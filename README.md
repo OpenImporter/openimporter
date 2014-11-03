@@ -36,3 +36,5 @@ Site
 Project site: http://openimporter.github.io/openimporter/
 
 [![Build Status](https://travis-ci.org/OpenImporter/openimporter.png?branch=master)](https://travis-ci.org/OpenImporter/openimporter)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
