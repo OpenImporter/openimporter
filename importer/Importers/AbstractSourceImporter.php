@@ -20,6 +20,15 @@ abstract class AbstractSourceImporter
 
 	protected $path = '';
 
+	protected $db = null;
+	protected $config = null;
+
+	public function setUtils($db, $config)
+	{
+		$this->db = $db;
+		$this->config = $config;
+	}
+
 	public abstract function getName();
 
 	public abstract function getVersion();

@@ -304,6 +304,7 @@ class Importer
 		}
 
 		$this->init_db();
+		$this->config->source->setUtils($this->db, $this->config);
 
 		// @todo What is the use-case for these?
 		// Custom variables from our importer?

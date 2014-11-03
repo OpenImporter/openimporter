@@ -11,6 +11,8 @@ class SMF2_0 extends AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 
+	protected $smf_attach_folders = null;
+
 	public function getName()
 	{
 		return 'SMF2_0';
@@ -50,6 +52,27 @@ class SMF2_0 extends AbstractSourceImporter
 
 		return isset($match[1]) ? $match[1] : '';
 	}
+
+	public function getAttachmentDirs()
+	{
+		if ($this->smf_attach_folders === null)
+		{
+			$from_prefix = $this->config->from_prefix;
+
+			$request = $this->db->query("
+				SELECT value
+				FROM {$from_prefix}settings
+				WHERE variable='attachmentUploadDir';");
+			list ($smf_attachments_dir) = $this->db->fetch_row($request);
+
+			$this->smf_attach_folders = @unserialize($smf_attachments_dir);
+
+			if (!is_array($this->smf_attach_folders))
+				$this->smf_attach_folders = array(1 => $smf_attachments_dir);
+		}
+
+		return $this->smf_attach_folders;
+	}
 }
 
 function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
@@ -69,8 +92,8 @@ function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
 			$smf_folders = array(1 => $smf_attachments_dir);
 	}
 
-	// If something is broken, better account for it as well.
-	if (isset($smc_folders[$row['id_folder']]))
+	// If something is broken, better try to account for it as well.
+	if (isset($smf_folders[$row['id_folder']]))
 		$smf_attachments_dir = $smf_folders[$row['id_folder']];
 	else
 		$smf_attachments_dir = $smf_folders[1];

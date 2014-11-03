@@ -137,11 +137,11 @@ abstract class SmfCommonSource
 		}
 	}
 
-	public function specialAttachments()
+	public function specialAttachments($force = false)
 	{
 		$to_prefix = $this->config->to_prefix;
 
-		if (!isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
+		if ($force === true || !isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
 		{
 			$result = $this->db->query("
 				SELECT MAX(id_attach) + 1
@@ -185,10 +185,20 @@ abstract class SmfCommonSource
 
 	public function getAttachDir($row)
 	{
+		$this->specialAttachments();
+
 		if (!empty($row['id_folder']) && !empty($this->attachmentUploadDirs[$row['id_folder']]))
 			return $this->attachmentUploadDirs[$row['id_folder']];
 		else
 			return $this->attachmentUploadDirs[1];
+	}
+
+	public function getAllAttachDirs()
+	{
+		if ($this->attachmentUploadDirs === null)
+			$this->specialAttachments();
+
+		return $this->attachmentUploadDirs;
 	}
 }
 
@@ -233,8 +243,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		// attachment_type = 1 are avatars.
 		$result = $this->db->query("
 			SELECT id_attach, filename, id_folder
-			FROM {$to_prefix}attachments
-			WHERE attachment_type != 1");
+			FROM {$to_prefix}attachments");
 
 		while ($row = $this->db->fetch_assoc($result))
 		{
@@ -256,6 +265,72 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		}
 
 		$this->db->free_result($result);
+
+		// This is valid for some of the srouces (e.g. Elk/SMF/Wedge), but not for others
+		if (method_exists($this->config->source, 'getAttachmentDirs'))
+			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
+	}
+
+	protected function createAttachFoldersStructure($folders)
+	{
+		$source_base = $this->guessBase($folders);
+		$destination_base = $this->guessBase($this->config->destination->getAllAttachDirs());
+
+		// No idea where to start, better not mess with the filesystem
+		// Though if $destination_base is empty it *is* a mess.
+		if (empty($source_base) || empty($destination_base))
+			return false;
+
+		$dest_folders = str_replace($source_base, $destination_base, $folders);
+
+		// Prepare the directory structure
+		foreach ($dest_folders as $folder)
+			create_folders_recursive($folder);
+
+		// Save the new structure in the database
+		$this->db->query("
+			UPDATE {$this->config->to_prefix}settings
+			SET value = '" . serialize($dest_folders) . "'
+			WHERE variable = 'attachmentUploadDir'
+			LIMIT 1");
+
+		// Reload the new directories
+		$this->config->destination->specialAttachments(true);
+	}
+
+	protected function guessBase($folders)
+	{
+		foreach ($folders as $folder)
+		{
+			if ($this->isCommon($folder, $folders))
+			{
+				return $folder;
+			}
+		}
+
+		foreach ($folders as $folder)
+		{
+			$dir = $folder;
+			while (strlen($dir) > 4)
+			{
+				$dir = dirname($dir);
+				if ($this->isCommon($dir, $folders))
+					return $dir;
+			}
+		}
+
+		return false;
+	}
+
+	protected function isCommon($dir, $folders)
+	{
+		foreach ($folders as $folder)
+		{
+			if (substr($folder, 0, strlen($dir)) !== $dir)
+				return false;
+		}
+
+		return true;
 	}
 
 	public function getAttachDir($row)

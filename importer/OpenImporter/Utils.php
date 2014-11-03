@@ -356,3 +356,10 @@ function store_global($variable, $value)
 {
 	$_SESSION['store_globals'][$variable] = $value;
 }
+
+function print_dbg($val)
+{
+	echo '<pre>';
+	print_r($val);
+	echo '</pre>';
+}
