@@ -8,54 +8,13 @@
 			<field id="2" type="text" size="20" default="" label="PHPBoost table prefix">boost_prefix</field>
 			<field id="3" type="text" size="40" default="" label="path to PHPBoost installation">path_from</field>
 		</form>
-		<from_prefix>`$boost_database`.$boost_prefix</from_prefix>
-		<table_test>{$from_prefix}member;</table_test>
-		<ip_to_ipv6>member_ip, member_ip2, ip</ip_to_ipv6>
-		<ip_to_pointer>poster_ip</ip_to_pointer>
-		<custom_functions><![CDATA[
-			function boost_replace_bbc($content)
-			{
-				$content = preg_replace(
-					array(
-						'~<strong>~is',
-						'~</strong>~is',
-						'~<em>~is',
-						'~</em>~is',
-						'~<strike>~is',
-						'~</strike>~is',
-						'~\<h3(.+?)\>~is',
-						'~</h3>~is',
-						'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
-						'~\<div class="bb_block">(.+?)<\/div>~is',
-						'~\[style=(.+?)\](.+?)\[\/style\]~is',
-					),
-					array(
-						'[b]',
-						'[/b]',
-						'[i]',
-						'[/i]',
-						'[s]',
-						'[/s]',
-						'',
-						'',
-						'[u]%1[/u]',
-						'%1',
-						'%1',
-					),
-					trim($content)
-				);
-
-				return $content;
-			}
-		]]></custom_functions>
+		<className>PHPBoost3</className>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}member</detect>
 		<destination>{$to_prefix}members</destination>
 		<presql>
-			ALTER TABLE {$to_prefix}members
-				CHANGE COLUMN passwd passwd varchar(64) NOT NULL default '';
 			TRUNCATE {$to_prefix}members;
 		</presql>
 		<query>

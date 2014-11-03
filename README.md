@@ -34,3 +34,5 @@ Please see [How to contribute](https://github.com/openimporter/openimporter/blob
 Site
 ===
 Project site: http://openimporter.github.io/openimporter/
+
+[![Build Status](https://travis-ci.org/OpenImporter/openimporter.png?branch=master)](https://travis-ci.org/OpenImporter/openimporter)

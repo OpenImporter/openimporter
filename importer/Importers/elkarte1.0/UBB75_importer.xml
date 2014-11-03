@@ -1,329 +1,81 @@
 <?xml version="1.0"?>
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
-		<name>SMF 2.0</name>
+		<name>UBB Threads 7.5.x</name>
 		<version>ElkArte 1.0</version>
-		<settings>/Settings.php</settings>
-		<from_prefix>`$db_name`.$db_prefix</from_prefix>
-		<table_test>{$from_prefix}members;</table_test>
-		<defines>SMF=1</defines>
+		<className>UBB_7_5</className>
 	</general>
-	<step>
-		<title>Importing settings</title>
-		<detect>{$from_prefix}settings</detect>
-		<destination>{$to_prefix}settings</destination>
-		<options>
-			<replace>true</replace>
-		</options>
-		<code>
-			$do_import = array(
-				'news',
-				'compactTopicPagesContiguous',
-				'compactTopicPagesEnable',
-				'enablePinnedTopics',
-				'todayMod',
-				'enablePreviousNext',
-				'pollMode',
-				'enableVBStyleLogin',
-				'enableCompressedOutput',
-				'attachmentSizeLimit',
-				'attachmentPostLimit',
-				'attachmentNumPerPostLimit',
-				'attachmentDirSizeLimit',
-				'attachmentExtensions',
-				'attachmentCheckExtensions',
-				'attachmentShowImages',
-				'attachmentEnable',
-				'attachmentEncryptFilenames',
-				'attachmentThumbnails',
-				'attachmentThumbWidth',
-				'attachmentThumbHeight',
-				'censorIgnoreCase',
-				'mostOnline',
-				'mostOnlineToday',
-				'mostDate',
-				'allow_disableAnnounce',
-				'trackStats',
-				'userLanguage',
-				'titlesEnable',
-				'topicSummaryPosts',
-				'enableErrorLogging',
-				'max_image_width',
-				'max_image_height',
-				'onlineEnable',
-				'smtp_host',
-				'smtp_port',
-				'smtp_username',
-				'smtp_password',
-				'mail_type',
-				'timeLoadPageEnable',
-				'totalMembers',
-				'totalTopics',
-				'totalMessages',
-				'simpleSearch',
-				'censor_vulgar',
-				'censor_proper',
-				'enablePostHTML',
-				'enableEmbeddedFlash',
-				'xmlnews_enable',
-				'xmlnews_maxlen',
-				'hotTopicPosts',
-				'hotTopicVeryPosts',
-				'registration_method',
-				'send_validation_onChange',
-				'send_welcomeEmail',
-				'allow_editDisplayName',
-				'allow_hideOnline',
-				'guest_hideContacts',
-				'spamWaitTime',
-				'pm_spam_settings',
-				'reserveWord',
-				'reserveCase',
-				'reserveUser',
-				'reserveName',
-				'reserveNames',
-				'autoLinkUrls',
-				'banLastUpdated',
-				'avatar_max_height_external',
-				'avatar_max_width_external',
-				'avatar_action_too_large',
-				'avatar_max_height_upload',
-				'avatar_max_width_upload',
-				'avatar_resize_upload',
-				'avatar_download_png',
-				'failed_login_threshold',
-				'oldTopicDays',
-				'edit_wait_time',
-				'edit_disable_time',
-				'autoFixDatabase',
-				'allow_guestAccess',
-				'time_format',
-				'number_format',
-				'enableBBC',
-				'max_messageLength',
-				'signature_settings',
-				'autoOptMaxOnline',
-				'defaultMaxMessages',
-				'defaultMaxTopics',
-				'defaultMaxMembers',
-				'enableParticipation',
-				'recycle_enable',
-				'recycle_board',
-				'maxMsgID',
-				'enableAllMessages',
-				'fixLongWords',
-				'who_enabled',
-				'time_offset',
-				'cookieTime',
-				'lastActive',
-				'requireAgreement',
-				'unapprovedMembers',
-				'package_make_backups',
-				'databaseSession_enable',
-				'databaseSession_loose',
-				'databaseSession_lifetime',
-				'search_cache_size',
-				'search_results_per_page',
-				'search_weight_frequency',
-				'search_weight_age',
-				'search_weight_length',
-				'search_weight_subject',
-				'search_weight_first_message',
-				'search_max_results',
-				'search_floodcontrol_time',
-				'permission_enable_deny',
-				'permission_enable_postgroups',
-				'mail_next_send',
-				'mail_recent',
-				'settings_updated',
-				'next_task_time',
-				'warning_settings',
-				'admin_features',
-				'last_mod_report_action',
-				'pruningOptions',
-				'cache_enable',
-				'reg_verification',
-				'enable_buddylist',
-				'birthday_email',
-				'dont_repeat_theme_core',
-				'dont_repeat_smileys_20',
-				'globalCookies',
-				'default_timezone',
-				'memberlist_updated',
-				'latestMember',
-				'latestRealName',
-				'db_mysql_group_by_fix',
-				'rand_seed',
-				'mostOnlineUpdated',
-				'search_pointer',
-				'spider_name_cache',
-				'modlog_enabled',
-				'disabledBBC',
-				'latest_member',
-				'latest_real_name',
-				'total_members',
-				'total_messages',
-				'max_msg_id',
-				'total_topics',
-				'disable_hash_time',
-				'latestreal_name',
-				'disableHashTime',
-				'paid_enabled',
-				'paid_email',
-				'paid_email_to',
-				'paid_currency_code',
-				'paid_currency_symbol',
-				'paypal_email',
-				'smiley_enable',
-				'messageIcons_enable',
-			);
-
-			$request = $db->query("
-				SELECT variable, value
-				FROM {$from_prefix}settings;");
-
-			while ($row = $db->fetch_assoc($request))
-			{
-				if (in_array($row['variable'], $do_import))
-					$db->query("
-						REPLACE INTO {$to_prefix}settings
-							(variable, value)
-						VALUES('$row[variable]', '$row[value]')");
-
-				if ($row['variable'] == 'pretty_board_urls')
-				{
-					$pretty_urls = $row['value'];
-					store_global('pretty_urls', $row['value']);
-				}
-			}
-
-			$db->free_result($request);
-		</code>
-	</step>
 	<step type="mandatory">
 		<title>Importing members</title>
-		<detect>{$from_prefix}members</detect>
+		<detect>{$from_prefix}USERS</detect>
 		<destination>{$to_prefix}members</destination>
 		<presql>TRUNCATE {$to_prefix}members;</presql>
-		<query>
-			SELECT
-				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
-				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
-				pm_prefs, mod_prefs, message_labels, passwd, email_address, personal_text,
-				gender, birthdate, website_url, website_title, location, hide_email, show_online,
-				time_format, signature, time_offset, avatar, pm_email_notify,
-				usertitle, notify_announcements, notify_regularity, notify_send_body,
-				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
-				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
-				total_time_logged_in, password_salt, ignore_boards, IFNULL(warning, 0) AS warning, passwd_flood,
-				pm_receive_from AS receive_from
-			FROM {$from_prefix}members;
-		</query>
-	</step>
-	<step>
-		<title>Importing attachments</title>
-		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<presql>TRUNCATE {$to_prefix}attachments;</presql>
 		<preparsecode>
-			$request = $db->query("
-				SELECT value
-				FROM {$from_prefix}settings
-				WHERE variable='attachmentUploadDir';");
-			list ($smf_attachments_dir) = $db->fetch_row($request);
-
-			$smf_attachments_dir =  rtrim($smf_attachments_dir, '/');
-
-			if (empty($row['file_hash']))
-			{
-				$row['file_hash'] = createAttachmentFileHash($row['filename']);
-				copy_file($smf_attachments_dir . '/' . $row['filename'], $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-			}
-			else
-				copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $attachmentUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
+			$row['signature'] = fix_quotes($row['signature'], false);
+			$row['birthdate'] = convert_birthdate($row['birthdate']);
 		</preparsecode>
 		<query>
 			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments
-			WHERE id_msg != 0;
-		</query>
-	</step>
-	<step>
-		<title>Importing avatars</title>
-		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<preparsecode>
-			// Try custom_avatar_dir first
-			$request = $db->query("
-				SELECT value
-				FROM {$from_prefix}settings
-				WHERE variable = 'custom_avatar_dir';");
-			list ($smf_attachments_dir) = $db->fetch_row($request);
+				m.USER_ID AS id_member, SUBSTRING(m.USER_LOGIN_NAME, 1, 80) AS member_name,
+				IFNULL(m.USER_REGISTERED_ON, 0) AS date_registered, up.USER_TOTAL_POSTS as posts,
+				CASE
+					WHEN m.USER_MEMBERSHIP_LEVEL = 'Administrator' THEN 1
+					WHEN m.USER_MEMBERSHIP_LEVEL = 'Moderator' THEN 3
+					ELSE 0
+				END as id_group,
+				IFNULL(ud.USER_LAST_VISIT_TIME, 0) as last_login, SUBSTRING(m.USER_DISPLAY_NAME, 1, 255) AS real_name,
+				IFNULL(up.USER_TOTAL_PM, 0) as instant_messages, m.USER_REGISTRATION_EMAIL AS email_address,
 
-			if (empty($smf_attachments_dir))
-			{
-				$request = $db->query("
-					SELECT value
-					FROM {$from_prefix}settings
-					WHERE variable='attachmentUploadDir';");
-				list ($smf_attachments_dir) = $db->fetch_row($request);
-			}
+				USER_BIRTHDAY as birthdate,
 
-			if ($avatarUploadDir == $attachmentUploadDir)
-				$row['attachment_type'] = 0;
+				SUBSTRING(up.USER_HOMEPAGE, 1, 255) AS website_url, up.USER_LOCATION as location,
+				SUBSTRING(up.USER_ICQ, 1, 255) AS icq, SUBSTRING(up.USER_AIM, 1, 16) AS aim,
+				SUBSTRING(up.USER_YAHOO, 1, 32) AS yim, SUBSTRING(up.USER_MSN, 1, 255) AS msn, m.USER_PASSWORD as passwd,
 
-			if (empty($row['file_hash']))
-			{
-				$row['file_hash'] = createAttachmentFileHash($row['filename']);
-				copy_file($smf_attachments_dir . '/' . $row['filename'], $avatarUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-			}
-			else
-				copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $avatarUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-		</preparsecode>
-		<query>
-			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments
-			WHERE id_member != 0;
+				CASE
+					WHEN up.USER_VISIBLE_ONLINE_STATUS = 'no' THEN 0
+					ELSE 1
+				END as show_online,
+				1 as hide_email, SUBSTRING(up.USER_DEFAULT_SIGNATURE, 1, 65534) AS signature,
+
+				up.USER_AVATAR as avatar,
+
+				m.USER_REGISTRATION_IP AS member_ip, ud.USER_LAST_IP as member_ip2,
+
+				m.USER_IS_APPROVED = 'yes' as is_activated,
+
+				SUBSTRING(m.USER_PASSWORD, 1, 64) AS passwd, '' AS password_salt
+			FROM {$from_prefix}USERS AS m
+				LEFT JOIN {$from_prefix}USER_PROFILE AS up ON (m.USER_ID = up.USER_ID)
+				LEFT JOIN {$from_prefix}USER_DATA as ud ON (m.USER_ID = ud.USER_ID);
 		</query>
 	</step>
 
 	<step>
 		<title>Importing categories</title>
-		<detect>{$from_prefix}categories</detect>
+		<detect>{$from_prefix}CATEGORIES</detect>
 		<destination>{$to_prefix}categories</destination>
 		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
-			SELECT
-				id_cat, name, cat_order, can_collapse
-			FROM {$from_prefix}categories;
-		</query>
-	</step>
-	<step>
-		<title>Importing collapsed categories</title>
-		<detect>{$from_prefix}collapsed_categories</detect>
-		<destination>{$to_prefix}collapsed_categories</destination>
-		<presql>TRUNCATE {$to_prefix}collapsed_categories;</presql>
-		<query>
-			SELECT
-				id_cat, id_member
-			FROM {$from_prefix}collapsed_categories;
+			SELECT CATEGORY_ID AS id_cat, CATEGORY_TITLE as name, CATEGORY_SORT_ORDER AS cat_order
+			FROM {$from_prefix}CATEGORIES;
 		</query>
 	</step>
 	<step>
 		<title>Importing boards</title>
-		<detect>{$from_prefix}boards</detect>
+		<detect>{$from_prefix}FORUMS</detect>
 		<destination>{$to_prefix}boards</destination>
 		<presql>TRUNCATE {$to_prefix}boards;</presql>
+		<preparsecode>
+			$row['description'] = fix_quotes($row['description'], false);
+		</preparsecode>
 		<query>
 			SELECT
-				id_board, id_cat, child_level, id_parent, board_order, id_last_msg, id_msg_updated, member_groups,
-				id_profile, name, description, num_topics, num_posts, count_posts, id_theme,
-				override_theme, unapproved_posts, unapproved_topics, redirect
-			FROM {$from_prefix}boards;
+				FORUM_ID AS id_board, CATEGORY_ID as id_cat, SUBSTRING(FORUM_TITLE, 1, 255) AS name,
+				SUBSTRING(FORUM_DESCRIPTION, 1, 65534) AS description, FORUM_SORT_ORDER AS board_order,
+				FORUM_POSTS AS num_posts, IFNULL(FORUM_PARENT, 0) as id_parent, FORUM_POSTS_COUNT AS count_posts, 
+				'' AS member_groups
+			FROM {$from_prefix}FORUMS;
 		</query>
 	</step>
 	<step>
@@ -568,7 +320,7 @@
 				SELECT value
 				FROM {$to_prefix}settings
 				WHERE variable='smileys_dir';");
-			list ($we_smileys_dir) = $db->fetch_row($request);
+			list ($smileys_dir) = $db->fetch_row($request);
 
 			$request = $db->query("
 				SELECT value
@@ -576,7 +328,7 @@
 				WHERE variable='smileys_dir';");
 			list ($smf_smileys_dir) = $db->fetch_row($request);
 
-			copy_smileys($smf_smileys_dir, $we_smileys_dir);
+			copy_smileys($smf_smileys_dir, $smileys_dir);
 		</code>
 	</step>
 	
@@ -658,6 +410,28 @@
 				id_subscribe, name, description, cost, length, id_group,
 				add_groups, active, repeatable, allow_partial, reminder, email_complete
 			FROM {$from_prefix}subscriptions;
+		</query>
+	</step>
+	<step>
+		<title>Importing pretty topic urls</title>
+		<detect>{$from_prefix}pretty_topic_urls</detect>
+		<destination>{$to_prefix}pretty_topic_urls</destination>
+		<presql>TRUNCATE {$to_prefix}pretty_topic_urls;</presql>
+		<query>
+			SELECT
+				id_topic, pretty_url
+			FROM {$from_prefix}pretty_topic_urls;
+		</query>
+	</step>
+	<step>
+		<title>Importing pretty urls cache</title>
+		<detect>{$from_prefix}pretty_urls_cache</detect>
+		<destination>{$to_prefix}pretty_urls_cache</destination>
+		<presql>TRUNCATE {$to_prefix}pretty_urls_cache;</presql>
+		<query>
+			SELECT
+				url_id, replacement
+			FROM {$from_prefix}pretty_urls_cache;
 		</query>
 	</step>
 </importer>

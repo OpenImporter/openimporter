@@ -3,9 +3,7 @@
 	<general>
 		<name>MyBB 1.6</name>
 		<version>ElkArte 1.0</version>
-		<settings>/inc/config.php</settings>
-		<from_prefix>`{$config['database']['database']}`.{$config['database']['table_prefix']}</from_prefix>
-		<table_test>{$from_prefix}users</table_test>
+		<className>mybb16</className>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>
@@ -13,8 +11,6 @@
 		<destination>{$to_prefix}members</destination>
 		<presql>
 			TRUNCATE {$to_prefix}members;
-			ALTER TABLE {$to_prefix}members
-				CHANGE COLUMN password_salt password_salt varchar(16) NOT NULL default '';
 		</presql>
 		<preparsecode>
 			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
@@ -256,7 +252,7 @@
 				list ($mybb_attachment_dir) = $db->fetch_row($result);
 				$db->free_result($result);
 
-				$mybb_attachment_dir = $_POST['path_from'] . ltrim($mybb_attachment_dir, '.');
+				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
 			}
 
 			//create some useful shortcuts, we start with images..
@@ -265,12 +261,13 @@
 				$ext = '';
 
 			$source = $mybb_attachment_dir . '/' . $row['attachname'];
-			$file_hash = helper::createAttachmentFileHash($row['filename']);
-			$destination = $attachmentUploadDir . '/' . $id_attach . '_' . $file_hash . '.elk';
+			$file_hash = createAttachmentFileHash($row['filename']);
+			$id_attach = $this->step1_importer->newIdAttach();
+			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 			$width = 0;
 			$height = 0;
 
-			helper::copy_file($source, $destination);
+			copy_file($source, $destination);
 
 			// Is image? we need a thumbnail
 			if (!empty($ext))
@@ -294,8 +291,6 @@
 				'width' => $width,
 				'height' => $height,
 			));
-
-			$id_attach++;
 		</preparsecode>
 		<query>
 			SELECT pid AS id_msg, downloads, filename, filesize, attachname
@@ -310,25 +305,25 @@
 			<no_add>true</no_add>
 		</options>
 		<preparsecode>
-			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
-
 			//create some useful shortcuts
-			$source = $_POST['path_from'] . strtok(ltrim($row['filename'], '.'), '?');
+			$source = $this->config->path_from . strtok(ltrim($row['filename'], '.'), '?');
 			$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
-			$file_hash = helper::createAttachmentFileHash($filename);
-			$destination = $attachmentUploadDir . '/' . $id_attach . '_' . $file_hash . '.elk';
 
-			helper::copy_file($source, $destination);
+			$upload_result = $this->step1_importer->moveAvatar($row, $source, $filename);
 
-			$rows[] = implode(', ', array(
-				'id_attach' => $id_attach,
-				'size' => filesize($destination),
-				'filename' => '\'' . $row['filename'] . '\'',
-				'file_hash' => '\'' . $file_hash . '\'',
-				'id_member' => $row['id_member'],
-			));
+			if (empty($upload_result))
+			{
+				// Ensure nothing is updated.
+				$rows = array();
+			}
+			else
+			{
+				$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
 
-			$id_attach++;
+				$rows[] = $upload_result;
+			}
+
+			copy_file($source, $destination);
 		</preparsecode>
 		<query>
 			SELECT uid AS id_member, avatar AS filename
@@ -336,5 +331,5 @@
 			WHERE avatartype = 'upload'
 			OR avatartype = 'gallery';
 		</query>
-	</step>	
+	</step>
 </importer>

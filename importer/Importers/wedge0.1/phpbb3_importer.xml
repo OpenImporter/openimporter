@@ -2,93 +2,8 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>phpBB3</name>
-		<version>ElkArte 1.0</version>
-		<settings>/config.php</settings>
-		<defines>IN_PHPBB</defines>
-		<from_prefix>`$dbname`.$table_prefix</from_prefix>
-		<table_test>{$from_prefix}users</table_test>
-		<custom_functions><![CDATA[
-			function percent_to_px($percent)
-			{
-				return intval(11*(intval($percent)/100.0));
-			}
-			function phpbb_replace_bbc($message)
-			{
-				$message = preg_replace(
-					array(
-						'~\[quote=&quot;(.+?)&quot;\:(.+?)\]~is',
-						'~\[quote\:(.+?)\]~is',
-						'~\[/quote\:(.+?)\]~is',
-						'~\[b\:(.+?)\]~is',
-						'~\[/b\:(.+?)\]~is',
-						'~\[i\:(.+?)\]~is',
-						'~\[/i\:(.+?)\]~is',
-						'~\[u\:(.+?)\]~is',
-						'~\[/u\:(.+?)\]~is',
-						'~\[url\:(.+?)\]~is',
-						'~\[/url\:(.+?)\]~is',
-						'~\[url=(.+?)\:(.+?)\]~is',
-						'~\[/url\:(.+?)\]~is',
-						'~\<a(.+?) href="(.+?)">(.+?)</a>~is',
-						'~\[img\:(.+?)\]~is',
-						'~\[/img\:(.+?)\]~is',
-						'~\[size=(.+?)\:(.+?)\]~is',
-						'~\[/size\:(.+?)?\]~is',
-						'~\[color=(.+?)\:(.+?)\]~is',
-						'~\[/color\:(.+?)\]~is',
-						'~\[code=(.+?)\:(.+?)\]~is',
-						'~\[code\:(.+?)\]~is',
-						'~\[/code\:(.+?)\]~is',
-						'~\[list=(.+?)\:(.+?)\]~is',
-						'~\[list\:(.+?)\]~is',
-						'~\[/list\:(.+?)\]~is',
-						'~\[\*\:(.+?)\]~is',
-						'~\[/\*\:(.+?)\]~is',
-						'~\<img src=\"{SMILIES_PATH}/(.+?)\" alt=\"(.+?)\" title=\"(.+?)\" /\>~is',
-					),
-					array(
-						'[quote author="$1"]',
-						'[quote]',
-						'[/quote]',
-						'[b]',
-						'[/b]',
-						'[i]',
-						'[/i]',
-						'[u]',
-						'[/u]',
-						'[url]',
-						'[/url]',
-						'[url=$1]',
-						'[/url]',
-						'[url=$2]$3[/url]',
-						'[img]',
-						'[/img]',
-						'[size=' . percent_to_px("\1") . 'px]',
-						'[/size]',
-						'[color=$1]',
-						'[/color]',
-						'[code=$1]',
-						'[code]',
-						'[/code]',
-						'[list type=$1]',
-						'[list]',
-						'[/list]',
-						'[li]',
-						'[/li]',
-						'$2',
-					), $message);
-
-				$message = preg_replace('~\[size=(.+?)px\]~is', "[size=" . ('\1' > '99' ? 99 : '"\1"') . "px]", $message);
-
-				$message = strtr($message, array(
-					'[list type=1]' => '[list type=decimal]',
-					'[list type=a]' => '[list type=lower-alpha]',
-				));
-				$message = stripslashes($message);
-			
-				return $message;
-			}
-		]]></custom_functions>
+		<version>Wedge 0.1</version>
+		<className>phpBB3</className>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>
@@ -110,7 +25,7 @@
 				u.user_regdate AS date_registered, '' AS buddy_list,
 				SUBSTRING(u.user_from, 1, 255) AS location,
 				u.user_posts AS posts, IF(u.user_rank = 1, 1, IFNULL(mg.id_group, 0)) AS id_group,
-				u.user_new_privmsg AS unread_messages, '' AS message_labels,
+				u.user_new_privmsg AS instant_messages, '' AS message_labels,
 				SUBSTRING(u.user_email, 1, 255) AS email_address,
 				u.user_unread_privmsg AS unread_messages, '' AS ignore_boards,
 				SUBSTRING(u.user_website, 1, 255) AS website_title,
@@ -148,10 +63,25 @@
 			TRUNCATE {$to_prefix}boards;
 			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
 		</presql>
+		<preparsecode>
+			$row['url'] = substr($this->config->boardurl, strpos($this->config->boardurl, '://') + 3) . '/board' . $row['url'];
+			$row['urllen'] = strlen($row['url']);
+
+			if (!empty($row['member_groups']))
+			{
+				$permissions = explode(',', $row['member_groups']);
+				foreach ($permissions as $allowed)
+					$db->query("
+						REPLACE INTO {$to_prefix}board_groups
+							(id_group, id_board, view_perm, enter_perm)
+						VALUES ('$allowed', $row[id_board], 'allow', 'allow')
+					");
+			}
+		</preparsecode>
 		<query>
 			SELECT
 				f.forum_id AS id_board, f.parent_id AS id_parent, f.left_id AS board_order,
-				f.forum_posts AS num_posts, f.forum_last_post_id AS id_last_msg,
+				f.forum_posts AS num_posts, f.forum_id AS url, f.forum_last_post_id AS id_last_msg,
 				SUBSTRING(f.forum_name, 1, 255) AS name, f.parent_id AS id_cat, '-1,0' AS member_groups,
 				SUBSTRING(f.forum_desc, 1, 65534) AS description, f.forum_topics AS num_topics,
 				f.forum_last_post_id AS id_last_msg
@@ -167,7 +97,6 @@
 		<presql>
 			TRUNCATE {$to_prefix}topics;
 			TRUNCATE {$to_prefix}log_topics;
-			TRUNCATE {$to_prefix}log_boards;
 			TRUNCATE {$to_prefix}log_mark_read;
 		</presql>
 		<query>
@@ -177,7 +106,7 @@
 					WHEN 1 THEN 1 
 					WHEN 2 THEN 1 
 					ELSE 0 
-				END AS is_sticky,
+				END AS is_pinned,
 				t.topic_last_post_id AS id_last_msg, t.topic_poster AS id_member_started,
 				t.topic_last_poster_id AS id_member_updated, IF(po.topic_id > 0, po.topic_id, 0) AS id_poll,
 				t.topic_replies AS num_replies, t.topic_views AS num_views,

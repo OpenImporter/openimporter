@@ -3,22 +3,16 @@
 	<general>
 		<name>Xenforo 1.1</name>
 		<version>ElkArte 1.0</version>
-		<settings>/includes/config.php</settings>
+		<className>XenForo1_1</className>
 		<form>
 			<field id="1" type="text" size="20" default="xf_" label="Xenforo table prefix">xf_prefix</field>
 			<field id="2" type="text" size="20" default="xenforo" label="Xenforo database">xf_database</field>
 		</form>
-		<from_prefix>`$xf_database`.$xf_prefix</from_prefix>
-		<table_test>{$from_prefix}user;</table_test>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}user</detect>
 		<destination>{$to_prefix}members</destination>
-		<presql>
-			ALTER TABLE {$to_prefix}members	CHANGE COLUMN passwd passwd varchar(64) NOT NULL default '';
-			ALTER TABLE {$to_prefix}members CHANGE COLUMN password_salt password_salt varchar(64) NOT NULL default '';
-		</presql>
 		<preparsecode>
 			$pass = unserialize($row['tmp']);
 
@@ -101,7 +95,7 @@
 	</step>
 	<step>
 		<title>Importing Topics</title>
-		<detect>{$from_prefix}{$wbb_prefix}thread</detect>
+		<detect>{$from_prefix}thread</detect>
 		<destination>{$to_prefix}topics</destination>
 		<presql>
 			TRUNCATE {$to_prefix}topics;
