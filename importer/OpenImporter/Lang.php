@@ -111,6 +111,11 @@ class Lang
 		return isset($this->_lang[$key]);
 	}
 
+	public function __get($key)
+	{
+		return $this->get($key);
+	}
+
 	/**
 	 * Returns the value of the specified $key in lang.
 	 *
