@@ -49,12 +49,6 @@ class Lang
 		}
 	}
 
-	protected function registerNamespace($key)
-	{
-		if (!in_array($key, $this->_ns))
-			$this->_ns[] = $key;
-	}
-
 	/**
 	 * Loads the language xml file.
 	 *
@@ -115,17 +109,6 @@ class Lang
 	public function has($key)
 	{
 		return isset($this->_lang[$key]);
-	}
-
-	public function __get($key)
-	{
-		foreach ($this->_ns as $ns)
-		{
-			if ($this->has($ns . '.' . $key))
-				return $this->get($ns . '.' . $key);
-		}
-
-		return $this->get($key);
 	}
 
 	/**
