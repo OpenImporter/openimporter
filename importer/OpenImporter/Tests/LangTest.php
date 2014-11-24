@@ -190,13 +190,6 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('testing', $invoke_lang->testing);
 		// A non existing one
 		$this->assertNull($invoke_lang->random);
-
-		$method->invoke($invoke_lang, 'imp2.testing', 'testing2');
-		// Conflicting strings in different namespaces, get the first assigned
-		$this->assertEquals('testing', $invoke_lang->testing);
-
-		$method->invoke($invoke_lang, 'imp2.testing3', 'testing3');
-		$this->assertEquals('testing3', $invoke_lang->testing3);
 	}
 }
 
