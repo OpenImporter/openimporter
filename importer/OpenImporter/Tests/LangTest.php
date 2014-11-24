@@ -87,12 +87,12 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		$invoke_lang = new Lang();
 		$this->assertTrue(
-			$method->invoke($invoke_lang, 'imp.testing', 'testing')
+			$method->invoke($invoke_lang, 'testing', 'testing')
 		);
 
 		$strings = $invoke_lang->getAll();
-		$this->assertTrue(isset($strings['imp.testing']));
-		$this->assertEquals('testing', $strings['imp.testing']);
+		$this->assertTrue(isset($strings['testing']));
+		$this->assertEquals('testing', $strings['testing']);
 	}
 
 	public function testGetAll()
@@ -105,8 +105,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		$invoke_lang = new Lang();
 		$tests = array(
-			'imp.testing' => 'testing',
-			'imp.testing2' => 'testing2',
+			'testing' => 'testing',
+			'testing2' => 'testing2',
 		);
 		foreach ($tests as $key => $val)
 			$method->invoke($invoke_lang, $key, $val);
@@ -142,9 +142,9 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$method->setAccessible(true);
 
 		$invoke_lang = new Lang();
-		$method->invoke($invoke_lang, 'imp.testing', 'testing');
+		$method->invoke($invoke_lang, 'testing', 'testing');
 		// setting the same twice should throw an Exception
-		$method->invoke($invoke_lang, 'imp.testing', 'testing');
+		$method->invoke($invoke_lang, 'testing', 'testing');
 	}
 
 	/**
@@ -159,17 +159,17 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$method->setAccessible(true);
 
 		$invoke_lang = new Lang();
-		$method->invoke($invoke_lang, 'imp.testing', 'testing');
+		$method->invoke($invoke_lang, 'testing', 'testing');
 
 		// An existing string
-		$this->assertEquals('testing', $invoke_lang->get('imp.testing'));
+		$this->assertEquals('testing', $invoke_lang->get('testing'));
 		// A non existing one
-		$this->assertNull($invoke_lang->get('imp.random'));
+		$this->assertNull($invoke_lang->get('random'));
 
-		$method->invoke($invoke_lang, 'imp.testing_array', 'testing %s');
+		$method->invoke($invoke_lang, 'testing_array', 'testing %s');
 
 		// An existing string
-		$this->assertEquals('testing sprintf\'ed', $invoke_lang->get(array('imp.testing_array', 'sprintf\'ed')));
+		$this->assertEquals('testing sprintf\'ed', $invoke_lang->get(array('testing_array', 'sprintf\'ed')));
 	}
 
 	/**
@@ -184,7 +184,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$method->setAccessible(true);
 
 		$invoke_lang = new Lang();
-		$method->invoke($invoke_lang, 'imp.testing', 'testing');
+		$method->invoke($invoke_lang, 'testing', 'testing');
 
 		// An existing string
 		$this->assertEquals('testing', $invoke_lang->testing);

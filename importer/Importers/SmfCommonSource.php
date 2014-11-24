@@ -62,10 +62,10 @@ abstract class SmfCommonSource
 	{
 		return array(
 			'id' => 'path_to',
-			'label' => 'imp.path_to_destination',
+			'label' => 'path_to_destination',
 			'type' => 'text',
 			'default' => htmlspecialchars($path_to),
-			'correct' => $this->checkSettingsPath($path_to) ? 'imp.right_path' : 'imp.change_path',
+			'correct' => $this->checkSettingsPath($path_to) ? 'right_path' : 'change_path',
 			'validate' => true,
 		);
 	}
