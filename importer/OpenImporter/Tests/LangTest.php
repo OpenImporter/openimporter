@@ -131,7 +131,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @covers Lang::set
 	 * @expectedException Exception
-	 * @expectedExceptionMessage Unable to set language string for <em>imp.testing</em>. It was already set.
+	 * @expectedExceptionMessage Unable to set language string for <em>testing</em>. It was already set.
 	 */
 	public function testSetException()
 	{
