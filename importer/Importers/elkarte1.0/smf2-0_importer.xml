@@ -666,4 +666,16 @@
 			WHERE variable LIKE 'cust\_%';
 		</query>
 	</step>
+	<step>
+		<title>Importing likes from Thank you mod</title>
+		<detect>{$from_prefix}thank_you_post</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<query>
+			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
+			FROM {$from_prefix}thank_you_post AS th
+				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
+				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
+		</query>
+	</step>
 </importer>
