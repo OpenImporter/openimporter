@@ -42,15 +42,15 @@ class Template
 
 		if (!empty($trace))
 			echo '
-				<div class="error_text">', $this->lng->get(array('imp.error_trace', $trace)), '</div>';
+				<div class="error_text">', $this->lng->get(array('error_trace', $trace)), '</div>';
 
 		if (!empty($line))
 			echo '
-				<div class="error_text">', $this->lng->get(array('imp.error_line', $line)), '</div>';
+				<div class="error_text">', $this->lng->get(array('error_line', $line)), '</div>';
 
 		if (!empty($file))
 			echo '
-				<div class="error_text">', $this->lng->get(array('imp.error_file', $file)), '</div>';
+				<div class="error_text">', $this->lng->get(array('error_file', $file)), '</div>';
 
 		echo '
 			</div>';
@@ -115,7 +115,7 @@ class Template
 	public function header($inner = true)
 	{
 		echo '<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $this->lng->get('imp.locale'), '" lang="', $this->lng->get('imp.locale'), '">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $this->lng->get('locale'), '" lang="', $this->lng->get('locale'), '">
 	<head>
 		<meta charset="UTF-8" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -168,7 +168,7 @@ class Template
 					var field = document.getElementById(string);
 					var validate = document.getElementById(\'validate_\' + string);
 					field.className = "invalid_field";
-					validate.innerHTML = "', $this->lng->get('imp.invalid') , '";
+					validate.innerHTML = "', $this->lng->get('invalid') , '";
 					// set the style on the div to invalid
 					var submitBtn = document.getElementById("submit_button");
 					submitBtn.disabled = true;
@@ -178,7 +178,7 @@ class Template
 					var field = document.getElementById(string);
 					var validate = document.getElementById(\'validate_\' + string);
 					field.className = "valid_field";
-					validate.innerHTML = "', $this->lng->get('imp.validated') , '";
+					validate.innerHTML = "', $this->lng->get('validated') , '";
 					var submitBtn = document.getElementById("submit_button");
 					submitBtn.disabled = false;
 				}
@@ -396,7 +396,7 @@ class Template
 
 		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
 			echo '
-			<h2 style="margin-top: 2ex">', $this->lng->get('imp.importing'), '...</h2>
+			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
 	}
 
@@ -408,9 +408,9 @@ class Template
 	public function select_script($scripts, $destination_names)
 	{
 		echo '
-			<h2>', $this->lng->get('imp.to_what'), '</h2>
+			<h2>', $this->lng->get('to_what'), '</h2>
 			<div class="content">
-				<p><label for="source">', $this->lng->get('imp.locate_source'), '</label></p>
+				<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
 				<ul id="source">';
 
 		foreach ($destination_names as $key => $values)
@@ -422,14 +422,14 @@ class Template
 			</div>';
 
 		echo '
-			<h2>', $this->lng->get('imp.which_software'), '</h2>
+			<h2>', $this->lng->get('which_software'), '</h2>
 			<div id="destinations" class="content">';
 
 		// We found at least one?
 		if (!empty($scripts))
 		{
 			echo '
-				<p>', $this->lng->get('imp.multiple_files'), '</p>';
+				<p>', $this->lng->get('multiple_files'), '</p>';
 
 			foreach ($scripts as $key => $value)
 			{
@@ -450,16 +450,16 @@ class Template
 
 			echo '
 			</div>
-			<h2>', $this->lng->get('imp.not_here'), '</h2>
+			<h2>', $this->lng->get('not_here'), '</h2>
 			<div class="content">
-				<p>', $this->lng->get('imp.check_more'), '</p>
-				<p>', $this->lng->get('imp.having_problems'), '</p>';
+				<p>', $this->lng->get('check_more'), '</p>
+				<p>', $this->lng->get('having_problems'), '</p>';
 		}
 		else
 			echo '
-				<p>', $this->lng->get('imp.not_found'), '</p>
-				<p>', $this->lng->get('imp.not_found_download'), '</p>
-				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('imp.try_again'), '</a>';
+				<p>', $this->lng->get('not_found'), '</p>
+				<p>', $this->lng->get('not_found_download'), '</p>
+				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('try_again'), '</a>';
 
 		echo '
 			<script>
@@ -488,25 +488,25 @@ class Template
 	public function step0($object, $form)
 	{
 		echo '
-			<h2>', $this->lng->get('imp.before_continue'), '</h2>
+			<h2>', $this->lng->get('before_continue'), '</h2>
 			<div class="content">
-				<p>', sprintf($this->lng->get('imp.before_details'), (string) $object->importer->xml->general->name ), '</p>
+				<p>', sprintf($this->lng->get('before_details'), (string) $object->importer->xml->general->name ), '</p>
 			</div>';
 
-		$form->title = $this->lng->get('imp.where');
-		$form->description = $this->lng->get('imp.locate_destination');
+		$form->title = $this->lng->get('where');
+		$form->description = $this->lng->get('locate_destination');
 		$form->submit = array(
 			'name' => 'submit_button',
-			'value' => $this->lng->get('imp.continue'),
+			'value' => $this->lng->get('continue'),
 		);
 		$this->renderForm($form);
 
 		if (!empty($object->possible_scripts))
 		{
 			echo '
-			<h2>', $this->lng->get('imp.not_this'),'</h2>
+			<h2>', $this->lng->get('not_this'),'</h2>
 			<div class="content">
-				<p>', sprintf($this->lng->get('imp.pick_different'), $_SERVER['PHP_SELF']), '</p>
+				<p>', sprintf($this->lng->get('pick_different'), $_SERVER['PHP_SELF']), '</p>
 			</div>';
 		}
 	}
@@ -528,10 +528,10 @@ class Template
 			echo '<span style="color: green">&#x2714</span>';
 
 		if ($status == 2)
-			echo '<span style="color: grey">&#x2714</span> (', $this->lng->get('imp.skipped'),')';
+			echo '<span style="color: grey">&#x2714</span> (', $this->lng->get('skipped'),')';
 
 		if ($status == 3)
-			echo '<span style="color: red">&#x2718</span> (', $this->lng->get('imp.not_found_skipped'),')';
+			echo '<span style="color: red">&#x2718</span> (', $this->lng->get('not_found_skipped'),')';
 
 		if ($status != 0)
 			echo '<br />';
@@ -543,7 +543,7 @@ class Template
 	public function step2()
 	{
 		echo '
-				<span style="width: 250px; display: inline-block">', $this->lng->get('imp.recalculate'), '...</span> ';
+				<span style="width: 250px; display: inline-block">', $this->lng->get('recalculate'), '...</span> ';
 	}
 
 	/**
@@ -558,14 +558,14 @@ class Template
 	{
 		echo '
 			</div>
-			<h2 style="margin-top: 2ex">', $this->lng->get('imp.complete'), '</h2>
+			<h2 style="margin-top: 2ex">', $this->lng->get('complete'), '</h2>
 			<div class="content">
-			<p>', $this->lng->get('imp.congrats'),'</p>';
+			<p>', $this->lng->get('congrats'),'</p>';
 
 		if ($writable)
 			echo '
 				<div style="margin: 1ex; font-weight: bold">
-					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', $this->lng->get('imp.check_box'), '</label>
+					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', $this->lng->get('check_box'), '</label>
 				</div>
 				<script type="text/javascript"><!-- // --><![CDATA[
 					function doTheDelete()
@@ -575,8 +575,8 @@ class Template
 					}
 				// ]]></script>';
 		echo '
-				<p>', sprintf($this->lng->get('imp.all_imported'), $name), '</p>
-				<p>', $this->lng->get('imp.smooth_transition'), '</p>';
+				<p>', sprintf($this->lng->get('all_imported'), $name), '</p>
+				<p>', $this->lng->get('smooth_transition'), '</p>';
 	}
 
 	/**
@@ -597,13 +597,13 @@ class Template
 
 		echo '
 		</div>
-		<h2 style="margin-top: 2ex">', $this->lng->get('imp.not_done'),'</h2>
+		<h2 style="margin-top: 2ex">', $this->lng->get('not_done'),'</h2>
 		<div class="content">
-			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', $this->lng->get('imp.overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
-			<p>', $this->lng->get('imp.importer_paused'), '</p>
+			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', $this->lng->get('overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
+			<p>', $this->lng->get('importer_paused'), '</p>
 
 			<form action="', $_SERVER['PHP_SELF'], '?step=', $_GET['step'], isset($_GET['substep']) ? '&amp;substep=' . $_GET['substep'] : '', '&amp;start=', $_REQUEST['start'], '" method="post" name="autoSubmit">
-				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', $this->lng->get('imp.continue'),'" /></div>
+				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', $this->lng->get('continue'),'" /></div>
 			</form>
 
 			<script type="text/javascript"><!-- // --><![CDATA[
@@ -617,7 +617,7 @@ class Template
 					else if (countdown == -1)
 						return;
 
-					document.autoSubmit.b.value = "', $this->lng->get('imp.continue'),' (" + countdown + ")";
+					document.autoSubmit.b.value = "', $this->lng->get('continue'),' (" + countdown + ")";
 					countdown--;
 
 					setTimeout("doAutoSubmit();", 1000);
@@ -653,7 +653,7 @@ class Template
 				$toggle = true;
 				echo '
 					</dl>
-					<div id="toggle_button">', $this->lng->get('imp.advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
+					<div id="toggle_button">', $this->lng->get('advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
 					<dl id="advanced_options" style="display: none; margin-top: 5px">';
 				continue;
 			}
