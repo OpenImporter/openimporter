@@ -28,9 +28,14 @@ class SMF2_0 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		$db_name = $this->fetchSetting('db_name');
+		$db_name = $this->getDbName();
 		$db_prefix = $this->fetchSetting('db_prefix');
 		return '`' . $db_name . '`.' . $db_prefix;
+	}
+
+	public function getDbName()
+	{
+		return $this->fetchSetting('db_name');
 	}
 
 	public function getTableTest()

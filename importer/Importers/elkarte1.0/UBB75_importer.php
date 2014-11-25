@@ -23,9 +23,16 @@ class UBB_7_5 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $db_name, $db_prefix;
+		global $db_prefix;
 
-		return '`' . $db_name . '`.' . $db_prefix;
+		return '`' . $this->getDbName() . '`.' . $db_prefix;
+	}
+
+	public function getDbName()
+	{
+		global $db_name;
+
+		return $db_name;
 	}
 
 	public function getTableTest()

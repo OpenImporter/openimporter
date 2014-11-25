@@ -23,9 +23,14 @@ class wbb3_1 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
+		return '`' . $this->getDbName() . '`.';
+	}
+
+	public function getDbName()
+	{
 		global $dbName;
 
-		return '`' . $dbName . '`.';
+		return $dbName;
 	}
 
 	// @todo why $wbb_prefix is not in getPrefix?
