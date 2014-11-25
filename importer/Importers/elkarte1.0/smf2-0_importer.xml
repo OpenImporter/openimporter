@@ -684,7 +684,7 @@
 		<destination>{$to_prefix}message_likes</destination>
 		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
 		<query>
-			SELECT lp.id_member_received, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
+			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
 			FROM {$from_prefix}like_post AS lp;
 		</query>
 	</step>
