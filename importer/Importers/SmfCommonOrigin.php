@@ -220,6 +220,11 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		return $row;
 	}
 
+	protected function members($row, $special_code = null)
+	{
+		return $this->prepareRow($this->specialMembers($row), $special_code, $this->config->to_prefix . 'members');
+	}
+
 	public function doSpecialTable($special_table, $params = null)
 	{
 		// Are we doing attachments? They're going to want a few things...
@@ -228,9 +233,9 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			$this->config->destination->specialAttachments();
 			return $params;
 		}
-		// Here we have various bits of custom code for some known problems global to all importers.
-		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
-			return $this->specialMembers($params);
+// 		// Here we have various bits of custom code for some known problems global to all importers.
+// 		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
+// 			return $this->specialMembers($params);
 
 		return $params;
 	}

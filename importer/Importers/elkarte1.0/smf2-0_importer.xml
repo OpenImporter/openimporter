@@ -226,7 +226,7 @@
 		<presql>TRUNCATE {$to_prefix}attachments;</presql>
 		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
-			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
+			moveAttachment($row, $this->db, $this->config->from_prefix, $this->getAttachDir($row));
 		</preparsecode>
 		<query>
 			SELECT

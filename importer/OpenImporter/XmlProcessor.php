@@ -154,7 +154,8 @@ class XmlProcessor
 					}
 					else
 					{
-						$rows[] = $this->prepareRow($row, $special_code, $special_table);
+						$row = $this->step1_importer->$special_table($row, $special_code);
+						$rows[] = $row;
 
 						if (empty($keys))
 							$keys = array_keys($row);
