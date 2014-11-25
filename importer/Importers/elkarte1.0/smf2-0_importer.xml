@@ -678,4 +678,27 @@
 				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
 		</query>
 	</step>
+	<step>
+		<title>Importing likes from Joker's Like Posts mod</title>
+		<detect>{$from_prefix}like_post</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<query>
+			SELECT lp.id_member_received, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
+			FROM {$from_prefix}like_post AS lp;
+		</query>
+	</step>
+	<step>
+		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
+		<detect>{$from_prefix}likes</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<code>
+			$keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
+			$rows = $this->source->fetchLikes();
+			$special_table = $this->config->to_prefix . 'message_likes';
+
+			$this->insertRows($rows, $keys, $special_table);
+		</code>
+	</step>
 </importer>
