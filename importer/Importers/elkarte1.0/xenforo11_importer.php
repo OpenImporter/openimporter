@@ -23,9 +23,16 @@ class XenForo1_1 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $xf_database, $xf_prefix;
+		global $xf_prefix;
 
-		return '`' . $xf_database . '`.' . $xf_prefix;
+		return '`' . $this->getDbName() . '`.' . $xf_prefix;
+	}
+
+	public function getDbName()
+	{
+		global $xf_database;
+
+		return $xf_database;
 	}
 
 	public function getTableTest()

@@ -96,6 +96,48 @@ class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 		}
 		$this->db->free_result($request);
 	}
+
+	public function substep101()
+	{
+		$to_prefix = $this->config->to_prefix;
+
+		$request = $this->db->query("
+			SELECT COUNT(*) AS count, id_poster
+			FROM {$to_prefix}message_likes
+			GROUP BY id_poster");
+		while ($row = $this->db->fetch_assoc($request))
+		{
+			$this->db->query("
+				UPDATE {$to_prefix}members
+				SET likes_received = $row[count]
+				WHERE id_member = $row[id_poster]
+				LIMIT 1");
+
+			pastTime(0);
+		}
+		$this->db->free_result($request);
+	}
+
+	public function substep102()
+	{
+		$to_prefix = $this->config->to_prefix;
+
+		$request = $this->db->query("
+			SELECT COUNT(*) AS count, id_member
+			FROM {$to_prefix}message_likes
+			GROUP BY id_member");
+		while ($row = $this->db->fetch_assoc($request))
+		{
+			$this->db->query("
+				UPDATE {$to_prefix}members
+				SET likes_given = $row[count]
+				WHERE id_member = $row[id_member]
+				LIMIT 1");
+
+			pastTime(0);
+		}
+		$this->db->free_result($request);
+	}
 }
 
 class elkarte1_0_importer_step3 extends SmfCommonSourceStep3

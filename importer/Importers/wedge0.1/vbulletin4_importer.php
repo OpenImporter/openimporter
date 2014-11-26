@@ -25,7 +25,14 @@ class vBulletin_4 extends AbstractSourceImporter
 	{
 		global $config;
 
-		return '`' . $config['Database']['dbname'] . '`.' . $config['Database']['tableprefix'];
+		return '`' . $this->getDbName() . '`.' . $config['Database']['tableprefix'];
+	}
+
+	public function getDbName()
+	{
+		global $config;
+
+		return $config['Database']['dbname'];
 	}
 
 	public function getTableTest()

@@ -21,9 +21,16 @@ class PHPBoost3 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $boost_database, $boost_prefix;
+		global $boost_prefix;
 
-		return '`' . $boost_database . '`.' . $boost_prefix;
+		return '`' . $this->getDbName() . '`.' . $boost_prefix;
+	}
+
+	public function getDbName()
+	{
+		global $boost_database;
+
+		return $boost_database;
 	}
 
 	public function getTableTest()

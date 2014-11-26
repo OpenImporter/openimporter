@@ -345,19 +345,20 @@ class XmlProcessor
 
 	protected function detect($table)
 	{
-		$count = $this->fix_params($table);
+		$table = $this->fix_params($table);
+		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fix_params($table));
+
+		$db_name_str = $this->config->source->getDbName();
 
 		$result = $this->db->query("
-			SELECT COUNT(*)
-			FROM $count");
+			SHOW TABLES
+			FROM `{$db_name_str}`
+			LIKE '{$table}'");
 
-		if ($result === false)
+		if ($result === false || $this->db->num_rows($result) == 0)
 			return false;
-
-		list ($counter) = $this->db->fetch_row($result);
-		$this->db->free_result($result);
-
-		return $counter;
+		else
+			return true;
 	}
 
 	protected function shouldIgnore($options)

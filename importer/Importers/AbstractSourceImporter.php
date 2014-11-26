@@ -35,6 +35,8 @@ abstract class AbstractSourceImporter
 
 	public abstract function getPrefix();
 
+	public abstract function getDbName();
+
 	public abstract function getTableTest();
 
 	public function loadSettings($path, $test = false)

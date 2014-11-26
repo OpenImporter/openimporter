@@ -23,9 +23,16 @@ class WP3 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $wp_database, $wp_prefix;
+		global $wp_prefix;
 
-		return '`' . $wp_database . '`.' . $wp_prefix;
+		return '`' . $this->getDbName() . '`.' . $wp_prefix;
+	}
+
+	public function getDbName()
+	{
+		global $wp_database;
+
+		return $wp_database;
 	}
 
 	public function getTableTest()

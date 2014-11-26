@@ -13,6 +13,8 @@ class SMF2_0 extends AbstractSourceImporter
 
 	protected $smf_attach_folders = null;
 
+	protected $_is_nibogo_like = null;
+
 	public function getName()
 	{
 		return 'SMF2_0';
@@ -30,9 +32,14 @@ class SMF2_0 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		$db_name = $this->fetchSetting('db_name');
+		$db_name = $this->getDbName();
 		$db_prefix = $this->fetchSetting('db_prefix');
 		return '`' . $db_name . '`.' . $db_prefix;
+	}
+
+	public function getDbName()
+	{
+		return $this->fetchSetting('db_name');
 	}
 
 	public function getTableTest()
@@ -72,6 +79,81 @@ class SMF2_0 extends AbstractSourceImporter
 		}
 
 		return $this->smf_attach_folders;
+	}
+
+	public function fetchLikes()
+	{
+		if ($this->isNibogo())
+			return $this->fetchNibogo();
+		else
+			return $this->fetchIllori();
+	}
+
+	protected function fetchNibogo()
+	{
+		$from_prefix = $this->config->from_prefix;
+
+		$request = $this->db->query("
+			SELECT l.id_member, t.id_first_msg, t.id_member_started
+			FROM {$from_prefix}likes
+				INNER JOIN {$from_prefix}topics AS t ON (t.id_topic = l.id_topic)");
+		$return = array();
+		while ($row = $this->db->fetch_assoc($request))
+			$return[] = array(
+				'id_member' => $row['id_member'],
+				'id_msg' => $row['id_first_msg'],
+				'id_poster' => $row['id_member_started'],
+				'like_timestamp' => 0,
+			);
+		$this->db->free_result($request);
+
+		return $return;
+	}
+
+	protected function fetchIllori()
+	{
+		$from_prefix = $this->config->from_prefix;
+
+		$request = $this->db->query("
+			SELECT l.id_member, l.id_message, m.id_member as id_poster
+			FROM {$from_prefix}likes AS l
+				INNER JOIN {$from_prefix}messages AS m ON (m.id_msg = l.id_message)");
+		$return = array();
+		while ($row = $this->db->fetch_assoc($request))
+			$return[] = array(
+				'id_member' => $row['id_member'],
+				'id_msg' => $row['id_message'],
+				'id_poster' => $row['id_poster'],
+				'like_timestamp' => 0,
+			);
+		$this->db->free_result($request);
+
+		return $return;
+	}
+
+	protected function isNibogo()
+	{
+		$from_prefix = $this->config->from_prefix;
+
+		if ($this->_is_nibogo_like !== null)
+			return $this->_is_nibogo_like;
+
+		$request = $this->db->query("
+			SHOW COLUMNS
+			FROM {$from_prefix}likes");
+		while ($row = $this->db->fetch_assoc($request))
+		{
+			// This is Nibogo
+			if ($row['Field'] == 'id_topic')
+			{
+				$this->_is_nibogo_like = true;
+				return $this->_is_nibogo_like;
+			}
+		}
+
+		// Not Nibogo means Illori
+		$this->_is_nibogo_like = false;
+		return $this->_is_nibogo_like;
 	}
 }
 

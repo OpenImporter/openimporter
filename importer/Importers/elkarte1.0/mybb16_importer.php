@@ -29,7 +29,15 @@ class mybb16 extends AbstractSourceImporter
 		// @todo Convert the use of globals to a scan of the file or something similar.
 		global $config;
 
-		return '`' . $config['database']['database'] . '`.' . $config['database']['table_prefix'];
+		return '`' . $this->getDbName() . '`.' . $config['database']['table_prefix'];
+	}
+
+	public function getDbName()
+	{
+		// @todo Convert the use of globals to a scan of the file or something similar.
+		global $config;
+
+		return $config['database']['database'];
 	}
 
 	public function getTableTest()
