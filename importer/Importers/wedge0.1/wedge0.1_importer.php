@@ -20,7 +20,7 @@
  * The class contains code that allows the Importer to obtain settings
  * from the Wedge installation.
  */
-class wedge0_1_importer extends SmfCommonSource
+class wedge0_1_importer extends SmfCommonOrigin
 {
 	public $attach_extension = 'ext';
 
@@ -30,7 +30,7 @@ class wedge0_1_importer extends SmfCommonSource
 	}
 }
 
-class wedge0_1_importer_step1 extends SmfCommonSourceStep1
+class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 {
 	public function doSpecialTable($special_table, $params = null)
 	{
@@ -109,7 +109,7 @@ class wedge0_1_importer_step1 extends SmfCommonSourceStep1
 	}
 }
 
-class wedge0_1_importer_step2 extends SmfCommonSourceStep2
+class wedge0_1_importer_step2 extends SmfCommonOriginStep2
 {
 	public function substep0()
 	{
@@ -275,7 +275,7 @@ class wedge0_1_importer_step2 extends SmfCommonSourceStep2
 	}
 }
 
-class wedge0_1_importer_step3 extends SmfCommonSourceStep3
+class wedge0_1_importer_step3 extends SmfCommonOriginStep3
 {
 	public function run($import_script)
 	{

@@ -17,7 +17,7 @@
  * The class contains code that allows the Importer to obtain settings
  * from softwares that still have an SMF heritage.
  */
-abstract class SmfCommonSource
+abstract class SmfCommonOrigin
 {
 	public $attach_extension = '';
 
@@ -202,7 +202,7 @@ abstract class SmfCommonSource
 	}
 }
 
-abstract class SmfCommonSourceStep1 extends Step1BaseImporter
+abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 {
 	public function fixTexts($row)
 	{
@@ -426,7 +426,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	}
 }
 
-abstract class SmfCommonSourceStep2 extends Step2BaseImporter
+abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
 
@@ -991,7 +991,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	}
 }
 
-abstract class SmfCommonSourceStep3 extends Step3BaseImporter
+abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 {
 	public function run($import_script)
 	{
