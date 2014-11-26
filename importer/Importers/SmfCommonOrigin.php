@@ -430,7 +430,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
 
-	public function substep1()
+	public function substep10()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -509,7 +509,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			WHERE $where");
 	}
 
-	public function substep2()
+	public function substep20()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -536,7 +536,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
-	public function substep3()
+	public function substep30()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -594,7 +594,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	/**
 	 * Fix the post-based membergroups
 	 */
-	public function substep4()
+	public function substep40()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -633,7 +633,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	/**
 	 * Fix the boards total posts and topics.
 	 */
-	public function substep5()
+	public function substep50()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -666,7 +666,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		}
 	}
 
-	public function substep6()
+	public function substep60()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -706,7 +706,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		}
 	}
 
-	public function substep7()
+	public function substep70()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -783,7 +783,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	/**
 	 * Fix the board parents.
 	 */
-	public function substep8()
+	public function substep80()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -888,7 +888,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	/**
 	 * Adjust boards and categories orders.
 	 */
-	public function substep9()
+	public function substep90()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -918,7 +918,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
-	public function substep11()
+	public function substep100()
 	{
 		$to_prefix = $this->config->to_prefix;
 

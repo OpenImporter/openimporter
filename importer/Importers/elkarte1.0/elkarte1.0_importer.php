@@ -75,7 +75,7 @@ class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
 		$this->db->free_result($request);
 	}
 
-	public function substep100()
+	public function substep101()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -97,7 +97,7 @@ class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
 		$this->db->free_result($request);
 	}
 
-	public function substep101()
+	public function substep102()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -118,7 +118,7 @@ class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
 		$this->db->free_result($request);
 	}
 
-	public function substep102()
+	public function substep103()
 	{
 		$to_prefix = $this->config->to_prefix;
 
