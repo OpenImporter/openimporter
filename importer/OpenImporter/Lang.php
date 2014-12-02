@@ -33,12 +33,6 @@ class Lang
 			if ($this->has($key))
 				throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
 
-			if (strpos($key, '.') !== false)
-			{
-				$exp = explode('.', $key);
-				$this->registerNamespace($exp[0]);
-			}
-
 			$this->_lang[$key] = $value;
 			return true;
 		}
