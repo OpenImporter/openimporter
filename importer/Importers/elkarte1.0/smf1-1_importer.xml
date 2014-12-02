@@ -198,7 +198,7 @@
 			SELECT
 				ID_MEMBER as id_member, memberName AS member_name, dateRegistered AS date_registered, 
 				posts, ID_GROUP as id_group, lngfile, lastLogin AS last_login,
-				realName AS real_name, instantMessages AS instant_messages,
+				realName AS real_name, instantMessages AS personal_messages,
 				unreadMessages AS unread_messages, buddy_list, pm_ignore_list,
 				messageLabels AS message_labels, passwd, emailAddress AS email_address,
 				personalText AS personal_text, gender, birthdate, websiteUrl AS website_url,
@@ -331,10 +331,10 @@
 		</options>
 		<query>
 			SELECT
-				ID_MSG AS id_msg, ID_TOPIC AS id_topic, ID_BOARD AS id_board, posterTime AS poster_time
+				ID_MSG AS id_msg, ID_TOPIC AS id_topic, ID_BOARD AS id_board, posterTime AS poster_time,
 				ID_MEMBER AS id_member, ID_MSG_MODIFIED AS id_msg_modified,
 				subject, posterName AS poster_name, posterEmail AS poster_email,
-				posterIP AS poster_ip, smileys_enabled AS smileys_enabled, 
+				posterIP AS poster_ip, smileysEnabled AS smileys_enabled, 
 				modifiedTime AS modified_time, modifiedName AS modified_name, body, icon
 			FROM {$from_prefix}messages;
 		</query>
