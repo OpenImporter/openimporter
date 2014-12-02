@@ -43,11 +43,6 @@ class Lang
 		}
 	}
 
-	protected function registerNamespace($key)
-	{
-		if (!in_array($key, $this->_ns))
-			$this->_ns[] = $key;
-	}
 
 	/**
 	 * Loads the language xml file.
