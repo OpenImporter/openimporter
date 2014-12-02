@@ -43,7 +43,6 @@ class Lang
 		}
 	}
 
-
 	/**
 	 * Loads the language xml file.
 	 *
