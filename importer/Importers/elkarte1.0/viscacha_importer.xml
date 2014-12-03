@@ -197,4 +197,62 @@
 			WHERE dir = 1;
 		</query>
 	</step>
+		<step>
+		<title>Importing polls</title>
+		<detect>{$from_prefix}topics</detect>
+		<destination>{$to_prefix}polls</destination>
+		<presql>
+			TRUNCATE {$to_prefix}polls;
+			TRUNCATE {$to_prefix}poll_choices;
+			TRUNCATE {$to_prefix}log_polls;
+		</presql>
+		<preparsecode>
+			if (!is_int($row['id_member']))
+				$row['id_member'] = 0;
+		</preparsecode>
+		<query>
+			SELECT
+				t.id AS id_poll, SUBSTRING(t.vquestion , 1, 255) AS question,
+				t.name AS id_member, 0 AS expire_time,
+				SUBSTRING(IFNULL(u.name, ''), 1, 255) AS poster_name,
+				'1' AS max_votes
+			FROM {$from_prefix}topics AS t
+				LEFT JOIN {$from_prefix}user AS u ON (t.name = u.id)
+			WHERE t.vquestion != '';
+		</query>
+	</step>
+		<step>
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}vote</detect>
+		<destination>{$to_prefix}poll_choices</destination>
+		<preparsecode>
+			$request = $db->query("
+				SELECT count(*)
+				FROM {$from_prefix}votes
+				WHERE aid = " . $row['id_choice']);
+
+			list ($count) = $db->fetch_row($request);
+			$db->free_result($request);
+			$row['votes'] = $count;
+		</preparsecode>
+		<query>
+			SELECT 
+				tid AS id_poll, id AS id_choice, SUBSTRING(answer, 1, 255) AS label, 0 AS votes
+			FROM {$from_prefix}vote;
+		</query>
+	</step>
+		<step>
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}votes</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<destination>{$to_prefix}log_polls</destination>
+		<query>
+			SELECT 
+				p.tid AS id_poll, v.mid AS id_member, v.aid AS id_choice
+			FROM {$from_prefix}votes AS v
+				LEFT JOIN {$from_prefix}vote AS p ON (v.aid = p.id);
+		</query>
+	</step>
 </importer>
