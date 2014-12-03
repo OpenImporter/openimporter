@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>Viscacha 0.8</name>
+		<version>ElkArte 1.0</version>
+		<className>Viscacha</className>
+	</general>
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}member</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			TRUNCATE {$to_prefix}members;
+		</presql>
+		<query>
+			SELECT
+				u.id AS id_member, SUBSTRING(u.name, 1, 80) AS member_name,
+				SUBSTRING(u.name, 1, 255) AS real_name,
+				SUBSTRING(u.pw, 1, 64) AS passwd,
+				IF(u.gender != '', u.gender, 0) AS gender,
+				SUBSTRING(u.mail, 1, 255) AS email_address,
+				SUBSTRING(u.icq, 1, 255) AS icq, 
+				u.lastvisit AS last_login, u.regdate AS date_registered,
+				u.birthday AS birthdate, u.location AS location,
+				IF (u.groups = 1, 1, 0) AS id_group,
+				u.posts AS posts, IF (u.opt_hidemail = 1, 1, 0) AS hide_email
+			FROM {$from_prefix}user AS u;
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}categories</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT 
+				id AS id_cat, name AS name, position AS cat_order
+			FROM {$from_prefix}categories;
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}forums</detect>
+		<destination>{$to_prefix}boards</destination>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+		</presql>
+		<options>
+			<slashes>true</slashes>
+		</options>
+		<query>
+			SELECT
+				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups, 
+				SUBSTRING(description, 1, 65534) AS description, position AS board_order,
+				(topics + replies) AS num_posts, topics AS num_topics, parent AS id_cat, parent AS id_parent
+			FROM {$from_prefix}forums;
+		</query>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<preparsecode>
+			$row['id_member_started'] = (int) $row['id_member_started'];
+			$row['id_member_updated'] = (int) $row['id_member_updated'];
+
+			if(!empty($row['id_poll']))
+				$row['id_poll'] = $row['id_topic'];
+			else
+				$row['id_poll'] = 0;
+		</preparsecode>
+		<query>
+			SELECT
+				t.id AS id_topic, t.board AS id_board, 
+				t.sticky AS is_sticky, t.name AS id_member_started, 
+				t.last_name AS id_member_updated, t.vquestion AS id_poll,
+				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg, 
+				t.status AS locked
+			FROM {$from_prefix}topics AS t
+				LEFT JOIN {$from_prefix}replies AS p ON (p.topic_id = t.id)
+			GROUP BY t.id
+				HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}posts</detect>
+		<destination>{$to_prefix}forum_msg</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<slashes>true</slashes>
+			<limit>100</limit>
+		</options>
+		<preparsecode>
+			$row['body'] = preg_replace(
+				array(
+					'~\[list=ol\]~is',
+					'~\[ot\](.+?)\[\/ot\]~is',
+				),
+				array(
+					'[list type=lower-alpha]',
+					'$1',
+				),
+				trim($row['body'])
+			);
+			if (!empty($row['modified_name']))
+			{
+				$editdata = explode("\t", $row['modified_name']);
+				$row['modified_name'] = $editdata[0];
+				$row['modified_time'] = $editdata[1];
+			}
+			else 
+				$row['modified_time'] = 0;
+
+			$row['id_member'] = (int) $row['id_member'];
+
+			if(empty($row['poster_name']))
+				$row['poster_name'] = 'Guest';
+
+			if(empty($row['poster_email']))
+				$row['poster_email'] = '';
+		</preparsecode>
+		<query>
+			SELECT
+				p.id AS id_msg, p.topic_id AS id_topic,	p.board  AS id_board, 
+				p.date AS poster_time, p.name AS id_member, p.topic AS subject,
+				u.name AS poster_name, u.mail AS poster_email,	p.ip AS poster_ip, 
+				p.dosmileys AS smileys_enabled,	p.edit AS modified_name, '' AS modified_time, 
+				p.comment AS body, 'xx' AS icon
+			FROM {$from_prefix}replies AS p
+				LEFT JOIN {$from_prefix}user AS u ON (u.id = p.name)
+			GROUP BY p.id;
+		</query>
+	</step>
+</importer>
