@@ -384,7 +384,7 @@
 		</options>
 		<query>
 			SELECT
-				ID_PM AS id_pm, ID_MEMBER_FROM AS id_member_from, deletedBySender AS deleted_by_sender,
+				ID_PM AS id_pm, ID_PM AS id_pm_head, ID_MEMBER_FROM AS id_member_from, deletedBySender AS deleted_by_sender,
 				fromName AS from_name, msgtime, subject, body
 			FROM {$from_prefix}personal_messages;
 		</query>
