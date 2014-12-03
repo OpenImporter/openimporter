@@ -60,6 +60,9 @@
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}topics</detect>
 		<destination>{$to_prefix}topics</destination>
+		<options>
+			<ignore>true</ignore>
+		</options>
 		<presql>
 			TRUNCATE {$to_prefix}topics;
 			TRUNCATE {$to_prefix}log_topics;
@@ -253,6 +256,95 @@
 				p.tid AS id_poll, v.mid AS id_member, v.aid AS id_choice
 			FROM {$from_prefix}votes AS v
 				LEFT JOIN {$from_prefix}vote AS p ON (v.aid = p.id);
+		</query>
+	</step>
+		<step>
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}uploads</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode>
+			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_msg', 'downloads', 'width', 'height');
+			$file_hash = getAttachmentFilename($row['filename'], $id_attach, null, true);
+			$physical_filename = $id_attach . '_' . $file_hash;
+
+			if (strlen($physical_filename) > 255)
+				return;
+
+			if (copy_file($_POST['path_from'] . '/uploads/topics/' . $row['filename'] , $attachmentUploadDir . '/' . $physical_filename))
+			{
+				$rows[] = array(
+					'id_attach' => $id_attach,
+					'size' => filesize($attachmentUploadDir . '/' . $physical_filename),
+					'filename' => $row['filename'],
+					'file_hash' => $file_hash,
+					'id_msg' => $row['id_msg'],
+					'downloads' => $row['downloads'],
+				);
+
+				$id_attach++;
+			}
+		</preparsecode>
+		<query>
+			SELECT
+				id, tid AS id_msg, hits AS downloads, file AS filename
+			FROM {$from_prefix}uploads;
+		</query>
+	</step>
+	<step>
+		<title>Importing avatars</title>
+		<detect>{$from_prefix}user</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode>
+			$file = explode('/', $row['filenamepath']);
+			$row['filename'] = end($file);
+			
+			$source = $_POST['path_from'] . '/' . $row['filenamepath'];
+			$destination = $attachmentUploadDir . '/' . $physical_filename;
+
+			$file_hash = getAttachmentFilename($row['filename'], $id_attach, null, true);
+			$physical_filename = $id_attach . '_' . $file_hash;
+
+			if (strlen($physical_filename) > 255)
+				return;
+
+			if (copy_file($source, $destination))
+			{
+				$rows[] = array(
+					'id_attach' => $id_attach,
+					'size' => filesize($attachmentUploadDir . '/' . $physical_filename),
+					'filename' => $row['filename'],
+					'file_hash' => $file_hash,
+					'id_member' => $row['id_member'],
+				);
+				$id_attach++;
+			}
+		</preparsecode>
+		<query>
+			SELECT
+				pic AS filenamepath, id AS id_member
+			FROM {$from_prefix}user
+			WHERE pic != '';
+		</query>
+	</step>
+	<step>
+		<title>Importing topic notifications</title>
+		<detect>{$from_prefix}abos</detect>
+		<destination>{$to_prefix}log_notify</destination>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<presql>
+			TRUNCATE {$to_prefix}log_notify;
+		</presql>
+		<query>
+			SELECT mid AS id_member, tid AS id_topic
+			FROM {$from_prefix}abos;
 		</query>
 	</step>
 </importer>
