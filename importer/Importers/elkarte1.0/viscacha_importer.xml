@@ -140,4 +140,62 @@
 			GROUP BY p.id;
 		</query>
 	</step>
+	<step>
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}moderators</detect>
+		<destination>{$to_prefix}moderators</destination>
+		<presql>TRUNCATE {$to_prefix}moderators;</presql>
+		<query>
+			SELECT 
+				mid AS id_member, bid AS id_board
+			FROM {$from_prefix}moderators;
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}pm</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>
+			TRUNCATE {$to_prefix}personal_messages;
+			TRUNCATE {$to_prefix}pm_recipients;
+		</presql>
+		<options>
+			<slashes>true</slashes>
+		</options>
+		<preparsecode>
+			$row['body'] = preg_replace(
+				array(
+					'~\[list=ol\]~is',
+					'~\[ot\](.+?)\[\/ot\]~is',
+				),
+				array(
+					'[list type=lower-alpha]',
+					'$1',
+				),
+				trim($row['body'])
+			);
+		</preparsecode>
+		<query>
+			SELECT
+				pm.id AS id_pm, pm.pm_from AS id_member_from, pm.date AS msgtime,
+				IF(u.name IS NULL, 'Guest', SUBSTRING(u.name, 1, 255)) AS from_name,
+				SUBSTRING(pm.topic, 1, 255) AS subject,
+				SUBSTRING(pm.comment, 1, 65534) AS body
+			FROM {$from_prefix}pm AS pm
+				LEFT JOIN {$from_prefix}user AS u ON (u.id = pm.pm_from)
+			WHERE pm.dir = 1;
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}pm</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<query>
+			SELECT
+				id AS id_pm, pm_to AS id_member, IF(status = 0 , 0, status) AS is_read,
+				0 AS deleted, '-1' AS labels
+			FROM {$from_prefix}pm
+			WHERE dir = 1;
+		</query>
+	</step>
 </importer>
