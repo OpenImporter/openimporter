@@ -465,7 +465,8 @@
 		<query>
 			SELECT
 				ID_GROUP AS id_group, groupName AS group_name, onlineColor AS online_color, minPosts AS min_posts,
-				maxMessages AS max_messages, stars AS icons, 1 AS group_type
+				maxMessages AS max_messages, stars AS icons, 1 AS group_type,
+				'' AS description
 			FROM {$from_prefix}membergroups;
 		</query>
 	</step>
