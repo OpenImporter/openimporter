@@ -120,6 +120,7 @@ class Template
 		<meta charset="UTF-8" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>', $this->response->page_title, '</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script type="text/javascript">
 			function AJAXCall(url, callback, string)
 			{
