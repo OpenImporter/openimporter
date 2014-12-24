@@ -69,6 +69,8 @@ function copy_dir_recursive($source, $destination)
 {
 	$source = rtrim($source, '\\/') . DIRECTORY_SEPARATOR;
 	$destination = rtrim($destination, '\\/') . DIRECTORY_SEPARATOR;
+	if (!file_exists($source))
+		return;
 	$dir = opendir($source);
 	create_folders_recursive($destination);
 	while ($file = readdir($dir))
