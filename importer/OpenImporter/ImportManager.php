@@ -65,12 +65,6 @@ class ImportManager
 	protected $lng;
 
 	/**
-	 * An array of possible importer scripts
-	 * @var array
-	 */
-	public $sources;
-
-	/**
 	 * Data used by the script and stored in session between a reload and the
 	 * following one.
 	 * @var mixed[]
@@ -319,43 +313,19 @@ class ImportManager
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
 		}
+		$destination_names = $this->findDestinations();
 
-		$sources = glob(BASEDIR . DS . 'Importers' . DS . '*', GLOB_ONLYDIR);
-		$count_scripts = 0;
-		$scripts = array();
-		$destination_names = array();
-		foreach ($sources as $source)
-		{
-			$from = basename($source);
-			$scripts[$from] = array();
-			$possible_scripts = glob($source . DS . '*_importer.xml');
-
-			// Silence simplexml errors
-			libxml_use_internal_errors(true);
-			foreach ($possible_scripts as $entry)
-			{
-				// If a script is broken simply skip it.
-				if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
-				{
-					continue;
-				}
-
-				$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => (string) $xmlObj->general->name);
-				$destination_names[$from] = (string) $xmlObj->general->version;
-				$count_scripts++;
-			}
-		}
+		$scripts = $this->findSources();
+		$count_scripts = count($scripts);
 
 		if (!empty($this->data['import_script']))
 		{
-			if ($count_scripts > 1)
-				$this->sources[$from] = $scripts[$from];
 			return false;
 		}
 
 		if ($count_scripts == 1)
 		{
-			$this->data['import_script'] = basename($scripts[$from][0]['path']);
+			$this->data['import_script'] = basename($scripts[0]['path']);
 			if (substr($this->data['import_script'], -4) == '.xml')
 			{
 				try
@@ -369,15 +339,71 @@ class ImportManager
 			}
 			return false;
 		}
-		foreach ($scripts as $key => $val)
-			usort($scripts[$key], function ($v1, $v2) {
-				return strcasecmp($v1['name'], $v2['name']);
-			});
 
 		$this->response->use_template = 'select_script';
 		$this->response->params_template = array($scripts, $destination_names);
 
 		return true;
+	}
+
+	/**
+	 * Simply scans the Importers/sources directory looking for source
+	 * files.
+	 *
+	 * @return string[]
+	 */
+	protected function findSources()
+	{
+		$scripts = array();
+
+		// Silence simplexml errors
+		libxml_use_internal_errors(true);
+		foreach (glob(BASEDIR . DS . 'Importers' . DS . 'sources' . DS . '*_importer.xml') as $entry)
+		{
+			// If a script is broken simply skip it.
+			if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
+			{
+				continue;
+			}
+			$file_name = basename($entry);
+
+			$scripts[$file_name] = array(
+				'path' => $file_name,
+				'name' => (string) $xmlObj->general->name
+			);
+		}
+
+		foreach ($scripts as $key => $val)
+		{
+			usort($scripts[$key], function ($v1, $v2) {
+				return strcasecmp($v1['name'], $v2['name']);
+			});
+		}
+
+		return $scripts;
+	}
+
+	/**
+	 * Simply scans the Importers/destinations directory looking for destination
+	 * files.
+	 *
+	 * @return string[]
+	 */
+	protected function findDestinations()
+	{
+		$destinations = array();
+		foreach (glob(BASEDIR . DS . 'Importers' . DS . 'destinations' . DS . '*') as $file)
+		{
+			require_once($file);
+			$file_name = basename($file);
+			$class_name = strtr($file_name, array('.php' => '', '.' => '_'));
+			$obj = new $class_name();
+			$destinations[$file_name] = $obj->getName();
+		}
+
+		asort($destinations);
+
+		return $destinations;
 	}
 
 	/**

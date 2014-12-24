@@ -415,7 +415,7 @@ class Template
 
 		foreach ($destination_names as $key => $values)
 			echo '
-					<li onclick="toggle_to(this);" data-value="', preg_replace('~[^\w\d]~', '_', $key), '">', $values, '</li>';
+					<li>', $values, '</li>';
 
 		echo '
 				</ul>
@@ -429,26 +429,21 @@ class Template
 		if (!empty($scripts))
 		{
 			echo '
-				<p>', $this->lng->get('multiple_files'), '</p>';
+				<p>', $this->lng->get('multiple_files'), '</p>
+				<ul>';
 
-			foreach ($scripts as $key => $value)
+			// Let's loop and output all the found scripts.
+			foreach ($scripts as $key => $script)
 			{
 				echo '
-				<ul id="', preg_replace('~[^\w\d]~', '_', $key), '">';
-
-				// Let's loop and output all the found scripts.
-				foreach ($value as $script)
-					echo '
 					<li>
 						<a href="', $_SERVER['PHP_SELF'], '?import_script=', $script['path'], '">', $script['name'], '</a>
 						<span>(', $script['path'], ')</span>
 					</li>';
-
-				echo '
-				</ul>';
 			}
 
 			echo '
+				</ul>
 			</div>
 			<h2>', $this->lng->get('not_here'), '</h2>
 			<div class="content">
@@ -462,26 +457,6 @@ class Template
 				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('try_again'), '</a>';
 
 		echo '
-			<script>
-				function toggle_to(e)
-				{
-					var dest_container = document.getElementById(\'destinations\');
-					var dests = dest_container.getElementsByTagName(\'ul\');
-					var sources = document.getElementById(\'source\').getElementsByTagName(\'li\');
-
-					for (var i = 0; i < dests.length; i++)
-						dests[i].style.display = \'none\';
-
-					if (typeof e === \'undefined\')
-						e = sources[0];
-
-					for (var i = 0; i < sources.length; i++)
-						sources[i].removeAttribute("class");
-					e.setAttribute("class", "active");
-					document.getElementById(e.getAttribute(\'data-value\')).style.display = \'block\';
-				}
-				toggle_to();
-			</script>
 			</div>';
 	}
 
