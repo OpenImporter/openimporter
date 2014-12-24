@@ -373,12 +373,9 @@ class ImportManager
 			);
 		}
 
-		foreach ($scripts as $key => $val)
-		{
-			usort($scripts[$key], function ($v1, $v2) {
-				return strcasecmp($v1['name'], $v2['name']);
-			});
-		}
+		usort($scripts, function ($v1, $v2) {
+			return strcasecmp($v1['name'], $v2['name']);
+		});
 
 		return $scripts;
 	}

@@ -4,6 +4,7 @@
 	<string name="which_software">Which software are you using?</string>
 	<string name="multiple_files">The importer found multiple import data files. Please choose the one you wish to use.</string>
 	<string name="not_here">It's not here!</string>
+	<string name="start_conversion">Start conversion</string>
 	<string name="check_more"><![CDATA[If the software you're looking for doesn't appear above, please check to see if it is available for download at <a href="https://github.com/openimporter/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></string>
 	<string name="having_problems"><![CDATA[If you're having any other problems with this importer, don't hesitate to look for help.]]></string>
 	<string name="not_found"><![CDATA[The importer did not find any import data files. Please check to see if the one you want is available for download at <a href="https://github.com/openimporter/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></string>

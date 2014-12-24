@@ -347,41 +347,49 @@ class Template
 			{
 				font-size: 8pt;
 			}
-			#destinations ul, #source
+			#destinations, #source
 			{
 				padding: 0 1em;
 			}
-			#destinations ul li a
+			#destinations li span, #source li span
 			{
 				display: block;
-				margin-bottom: 3px;
-				padding-bottom: 3px;
+				padding: 0.5em;
+				cursor: pointer;
 			}
-			#destinations ul li, #source li
+			#destinations li, #source li
 			{
 				cursor: pointer;
 				float: left;
 				list-style: none;
-				padding: 0.5em;
 				margin: 0 0.5em;
 				border: 1px solid #abadb3;
 				border-radius: 3px;
 			}
-			#destinations ul li
+			#destinations li, #source li
 			{
-				width: 20%;
+				width: 12em;
 				float: none;
 				display: inline-block;
-				height: 4em;
 				cursor: default;
 				vertical-align: middle;
 				margin-top: 1em;
 			}
-			#destinations ul li.active, #source li.active
+			#destinations li.active, #source li.active
 			{
 				background-color: #fff;
 			}
 			#destinations ul:after, #source:after
+			{
+				content: "";
+				display: block;
+				clear: both;
+			}
+			.start_conversion
+			{
+				float: right;
+			}
+			.conversion:after
 			{
 				content: "";
 				display: block;
@@ -410,42 +418,45 @@ class Template
 	{
 		echo '
 			<h2>', $this->lng->get('to_what'), '</h2>
-			<div class="content">
-				<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
-				<ul id="source">';
+			<form class="conversion" action="', $_SERVER['PHP_SELF'], '" method="post">
+				<div class="content">
+					<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
+					<ul id="source">';
 
-		foreach ($destination_names as $key => $values)
+		foreach ($destination_names as $key => $value)
 			echo '
-					<li>', $values, '</li>';
+						<li><input class="input_select" data-type="destination" type="checkbox" value="', $value, '" name="', preg_replace('~[^\w\d]~', '_', $key), '" /></li>';
 
 		echo '
-				</ul>
-			</div>';
+					</ul>
+				</div>';
 
 		echo '
-			<h2>', $this->lng->get('which_software'), '</h2>
-			<div id="destinations" class="content">';
+				<h2>', $this->lng->get('which_software'), '</h2>
+				<div class="content">';
 
 		// We found at least one?
 		if (!empty($scripts))
 		{
 			echo '
-				<p>', $this->lng->get('multiple_files'), '</p>
-				<ul>';
+					<p>', $this->lng->get('multiple_files'), '</p>
+					<ul id="destinations">';
 
 			// Let's loop and output all the found scripts.
 			foreach ($scripts as $key => $script)
 			{
 				echo '
-					<li>
-						<a href="', $_SERVER['PHP_SELF'], '?import_script=', $script['path'], '">', $script['name'], '</a>
-						<span>(', $script['path'], ')</span>
-					</li>';
+						<li>
+							<input type="hidden" value="', $script['path'], '" name="import_script" />
+							<input class="input_select" data-type="source" type="checkbox" value="', $script['name'], '" name="', preg_replace('~[^\w\d]~', '_', $key), '" />
+						</li>';
 			}
 
 			echo '
-				</ul>
-			</div>
+					</ul>
+				</div>
+				<input class="start_conversion" type="submit" value="', $this->lng->get('start_conversion'), '" />
+			</form>
 			<h2>', $this->lng->get('not_here'), '</h2>
 			<div class="content">
 				<p>', $this->lng->get('check_more'), '</p>
@@ -458,7 +469,36 @@ class Template
 				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('try_again'), '</a>';
 
 		echo '
-			</div>';
+			</div>
+			<script>
+				$(document).ready(function() {
+					$(".input_select").each(function() {
+						var $input = $(this),
+							$button = $("<span />").text($input.val());
+
+						$button.click(function() {
+							var $elem = $(this),
+								type = $input.data("type");
+
+							$(".input_select").each(function() {
+								if ($(this).data("type") == type)
+								{
+									if ($(this).val() == $input.val())
+										return true;
+
+									$input.attr("checked", 0);
+									$(this).closest("li").removeClass("active");
+								}
+							});
+							$input.attr("checked", !$input.attr("checked"));
+							$(this).closest("li").toggleClass("active");
+						});
+
+						$input.hide();
+						$input.after($button);
+					});
+				});
+			</script>';
 	}
 
 	public function step0($object, $form)
