@@ -116,6 +116,7 @@
 			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
 		</presql>
 		<query>
+			// @todo the concat
 			SELECT
 				b.boardID AS id_board, o.parentID AS id_parent, o.position AS board_order, 0 AS id_cat,
 				SUBSTRING(b.title, 1, 255) AS name, SUBSTRING(b.description, 1, 65534) AS description,
@@ -149,6 +150,7 @@
 				$row['id_poll'] = $pollID;
 		</preparsecode>
 		<query>
+			// @todo is_sticky => is_pinned
 			SELECT
 				t.threadID AS id_topic, t.isSticky AS is_pinned, t.boardID AS id_board,
 				t.replies AS num_replies, t.views AS num_views, t.isClosed AS locked,

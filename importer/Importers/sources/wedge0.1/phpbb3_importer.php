@@ -28,9 +28,9 @@ class phpBB3 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $dbname, $table_prefix;
+		global $table_prefix;
 
-		return '`' . $this-getDbName() . '`.' . $table_prefix;
+		return '`' . $this->getDbName() . '`.' . $table_prefix;
 	}
 
 	public function getDbName()

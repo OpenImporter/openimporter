@@ -2,7 +2,7 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>vBulletin 4</name>
-		<version>ElkArte 1.0</version>
+		<version>Wedge 0.1</version>
 		<className>vBulletin_4</className>
 	</general>
 	<step type="mandatory">
@@ -11,6 +11,8 @@
 		<destination>{$to_prefix}members</destination>
 		<presql>
 			TRUNCATE {$to_prefix}members;
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN password_salt password_salt varchar(32) NOT NULL DEFAULT ''
 		</presql>
 		<preparsecode>
 			$row['signature'] = vb4_replace_bbc($row['signature']);
@@ -73,11 +75,28 @@
 			TRUNCATE {$to_prefix}boards;
 			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
 			ALTER TABLE {$to_prefix}boards
+				CHANGE COLUMN id_board id_board SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
 				CHANGE COLUMN id_cat id_cat SMALLINT(5) NOT NULL;
 		</presql>
+		<preparsecode>
+			$row['url'] = substr($this->boardurl, strpos($this->boardurl, '://') + 3) . '/board' . $row['url'];
+			$row['urllen'] = strlen($row['url']);
+
+			if (!empty($row['member_groups']))
+			{
+				$permissions = explode(',', $row['member_groups']);
+				foreach ($permissions as $allowed)
+					$db->query("
+						REPLACE INTO {$to_prefix}board_groups
+							(id_group, id_board, view_perm, enter_perm)
+						VALUES ('$allowed', $row[id_board], 'allow', 'allow')
+					");
+			}
+		</preparsecode>
 		<query>
+			// @todo do the substring
 			SELECT
-				forumid AS id_board, 1 AS id_cat, SUBSTRING(title, 1, 255) AS name,
+				forumid AS id_board, forumid AS url, 1 AS id_cat, SUBSTRING(title, 1, 255) AS name,
 				SUBSTRING(description, 1, 65534) AS description,
 				displayorder AS board_order, replycount AS num_posts,
 				threadcount AS num_topics, parentid AS id_parent, '-1,0' AS member_groups
@@ -132,12 +151,12 @@
 		<presql>
 			TRUNCATE {$to_prefix}topics;
 			TRUNCATE {$to_prefix}log_topics;
-			TRUNCATE {$to_prefix}log_boards;
 			TRUNCATE {$to_prefix}log_mark_read;
 		</presql>
 		<query>
+			// @todo is_sticky => is_pinned
 			SELECT
-				t.threadid AS id_topic, t.forumid AS id_board, t.sticky AS is_sticky,
+				t.threadid AS id_topic, t.forumid AS id_board, t.sticky AS is_pinned,
 				t.pollid AS id_poll, t.views AS num_views, t.postuserid AS id_member_started,
 				CASE WHEN (ISNULL(ul.userid) OR TRIM(ul.userid) = '') THEN 0 ELSE ul.userid END AS id_member_updated,
 				t.replycount AS num_replies,

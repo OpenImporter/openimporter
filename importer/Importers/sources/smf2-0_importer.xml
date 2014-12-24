@@ -2,13 +2,11 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>SMF 2.0</name>
-		<version>ElkArte 1.0</version>
 		<className>SMF2_0</className>
 	</general>
 	<step>
 		<title>Importing settings</title>
 		<detect>{$from_prefix}settings</detect>
-		<destination>{$to_prefix}settings</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -142,8 +140,6 @@
 				'reg_verification',
 				'enable_buddylist',
 				'birthday_email',
-				'dont_repeat_theme_core',
-				'dont_repeat_smileys_20',
 				'globalCookies',
 				'default_timezone',
 				'memberlist_updated',
@@ -202,8 +198,6 @@
 	<step type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}members</detect>
-		<destination>{$to_prefix}members</destination>
-		<presql>TRUNCATE {$to_prefix}members;</presql>
 		<query>
 			SELECT
 				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
@@ -214,7 +208,8 @@
 				usertitle, notify_announcements, notify_regularity, notify_send_body,
 				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
-				total_time_logged_in, password_salt, ignore_boards, IFNULL(warning, 0) AS warning, passwd_flood,
+				total_time_logged_in, password_salt, ignore_boards,
+				IFNULL(warning, 0) AS warning, passwd_flood,
 				pm_receive_from AS receive_from
 			FROM {$from_prefix}members;
 		</query>
@@ -226,7 +221,7 @@
 		<presql>TRUNCATE {$to_prefix}attachments;</presql>
 		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
-			moveAttachment($row, $this->db, $this->config->from_prefix, $this->getAttachDir($row));
+			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
 		</preparsecode>
 		<query>
 			SELECT
@@ -276,8 +271,6 @@
 	<step>
 		<title>Importing categories</title>
 		<detect>{$from_prefix}categories</detect>
-		<destination>{$to_prefix}categories</destination>
-		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
 			SELECT
 				id_cat, name, cat_order, can_collapse
@@ -287,8 +280,6 @@
 	<step>
 		<title>Importing collapsed categories</title>
 		<detect>{$from_prefix}collapsed_categories</detect>
-		<destination>{$to_prefix}collapsed_categories</destination>
-		<presql>TRUNCATE {$to_prefix}collapsed_categories;</presql>
 		<query>
 			SELECT
 				id_cat, id_member
@@ -298,8 +289,6 @@
 	<step>
 		<title>Importing boards</title>
 		<detect>{$from_prefix}boards</detect>
-		<destination>{$to_prefix}boards</destination>
-		<presql>TRUNCATE {$to_prefix}boards;</presql>
 		<query>
 			SELECT
 				id_board, id_cat, child_level, id_parent, board_order, id_last_msg, id_msg_updated, member_groups,
@@ -311,8 +300,6 @@
 	<step>
 		<title>Importing topics</title>
 		<detect>{$from_prefix}topics</detect>
-		<destination>{$to_prefix}topics</destination>
-		<presql>TRUNCATE {$to_prefix}topics;</presql>
 		<query>
 			SELECT
 				id_topic, is_sticky, id_board, id_first_msg, id_last_msg, id_member_started,
@@ -421,8 +408,6 @@
 	<step>
 		<title>Importing mark read data (boards)</title>
 		<detect>{$from_prefix}log_boards</detect>
-		<destination>{$to_prefix}log_boards</destination>
-		<presql>TRUNCATE {$to_prefix}log_boards;</presql>
 		<query>
 			SELECT
 				id_member, id_board, id_msg
@@ -432,8 +417,6 @@
 	<step>
 		<title>Importing mark read data (topics)</title>
 		<detect>{$from_prefix}log_topics</detect>
-		<destination>{$to_prefix}log_topics</destination>
-		<presql>TRUNCATE {$to_prefix}log_topics;</presql>
 		<query>
 			SELECT
 				id_member, id_topic, id_msg
@@ -443,8 +426,6 @@
 	<step>
 		<title>Importing mark read data</title>
 		<detect>{$from_prefix}log_mark_read</detect>
-		<destination>{$to_prefix}log_mark_read</destination>
-		<presql>TRUNCATE {$to_prefix}log_mark_read;</presql>
 		<query>
 			SELECT
 				id_member, id_board, id_msg
@@ -454,8 +435,6 @@
 	<step>
 		<title>Importing notifications</title>
 		<detect>{$from_prefix}log_notify</detect>
-		<destination>{$to_prefix}log_notify</destination>
-		<presql>TRUNCATE {$to_prefix}log_notify;</presql>
 		<query>
 			SELECT
 				id_member, id_topic, id_board, sent
@@ -465,7 +444,6 @@
 	<step>
 		<title>Importing membergroups</title>
 		<detect>{$from_prefix}membergroups</detect>
-		<destination>{$to_prefix}membergroups</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -479,7 +457,6 @@
 	<step>
 		<title>Importing group moderators</title>
 		<detect>{$from_prefix}group_moderators</detect>
-		<destination>{$to_prefix}group_moderators</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -492,7 +469,6 @@
 	<step>
 		<title>Importing permission profiles</title>
 		<detect>{$from_prefix}permission_profiles</detect>
-		<destination>{$to_prefix}permission_profiles</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -505,7 +481,6 @@
 	<step>
 		<title>Importing permissions</title>
 		<detect>{$from_prefix}permissions</detect>
-		<destination>{$to_prefix}permissions</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -518,7 +493,6 @@
 	<step>
 		<title>Importing board permissions</title>
 		<detect>{$from_prefix}board_permissions</detect>
-		<destination>{$to_prefix}board_permissions</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -531,7 +505,6 @@
 	<step>
 		<title>Importing smileys</title>
 		<detect>{$from_prefix}smileys</detect>
-		<destination>{$to_prefix}smileys</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -564,8 +537,6 @@
 	<step>
 		<title>Importing statistics (activity log)</title>
 		<detect>{$from_prefix}log_activity</detect>
-		<destination>{$to_prefix}log_activity</destination>
-		<presql>TRUNCATE {$to_prefix}log_activity;</presql>
 		<query>
 			SELECT
 				date, hits, topics, posts, registers, most_on
@@ -575,8 +546,6 @@
 	<step>
 		<title>Importing logged actions</title>
 		<detect>{$from_prefix}log_actions</detect>
-		<destination>{$to_prefix}log_actions</destination>
-		<presql>TRUNCATE {$to_prefix}log_actions;</presql>
 		<query>
 			SELECT
 				id_action, id_log, log_time, id_member, ip, action, id_board,
@@ -587,8 +556,6 @@
 	<step>
 		<title>Importing reported posts</title>
 		<detect>{$from_prefix}log_reported</detect>
-		<destination>{$to_prefix}log_reported</destination>
-		<presql>TRUNCATE {$to_prefix}log_reported;</presql>
 		<query>
 			SELECT
 				id_report, id_msg, id_topic, id_board, id_member, membername, subject,
@@ -599,8 +566,6 @@
 	<step>
 		<title>Importing reported comments</title>
 		<detect>{$from_prefix}log_reported_comments</detect>
-		<destination>{$to_prefix}log_reported_comments</destination>
-		<presql>TRUNCATE {$to_prefix}log_reported_comments;</presql>
 		<query>
 			SELECT
 				id_comment, id_report, id_member, membername, comment, time_sent
@@ -610,8 +575,6 @@
 	<step>
 		<title>Importing spider hits</title>
 		<detect>{$from_prefix}log_spider_hits</detect>
-		<destination>{$to_prefix}log_spider_hits</destination>
-		<presql>TRUNCATE {$to_prefix}log_spider_hits;</presql>
 		<query>
 			SELECT
 				id_hit, id_spider, log_time, url, processed
@@ -621,8 +584,6 @@
 	<step>
 		<title>Importing spider stats</title>
 		<detect>{$from_prefix}log_spider_stats</detect>
-		<destination>{$to_prefix}log_spider_stats</destination>
-		<presql>TRUNCATE {$to_prefix}log_spider_stats;</presql>
 		<query>
 			SELECT
 				id_spider, page_hits, last_seen, stat_date
@@ -632,8 +593,6 @@
 	<step>
 		<title>Importing subscriptions</title>
 		<detect>{$from_prefix}subscriptions</detect>
-		<destination>{$to_prefix}subscriptions</destination>
-		<presql>TRUNCATE {$to_prefix}subscriptions;</presql>
 		<query>
 			SELECT
 				id_subscribe, name, description, cost, length, id_group,
@@ -641,11 +600,26 @@
 			FROM {$from_prefix}subscriptions;
 		</query>
 	</step>
+	<step>	<step>
+		<title>Importing pretty topic urls</title>
+		<detect>{$from_prefix}pretty_topic_urls</detect>
+		<query>
+			SELECT
+				id_topic, pretty_url
+			FROM {$from_prefix}pretty_topic_urls;
+		</query>
+	</step>
 	<step>
+		<title>Importing pretty urls cache</title>
+		<detect>{$from_prefix}pretty_urls_cache</detect>
+		<query>
+			SELECT
+				url_id, replacement
+			FROM {$from_prefix}pretty_urls_cache;
+		</query>
+
 		<title>Importing custom fields</title>
 		<detect>{$from_prefix}custom_fields</detect>
-		<destination>{$to_prefix}custom_fields</destination>
-		<presql>TRUNCATE {$to_prefix}custom_fields;</presql>
 		<query>
 			SELECT
 				id_field, col_name, field_name, field_desc, field_type, field_length,
@@ -657,8 +631,6 @@
 	<step>
 		<title>Importing custom fields data</title>
 		<detect>{$from_prefix}custom_fields</detect>
-		<destination>{$to_prefix}custom_fields_data</destination>
-		<presql>TRUNCATE {$to_prefix}custom_fields_data;</presql>
 		<query>
 			SELECT
 				id_member, variable, value
@@ -669,8 +641,6 @@
 	<step>
 		<title>Importing likes from Thank you mod</title>
 		<detect>{$from_prefix}thank_you_post</detect>
-		<destination>{$to_prefix}message_likes</destination>
-		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
 		<query>
 			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
 			FROM {$from_prefix}thank_you_post AS th
@@ -681,8 +651,6 @@
 	<step>
 		<title>Importing likes from Joker's Like Posts mod</title>
 		<detect>{$from_prefix}like_post</detect>
-		<destination>{$to_prefix}message_likes</destination>
-		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
 		<query>
 			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
 			FROM {$from_prefix}like_post AS lp;
@@ -691,8 +659,6 @@
 	<step>
 		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
 		<detect>{$from_prefix}likes</detect>
-		<destination>{$to_prefix}message_likes</destination>
-		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
 		<code>
 			$keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
 			$rows = $this->config->source->fetchLikes();

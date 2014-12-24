@@ -2,7 +2,6 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>Woltlab Burning Board 3.1</name>
-		<version>ElkArte 1.0</version>
 		<className>wbb3_1</className>
 		<form>
 			<field id="1" type="text" size="20" default="wcf1_" label="WCF table prefix">wcf_prefix</field>
@@ -12,6 +11,7 @@
 	</general>
 	<step type="mandatory">
 		<title>Analysing WCF options</title>
+		<detect>{$from_prefix}{$wbb_prefix}user</detect>
 		<code>
 			global $userOptions;
 			$userOptions = array();
@@ -29,10 +29,6 @@
 	<step type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}{$wbb_prefix}user</detect>
-		<destination>{$to_prefix}members</destination>
-		<presql>
-			TRUNCATE {$to_prefix}members;
-		</presql>
 		<preparsecode>
 			$request = $db->query("
 				SELECT groupID
@@ -90,8 +86,6 @@
 	<step>
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}{$wbb_prefix}board WHERE boardType = 1</detect>
-		<destination>{$to_prefix}categories</destination>
-		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
 			SELECT
 				c.boardID AS id_cat, SUBSTRING(c.title, 1, 255) AS name,
@@ -104,11 +98,6 @@
 	<step>
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}{$wbb_prefix}board WHERE boardType = 0</detect>
-		<destination>{$to_prefix}boards</destination>
-		<presql>
-			TRUNCATE {$to_prefix}boards;
-			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
-		</presql>
 		<query>
 			SELECT
 				b.boardID AS id_board, o.parentID AS id_parent, o.position AS board_order, 0 AS id_cat,
@@ -122,13 +111,6 @@
 	<step>
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}{$wbb_prefix}thread</detect>
-		<destination>{$to_prefix}topics</destination>
-		<presql>
-			TRUNCATE {$to_prefix}topics;
-			TRUNCATE {$to_prefix}log_topics;
-			TRUNCATE {$to_prefix}log_boards;
-			TRUNCATE {$to_prefix}log_mark_read;
-		</presql>
 		<preparsecode>
 			$request = $db->query("
 				SELECT
@@ -159,8 +141,6 @@
 	<step>
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}{$wbb_prefix}post</detect>
-		<destination>{$to_prefix}messages</destination>
-		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
 			<slashes>false</slashes>
 			<limit>100</limit>
@@ -187,14 +167,6 @@
 	<step>
 		<title>Importing polls</title>
 		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
-		<destination>{$to_prefix}polls</destination>
-		<presql>
-			ALTER TABLE {$to_prefix}poll_choices
-				ADD old_choice INT( 12 ) unsigned NOT NULL;
-			TRUNCATE {$to_prefix}polls;
-			TRUNCATE {$to_prefix}poll_choices;
-			TRUNCATE {$to_prefix}log_polls;
-		</presql>
 		<query>
 			SELECT
 				p.pollID AS id_poll, SUBSTRING(p.question , 1, 255) AS question,
@@ -209,7 +181,6 @@
 	<step>
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
-		<destination>{$to_prefix}poll_choices</destination>
 		<preparsecode>
 			if (!isset($_SESSION['convert_last_poll']) || $_SESSION['convert_last_poll'] != $row['id_poll'])
 			{	
@@ -228,8 +199,8 @@
 	</step>
 	<step>
 		<title>Importing poll votes</title>
+		// @todo verify table, it may be {$from_prefix}{$wcf_prefix}poll
 		<detect>{$from_prefix}{$wcf_prefix}poll_option_vote</detect>
-		<destination>{$to_prefix}log_polls</destination>
 		<query>
 			SELECT
 				v.pollID AS id_poll, v.userID AS id_member, c.id_choice AS id_choice
@@ -241,12 +212,6 @@
 	<step>
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}{$wcf_prefix}pm</detect>
-		<destination>{$to_prefix}personal_messages</destination>
-		<presql>
-			ALTER TABLE {$to_prefix}poll_choices DROP old_choice;
-			TRUNCATE {$to_prefix}personal_messages;
-			TRUNCATE {$to_prefix}pm_recipients;
-		</presql>
 		<preparsecode>
 			$row['body'] = wbb_replace_bbc($row['body']);
 		</preparsecode>
@@ -261,7 +226,6 @@
 	<step>
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}{$wcf_prefix}pm_to_user</detect>
-		<destination>{$to_prefix}pm_recipients</destination>
 		<query>
 			SELECT
 				pmID AS id_pm, recipientID AS id_member,
@@ -273,10 +237,6 @@
 	<step>
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}{$wbb_prefix}thread_subscription</detect>
-		<destination>{$to_prefix}log_notify</destination>
-		<presql>
-			TRUNCATE {$to_prefix}log_notify;
-		</presql>
 		<query>
 			SELECT
 				userID AS id_member, threadID AS id_topic
@@ -286,7 +246,6 @@
 	<step>
 		<title>Importing board notifications</title>
 		<detect>{$from_prefix}{$wbb_prefix}board_subscription</detect>
-		<destination>{$to_prefix}log_notify</destination>
 		<query>
 			SELECT
 				userID AS id_member, boardID AS id_board

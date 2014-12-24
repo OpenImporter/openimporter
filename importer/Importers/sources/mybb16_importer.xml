@@ -2,19 +2,21 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>MyBB 1.6</name>
-		<version>ElkArte 1.0</version>
 		<className>mybb16</className>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}users</detect>
-		<destination>{$to_prefix}members</destination>
-		<presql>
-			TRUNCATE {$to_prefix}members;
-		</presql>
 		<preparsecode>
 			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
 				$row['birthdate'] = '0001-01-01';
+
+			// data field is used temporary to dertermine the type of avatar
+			// @todo verify this belongs here
+			if ($row['data'] != 'remote')
+				$row['avatar'] = '';
+
+			$row['data'] = '';
 		</preparsecode>
 		<query>
 			SELECT
@@ -29,7 +31,7 @@
 				SUBSTRING(buddylist, 1, 255) AS buddy_list, '' AS ignore_boards,
 				SUBSTRING(regip, 1, 255) AS member_ip, SUBSTRING(regip, 1, 255) AS member_ip2,
 				SUBSTRING(ignorelist, 1, 255) AS pm_ignore_list, avatar,
-				timeonline AS total_time_logged_in,	birthday AS birthdate
+				timeonline AS total_time_logged_in, birthday AS birthdate, avatartype AS data
 			FROM {$from_prefix}users;
 		</query>
 	</step>
@@ -47,11 +49,6 @@
 	<step>
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forums</detect>
-		<destination>{$to_prefix}boards</destination>
-		<presql>
-			TRUNCATE {$to_prefix}boards;
-			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
-		</presql>
 		<query>
 			SELECT
 				fid AS id_board, SUBSTRING(name, 1, 255) AS name,
@@ -65,13 +62,6 @@
 	<step>
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}threads</detect>
-		<destination>{$to_prefix}topics</destination>
-		<presql>
-			TRUNCATE {$to_prefix}topics;
-			TRUNCATE {$to_prefix}log_topics;
-			TRUNCATE {$to_prefix}log_boards;
-			TRUNCATE {$to_prefix}log_mark_read;
-		</presql>
 		<query>
 			SELECT
 				t.tid AS id_topic, t.fid AS id_board, t.sticky AS is_sticky,
@@ -94,8 +84,6 @@
 	<step>
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
-		<destination>{$to_prefix}messages</destination>
-		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
 			<slashes>true</slashes>
 			<limit>100</limit>
@@ -120,12 +108,6 @@
 	<step>
 		<title>Importing polls</title>
 		<detect>{$from_prefix}polls</detect>
-		<destination>{$to_prefix}polls</destination>
-		<presql>
-			TRUNCATE {$to_prefix}polls;
-			TRUNCATE {$to_prefix}poll_choices;
-			TRUNCATE {$to_prefix}log_polls;
-		</presql>
 		<query>
 			SELECT
 				p.pid AS id_poll, SUBSTRING(p.question, 1, 255) AS question, p.closed AS voting_locked,
@@ -138,11 +120,11 @@
 	<step>
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}polls</detect>
-		<destination>{$to_prefix}poll_choices</destination>
 		<options>
 			<no_add>true</no_add>
 		</options>
 		<preparsecode><![CDATA[
+			// @todo this should probably go somewhere else
 			$keys = array('id_poll', 'id_choice', 'label', 'votes');
 
 			$options = explode('||~|~||', $row['opt']);
@@ -167,7 +149,6 @@
 	<step>
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}pollvotes</detect>
-		<destination>{$to_prefix}log_polls</destination>
 		<query>
 			SELECT pid AS id_poll, uid AS id_member, voteoption AS id_choice
 			FROM {$from_prefix}pollvotes;
@@ -176,11 +157,6 @@
 	<step>
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}privatemessages</detect>
-		<destination>{$to_prefix}personal_messages</destination>
-		<presql>
-			TRUNCATE {$to_prefix}personal_messages;
-			TRUNCATE {$to_prefix}pm_recipients;
-		</presql>
 		<preparsecode>
 			if(empty($row['from_name']))
 				$row['from_name'] = 'Guest';
@@ -198,7 +174,6 @@
 	<step>
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}privatemessages</detect>
-		<destination>{$to_prefix}pm_recipients</destination>
 		<query>
 			SELECT pmid AS id_pm, toid AS id_member, readtime != 0 AS is_read, '-1' AS labels
 			FROM {$from_prefix}privatemessages
@@ -208,13 +183,9 @@
 	<step>
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}threadsubscriptions</detect>
-		<destination>{$to_prefix}log_notify</destination>
 		<options>
 			<ignore>true</ignore>
 		</options>
-		<presql>
-			TRUNCATE {$to_prefix}log_notify;
-		</presql>
 		<query>
 			SELECT uid AS id_member, tid AS id_topic
 			FROM {$from_prefix}threadsubscriptions;
@@ -223,7 +194,6 @@
 	<step>
 		<title>Importing board notifications</title>
 		<detect>{$from_prefix}forumsubscriptions</detect>
-		<destination>{$to_prefix}log_notify</destination>
 		<options>
 			<ignore>true</ignore>
 		</options>
@@ -235,7 +205,6 @@
 	<step>
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
 		<options>
 			<no_add>true</no_add>
 		</options>
@@ -263,6 +232,7 @@
 			$source = $mybb_attachment_dir . '/' . $row['attachname'];
 			$file_hash = createAttachmentFileHash($row['filename']);
 			$id_attach = $this->step1_importer->newIdAttach();
+			// @todo the name should come from step1_importer
 			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 			$width = 0;
 			$height = 0;
@@ -300,7 +270,6 @@
 	<step>
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}users</detect>
-		<destination>{$to_prefix}attachments</destination>
 		<options>
 			<no_add>true</no_add>
 		</options>
