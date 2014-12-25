@@ -227,9 +227,8 @@
 		<query>
 			SELECT
 				ID_ATTACH AS id_attach, ID_THUMB AS id_thumb, ID_MSG AS id_msg, ID_MEMBER AS id_member,
-				attachmentType AS attachment_type, filename,
-				IF(file_hash IS NULL or file_hash='', 'legacy', file_hash) AS file_hash,
-				size, downloads, width, height
+				attachmentType AS attachment_type, filename, file_hash, size, downloads,
+				width, height
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
