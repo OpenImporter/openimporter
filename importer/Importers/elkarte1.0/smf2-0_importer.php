@@ -180,13 +180,7 @@ function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
 	else
 		$smf_attachments_dir = $smf_folders[1];
 
-	if (empty($row['file_hash']))
-	{
-		$row['file_hash'] = createAttachmentFileHash($row['filename']);
-		$source_file = $row['filename'];
-	}
-	else
-		$source_file = $row['id_attach'] . '_' . $row['file_hash'];
+	$source_file = ($row['file_hash'] == "legacy") ? $row['filename'] : $row['id_attach'] . '_' . $row['file_hash'];
 
 	copy_file($smf_attachments_dir . '/' . $source_file, $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 }
