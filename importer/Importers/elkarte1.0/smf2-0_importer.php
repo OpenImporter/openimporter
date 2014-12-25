@@ -157,7 +157,7 @@ class SMF2_0 extends AbstractSourceImporter
 	}
 }
 
-function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
+function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 {
 	static $smf_folders = null;
 
