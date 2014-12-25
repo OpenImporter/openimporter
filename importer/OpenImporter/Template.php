@@ -351,7 +351,7 @@ class Template
 			{
 				padding: 0 1em;
 			}
-			#destinations li span, #source li span
+			#destinations li label, #source li label
 			{
 				display: block;
 				padding: 0.5em;
@@ -425,7 +425,10 @@ class Template
 
 		foreach ($destination_names as $key => $value)
 			echo '
-						<li><input class="input_select" data-type="destination" type="checkbox" value="', $value, '" name="', preg_replace('~[^\w\d]~', '_', $key), '" /></li>';
+						<li>
+							<input class="input_select" data-type="destination" type="checkbox" value="', $key, '" id="destination_', preg_replace('~[^\w\d]~', '_', $key), '" name="destination" />
+							<label for="destination_', preg_replace('~[^\w\d]~', '_', $key), '">', $value, '</label>
+						</li>';
 
 		echo '
 					</ul>
@@ -447,8 +450,8 @@ class Template
 			{
 				echo '
 						<li>
-							<input type="hidden" value="', $script['path'], '" name="import_script" />
-							<input class="input_select" data-type="source" type="checkbox" value="', $script['name'], '" name="', preg_replace('~[^\w\d]~', '_', $key), '" />
+							<input class="input_select" data-type="source" type="checkbox" value="', $script['path'], '" id="source_', preg_replace('~[^\w\d]~', '_', $key), '" name="source" />
+							<label for="source_', preg_replace('~[^\w\d]~', '_', $key), '">', $script['name'], '</label>
 						</li>';
 			}
 
@@ -474,7 +477,7 @@ class Template
 				$(document).ready(function() {
 					$(".input_select").each(function() {
 						var $input = $(this),
-							$button = $("<span />").text($input.val());
+							$button = $input.next();
 
 						$button.click(function() {
 							var $elem = $(this),
