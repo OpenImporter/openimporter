@@ -156,7 +156,7 @@ class Template
 			function validateField(string)
 			{
 				var target = document.getElementById(string);
-				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&import_script=', addslashes($this->response->script) , '";
+				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&source=', !empty($this->response->script['source']) ? addslashes($this->response->script['source']) : '\'\'', '&destination=', !empty($this->response->script['destination']) ? addslashes($this->response->script['destination']) : '\'\'', '";
 				var ajax = new AJAXCall(url, validateCallback, string);
 				ajax.doGet();
 			}
@@ -426,7 +426,7 @@ class Template
 		foreach ($destination_names as $key => $value)
 			echo '
 						<li>
-							<input class="input_select" data-type="destination" type="checkbox" value="', $key, '" id="destination_', preg_replace('~[^\w\d]~', '_', $key), '" name="destination" />
+							<input class="input_select" data-type="destination" type="radio" value="', $key, '" id="destination_', preg_replace('~[^\w\d]~', '_', $key), '" name="destination" />
 							<label for="destination_', preg_replace('~[^\w\d]~', '_', $key), '">', $value, '</label>
 						</li>';
 
@@ -450,7 +450,7 @@ class Template
 			{
 				echo '
 						<li>
-							<input class="input_select" data-type="source" type="checkbox" value="', $script['path'], '" id="source_', preg_replace('~[^\w\d]~', '_', $key), '" name="source" />
+							<input class="input_select" data-type="source" type="radio" value="', $script['path'], '" id="source_', preg_replace('~[^\w\d]~', '_', $key), '" name="source" />
 							<label for="source_', preg_replace('~[^\w\d]~', '_', $key), '">', $script['name'], '</label>
 						</li>';
 			}
@@ -489,11 +489,11 @@ class Template
 									if ($(this).val() == $input.val())
 										return true;
 
-									$input.attr("checked", 0);
+									$input.prop("checked", false);
 									$(this).closest("li").removeClass("active");
 								}
 							});
-							$input.attr("checked", !$input.attr("checked"));
+							$input.prop("checked", !$input.prop("checked"));
 							$(this).closest("li").toggleClass("active");
 						});
 

@@ -141,7 +141,7 @@ class Importer
 		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
 
 		if (!empty($this->config->script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->script);
+			$this->_loadImporter($this->config->importers_dir . DS . $this->config->script);
 	}
 
 	public function setData($data)
@@ -152,23 +152,33 @@ class Importer
 	public function reloadImporter()
 	{
 		if (!empty($this->config->script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->script);
+			$this->_loadImporter($this->config->script);
 	}
 
-	protected function _loadImporter($file)
+	protected function _loadImporter($files)
 	{
-		$this->_preparse_xml($file);
+		$this->_loadSource($files['source']);
+		$this->_loadDestination($files['destination']);
+	}
+
+	protected function _loadSource($file)
+	{
+		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
+		$this->_preparse_xml($full_path);
 
 		// This is the helper class
-		$source_helper = str_replace('.xml', '.php', $file);
+		$source_helper = str_replace('.xml', '.php', $full_path);
 		require_once($source_helper);
+	}
 
-		// Maybe the "destination" comes with php helper functions?
-		$path = dirname($file);
-		$dest_helper = $path . DS . basename($path) . '_importer.php';
-		require_once($dest_helper);
+	protected function _loadDestination($file)
+	{
+		$full_path = $this->config->importers_dir . DS . 'destinations' . DS . $file;
 
-		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
+		require_once($full_path);
+
+		$this->_importer_base_class_name = str_replace('.', '_', basename($file, '.php'));
+
 		$this->config->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
@@ -305,14 +315,6 @@ class Importer
 
 		$this->init_db();
 		$this->config->source->setUtils($this->db, $this->config);
-
-		// @todo What is the use-case for these?
-		// Custom variables from our importer?
-		if (isset($this->xml->general->variables))
-		{
-			foreach ($this->xml->general->variables as $eval_me)
-				eval($eval_me);
-		}
 
 		$this->testTable();
 	}

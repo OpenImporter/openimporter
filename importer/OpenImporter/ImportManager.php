@@ -5,12 +5,6 @@
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
  * @version 1.0 Alpha
- *
- * This file contains code based on:
- *
- * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 require_once(BASEDIR . '/OpenImporter/Utils.php');
@@ -188,15 +182,20 @@ class ImportManager
 	protected function _findScript()
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
-		if (isset($_REQUEST['import_script']))
-			$this->data['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
+		if (isset($_POST['destination']) && isset($_POST['source']))
+		{
+			$this->data['import_script'] = $this->config->script = array(
+				'destination' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $_REQUEST['destination'])),
+				'source' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $_REQUEST['source'])),
+			);
+		}
 		elseif (isset($this->data['import_script']))
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
 		}
 		else
 		{
-			$this->config->script = '';
+			$this->config->script = array();
 			$this->data['import_script'] = null;
 		}
 	}
@@ -292,14 +291,30 @@ class ImportManager
 		$this->data['import_script'] = null;
 	}
 
-	protected function validateScript($script)
+	/**
+	 * Verifies the scripts exist.
+	 * @param string[] $scripts Destination and source script in an associative
+	 *                 array:
+	 *                   array(
+	 *                     'destination' => 'destination_name.php',
+	 *                     'source' => 'source_name.xml',
+	 *                   )
+	 */
+	protected function validateScript($scripts)
 	{
-		$script = preg_replace('~[\.]+~', '.', $script);
+		$return = array();
+		foreach ((array) $scripts as $key => $script)
+		{
+			$script = preg_replace('~[\.]+~', '.', $script);
+			$key = preg_replace('~[\.]+~', '.', $key);
 
-		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script) && preg_match('~_importer\.xml$~', $script) != 0)
-			return $script;
-		else
-			return false;
+			if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_importer\.(xml|php)$~', $script) == 0)
+				return false;
+
+			$return[$key] = $script;
+		}
+
+		return $return;
 	}
 
 	/**
@@ -358,7 +373,7 @@ class ImportManager
 
 		// Silence simplexml errors
 		libxml_use_internal_errors(true);
-		foreach (glob(BASEDIR . DS . 'Importers' . DS . 'sources' . DS . '*_importer.xml') as $entry)
+		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_importer.xml') as $entry)
 		{
 			// If a script is broken simply skip it.
 			if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
@@ -389,7 +404,7 @@ class ImportManager
 	protected function findDestinations()
 	{
 		$destinations = array();
-		foreach (glob(BASEDIR . DS . 'Importers' . DS . 'destinations' . DS . '*') as $file)
+		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*_importer.php') as $file)
 		{
 			require_once($file);
 			$file_name = basename($file);

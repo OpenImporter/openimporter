@@ -42,7 +42,8 @@ if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 	$_POST = stripslashes_recursive($_POST);
 
 $config = new Configurator();
-$config->lang_dir = BASEDIR . '/Languages';
+$config->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
+$config->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
 
 try
 {
