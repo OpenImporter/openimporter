@@ -80,9 +80,14 @@ abstract class AbstractSourceImporter
 	{
 	}
 
-	public function callMethod($method)
+	public function callMethod($method, $params = array())
 	{
 		if (method_exists($this, $method))
-			$this->$method();
+		{
+			if (!empty($params))
+				return $this->$method();
+			else
+				return call_user_func_array(array($this, $method), $params);
+		}
 	}
 }
