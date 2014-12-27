@@ -73,4 +73,184 @@
 			FROM {$from_prefix}FORUMS;
 		</query>
 	</step>
+	<step id="topics">
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}TOPICS</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT
+				t.TOPIC_ID AS id_topic, t.TOPIC_IS_STICKY AS is_sticky, t.FORUM_ID AS id_board,
+				t.POST_ID AS id_first_msg, t.TOPIC_LAST_POST_ID AS id_last_msg,
+				t.USER_ID AS id_member_started, t.TOPIC_LAST_POSTER_ID AS id_member_updated,
+				IFNULL(ps.POLL_ID, 0) AS id_poll,
+				t.TOPIC_REPLIES AS num_replies, t.TOPIC_VIEWS AS num_views,
+				t.TOPIC_STATUS = 'C' AS locked, t.TOPIC_IS_APPROVED as approved
+			FROM {$from_prefix}TOPICS AS t
+				LEFT JOIN {$from_prefix}POLL_DATA as ps ON (ps.POST_ID = t.POST_ID);
+		</query>
+	</step>
+	<step id="messages">
+		<title>Importing Messages</title>
+		<detect>{$from_prefix}POSTS</detect>
+		<preparsecode>
+			$row['subject'] = fix_quotes($row['subject'], true);
+			$row['body'] = fix_quotes($row['body'], true);
+		</preparsecode>
+		<query>
+			SELECT
+				p.POST_ID AS id_msg, p.TOPIC_ID AS id_topic, IFNULL(t.FORUM_ID, 0) AS id_board,
+				p.POST_POSTED_TIME AS poster_time, p.USER_ID AS id_member,
+				SUBSTRING(p.POST_SUBJECT, 1, 255) AS subject,
+				SUBSTRING(p.POST_POSTER_NAME, 1, 255) AS poster_name,
+				SUBSTRING(IFNULL(m.USER_REGISTRATION_EMAIL, 'guest@example.com'), 1, 255) AS poster_email,
+				p.POST_POSTER_IP AS poster_ip,
+				IFNULL(p.POST_LAST_EDITED_TIME, 0) as modified_time, p.POST_LAST_EDITED_BY as modified_name,
+				p.POST_DEFAULT_BODY AS body, 'xx' AS icon, p.POST_IS_APPROVED as approved
+			FROM {$from_prefix}POSTS AS p
+				LEFT JOIN {$from_prefix}TOPICS AS t ON (t.TOPIC_ID = p.TOPIC_ID)
+				LEFT JOIN {$from_prefix}USERS AS m ON (m.USER_ID = p.USER_ID);
+		</query>
+	</step>
+	<!-- @todo missing recounting of members messages -->
+	<step id="polls">
+		<title>Importing polls</title>
+		<detect>{$from_prefix}POLL_DATA</detect>
+		<query>
+			SELECT
+				p.POLL_ID AS id_poll, SUBSTRING(p.POLL_BODY, 1, 255) AS question,
+				p.POLL_STOP_TIME as expire_time, p.POLL_HIDE_RESULTS_UNTIL_END as hide_results,
+
+				p.USER_ID AS id_member, SUBSTRING(IFNULL(m.USER_DISPLAY_NAME, 'Guest'), 1, 255) AS poster_name
+			FROM {$from_prefix}POLL_DATA AS p
+				LEFT JOIN {$from_prefix}USERS AS m ON (m.USER_ID = p.USER_ID);
+		</query>
+	</step>
+	<step id="polloptions">
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}POLL_OPTIONS</detect>
+		<query>
+			SELECT OPTION_ID as id_choice, POLL_ID as id_poll, OPTION_BODY as label
+			FROM {$from_prefix}POLL_OPTIONS;
+		</query>
+	</step>
+	<step id="pollvotes">
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}POLL_VOTES</detect>
+		<preparsecode>
+			// A guest?...I hope so, skip it
+			$row['id_member'] = (int) $row['id_member'];
+		</preparsecode>
+		<query>
+			SELECT POLL_ID AS id_poll, OPTION_ID as id_choice, VOTES_USER_ID_IP as id_member
+			FROM {$from_prefix}POLL_VOTES;
+		</query>
+	</step>
+	<!-- @todo missing recounting of votes -->
+	<step id="pm">
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}PRIVATE_MESSAGE_POSTS</detect>
+		<options>
+			<limit>50</limit>
+		</options>
+		<preparsecode>
+			$result = $this->db->query("
+				SELECT MIN(POST_ID)
+				FROM {$from_prefix}PRIVATE_MESSAGE_POSTS
+				WHERE TOPIC_ID = " . $row['TOPIC_ID']);
+
+			unset($row['TOPIC_ID']);
+			list($res) = convert_fetch_row($result);
+			convert_free_result($result);
+
+			$row['id_pm_head'] = $res;
+			$row['subject'] = fix_quotes($row['subject'], true);
+			$row['body'] = fix_quotes($row['body'], true);
+		</preparsecode>
+		<query>
+			SELECT
+				mp.TOPIC_ID,
+				mp.POST_ID AS id_pm, mp.USER_ID AS id_member_from, mp.POST_TIME AS msgtime,
+
+				SUBSTRING(IFNULL(m.USER_LOGIN_NAME, "Guest"), 1, 255) AS from_name,
+				SUBSTRING(pm.TOPIC_SUBJECT, 1, 255) AS subject,
+				SUBSTRING(mp.POST_DEFAULT_BODY, 1, 65534) AS body
+			FROM {$from_prefix}PRIVATE_MESSAGE_POSTS AS mp
+				LEFT JOIN {$from_prefix}PRIVATE_MESSAGE_TOPICS AS pm ON (mp.TOPIC_ID = pm.TOPIC_ID)
+				LEFT JOIN {$from_prefix}USERS AS m ON (m.USER_ID = mp.USER_ID);
+		</query>
+	</step>
+	<step id="pmrecipients">
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}PRIVATE_MESSAGE_POSTS</detect>
+		<options>
+			<noadd>true</noadd>
+		</options>
+		<!-- @todo this needs work, lotsa work -->
+		<preparsecode>
+			// Grab all the "other" users in the conversation
+			$result = convert_query("
+				SELECT DISTINCT(USER_ID)
+				FROM {$from_prefix}PRIVATE_MESSAGE_POSTS
+				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
+					AND USER_ID != " . $row['USER_ID'] . "");
+
+			$ins = array();
+			$ins_keys = array(
+				'id_pm',
+				'id_member',
+			);
+			while ($pmrec = convert_fetch_assoc($result))
+				$id_members[] = 
+				$ins[$pmrec['USER_ID']] = array(
+					'id_pm' => $row['POST_ID'],
+					'id_member' => $pmrec['USER_ID'],
+				);
+			convert_free_result($result);
+
+			// And try also with the PRIVATE_MESSAGE_USERS table
+			$result = convert_query("
+				SELECT DISTINCT(USER_ID)
+				FROM {$from_prefix}PRIVATE_MESSAGE_USERS
+				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
+					AND USER_ID != " . $row['USER_ID'] . "");
+
+			while ($pmrec = convert_fetch_assoc($result))
+				$ins[$pmrec['USER_ID']] = array(
+					'id_pm' => $row['POST_ID'],
+					'id_member' => $pmrec['USER_ID'],
+				);
+			convert_free_result($result);
+
+			convert_insert("pm_recipients", $ins_keys, $ins, 'ignore');
+		</preparsecode>
+		<query>
+			SELECT POST_ID, TOPIC_ID, USER_ID
+			FROM {$from_prefix}PRIVATE_MESSAGE_POSTS;
+		</query>
+	</step>
+	<step id="boardmods">
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}MODERATORS</detect>
+		<query>
+			SELECT FORUM_ID as id_board, USER_ID as id_member
+			FROM {$from_prefix}MODERATORS;
+		</query>
+	</step>
+	<step id="smiley">
+		<title>Importing smileys</title>
+		<detect>{$from_prefix}GRAEMLIN_SMILEY_CODE</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT GRAEMLIN_SMILEY_CODE as code,
+				GRAEMLIN_IMAGE as filename, GRAEMLIN_MARKUP_CODE as description,
+
+				GRAEMLIN_ORDER as smiley_order
+			FROM {$from_prefix}GRAEMLINS;
+		</query>
+	</step>
+	<!-- @todo missing bans and censored words conversion -->
 </importer>
