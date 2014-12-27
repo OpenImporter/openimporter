@@ -5,10 +5,9 @@
 		<version>ElkArte 1.0</version>
 		<className>SMF1_1</className>
 	</general>
-	<step>
+	<step id="settings">
 		<title>Importing settings</title>
 		<detect>{$from_prefix}settings</detect>
-		<destination>{$to_prefix}settings</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -189,11 +188,9 @@
 			$this->db->free_result($request);
 		</code>
 	</step>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}members</detect>
-		<destination>{$to_prefix}members</destination>
-		<presql>TRUNCATE {$to_prefix}members;</presql>
 		<query>
 			SELECT
 				ID_MEMBER as id_member, memberName AS member_name, dateRegistered AS date_registered, 
@@ -215,11 +212,9 @@
 			FROM {$from_prefix}members;
 		</query>
 	</step>
-	<step>
+	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<presql>TRUNCATE {$to_prefix}attachments;</presql>
 		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
 			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
@@ -232,7 +227,7 @@
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
-	<step>
+	<step id="avatars">
 		<title>Importing avatars</title>
 		<code>
 			$avatarg = $this->db->query("
@@ -270,33 +265,27 @@
 				copy_dir_recursive($smf_avatarg, $elk_avatarg);
 		</code>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing categories</title>
 		<detect>{$from_prefix}categories</detect>
-		<destination>{$to_prefix}categories</destination>
-		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
 			SELECT
 				ID_CAT AS id_cat, name, catOrder AS cat_order, canCollapse AS can_collapse
 			FROM {$from_prefix}categories;
 		</query>
 	</step>
-	<step>
+	<step id="collapsedcats">
 		<title>Importing collapsed categories</title>
 		<detect>{$from_prefix}collapsed_categories</detect>
-		<destination>{$to_prefix}collapsed_categories</destination>
-		<presql>TRUNCATE {$to_prefix}collapsed_categories;</presql>
 		<query>
 			SELECT
 				ID_CAT AS id_cat, ID_MEMBER AS id_member
 			FROM {$from_prefix}collapsed_categories;
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing boards</title>
 		<detect>{$from_prefix}boards</detect>
-		<destination>{$to_prefix}boards</destination>
-		<presql>TRUNCATE {$to_prefix}boards;</presql>
 		<query>
 			SELECT
 				ID_BOARD AS id_board, ID_CAT AS id_cat, childLevel AS child_level,
@@ -307,11 +296,9 @@
 			FROM {$from_prefix}boards;
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing topics</title>
 		<detect>{$from_prefix}topics</detect>
-		<destination>{$to_prefix}topics</destination>
-		<presql>TRUNCATE {$to_prefix}topics;</presql>
 		<query>
 			SELECT
 				ID_TOPIC AS id_topic, isSticky AS is_sticky, ID_BOARD AS id_board,
@@ -321,11 +308,9 @@
 			FROM {$from_prefix}topics;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing messages</title>
 		<detect>{$from_prefix}messages</detect>
-		<destination>{$to_prefix}messages</destination>
-		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
 			<limit>100</limit>
 		</options>
@@ -339,11 +324,9 @@
 			FROM {$from_prefix}messages;
 		</query>
 	</step>
-	<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}polls</detect>
-		<destination>{$to_prefix}polls</destination>
-		<presql>TRUNCATE {$to_prefix}polls;</presql>
 		<query>
 			SELECT
 				ID_POLL AS id_poll, question, votingLocked AS voting_locked,
@@ -352,33 +335,27 @@
 			FROM {$from_prefix}polls;
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}poll_choices</detect>
-		<destination>{$to_prefix}poll_choices</destination>
-		<presql>TRUNCATE {$to_prefix}poll_choices;</presql>
 		<query>
 			SELECT
 				ID_POLL AS id_poll, ID_CHOICE AS id_choice, label, votes
 			FROM {$from_prefix}poll_choices;
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}log_polls</detect>
-		<destination>{$to_prefix}log_polls</destination>
-		<presql>TRUNCATE {$to_prefix}log_polls;</presql>
 		<query>
 			SELECT
 				ID_POLL AS id_poll, ID_MEMBER AS id_member, ID_CHOICE AS id_choice
 			FROM {$from_prefix}log_polls;
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}personal_messages</detect>
-		<destination>{$to_prefix}personal_messages</destination>
-		<presql>TRUNCATE {$to_prefix}personal_messages;</presql>
 		<options>
 			<limit>200</limit>
 		</options>
@@ -389,76 +366,63 @@
 			FROM {$from_prefix}personal_messages;
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}pm_recipients</detect>
-		<destination>{$to_prefix}pm_recipients</destination>
-		<presql>TRUNCATE {$to_prefix}pm_recipients;</presql>
 		<query>
 			SELECT
 				ID_PM AS id_pm, ID_MEMBER AS id_member, labels, bcc, is_read, deleted
 			FROM {$from_prefix}pm_recipients;
 		</query>
 	</step>
-	<step>
+	<step id="boardmods">
 		<title>Importing board moderators</title>
 		<detect>{$from_prefix}moderators</detect>
-		<destination>{$to_prefix}moderators</destination>
-		<presql>TRUNCATE {$to_prefix}moderators;</presql>
 		<query>
 			SELECT
 				ID_BOARD AS id_board, ID_MEMBER AS id_member
 			FROM {$from_prefix}moderators;
 		</query>
 	</step>
-	<step>
+	<step id="markreadboards">
 		<title>Importing mark read data (boards)</title>
 		<detect>{$from_prefix}log_boards</detect>
-		<destination>{$to_prefix}log_boards</destination>
-		<presql>TRUNCATE {$to_prefix}log_boards;</presql>
 		<query>
 			SELECT
 				ID_MEMBER AS id_member, ID_BOARD AS id_board, ID_MSG AS id_msg
 			FROM {$from_prefix}log_boards;
 		</query>
 	</step>
-	<step>
+	<step id="markreadtopics">
 		<title>Importing mark read data (topics)</title>
 		<detect>{$from_prefix}log_topics</detect>
-		<destination>{$to_prefix}log_topics</destination>
-		<presql>TRUNCATE {$to_prefix}log_topics;</presql>
 		<query>
 			SELECT
 				ID_MEMBER AS id_member, ID_TOPIC AS id_topic, ID_MSG AS id_msg
 			FROM {$from_prefix}log_topics;
 		</query>
 	</step>
-	<step>
+	<step id="markread">
 		<title>Importing mark read data</title>
 		<detect>{$from_prefix}log_mark_read</detect>
-		<destination>{$to_prefix}log_mark_read</destination>
-		<presql>TRUNCATE {$to_prefix}log_mark_read;</presql>
 		<query>
 			SELECT
 				ID_MEMBER AS id_member, ID_BOARD AS id_board, ID_MSG AS id_msg
 			FROM {$from_prefix}log_mark_read;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing notifications</title>
 		<detect>{$from_prefix}log_notify</detect>
-		<destination>{$to_prefix}log_notify</destination>
-		<presql>TRUNCATE {$to_prefix}log_notify;</presql>
 		<query>
 			SELECT
 				ID_MEMBER AS id_member, ID_TOPIC AS id_topic, ID_BOARD AS id_board, sent
 			FROM {$from_prefix}log_notify;
 		</query>
 	</step>
-	<step>
+	<step id="membergroups">
 		<title>Importing membergroups</title>
 		<detect>{$from_prefix}membergroups</detect>
-		<destination>{$to_prefix}membergroups</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -470,10 +434,9 @@
 			FROM {$from_prefix}membergroups;
 		</query>
 	</step>
-	<step>
+	<step id="permissions">
 		<title>Importing permissions</title>
 		<detect>{$from_prefix}permissions</detect>
-		<destination>{$to_prefix}permissions</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -483,10 +446,9 @@
 			FROM {$from_prefix}permissions;
 		</query>
 	</step>
-	<step>
+	<step id="permissionboards">
 		<title>Importing board permissions</title>
 		<detect>{$from_prefix}board_permissions</detect>
-		<destination>{$to_prefix}board_permissions</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -496,10 +458,9 @@
 			FROM {$from_prefix}board_permissions;
 		</query>
 	</step>
-	<step>
+	<step id="smiley">
 		<title>Importing smileys</title>
 		<detect>{$from_prefix}smileys</detect>
-		<destination>{$to_prefix}smileys</destination>
 		<options>
 			<replace>true</replace>
 		</options>
@@ -510,7 +471,7 @@
 			FROM {$from_prefix}smileys;
 		</query>
 	</step>
-	<step>
+	<step id="copysmiley">
 		<title>Copying smileys</title>
 		<detect>{$from_prefix}smileys</detect>
 		<code>

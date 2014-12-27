@@ -9,7 +9,7 @@
 			<field id="2" type="text" size="20" default="xenforo" label="Xenforo database">xf_database</field>
 		</form>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}user</detect>
 		<destination>{$to_prefix}members</destination>
@@ -49,7 +49,7 @@
 			WHERE m.user_state != 'email_confirm';
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}node WHERE node_type_id = 'Category'</detect>
 		<destination>{$to_prefix}categories</destination>
@@ -61,7 +61,7 @@
 			WHERE node_type_id = 'Category';
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}node WHERE node_type_id = 'Forum'</detect>
 		<destination>{$to_prefix}boards</destination>
@@ -93,7 +93,7 @@
 			WHERE node_type_id = 'Forum';
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}thread</detect>
 		<destination>{$to_prefix}topics</destination>
@@ -113,7 +113,7 @@
 			WHERE t.discussion_state != 'deleted';
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}post</detect>
 		<destination>{$to_prefix}messages</destination>
@@ -136,7 +136,7 @@
 			WHERE t.discussion_state != 'deleted';
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}conversation_message</detect>
 		<destination>{$to_prefix}personal_messages</destination>
@@ -155,7 +155,7 @@
 				INNER JOIN {$from_prefix}conversation_master AS mt ON (mt.conversation_id = msg.conversation_id);
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}conversation_recipient</detect>
 		<destination>{$to_prefix}pm_recipients</destination>

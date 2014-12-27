@@ -4,7 +4,7 @@
 		<name>vBulletin 4</name>
 		<className>vBulletin_4</className>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}user</detect>
 		<preparsecode>
@@ -41,7 +41,7 @@
 			WHERE u.userid != 0;
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}forum</detect>
 		<query>
@@ -53,7 +53,7 @@
 			ORDER BY cat_order;
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forum</detect>
 		<query>
@@ -67,7 +67,8 @@
 		</query>
 	</step>
 	<step>
-		<title>Assgining Boards to Categories</title>
+		<!-- @todo convert to a method after boards -->
+		<title>Assigning Boards to Categories</title>
 		<detect>{$from_prefix}forum</detect>
 		<code>
 			$request = $db->query("
@@ -106,7 +107,7 @@
 				WHERE id_parent = id_cat");
 		</code>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}thread</detect>
 		<query>
@@ -125,7 +126,7 @@
 				AND id_last_msg != 0;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}post</detect>
 		<options>
@@ -150,7 +151,7 @@
 				INNER JOIN {$from_prefix}thread AS t ON t.threadid = p.threadid;
 		</query>
 	</step>
-	<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}poll</detect>
 		<options>
@@ -167,7 +168,7 @@
 				LEFT JOIN {$from_prefix}thread AS t ON (t.pollid = p.pollid);
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}poll</detect>
 		<options>
@@ -195,7 +196,7 @@
 			FROM {$from_prefix}poll;
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}pollvote</detect>
 		<query>
@@ -203,7 +204,7 @@
 			FROM {$from_prefix}pollvote;
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}pm</detect>
 		<preparsecode>
@@ -221,7 +222,7 @@
 				AND pm.folderid != -1;
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}pm</detect>
 		<query>
@@ -229,7 +230,7 @@
 			FROM {$from_prefix}pm;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}subscribethread</detect>
 		<query>
@@ -237,7 +238,7 @@
 			FROM {$from_prefix}subscribethread;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing board notifications</title>
 		<detect>{$from_prefix}subscribeforum</detect>
 		<query>

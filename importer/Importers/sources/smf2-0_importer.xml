@@ -4,7 +4,7 @@
 		<name>SMF 2.0</name>
 		<className>SMF2_0</className>
 	</general>
-	<step>
+	<step id="settings">
 		<title>Importing settings</title>
 		<detect>{$from_prefix}settings</detect>
 		<options>
@@ -195,7 +195,7 @@
 			$this->db->free_result($request);
 		</code>
 	</step>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}members</detect>
 		<query>
@@ -214,7 +214,7 @@
 			FROM {$from_prefix}members;
 		</query>
 	</step>
-	<step>
+	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
 		<destination>{$to_prefix}attachments</destination>
@@ -230,7 +230,7 @@
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
-	<step>
+	<step id="avatars">
 		<title>Importing avatars</title>
 		<code>
 			$avatarg = $this->db->query("
@@ -268,7 +268,7 @@
 				copy_dir_recursive($smf_avatarg, $elk_avatarg);
 		</code>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing categories</title>
 		<detect>{$from_prefix}categories</detect>
 		<query>
@@ -277,7 +277,7 @@
 			FROM {$from_prefix}categories;
 		</query>
 	</step>
-	<step>
+	<step id="collapsedcats">
 		<title>Importing collapsed categories</title>
 		<detect>{$from_prefix}collapsed_categories</detect>
 		<query>
@@ -286,7 +286,7 @@
 			FROM {$from_prefix}collapsed_categories;
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing boards</title>
 		<detect>{$from_prefix}boards</detect>
 		<query>
@@ -297,7 +297,7 @@
 			FROM {$from_prefix}boards;
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing topics</title>
 		<detect>{$from_prefix}topics</detect>
 		<query>
@@ -308,7 +308,7 @@
 			FROM {$from_prefix}topics;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing messages</title>
 		<detect>{$from_prefix}messages</detect>
 		<destination>{$to_prefix}messages</destination>
@@ -323,7 +323,7 @@
 			FROM {$from_prefix}messages;
 		</query>
 	</step>
-	<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}polls</detect>
 		<destination>{$to_prefix}polls</destination>
@@ -335,7 +335,7 @@
 			FROM {$from_prefix}polls;
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}poll_choices</detect>
 		<destination>{$to_prefix}poll_choices</destination>
@@ -346,7 +346,7 @@
 			FROM {$from_prefix}poll_choices;
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}log_polls</detect>
 		<destination>{$to_prefix}log_polls</destination>
@@ -357,7 +357,7 @@
 			FROM {$from_prefix}log_polls;
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}personal_messages</detect>
 		<destination>{$to_prefix}personal_messages</destination>
@@ -372,7 +372,7 @@
 			FROM {$from_prefix}personal_messages;
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}pm_recipients</detect>
 		<destination>{$to_prefix}pm_recipients</destination>
@@ -383,7 +383,7 @@
 			FROM {$from_prefix}pm_recipients;
 		</query>
 	</step>
-	<step>
+	<step id="pmrules">
 		<title>Importing pm rules</title>
 		<detect>{$from_prefix}pm_rules</detect>
 		<destination>{$to_prefix}pm_rules</destination>
@@ -394,7 +394,7 @@
 			FROM {$from_prefix}pm_rules;
 		</query>
 	</step>
-	<step>
+	<step id="boardmods">
 		<title>Importing board moderators</title>
 		<detect>{$from_prefix}moderators</detect>
 		<destination>{$to_prefix}moderators</destination>
@@ -405,7 +405,7 @@
 			FROM {$from_prefix}moderators;
 		</query>
 	</step>
-	<step>
+	<step id="markreadboards">
 		<title>Importing mark read data (boards)</title>
 		<detect>{$from_prefix}log_boards</detect>
 		<query>
@@ -414,7 +414,7 @@
 			FROM {$from_prefix}log_boards;
 		</query>
 	</step>
-	<step>
+	<step id="markreadtopics">
 		<title>Importing mark read data (topics)</title>
 		<detect>{$from_prefix}log_topics</detect>
 		<query>
@@ -423,7 +423,7 @@
 			FROM {$from_prefix}log_topics;
 		</query>
 	</step>
-	<step>
+	<step id="markread">
 		<title>Importing mark read data</title>
 		<detect>{$from_prefix}log_mark_read</detect>
 		<query>
@@ -432,7 +432,7 @@
 			FROM {$from_prefix}log_mark_read;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing notifications</title>
 		<detect>{$from_prefix}log_notify</detect>
 		<query>
@@ -441,7 +441,7 @@
 			FROM {$from_prefix}log_notify;
 		</query>
 	</step>
-	<step>
+	<step id="membergroups">
 		<title>Importing membergroups</title>
 		<detect>{$from_prefix}membergroups</detect>
 		<options>
@@ -454,7 +454,7 @@
 			FROM {$from_prefix}membergroups;
 		</query>
 	</step>
-	<step>
+	<step id="groupmods">
 		<title>Importing group moderators</title>
 		<detect>{$from_prefix}group_moderators</detect>
 		<options>
@@ -466,7 +466,7 @@
 			FROM {$from_prefix}group_moderators;
 		</query>
 	</step>
-	<step>
+	<step id="permissionprofiles">
 		<title>Importing permission profiles</title>
 		<detect>{$from_prefix}permission_profiles</detect>
 		<options>
@@ -478,7 +478,7 @@
 			FROM {$from_prefix}permission_profiles;
 		</query>
 	</step>
-	<step>
+	<step id="permissions">
 		<title>Importing permissions</title>
 		<detect>{$from_prefix}permissions</detect>
 		<options>
@@ -490,7 +490,7 @@
 			FROM {$from_prefix}permissions;
 		</query>
 	</step>
-	<step>
+	<step id="permissionboards">
 		<title>Importing board permissions</title>
 		<detect>{$from_prefix}board_permissions</detect>
 		<options>
@@ -502,7 +502,7 @@
 			FROM {$from_prefix}board_permissions;
 		</query>
 	</step>
-	<step>
+	<step id="smiley">
 		<title>Importing smileys</title>
 		<detect>{$from_prefix}smileys</detect>
 		<options>
@@ -515,7 +515,7 @@
 			FROM {$from_prefix}smileys;
 		</query>
 	</step>
-	<step>
+	<step id="copysmiley">
 		<title>Copying smileys</title>
 		<detect>{$from_prefix}smileys</detect>
 		<code>
@@ -534,7 +534,7 @@
 			copy_smileys($smf_smileys_dir, $smileys_dir);
 		</code>
 	</step>
-	<step>
+	<step id="statistics">
 		<title>Importing statistics (activity log)</title>
 		<detect>{$from_prefix}log_activity</detect>
 		<query>
@@ -543,7 +543,7 @@
 			FROM {$from_prefix}log_activity;
 		</query>
 	</step>
-	<step>
+	<step id="logactions">
 		<title>Importing logged actions</title>
 		<detect>{$from_prefix}log_actions</detect>
 		<query>
@@ -553,7 +553,7 @@
 			FROM {$from_prefix}log_actions;
 		</query>
 	</step>
-	<step>
+	<step id="reports">
 		<title>Importing reported posts</title>
 		<detect>{$from_prefix}log_reported</detect>
 		<query>
@@ -563,7 +563,7 @@
 			FROM {$from_prefix}log_reported;
 		</query>
 	</step>
-	<step>
+	<step id="reportscomments">
 		<title>Importing reported comments</title>
 		<detect>{$from_prefix}log_reported_comments</detect>
 		<query>
@@ -572,7 +572,7 @@
 			FROM {$from_prefix}log_reported_comments;
 		</query>
 	</step>
-	<step>
+	<step id="spiderhits">
 		<title>Importing spider hits</title>
 		<detect>{$from_prefix}log_spider_hits</detect>
 		<query>
@@ -581,7 +581,7 @@
 			FROM {$from_prefix}log_spider_hits;
 		</query>
 	</step>
-	<step>
+	<step id="spiderstats">
 		<title>Importing spider stats</title>
 		<detect>{$from_prefix}log_spider_stats</detect>
 		<query>
@@ -590,7 +590,7 @@
 			FROM {$from_prefix}log_spider_stats;
 		</query>
 	</step>
-	<step>
+	<step id="paidscubscriptions">
 		<title>Importing subscriptions</title>
 		<detect>{$from_prefix}subscriptions</detect>
 		<query>
@@ -600,7 +600,7 @@
 			FROM {$from_prefix}subscriptions;
 		</query>
 	</step>
-	<step>	<step>
+	<step id="friendlyurls">
 		<title>Importing pretty topic urls</title>
 		<detect>{$from_prefix}pretty_topic_urls</detect>
 		<query>
@@ -609,7 +609,7 @@
 			FROM {$from_prefix}pretty_topic_urls;
 		</query>
 	</step>
-	<step>
+	<step id="friendlyurlcache">
 		<title>Importing pretty urls cache</title>
 		<detect>{$from_prefix}pretty_urls_cache</detect>
 		<query>
@@ -628,7 +628,7 @@
 			FROM {$from_prefix}custom_fields;
 		</query>
 	</step>
-	<step>
+	<step id="customfields">
 		<title>Importing custom fields data</title>
 		<detect>{$from_prefix}custom_fields</detect>
 		<query>
@@ -638,7 +638,7 @@
 			WHERE variable LIKE 'cust\_%';
 		</query>
 	</step>
-	<step>
+	<step id="customfieldsdata">
 		<title>Importing likes from Thank you mod</title>
 		<detect>{$from_prefix}thank_you_post</detect>
 		<query>
@@ -648,7 +648,7 @@
 				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
 		</query>
 	</step>
-	<step>
+	<step id="likes">
 		<title>Importing likes from Joker's Like Posts mod</title>
 		<detect>{$from_prefix}like_post</detect>
 		<query>
@@ -656,7 +656,7 @@
 			FROM {$from_prefix}like_post AS lp;
 		</query>
 	</step>
-	<step>
+	<step id="likes">
 		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
 		<detect>{$from_prefix}likes</detect>
 		<code>

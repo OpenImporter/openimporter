@@ -8,7 +8,7 @@
 			<field id="2" type="text" size="10" default="wp_" label="Wordpress table prefix">wp_prefix</field>
 		</form>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}users</detect>
 		<preparsecode>
@@ -31,7 +31,7 @@
 			FROM {$from_prefix}users;
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Creating a default category</title>
 		<detect>{$from_prefix}term_taxonomy</detect>
 		<code>
@@ -41,7 +41,7 @@
 				VALUES(1, 0, 'General Category', 1)");
 		</code>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing wordpress categories</title>
 		<detect>{$from_prefix}term_taxonomy</detect>
 		<query>
@@ -54,7 +54,7 @@
 			WHERE tax.taxonomy = 'category';
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Creating topic and article relations</title>
 		<detect>{$from_prefix}posts</detect>
 		<query>
@@ -71,7 +71,7 @@
 				AND id_last_msg != 0;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing articles</title>
 		<detect>{$from_prefix}posts</detect>
 		<options>
@@ -89,7 +89,7 @@
 				INNER JOIN {$from_prefix}users AS u ON (u.ID = p.post_author);
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing comments</title>
 		<detect>{$from_prefix}comments</detect>
 		<options>

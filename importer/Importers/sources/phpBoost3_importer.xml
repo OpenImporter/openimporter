@@ -10,13 +10,9 @@
 		</form>
 		<className>PHPBoost3</className>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}member</detect>
-		<destination>{$to_prefix}members</destination>
-		<presql>
-			TRUNCATE {$to_prefix}members;
-		</presql>
 		<query>
 			SELECT
 				user_id AS id_member, SUBSTRING(login, 1, 80) AS member_name,
@@ -29,25 +25,18 @@
 			FROM {$from_prefix}member;
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}categories</detect>
-		<destination>{$to_prefix}categories</destination>
-		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
 			SELECT 	id AS id_cat, name AS name, id_left AS cat_order
 			FROM {$from_prefix}forum_cats
 			WHERE level = 0;
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forum_cats</detect>
-		<destination>{$to_prefix}boards</destination>
-		<presql>
-			TRUNCATE {$to_prefix}boards;
-			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
-		</presql>
 		<options>
 			<slashes>true</slashes>
 		</options>
@@ -60,16 +49,9 @@
 			WHERE level > 0;
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}forum_msg</detect>
-		<destination>{$to_prefix}topics</destination>
-		<presql>
-			TRUNCATE {$to_prefix}topics;
-			TRUNCATE {$to_prefix}log_topics;
-			TRUNCATE {$to_prefix}log_boards;
-			TRUNCATE {$to_prefix}log_mark_read;
-		</presql>
 		<preparsecode>
 			$row['id_member_started'] = (int) $row['id_member_started'];
 			$row['id_member_updated'] = (int) $row['id_member_updated'];
@@ -92,11 +74,9 @@
 				AND id_last_msg != 0;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
-		<destination>{$to_prefix}forum_msg</destination>
-		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
 			<slashes>true</slashes>
 			<limit>100</limit>

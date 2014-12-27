@@ -4,7 +4,7 @@
 		<name>phpBB3</name>
 		<className>phpBB3</className>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}users</detect>
 		<preparsecode>
@@ -38,7 +38,7 @@
 			GROUP BY u.user_id;
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}forums</detect>
 		<query>
@@ -48,7 +48,7 @@
 			WHERE forum_type = 0;
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forums</detect>
 		<query>
@@ -63,7 +63,7 @@
 			GROUP BY id_board;
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}topics</detect>
 		<query>
@@ -85,7 +85,7 @@
 				LEFT JOIN {$from_prefix}poll_options AS po ON (po.topic_id = t.topic_id);
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
 		<options>
@@ -112,7 +112,7 @@
 				LEFT JOIN {$from_prefix}users AS m2 ON (m2.user_id = p.post_edit_user);
 		</query>
 	</step>
-		<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}topics</detect>
 		<query>
@@ -125,7 +125,7 @@
 			WHERE t.poll_title != '';
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}poll_options</detect>
 		<options>
@@ -138,7 +138,7 @@
 			FROM {$from_prefix}poll_options;
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}poll_votes</detect>
 		<options>
@@ -151,7 +151,7 @@
 			WHERE vote_user_id > 0;
 		</query>
 	</step>
-		<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}privmsgs</detect>
 		<preparsecode>
@@ -170,7 +170,7 @@
 				LEFT JOIN {$from_prefix}users AS uf ON (uf.user_id = pm.author_id);
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}privmsgs_to</detect>
 		<query>

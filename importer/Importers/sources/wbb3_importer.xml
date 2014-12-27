@@ -9,7 +9,8 @@
 		</form>
 		<globals>userOptions</globals>
 	</general>
-	<step type="mandatory">
+	<step id="settings" type="mandatory">
+		<!-- @todo move to a method? -->
 		<title>Analysing WCF options</title>
 		<detect>{$from_prefix}{$wbb_prefix}user</detect>
 		<code>
@@ -26,7 +27,7 @@
 			$db->free_result($request);
 		</code>
 	</step>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}{$wbb_prefix}user</detect>
 		<preparsecode>
@@ -83,7 +84,7 @@
 				LEFT JOIN {$from_prefix}{$wbb_prefix}user AS p ON (u.userID = p.UserID);
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}{$wbb_prefix}board WHERE boardType = 1</detect>
 		<query>
@@ -95,7 +96,7 @@
 			WHERE boardType = 1;		
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}{$wbb_prefix}board WHERE boardType = 0</detect>
 		<query>
@@ -108,7 +109,7 @@
 			WHERE boardType = 0;		
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}{$wbb_prefix}thread</detect>
 		<preparsecode>
@@ -138,7 +139,7 @@
 				AND id_last_msg != 0;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}{$wbb_prefix}post</detect>
 		<options>
@@ -164,7 +165,7 @@
 				LEFT JOIN {$from_prefix}{$wcf_prefix}user AS u ON (u.userID = p.userID);
 		</query>
 	</step>
-	<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
 		<query>
@@ -178,7 +179,7 @@
 				LEFT JOIN {$from_prefix}{$wbb_prefix}thread AS t ON (m.threadID = t.threadID);
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
 		<preparsecode>
@@ -197,7 +198,7 @@
 			ORDER BY pollID;
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		// @todo verify table, it may be {$from_prefix}{$wcf_prefix}poll
 		<detect>{$from_prefix}{$wcf_prefix}poll_option_vote</detect>
@@ -209,7 +210,7 @@
 			GROUP BY id_poll, id_member;
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}{$wcf_prefix}pm</detect>
 		<preparsecode>
@@ -223,7 +224,7 @@
 			FROM {$from_prefix}{$wcf_prefix}pm;
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}{$wcf_prefix}pm_to_user</detect>
 		<query>
@@ -234,7 +235,7 @@
 			FROM {$from_prefix}{$wcf_prefix}pm_to_user;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}{$wbb_prefix}thread_subscription</detect>
 		<query>
@@ -243,7 +244,7 @@
 			FROM {$from_prefix}{$wbb_prefix}thread_subscription;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing board notifications</title>
 		<detect>{$from_prefix}{$wbb_prefix}board_subscription</detect>
 		<query>

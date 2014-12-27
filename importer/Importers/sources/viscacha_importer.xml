@@ -5,7 +5,7 @@
 		<version>ElkArte 1.0</version>
 		<className>Viscacha</className>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}member</detect>
 		<destination>{$to_prefix}members</destination>
@@ -26,7 +26,7 @@
 			FROM {$from_prefix}user AS u;
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}categories</detect>
 		<destination>{$to_prefix}categories</destination>
@@ -37,7 +37,7 @@
 			FROM {$from_prefix}categories;
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forums</detect>
 		<destination>{$to_prefix}boards</destination>
@@ -56,7 +56,7 @@
 			FROM {$from_prefix}forums;
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}topics</detect>
 		<destination>{$to_prefix}topics</destination>
@@ -92,7 +92,7 @@
 				AND id_last_msg != 0;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
 		<destination>{$to_prefix}forum_msg</destination>
@@ -142,7 +142,7 @@
 			GROUP BY p.id;
 		</query>
 	</step>
-	<step>
+	<step id="boardmods">
 		<title>Importing board moderators</title>
 		<detect>{$from_prefix}moderators</detect>
 		<destination>{$to_prefix}moderators</destination>
@@ -153,7 +153,7 @@
 			FROM {$from_prefix}moderators;
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}pm</detect>
 		<destination>{$to_prefix}personal_messages</destination>
@@ -188,7 +188,7 @@
 			WHERE pm.dir = 1;
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}pm</detect>
 		<destination>{$to_prefix}pm_recipients</destination>
@@ -200,7 +200,7 @@
 			WHERE dir = 1;
 		</query>
 	</step>
-		<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}topics</detect>
 		<destination>{$to_prefix}polls</destination>
@@ -224,7 +224,7 @@
 			WHERE t.vquestion != '';
 		</query>
 	</step>
-		<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}vote</detect>
 		<destination>{$to_prefix}poll_choices</destination>
@@ -244,7 +244,7 @@
 			FROM {$from_prefix}vote;
 		</query>
 	</step>
-		<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}votes</detect>
 		<options>
@@ -258,7 +258,7 @@
 				LEFT JOIN {$from_prefix}vote AS p ON (v.aid = p.id);
 		</query>
 	</step>
-		<step>
+	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}uploads</detect>
 		<destination>{$to_prefix}attachments</destination>
@@ -293,7 +293,7 @@
 			FROM {$from_prefix}uploads;
 		</query>
 	</step>
-	<step>
+	<step id="avatars">
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}user</detect>
 		<destination>{$to_prefix}attachments</destination>
@@ -332,7 +332,7 @@
 			WHERE pic != '';
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}abos</detect>
 		<destination>{$to_prefix}log_notify</destination>

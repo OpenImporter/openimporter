@@ -105,6 +105,7 @@
 		</query>
 	</step>
 	<step id="collapsedcats">
+		<!-- @todo: make it a more general step -->
 		<title>Importing collapsed categories</title>
 		<query>
 			id_cat,

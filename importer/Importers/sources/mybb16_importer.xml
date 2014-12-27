@@ -4,7 +4,7 @@
 		<name>MyBB 1.6</name>
 		<className>mybb16</className>
 	</general>
-	<step type="mandatory">
+	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}users</detect>
 		<preparsecode>
@@ -35,7 +35,7 @@
 			FROM {$from_prefix}users;
 		</query>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}forums</detect>
 		<destination>{$to_prefix}categories</destination>
@@ -46,7 +46,7 @@
 			WHERE type = 'c';	
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forums</detect>
 		<query>
@@ -59,7 +59,7 @@
 			WHERE type = 'f';
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}threads</detect>
 		<query>
@@ -81,7 +81,7 @@
 				AND id_last_msg != 0;
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
 		<options>
@@ -105,7 +105,7 @@
 			WHERE t.tid = p.tid;
 		</query>
 	</step>
-	<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}polls</detect>
 		<query>
@@ -117,7 +117,7 @@
 				LEFT JOIN {$from_prefix}threads AS t ON (t.tid = p.tid);
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}polls</detect>
 		<options>
@@ -146,7 +146,7 @@
 			FROM {$from_prefix}polls;
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}pollvotes</detect>
 		<query>
@@ -154,7 +154,7 @@
 			FROM {$from_prefix}pollvotes;
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}privatemessages</detect>
 		<preparsecode>
@@ -171,7 +171,7 @@
 			WHERE pm.folder != 2;
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}privatemessages</detect>
 		<query>
@@ -180,7 +180,7 @@
 			WHERE folder != 2;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}threadsubscriptions</detect>
 		<options>
@@ -191,7 +191,7 @@
 			FROM {$from_prefix}threadsubscriptions;
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing board notifications</title>
 		<detect>{$from_prefix}forumsubscriptions</detect>
 		<options>
@@ -202,7 +202,7 @@
 			FROM {$from_prefix}forumsubscriptions;
 		</query>
 	</step>
-	<step>
+	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
 		<options>
@@ -267,7 +267,7 @@
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
-	<step>
+	<step id="avatars">
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}users</detect>
 		<options>
