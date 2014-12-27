@@ -230,11 +230,11 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 	public function doSpecialTable($special_table, $params = null)
 	{
 		// Are we doing attachments? They're going to want a few things...
-		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
-		{
-			$this->config->destination->specialAttachments();
-			return $params;
-		}
+// 		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
+// 		{
+// 			$this->config->destination->specialAttachments();
+// 			return $params;
+// 		}
 // 		// Here we have various bits of custom code for some known problems global to all importers.
 // 		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
 // 			return $this->specialMembers($params);
@@ -447,6 +447,8 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		$this->db->query("
 			TRUNCATE {$this->config->to_prefix}attachments");
 		$this->removeAttachments();
+
+		$this->config->destination->specialAttachments();
 	}
 
 	public function beforeCategories()
