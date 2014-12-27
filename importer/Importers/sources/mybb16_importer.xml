@@ -38,8 +38,6 @@
 	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}forums</detect>
-		<destination>{$to_prefix}categories</destination>
-		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
 			SELECT fid AS id_cat, SUBSTRING(name, 1, 255) AS name, disporder AS cat_order
 			FROM {$from_prefix}forums

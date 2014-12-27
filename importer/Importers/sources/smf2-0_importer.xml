@@ -217,8 +217,6 @@
 	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<presql>TRUNCATE {$to_prefix}attachments;</presql>
 		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
 			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
@@ -311,8 +309,6 @@
 	<step id="messages">
 		<title>Importing messages</title>
 		<detect>{$from_prefix}messages</detect>
-		<destination>{$to_prefix}messages</destination>
-		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
 			<limit>100</limit>
 		</options>
@@ -326,8 +322,6 @@
 	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}polls</detect>
-		<destination>{$to_prefix}polls</destination>
-		<presql>TRUNCATE {$to_prefix}polls;</presql>
 		<query>
 			SELECT
 				id_poll, question, voting_locked, max_votes, expire_time, hide_results, change_vote,
@@ -338,8 +332,6 @@
 	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}poll_choices</detect>
-		<destination>{$to_prefix}poll_choices</destination>
-		<presql>TRUNCATE {$to_prefix}poll_choices;</presql>
 		<query>
 			SELECT
 				id_poll, id_choice, label, votes
@@ -349,8 +341,6 @@
 	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}log_polls</detect>
-		<destination>{$to_prefix}log_polls</destination>
-		<presql>TRUNCATE {$to_prefix}log_polls;</presql>
 		<query>
 			SELECT
 				id_poll, id_member, id_choice
@@ -360,8 +350,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}personal_messages</detect>
-		<destination>{$to_prefix}personal_messages</destination>
-		<presql>TRUNCATE {$to_prefix}personal_messages;</presql>
 		<options>
 			<limit>200</limit>
 		</options>
@@ -375,8 +363,6 @@
 	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}pm_recipients</detect>
-		<destination>{$to_prefix}pm_recipients</destination>
-		<presql>TRUNCATE {$to_prefix}pm_recipients;</presql>
 		<query>
 			SELECT
 				id_pm, id_member, labels, bcc, is_read, is_new, deleted
@@ -386,8 +372,6 @@
 	<step id="pmrules">
 		<title>Importing pm rules</title>
 		<detect>{$from_prefix}pm_rules</detect>
-		<destination>{$to_prefix}pm_rules</destination>
-		<presql>TRUNCATE {$to_prefix}pm_rules;</presql>
 		<query>
 			SELECT
 				id_rule, id_member, rule_name, criteria, actions, delete_pm, is_or
@@ -397,8 +381,6 @@
 	<step id="boardmods">
 		<title>Importing board moderators</title>
 		<detect>{$from_prefix}moderators</detect>
-		<destination>{$to_prefix}moderators</destination>
-		<presql>TRUNCATE {$to_prefix}moderators;</presql>
 		<query>
 			SELECT
 				id_board, id_member

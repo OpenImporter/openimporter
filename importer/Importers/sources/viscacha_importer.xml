@@ -8,10 +8,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}member</detect>
-		<destination>{$to_prefix}members</destination>
-		<presql>
-			TRUNCATE {$to_prefix}members;
-		</presql>
 		<query>
 			SELECT
 				u.id AS id_member, SUBSTRING(u.name, 1, 80) AS member_name,
@@ -29,8 +25,6 @@
 	<step id="categories">
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}categories</detect>
-		<destination>{$to_prefix}categories</destination>
-		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
 			SELECT 
 				id AS id_cat, name AS name, position AS cat_order
@@ -40,11 +34,6 @@
 	<step id="boards">
 		<title>Importing Boards</title>
 		<detect>{$from_prefix}forums</detect>
-		<destination>{$to_prefix}boards</destination>
-		<presql>
-			TRUNCATE {$to_prefix}boards;
-			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
-		</presql>
 		<options>
 			<slashes>true</slashes>
 		</options>
@@ -59,16 +48,9 @@
 	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}topics</detect>
-		<destination>{$to_prefix}topics</destination>
 		<options>
 			<ignore>true</ignore>
 		</options>
-		<presql>
-			TRUNCATE {$to_prefix}topics;
-			TRUNCATE {$to_prefix}log_topics;
-			TRUNCATE {$to_prefix}log_boards;
-			TRUNCATE {$to_prefix}log_mark_read;
-		</presql>
 		<preparsecode>
 			$row['id_member_started'] = (int) $row['id_member_started'];
 			$row['id_member_updated'] = (int) $row['id_member_updated'];
@@ -95,8 +77,6 @@
 	<step id="messages">
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
-		<destination>{$to_prefix}forum_msg</destination>
-		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
 			<slashes>true</slashes>
 			<limit>100</limit>
@@ -145,8 +125,6 @@
 	<step id="boardmods">
 		<title>Importing board moderators</title>
 		<detect>{$from_prefix}moderators</detect>
-		<destination>{$to_prefix}moderators</destination>
-		<presql>TRUNCATE {$to_prefix}moderators;</presql>
 		<query>
 			SELECT 
 				mid AS id_member, bid AS id_board
@@ -156,11 +134,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}pm</detect>
-		<destination>{$to_prefix}personal_messages</destination>
-		<presql>
-			TRUNCATE {$to_prefix}personal_messages;
-			TRUNCATE {$to_prefix}pm_recipients;
-		</presql>
 		<options>
 			<slashes>true</slashes>
 		</options>
@@ -191,7 +164,6 @@
 	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}pm</detect>
-		<destination>{$to_prefix}pm_recipients</destination>
 		<query>
 			SELECT
 				id AS id_pm, pm_to AS id_member, IF(status = 0 , 0, status) AS is_read,
@@ -203,12 +175,6 @@
 	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}topics</detect>
-		<destination>{$to_prefix}polls</destination>
-		<presql>
-			TRUNCATE {$to_prefix}polls;
-			TRUNCATE {$to_prefix}poll_choices;
-			TRUNCATE {$to_prefix}log_polls;
-		</presql>
 		<preparsecode>
 			if (!is_int($row['id_member']))
 				$row['id_member'] = 0;
@@ -227,7 +193,6 @@
 	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}vote</detect>
-		<destination>{$to_prefix}poll_choices</destination>
 		<preparsecode>
 			$request = $db->query("
 				SELECT count(*)
@@ -250,7 +215,6 @@
 		<options>
 			<ignore>true</ignore>
 		</options>
-		<destination>{$to_prefix}log_polls</destination>
 		<query>
 			SELECT 
 				p.tid AS id_poll, v.mid AS id_member, v.aid AS id_choice
@@ -261,7 +225,6 @@
 	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}uploads</detect>
-		<destination>{$to_prefix}attachments</destination>
 		<options>
 			<no_add>true</no_add>
 		</options>
@@ -296,7 +259,6 @@
 	<step id="avatars">
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}user</detect>
-		<destination>{$to_prefix}attachments</destination>
 		<options>
 			<no_add>true</no_add>
 		</options>
@@ -335,13 +297,9 @@
 	<step id="notifications">
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}abos</detect>
-		<destination>{$to_prefix}log_notify</destination>
 		<options>
 			<ignore>true</ignore>
 		</options>
-		<presql>
-			TRUNCATE {$to_prefix}log_notify;
-		</presql>
 		<query>
 			SELECT mid AS id_member, tid AS id_topic
 			FROM {$from_prefix}abos;

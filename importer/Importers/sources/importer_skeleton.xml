@@ -498,4 +498,5 @@
 			like_timestamp
 		</query>
 	</step>
+	<!-- @todo missing bans and censored words conversion -->
 </importer>
