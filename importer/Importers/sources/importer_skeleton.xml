@@ -4,32 +4,37 @@
 		<name>Skeleton</name>
 		<className>Skeleton</className>
 	</general>
-	<step>
+	<step id="settings">
 		<title>Importing settings</title>
+		<query>
+			variable, // The name of the setting (varchar-255?)
+			value,    // The value of the setting (text)
+			position  // Settings may come from different sources, for example database or file (varchar-255?)
+		</query>
 	</step>
-	<step>
+	<step id="members">
 		<title>Importing members</title>
 		<query>
-			id_member,
-			member_name,
-			date_registered,
-			posts,
-			id_group,
-			lngfile,
-			last_login,
-			real_name,
-			unread_messages,
-			new_pm,
-			buddy_list,
-			pm_ignore_list,
-			pm_prefs,
-			mod_prefs,
-			message_labels,
-			passwd,
-			email_address,
-			personal_text,
-			gender,
-			birthdate,
+			id_member,             // Id of the member (unsigned int)
+			member_name,           // The name the members use to log int (varchar-255)
+			date_registered,       // Date at which the account was created (yyyy-mm-dd)
+			posts,                 // Number of posts (int)
+			id_group,              // Id of the primary or the most important membergroup (int)
+			language,              // Language the member is using (format TBD)
+			last_login,            // Timestamp of the last login (int)
+			real_name,             // Name shown around the forum (varchar-255)
+			unread_messages,       // Number of unread messages (int)
+			new_pm,                // Number of new personal messages (int) @todo consider drop
+			buddy_list,            // @todo move to its own step
+			pm_ignore_list,        // @todo move to PM rules
+			pm_prefs,              // @todo move to PM rules
+			mod_prefs,             // @todo consider drop
+			message_labels,        // @todo move to PM rules
+			passwd,                // Password hash
+			email_address,         // email address
+			personal_text,         // @todo move to custom fields?
+			gender,                // Male/Female/Other (varchar-50)
+			birthdate,             // Dath of birth of the member (yyyy-mm-dd)
 			website_url,
 			website_title,
 			location,
@@ -64,7 +69,7 @@
 			pm_receive_from
 		</query>
 	</step>
-	<step>
+	<step id="attachments">
 		<title>Importing attachments</title>
 		<query>
 			id_attach,
@@ -83,14 +88,14 @@
 			id_folder
 		</query>
 	</step>
-	<step>
+	<step id="avatars">
 		<title>Importing avatars</title>
 		<query>
 			id_member,
 			source_file
 		</code>
 	</step>
-	<step>
+	<step id="categories">
 		<title>Importing categories</title>
 		<query>
 			id_cat,
@@ -99,14 +104,14 @@
 			can_collapse
 		</query>
 	</step>
-	<step>
+	<step id="collapsedcats">
 		<title>Importing collapsed categories</title>
 		<query>
 			id_cat,
 			id_member
 		</query>
 	</step>
-	<step>
+	<step id="boards">
 		<title>Importing boards</title>
 		<query>
 			id_board,
@@ -130,7 +135,7 @@
 			redirect
 		</query>
 	</step>
-	<step>
+	<step id="topics">
 		<title>Importing topics</title>
 		<query>
 			id_topic,
@@ -150,7 +155,7 @@
 			approved
 		</query>
 	</step>
-	<step>
+	<step id="messages">
 		<title>Importing messages</title>
 		<query>
 			id_msg,
@@ -171,7 +176,7 @@
 			approved
 		</query>
 	</step>
-	<step>
+	<step id="polls">
 		<title>Importing polls</title>
 		<query>
 			id_poll,
@@ -188,7 +193,7 @@
 			poster_name
 		</query>
 	</step>
-	<step>
+	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<query>
 			id_poll,
@@ -197,7 +202,7 @@
 			votes
 		</query>
 	</step>
-	<step>
+	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<query>
 			id_poll,
@@ -205,7 +210,7 @@
 			id_choice
 		</query>
 	</step>
-	<step>
+	<step id="pm">
 		<title>Importing personal messages</title>
 		<query>
 			id_pm,
@@ -218,7 +223,7 @@
 			bodyk
 		</query>
 	</step>
-	<step>
+	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<query>
 			id_pm,
@@ -230,7 +235,7 @@
 			deleted
 		</query>
 	</step>
-	<step>
+	<step id="pmrules">
 		<title>Importing pm rules</title>
 		<query>
 			id_rule,
@@ -242,14 +247,14 @@
 			is_or
 		</query>
 	</step>
-	<step>
+	<step id="boardmods">
 		<title>Importing board moderators</title>
 		<query>
 			id_board,
 			id_member
 		</query>
 	</step>
-	<step>
+	<step id="markreadboards">
 		<title>Importing mark read data (boards)</title>
 		<query>
 			id_member,
@@ -257,7 +262,7 @@
 			id_msg
 		</query>
 	</step>
-	<step>
+	<step id="markreadtopics">
 		<title>Importing mark read data (topics)</title>
 		<query>
 			id_member,
@@ -265,7 +270,7 @@
 			id_msg
 		</query>
 	</step>
-	<step>
+	<step id="markread">
 		<title>Importing mark read data</title>
 		<query>
 			id_member,
@@ -273,7 +278,7 @@
 			id_msg
 		</query>
 	</step>
-	<step>
+	<step id="notifications">
 		<title>Importing notifications</title>
 		<query>
 			id_member,
@@ -282,7 +287,7 @@
 			sent
 		</query>
 	</step>
-	<step>
+	<step id="membergroups">
 		<title>Importing membergroups</title>
 		<query>
 			id_group,
@@ -297,21 +302,21 @@
 			id_parent
 		</query>
 	</step>
-	<step>
+	<step id="groupmods">
 		<title>Importing group moderators</title>
 		<query>
 			id_group,
 			id_member
 		</query>
 	</step>
-	<step>
+	<step id="permissionprofiles">
 		<title>Importing permission profiles</title>
 		<query>
 			id_profile,
 			profile_name
 		</query>
 	</step>
-	<step>
+	<step id="permissions">
 		<title>Importing permissions</title>
 		<query>
 			id_group,
@@ -319,7 +324,7 @@
 			add_deny
 		</query>
 	</step>
-	<step>
+	<step id="permissionboards">
 		<title>Importing board permissions</title>
 		<query>
 			id_group,
@@ -328,7 +333,7 @@
 			add_deny
 		</query>
 	</step>
-	<step>
+	<step id="smiley">
 		<title>Importing smileys</title>
 		<query>
 			id_smiley,
@@ -340,14 +345,14 @@
 			hidden
 		</query>
 	</step>
-	<step>
+	<step id="copysmiley">
 		<title>Copying smileys</title>
 		<query>
 			id_smiley,
 			source_file
 		</code>
 	</step>
-	<step>
+	<step id="statistics">
 		<title>Importing statistics (activity log)</title>
 		<query>
 			date,
@@ -358,7 +363,7 @@
 			most_on
 		</query>
 	</step>
-	<step>
+	<step id="logactions">
 		<title>Importing logged actions</title>
 		<query>
 			id_action,
@@ -373,7 +378,7 @@
 			extra
 		</query>
 	</step>
-	<step>
+	<step id="reports">
 		<title>Importing reported posts</title>
 		<query>
 			id_report,
@@ -391,7 +396,7 @@
 			ignore_all
 		</query>
 	</step>
-	<step>
+	<step id="reportscomments">
 		<title>Importing reported comments</title>
 		<query>
 			id_comment,
@@ -402,7 +407,7 @@
 			time_sent
 		</query>
 	</step>
-	<step>
+	<step id="spiderhits">
 		<title>Importing spider hits</title>
 		<query>
 			id_hit,
@@ -412,7 +417,7 @@
 			processed
 		</query>
 	</step>
-	<step>
+	<step id="spiderstats">
 		<title>Importing spider stats</title>
 		<query>
 			id_spider,
@@ -421,7 +426,7 @@
 			stat_date
 		</query>
 	</step>
-	<step>
+	<step id="paidscubscriptions">
 		<title>Importing subscriptions</title>
 		<query>
 			id_subscribe,
@@ -438,21 +443,21 @@
 			email_complete
 		</query>
 	</step>
-	<step>
-		<title>Importing pretty topic urls</title>
+	<step id="friendlyurls">
+		<title>Importing friendly topic urls</title>
 		<query>
 			id_topic,
-			pretty_url
+			friendly_url
 		</query>
 	</step>
-	<step>
+	<step id="friendlyurlcache">
 		<title>Importing pretty urls cache</title>
 		<query>
 			url_id,
 			replacement
 		</query>
 	</step>
-	<step>
+	<step id="customfields">
 		<title>Importing custom fields</title>
 		<query>
 			id_field,
@@ -475,7 +480,7 @@
 			placement
 		</query>
 	</step>
-	<step>
+	<step id="customfieldsdata">
 		<title>Importing custom fields data</title>
 		<query>
 			id_member,
@@ -483,7 +488,7 @@
 			value
 		</query>
 	</step>
-	<step>
+	<step id="likes">
 		<title>Importing likes</title>
 		<query>
 			id_member,
