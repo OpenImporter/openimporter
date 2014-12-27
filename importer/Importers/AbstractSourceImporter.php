@@ -79,4 +79,10 @@ abstract class AbstractSourceImporter
 	public function setGlobals()
 	{
 	}
+
+	public function callMethod($method)
+	{
+		if (method_exists($this, $method))
+			$this->$method();
+	}
 }

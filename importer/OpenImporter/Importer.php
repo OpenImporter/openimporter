@@ -319,6 +319,14 @@ class Importer
 		$this->testTable();
 	}
 
+	/**
+	 * This method is supposed to run a spot-test on a single table to verify...
+	 * What?
+	 * Dunno exactly, maybe that the converter is not wrong, but in that case, one
+	 * table may not be enough...
+	 *
+	 * @todo make it useful or remove it?
+	 */
 	protected function testTable()
 	{
 		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
@@ -521,8 +529,6 @@ class Importer
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
-	 * @global Database $db
-	 * @global type $to_prefix
 	 * @return boolean
 	 */
 	public function doStep2()
@@ -559,8 +565,6 @@ class Importer
 	/**
 	 * we are done :)
 	 *
-	 * @global Database $db
-	 * @global type $boardurl
 	 * @return boolean
 	 */
 	public function doStep3()

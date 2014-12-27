@@ -15,12 +15,6 @@
  */
 abstract class Step1BaseImporter extends BaseImporter
 {
-	public function beforeSql($method)
-	{
-		if (method_exists($this, $method))
-			$this->$method();
-	}
-
 	public function __call($name, $arguments)
 	{
 		$function = str_replace($this->config->to_prefix, '', $name);

@@ -217,7 +217,6 @@
 	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
-		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
 			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
 		</preparsecode>

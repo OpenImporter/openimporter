@@ -30,6 +30,9 @@ class wedge0_1_importer extends SmfCommonOrigin
 	}
 }
 
+/**
+ * Does the actual conversion.
+ */
 class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 {
 	public function doSpecialTable($special_table, $params = null)
@@ -109,6 +112,9 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	}
 }
 
+/**
+ * Recount statistics, and fixes stuff.
+ */
 class wedge0_1_importer_step2 extends SmfCommonOriginStep2
 {
 	public function substep0()
@@ -275,6 +281,9 @@ class wedge0_1_importer_step2 extends SmfCommonOriginStep2
 	}
 }
 
+/**
+ * Records the conversion
+ */
 class wedge0_1_importer_step3 extends SmfCommonOriginStep3
 {
 	public function run($import_script)

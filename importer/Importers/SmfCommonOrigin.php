@@ -204,6 +204,8 @@ abstract class SmfCommonOrigin
 
 abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 {
+	protected $beforeOnce = array();
+
 	public function fixTexts($row)
 	{
 		// If we have a message here, we'll want to convert <br /> to <br>.
@@ -271,7 +273,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 		$this->db->free_result($result);
 
-		// This is valid for some of the srouces (e.g. Elk/SMF/Wedge), but not for others
+		// This is valid for some of the sources (e.g. Elk/SMF/Wedge), but not for others
 		if (method_exists($this->config->source, 'getAttachmentDirs'))
 			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
 	}
@@ -428,6 +430,240 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
 
 		return $row;
+	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+
+	public function beforeMembers()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}members");
+	}
+
+	public function beforeAttachments()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}attachments");
+		$this->removeAttachments();
+	}
+
+	public function beforeCategories()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}categories");
+	}
+
+	public function beforeCollapsedcats()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}collapsed_categories");
+	}
+
+	public function beforeBoards()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}boards");
+
+		// The following removes any board-specific permission setting.
+		$this->db->query("
+			DELETE FROM {$this->config->to_prefix}board_permissions
+			WHERE id_profile > 4");
+	}
+
+	public function beforeTopics()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}topics");
+	}
+
+	public function beforeMessages()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}messages");
+	}
+
+	public function beforePolls()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}polls");
+	}
+
+	public function beforePolloptions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}poll_choices");
+	}
+
+	public function beforePollvotes()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_polls");
+	}
+
+	public function beforePm()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}personal_messages");
+	}
+
+	public function beforePmrecipients()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pm_recipients");
+	}
+
+	public function beforePmrules()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pm_rules");
+	}
+
+	public function beforeBoardmods()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}moderators");
+	}
+
+	public function beforeMarkreadboards()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_boards");
+	}
+
+	public function beforeMarkreadtopics()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_topics");
+	}
+
+	public function beforeMarkread()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_mark_read");
+	}
+
+	public function beforeNotifications()
+	{
+		// This should be done only once.
+		if (!empty($this->beforeOnce['Notifications']))
+			return;
+
+		$this->beforeOnce['Notifications'] = true;
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_notify;");
+	}
+
+	public function beforeMembergroups()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}membergroups");
+	}
+
+	public function beforePermissionprofiles()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}permission_profiles");
+	}
+
+	public function beforePermissions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}permissions");
+	}
+
+	public function beforePermissionboards()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}board_permissions");
+	}
+
+	public function beforeSmiley()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}smiley");
+	}
+
+	public function beforeCopysmiley()
+	{
+		// @todo probably to remove
+	}
+
+	public function beforeStatistics()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_activity");
+	}
+
+	public function beforeLogactions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_actions");
+	}
+
+	public function beforeReports()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_reported");
+	}
+
+	public function beforeReportscomments()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_reported_comments");
+	}
+
+	public function beforeSpiderhits()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_spider_hits");
+	}
+
+	public function beforeSpiderstats()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_spider_stats");
+	}
+
+	public function beforePaidsubscriptions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}subscriptions");
+	}
+
+	public function beforeFriendlyurls()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pretty_topic_urls");
+	}
+
+	public function beforeFriendlyurlcache()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pretty_urls_cache");
+	}
+
+	public function beforeCustomfields()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}custom_fields");
+	}
+
+	public function beforeCustomfieldsdata()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}custom_fields_data");
+	}
+
+	public function beforeLikes()
+	{
+		if (!empty($this->beforeOnce['Likes']))
+			return;
+
+		$this->beforeOnce['Likes'] = true;
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}message_likes");
 	}
 }
 

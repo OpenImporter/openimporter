@@ -76,6 +76,9 @@ class XmlProcessor
 	public function processSteps($step, &$substep, &$do_steps)
 	{
 		$this->current_step = $step;
+		$id = $this->current_step['id'];
+
+		// @todo do detection on destination side (e.g. friendly urls)
 		$table_test = $this->updateStatus($substep, $do_steps);
 
 		// do we need to skip this step?
@@ -83,7 +86,7 @@ class XmlProcessor
 			return;
 
 		// pre sql queries first!!
-		$this->doPresqlStep($substep);
+		$this->doPresqlStep($id, $substep);
 
 		// Codeblock? Then no query.
 		if ($this->doCode())
@@ -177,6 +180,7 @@ class XmlProcessor
 
 	protected function fixCurrentData($current_data)
 	{
+		// @todo why eval? ???
 		if (strpos($current_data, '{$') !== false)
 			$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
 
@@ -260,6 +264,9 @@ class XmlProcessor
 		return $string;
 	}
 
+	/**
+	 * @todo extract the detection step
+	 */
 	protected function updateStatus(&$substep, &$do_steps)
 	{
 		$table_test = true;
@@ -293,7 +300,7 @@ class XmlProcessor
 		return $table_test;
 	}
 
-	protected function doPresqlStep($substep)
+	protected function doPresqlStep($id, $substep)
 	{
 		if (!isset($this->current_step->presql))
 			return;
@@ -301,19 +308,16 @@ class XmlProcessor
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
-		if (isset($this->current_step->presqlMethod))
-			$this->step1_importer->beforeSql((string) $this->current_step->presqlMethod);
-
-		$presql = $this->fix_params((string) $this->current_step->presql);
-		$presql_array = array_filter(explode(';', $presql));
-
-		foreach ($presql_array as $exec)
-			$this->db->query($exec . ';');
+		$this->config->destination->callMethod('before' . ucFirst($id));
+		$this->config->source->callMethod('before' . ucFirst($id));
 
 		// don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
+	/**
+	 * @todo this should probably be merged with the detect done in updateStatus
+	 */
 	protected function doDetect($substep)
 	{
 		global $import;

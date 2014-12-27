@@ -20,4 +20,10 @@ abstract class BaseImporter
 		$this->db = $db;
 		$this->config = $config;
 	}
+
+	public function callMethod($method)
+	{
+		if (method_exists($this, $method))
+			$this->$method();
+	}
 }
