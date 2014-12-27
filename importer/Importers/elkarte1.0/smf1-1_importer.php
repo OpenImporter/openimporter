@@ -111,5 +111,37 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 	else
 		$source_file = $row['id_attach'] . '_' . $row['file_hash'];
 
+	if (empty($row['mime_type']))
+	{
+		$fileext = '';
+		$mimetype = '';
+		$is_thumb = false;
+
+		if (preg_match('/\.(jpg|jpeg|gif|png)(_thumb)?$/i',$row['filename'],$m))
+		{
+			$fileext = strtolower($m[1]);
+			$is_thumb = !empty($m[2]);
+
+			if (empty($row['mime_type']))
+			{
+				// AFAIK, all thumbnails got created as PNG
+				if ($is_thumb) $mimetype = 'image/png';
+				elseif ($fileext == 'jpg') $mimetype = 'image/jpeg';
+				else $mimetype = 'image/'.$fileext;
+			}
+		}
+		else if (preg_match('/\.([a-z][a-z0-9]*)$/i',$row['filename'],$m))
+		{
+			$fileext = strtolower($m[1]);
+		}
+
+		if (empty($row['fileext'])) $row['fileext'] = $fileext;
+
+		// try using getimagesize to calculate the mime type, otherwise use the $mimetype set from above
+		$size = @getimagesize($filename);
+
+		$row['mime_type'] = empty($size['mime']) ? $mimetype : $size['mime'];
+	}
+
 	copy_file($smf_attachments_dir . '/' . $source_file, $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 }

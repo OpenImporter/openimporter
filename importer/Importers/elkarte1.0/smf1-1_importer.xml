@@ -227,8 +227,8 @@
 		<query>
 			SELECT
 				ID_ATTACH AS id_attach, ID_THUMB AS id_thumb, ID_MSG AS id_msg, ID_MEMBER AS id_member,
-				attachmentType AS attachment_type, filename, file_hash, size, downloads,
-				width, height
+				attachmentType AS attachment_type, filename, file_hash, '' AS fileext,size, downloads,
+				width, height,'' AS mime_type
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
