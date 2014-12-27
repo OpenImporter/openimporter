@@ -135,7 +135,7 @@ class XmlProcessor
 			// create some handy shortcuts
 			$no_add = $this->shoudNotAdd($this->current_step->options);
 
-			$this->step1_importer->doSpecialTable($special_table);
+// 			$this->step1_importer->doSpecialTable($special_table);
 
 			while (true)
 			{
