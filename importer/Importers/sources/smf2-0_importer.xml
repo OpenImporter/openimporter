@@ -598,7 +598,8 @@
 				url_id, replacement
 			FROM {$from_prefix}pretty_urls_cache;
 		</query>
-
+	</step>
+	<step id="customfields">
 		<title>Importing custom fields</title>
 		<detect>{$from_prefix}custom_fields</detect>
 		<query>
@@ -609,7 +610,7 @@
 			FROM {$from_prefix}custom_fields;
 		</query>
 	</step>
-	<step id="customfields">
+	<step id="customfieldsdata">
 		<title>Importing custom fields data</title>
 		<detect>{$from_prefix}custom_fields</detect>
 		<query>
@@ -619,7 +620,7 @@
 			WHERE variable LIKE 'cust\_%';
 		</query>
 	</step>
-	<step id="customfieldsdata">
+	<step id="likes">
 		<title>Importing likes from Thank you mod</title>
 		<detect>{$from_prefix}thank_you_post</detect>
 		<query>

@@ -122,59 +122,54 @@ class XmlProcessor
 
 		$this->doDetect($substep);
 
-		if (!isset($this->current_step->destination))
-			$this->db->query($current_data);
-		else
+		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table', $this->current_step['id'])), array('{$to_prefix}' => $this->config->to_prefix));
+		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
+
+		// any preparsing code? Loaded here to be used later.
+		$special_code = $this->getPreparsecode();
+
+		// create some handy shortcuts
+		$no_add = $this->shoudNotAdd($this->current_step->options);
+
+// 		$this->step1_importer->doSpecialTable($special_table);
+
+		while (true)
 		{
-			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
-			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
+			pastTime($substep);
 
-			// any preparsing code? Loaded here to be used later.
-			$special_code = $this->getPreparsecode();
+			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
-			// create some handy shortcuts
-			$no_add = $this->shoudNotAdd($this->current_step->options);
+			$rows = array();
+			$keys = array();
 
-// 			$this->step1_importer->doSpecialTable($special_table);
+			if (isset($this->current_step->detect))
+				$_SESSION['import_progress'] += $special_limit;
 
-			while (true)
+			while ($row = $this->db->fetch_assoc($special_result))
 			{
-				pastTime($substep);
-
-				$special_result = $this->prepareSpecialResult($current_data, $special_limit);
-
-				$rows = array();
-				$keys = array();
-
-				if (isset($this->current_step->detect))
-					$_SESSION['import_progress'] += $special_limit;
-
-				while ($row = $this->db->fetch_assoc($special_result))
+				if ($no_add)
 				{
-					if ($no_add)
-					{
-						eval($special_code);
-					}
-					else
-					{
-						$row = $this->step1_importer->$special_table($row, $special_code);
-						$rows[] = $row;
-
-						if (empty($keys))
-							$keys = array_keys($row);
-					}
+					eval($special_code);
 				}
+				else
+				{
+					$row = $this->step1_importer->$special_table($row, $special_code);
+					$rows[] = $row;
 
-				$this->insertRows($rows, $keys, $special_table);
-
-				// @todo $_REQUEST
-				$_REQUEST['start'] += $special_limit;
-
-				if ($this->db->num_rows($special_result) < $special_limit)
-					break;
-
-				$this->db->free_result($special_result);
+					if (empty($keys))
+						$keys = array_keys($row);
+				}
 			}
+
+			$this->insertRows($rows, $keys, $special_table);
+
+			// @todo $_REQUEST
+			$_REQUEST['start'] += $special_limit;
+
+			if ($this->db->num_rows($special_result) < $special_limit)
+				break;
+
+			$this->db->free_result($special_result);
 		}
 	}
 
