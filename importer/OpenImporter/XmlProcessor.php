@@ -122,7 +122,7 @@ class XmlProcessor
 
 		$this->doDetect($substep);
 
-		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table', $this->current_step['id'])), array('{$to_prefix}' => $this->config->to_prefix));
+		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . ucFirst($this->current_step['id']))), array('{$to_prefix}' => $this->config->to_prefix));
 		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
 		// any preparsing code? Loaded here to be used later.
@@ -145,13 +145,12 @@ class XmlProcessor
 
 			while ($row = $this->db->fetch_assoc($special_result))
 			{
-				if ($no_add)
+				$row = $this->config->source->callMethod('preparse' . ucFirst($this->current_step['id']), array($row));
+				$row = $this->config->destination->callMethod('preparse' . ucFirst($this->current_step['id']), array($row));
+
+				if (!empty($row))
 				{
-					eval($special_code);
-				}
-				else
-				{
-					$row = $this->step1_importer->$special_table($row, $special_code);
+// 					$row = $this->step1_importer->$special_table($row, $special_code);
 					$rows[] = $row;
 
 					if (empty($keys))
