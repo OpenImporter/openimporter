@@ -2,7 +2,6 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>Viscacha 0.8</name>
-		<version>ElkArte 1.0</version>
 		<className>Viscacha</className>
 	</general>
 	<step id="members" type="mandatory">

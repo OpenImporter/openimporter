@@ -2,7 +2,6 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>SMF 1.1</name>
-		<version>ElkArte 1.0</version>
 		<className>SMF1_1</className>
 	</general>
 	<step id="settings">

@@ -2,7 +2,6 @@
 <importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
 	<general>
 		<name>Xenforo 1.1</name>
-		<version>ElkArte 1.0</version>
 		<className>XenForo1_1</className>
 		<form>
 			<field id="1" type="text" size="20" default="xf_" label="Xenforo table prefix">xf_prefix</field>

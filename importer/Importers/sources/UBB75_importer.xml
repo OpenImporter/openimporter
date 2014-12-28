@@ -4,7 +4,6 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>UBB Threads 7.5.x</name>
-		<version>ElkArte 1.0</version>
 		<className>UBB_7_5</className>
 	</general>
 	<step id="members" type="mandatory">

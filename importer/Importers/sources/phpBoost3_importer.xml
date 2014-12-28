@@ -2,7 +2,6 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>PHPBoost3</name>
-		<version>ElkArte 1.0</version>
 		<form>
 			<field id="1" type="text" size="20" default="" label="PHPBoost database">boost_database</field>
 			<field id="2" type="text" size="20" default="" label="PHPBoost table prefix">boost_prefix</field>
