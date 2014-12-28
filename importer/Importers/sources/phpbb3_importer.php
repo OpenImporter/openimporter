@@ -48,7 +48,7 @@ class phpBB3 extends AbstractSourceImporter
 	protected function fixBbc($body, $bbc_replace)
 	{
 		$body = phpbb_replace_bbc($body);
-		$body = str_replace($row['tmp_bbc_replace'], '', $body);
+		$body = str_replace($bbc_replace, '', $body);
 
 		return $body;
 	}
