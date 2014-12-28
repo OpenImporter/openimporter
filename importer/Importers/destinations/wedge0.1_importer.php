@@ -115,6 +115,9 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	 * From here on, all the methods are needed helper for the conversion
 	 */
 
+	/**
+	 * Until further notice these methods are for table detection
+	 */
 	public function tableMembers()
 	{
 		return '{$to_prefix}members';
@@ -278,6 +281,47 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	public function tableFriendlyurlcache()
 	{
 		return '{$to_prefix}pretty_urls_cache';
+	}
+
+	/**
+	 * From here on we have methods to verify code before inserting it into the db
+	 */
+	public function preparseMembers($row)
+	{
+		// data field is used temporary to dertermine the type of avatar
+		if ($row['data'] != 'remote')
+			$row['avatar'] = '';
+
+		$row['data'] = '';
+
+		return $row;
+	}
+
+	/**
+	 * @todo it may be broken for Wedge
+	 */
+	public function preparseAttachments($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$file_hash = createAttachmentFileHash($row['filename']);
+			$id_attach = $this->newIdAttach();
+			// @todo the name should come from step1_importer
+			$destination = $this->getAttachDir($row) . DIRECTORY_SEPARATOR . $id_attach . '_' . $file_hash . '.ext';
+			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename']
+
+			copy_file($source, $destination);
+		}
+
+		return $rows;
+	}
+
+	public function preparseAvatars($originalRows)
+	{
+		// @todo I think I messed up something and deleted the relevant code at some point
+
+		return array();
 	}
 }
 

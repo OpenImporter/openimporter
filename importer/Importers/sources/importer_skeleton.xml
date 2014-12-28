@@ -76,7 +76,7 @@
 			id_thumb,
 			id_msg,
 			id_member,
-			attachment_type,
+			attachment_type,  // Probably SMF-specific, to check if needed (int)
 			filename,
 			file_hash,
 			size,
@@ -85,14 +85,17 @@
 			height,
 			fileext,
 			mime_type,
-			id_folder
+			id_folder,
+			full_path
 		</query>
 	</step>
 	<step id="avatars">
+		<!-- @doc: this step is here to move avatars from directory to directory -->
 		<title>Importing avatars</title>
 		<query>
-			id_member,
-			source_file
+			id_member,  // Obviously the id of the member the avatar belongs to (int)
+			filename,   // The name of the file (string)
+			full_path   // The path to the position of the file (string)
 		</code>
 	</step>
 	<step id="categories">

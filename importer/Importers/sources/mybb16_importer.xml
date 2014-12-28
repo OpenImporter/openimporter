@@ -7,17 +7,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}users</detect>
-		<preparsecode>
-			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
-				$row['birthdate'] = '0001-01-01';
-
-			// data field is used temporary to dertermine the type of avatar
-			// @todo verify this belongs here
-			if ($row['data'] != 'remote')
-				$row['avatar'] = '';
-
-			$row['data'] = '';
-		</preparsecode>
 		<query>
 			SELECT
 				uid AS id_member, SUBSTRING(username, 1, 255) AS member_name,
@@ -83,7 +72,6 @@
 		<title>Importing Messages</title>
 		<detect> {$from_prefix}posts</detect>
 		<options>
-			<slashes>true</slashes>
 			<limit>100</limit>
 		</options>
 		<query>
@@ -118,27 +106,6 @@
 	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}polls</detect>
-		<options>
-			<no_add>true</no_add>
-		</options>
-		<preparsecode><![CDATA[
-			// @todo this should probably go somewhere else
-			$keys = array('id_poll', 'id_choice', 'label', 'votes');
-
-			$options = explode('||~|~||', $row['opt']);
-			$votes = explode('||~|~||', $row['votes']);
-
-			$id_poll = $row['id_poll'];
-			for ($i = 0, $n = count($options); $i < $n; $i++)
-			{
-				$rows[] = implode(', ', array(
-					'id_poll' => $id_poll,
-					'id_choice' => ($i + 1),
-					'label' => '"'. addslashes($options[$i]). '"',
-					'votes' => @$votes[$i],
-				));
-			}
-		]]></preparsecode>
 		<query>
 			SELECT pid AS id_poll, options AS opt, votes
 			FROM {$from_prefix}polls;
@@ -155,10 +122,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}privatemessages</detect>
-		<preparsecode>
-			if(empty($row['from_name']))
-				$row['from_name'] = 'Guest';
-		</preparsecode>
 		<query>
 			SELECT
 				pm.pmid AS id_pm, pm.fromid AS id_member_from, pm.dateline AS msgtime,
@@ -181,9 +144,6 @@
 	<step id="notifications">
 		<title>Importing topic notifications</title>
 		<detect>{$from_prefix}threadsubscriptions</detect>
-		<options>
-			<ignore>true</ignore>
-		</options>
 		<query>
 			SELECT uid AS id_member, tid AS id_topic
 			FROM {$from_prefix}threadsubscriptions;
@@ -192,9 +152,6 @@
 	<step id="notifications">
 		<title>Importing board notifications</title>
 		<detect>{$from_prefix}forumsubscriptions</detect>
-		<options>
-			<ignore>true</ignore>
-		</options>
 		<query>
 			SELECT uid AS id_member, fid AS id_board
 			FROM {$from_prefix}forumsubscriptions;
@@ -203,63 +160,6 @@
 	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
-		<options>
-			<no_add>true</no_add>
-		</options>
-		<preparsecode>
-			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_msg', 'downloads', 'width', 'height');
-
-			if (!isset($mybb_attachment_dir))
-			{
-				$result = $db->query("
-					SELECT value
-					FROM {$from_prefix}settings
-					WHERE name = 'uploadspath'
-					LIMIT 1");
-				list ($mybb_attachment_dir) = $db->fetch_row($result);
-				$db->free_result($result);
-
-				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
-			}
-
-			//create some useful shortcuts, we start with images..
-			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
-			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png')))
-				$ext = '';
-
-			$source = $mybb_attachment_dir . '/' . $row['attachname'];
-			$file_hash = createAttachmentFileHash($row['filename']);
-			$id_attach = $this->step1_importer->newIdAttach();
-			// @todo the name should come from step1_importer
-			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
-			$width = 0;
-			$height = 0;
-
-			copy_file($source, $destination);
-
-			// Is image? we need a thumbnail
-			if (!empty($ext))
-			{
-				list ($width, $height) = getimagesize($destination);
-				if(empty($width))
-				{
-					$width = 0;
-					$height = 0;
-				}
-			}
-
-			//prepare our insert
-			$rows[] = implode(', ', array(
-				'id_attach' => $id_attach,
-				'size' => filesize($destination),
-				'filename' => '\'' . $row['filename'] . '\'',
-				'file_hash' => '\'' . $file_hash . '\'',
-				'id_msg' => $row['id_msg'],
-				'downloads' => $row['downloads'],
-				'width' => $width,
-				'height' => $height,
-			));
-		</preparsecode>
 		<query>
 			SELECT pid AS id_msg, downloads, filename, filesize, attachname
 			FROM {$from_prefix}attachments;
@@ -268,30 +168,6 @@
 	<step id="avatars">
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}users</detect>
-		<options>
-			<no_add>true</no_add>
-		</options>
-		<preparsecode>
-			//create some useful shortcuts
-			$source = $this->config->path_from . strtok(ltrim($row['filename'], '.'), '?');
-			$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
-
-			$upload_result = $this->step1_importer->moveAvatar($row, $source, $filename);
-
-			if (empty($upload_result))
-			{
-				// Ensure nothing is updated.
-				$rows = array();
-			}
-			else
-			{
-				$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
-
-				$rows[] = $upload_result;
-			}
-
-			copy_file($source, $destination);
-		</preparsecode>
 		<query>
 			SELECT uid AS id_member, avatar AS filename
 			FROM {$from_prefix}users

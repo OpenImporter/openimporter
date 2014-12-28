@@ -384,7 +384,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			);
 
 			$sizes = @getimagesize($source);
-			$extension = isset($extensions[$sizes[2]]) ? $extensions[$sizes[2]] : 'bmp';
+			$extension = isset($sizes[2]) && isset($extensions[$sizes[2]]) ? $extensions[$sizes[2]] : 'bmp';
 			$file_hash = 'avatar_' . $row['id_member'] . '_' . time() . '.' . $extension;
 
 			$this->db->query("

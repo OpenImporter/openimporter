@@ -30,12 +30,28 @@ class elkarte1_0_importer extends SmfCommonOrigin
 class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 {
 
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+
+	/**
+	 * Until further notice these methods are for table detection
+	 */
 	public function tableMembers()
 	{
 		return '{$to_prefix}members';
 	}
 
 	public function tableAttachments()
+	{
+		return '{$to_prefix}attachments';
+	}
+
+	/**
+	 * In case the avatar is an attachment, we try to store it into the
+	 * attachments table.
+	 */
+	public function tableAvatars()
 	{
 		return '{$to_prefix}attachments';
 	}
@@ -198,6 +214,43 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 	public function tableLikes()
 	{
 		return '{$to_prefix}message_likes';
+	}
+
+	/**
+	 * From here on we have methods to verify code before inserting it into the db
+	 */
+	public function preparseAttachments($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$file_hash = createAttachmentFileHash($row['filename']);
+			$id_attach = $this->newIdAttach();
+			// @todo the name should come from step1_importer
+			$destination = $this->getAttachDir($row) . DIRECTORY_SEPARATOR . $id_attach . '_' . $file_hash . '.elk';
+			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename']
+
+			copy_file($source, $destination);
+		}
+
+		return $rows;
+	}
+
+	public function preparseAvatars($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$source = $row['full_path'] . DIRECTORY_SEPARATOR. $row['filename'];
+			$upload_result = $this->moveAvatar($row, $source, $row['filename']);
+
+			if (!empty($upload_result))
+			{
+				$rows[] = $upload_result;
+			}
+		}
+
+		return $rows;
 	}
 }
 

@@ -119,17 +119,18 @@ class XmlProcessor
 
 		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
 		$current_data = $this->fixCurrentData($current_data);
+		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
 
-		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . ucFirst($this->current_step['id']))), array('{$to_prefix}' => $this->config->to_prefix));
+		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
 		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
 		// any preparsing code? Loaded here to be used later.
 // 		$special_code = $this->getPreparsecode();
 
 		// create some handy shortcuts
-		$no_add = $this->shoudNotAdd($this->current_step->options);
+// 		$no_add = $this->shoudNotAdd($this->current_step->options);
 
 		while (true)
 		{
@@ -145,16 +146,17 @@ class XmlProcessor
 
 			while ($row = $this->db->fetch_assoc($special_result))
 			{
-				$row = $this->config->source->callMethod('preparse' . ucFirst($this->current_step['id']), array($row));
-				$row = $this->config->destination->callMethod('preparse' . ucFirst($this->current_step['id']), array($row));
+				$newrow = array($row);
+				$newrow = $this->config->source->callMethod('preparse' . $id, array($newrow));
+				$newrow = $this->config->destination->callMethod('preparse' . $id, array($newrow));
 
-				if (!empty($row))
+				if (!empty($newrow))
 				{
 // 					$row = $this->step1_importer->$special_table($row, $special_code);
-					$rows[] = $row;
+					$rows[] = array_merge($rows, $newrow);
 
 					if (empty($keys))
-						$keys = array_keys($row);
+						$keys = array_keys($newrow[0]);
 				}
 			}
 
