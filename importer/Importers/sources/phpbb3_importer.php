@@ -44,6 +44,55 @@ class phpBB3 extends AbstractSourceImporter
 	{
 		return 'users';
 	}
+
+	protected function fixBbc($body, $bbc_replace)
+	{
+		$body = phpbb_replace_bbc($body);
+		$body = str_replace($row['tmp_bbc_replace'], '', $body);
+
+		return $body;
+	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = $this->fixBbc($row['signature'], $row['tmp_bbc_replace']);
+			unset($row['tmp_bbc_replace']);
+
+			$rows[] = $row;
+		}
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = $this->fixBbc($row['body'], $row['tmp_bbc_replace']);
+			unset($row['tmp_bbc_replace']);
+
+			$rows[] = $row;
+		}
+	}
+
+	public function preparsePm($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = $this->fixBbc($row['body'], $row['tmp_bbc_replace']);
+			unset($row['tmp_bbc_replace']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
 }
 
 /**

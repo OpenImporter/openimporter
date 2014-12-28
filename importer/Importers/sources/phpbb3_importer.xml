@@ -7,11 +7,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}users</detect>
-		<preparsecode>
-			$row['signature'] = phpbb_replace_bbc($row['signature']);
-			$row['signature'] = str_replace($row['tmp_bbc_replace'], '', $row['signature']);
-			unset($row['tmp_bbc_replace']);
-		</preparsecode>
 		<query>
 			SELECT
 				u.user_id AS id_member, SUBSTRING(u.username, 1, 80) AS member_name,
@@ -93,11 +88,6 @@
 			<slashes>true</slashes>
 			<limit>100</limit>
 		</options>
-		<preparsecode>
-			$row['body'] = phpbb_replace_bbc($row['body']);
-			$row['body'] = str_replace($row['tmp_bbc_replace'], '', $row['body']);
-			unset($row['tmp_bbc_replace']);
-		</preparsecode>
 		<query>
 			SELECT
 				p.post_id AS id_msg, p.topic_id AS id_topic, p.forum_id AS id_board,
@@ -154,11 +144,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}privmsgs</detect>
-		<preparsecode>
-			$row['body'] = phpbb_replace_bbc($row['body']);
-			$row['body'] = str_replace($row['tmp_bbc_replace'], '', $row['body']);
-			unset($row['tmp_bbc_replace']);
-		</preparsecode>
 		<query>
 			SELECT
 				pm.msg_id AS id_pm, pm.author_id AS id_member_from, pm.message_time AS msgtime,

@@ -45,6 +45,9 @@ class mybb16 extends AbstractSourceImporter
 		return 'users';
 	}
 
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
 	public function preparseMembers($row)
 	{
 		if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
