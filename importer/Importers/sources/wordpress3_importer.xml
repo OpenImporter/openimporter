@@ -11,16 +11,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}users</detect>
-		<preparsecode>
-			$request = $db->query("
-				SELECT meta_value
-				FROM {$from_prefix}usermeta
-				WHERE user_id = $row[id_member]
-				AND meta_key = 'wp_capabilities'");
-
-			list ($serialized) = $db->fetch_row($request);
-			$row['id_group']= array_key_exists('administrator', unserialize($serialized)) ? 1 : 0;
-		</preparsecode>
 		<query>
 			SELECT
 				ID AS id_member, SUBSTRING(user_login, 1, 80) AS member_name,

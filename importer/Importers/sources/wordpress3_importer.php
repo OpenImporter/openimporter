@@ -39,4 +39,28 @@ class WP3 extends AbstractSourceImporter
 	{
 		return 'users';
 	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$request = $this->db->query("
+				SELECT meta_value
+				FROM {$this->config->from_prefix}usermeta
+				WHERE user_id = $row[id_member]
+				AND meta_key = 'wp_capabilities'");
+
+			list ($serialized) = $this->db->fetch_row($request);
+			$row['id_group'] = array_key_exists('administrator', unserialize($serialized)) ? 1 : 0;
+			$this->db->free_result($request);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
 }
