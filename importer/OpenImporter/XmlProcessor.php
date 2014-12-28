@@ -131,8 +131,6 @@ class XmlProcessor
 		// create some handy shortcuts
 		$no_add = $this->shoudNotAdd($this->current_step->options);
 
-// 		$this->step1_importer->doSpecialTable($special_table);
-
 		while (true)
 		{
 			pastTime($substep);
@@ -204,21 +202,6 @@ class XmlProcessor
 				(" . implode(', ', $keys) . ")
 			VALUES (" . implode('),
 				(', $insert_rows) . ")");
-	}
-
-	protected function prepareRow($row, $special_code, $special_table)
-	{
-		if ($special_code !== null)
-			eval($special_code);
-
-		$row = $this->step1_importer->doSpecialTable($special_table, $row);
-
-		// fixing the charset, we need proper utf-8
-		$row = fix_charset($row);
-
-		$row = $this->step1_importer->fixTexts($row);
-
-		return $row;
 	}
 
 	protected function getPreparsecode()
