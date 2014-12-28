@@ -48,10 +48,16 @@ class mybb16 extends AbstractSourceImporter
 	/**
 	 * From here on, all the methods are needed helper for the conversion
 	 */
-	public function preparseMembers($row)
+	public function preparseMembers($originalRows)
 	{
-		if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
-			$row['birthdate'] = '0001-01-01';
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
+				$row['birthdate'] = '0001-01-01';
+
+			$rows[] = $row;
+		}
 	}
 
 	public function preparsePolloptions($originalRows)
@@ -65,12 +71,12 @@ class mybb16 extends AbstractSourceImporter
 			$id_poll = $row['id_poll'];
 			for ($i = 0, $n = count($options); $i < $n; $i++)
 			{
-				$rows[] = implode(', ', array(
+				$rows[] = array(
 					'id_poll' => $id_poll,
 					'id_choice' => ($i + 1),
 					'label' => '"'. addslashes($options[$i]). '"',
 					'votes' => @$votes[$i],
-				));
+				);
 			}
 		}
 
@@ -111,7 +117,7 @@ class mybb16 extends AbstractSourceImporter
 
 			//create some useful shortcuts, we start with images..
 			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
-			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png')))
+			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png', 'bmp')))
 				$ext = '';
 
 			$source = $mybb_attachment_dir . '/' . $row['attachname'];
@@ -143,7 +149,7 @@ class mybb16 extends AbstractSourceImporter
 				'width' => $width,
 				'height' => $height,
 				'fileext' => $ext,
-				'mime_type',
+				'mime_type' => '',
 				'id_folder' => 0,
 				'full_path' => $mybb_attachment_dir,
 			);

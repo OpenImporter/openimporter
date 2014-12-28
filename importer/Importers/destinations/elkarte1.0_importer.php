@@ -246,6 +246,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename'];
 
 			copy_file($source, $destination);
+			$rows[] = $row;
 		}
 
 		return $rows;

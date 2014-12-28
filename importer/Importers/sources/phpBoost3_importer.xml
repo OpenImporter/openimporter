@@ -52,13 +52,6 @@
 	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}forum_msg</detect>
-		<preparsecode>
-			$row['id_member_started'] = (int) $row['id_member_started'];
-			$row['id_member_updated'] = (int) $row['id_member_updated'];
-
-			if(empty($row['id_poll']))
-				$row['id_poll'] = 0;
-		</preparsecode>
 		<query>
 			SELECT
 				t.id AS id_topic, t.idcat AS id_board, 
@@ -81,14 +74,6 @@
 			<slashes>true</slashes>
 			<limit>100</limit>
 		</options>
-		<preparsecode>
-			$row['body'] = boost_replace_bbc($row['body']);
-			if (empty($row['modified_name']))
-			{
-				$row['modified_name'] = 'Guest';
-				$row['modified_time'] = 0;
-			}
-		</preparsecode>
 		<query>
 			SELECT
 				p.id AS id_msg, p.idtopic AS id_topic,	t.idcat  AS id_board, 

@@ -37,6 +37,44 @@ class PHPBoost3 extends AbstractSourceImporter
 	{
 		return 'member';
 	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseTopics($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['id_member_started'] = (int) $row['id_member_started'];
+			$row['id_member_updated'] = (int) $row['id_member_updated'];
+
+			if(empty($row['id_poll']))
+				$row['id_poll'] = 0;
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = boost_replace_bbc($row['body']);
+
+			if (!empty($row['modified_time']) && empty($row['modified_name']))
+			{
+				$row['modified_name'] = 'Guest';
+			}
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
 }
 
 /**

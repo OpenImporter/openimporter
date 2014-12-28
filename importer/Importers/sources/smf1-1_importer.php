@@ -70,6 +70,7 @@ class SMF1_1 extends AbstractSourceImporter
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 
+			//  @todo this is SMF 1.1, it should be useless to unserialize
 			$this->smf_attach_folders = @unserialize($smf_attachments_dir);
 
 			if (!is_array($this->smf_attach_folders))
@@ -78,38 +79,27 @@ class SMF1_1 extends AbstractSourceImporter
 
 		return $this->smf_attach_folders;
 	}
-}
 
-function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
-{
-	static $smf_folders = null;
-
-	if ($smf_folders === null)
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseAttachments($originalRows)
 	{
-		$request = $db->query("
-			SELECT value
-			FROM {$from_prefix}settings
-			WHERE variable='attachmentUploadDir';");
-		list ($smf_attachments_dir) = $db->fetch_row($request);
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
+			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png', 'bmp')))
+				$ext = '';
 
-		$smf_folders = @unserialize($smf_attachments_dir);
-		if (!is_array($smf_folders))
-			$smf_folders = array(1 => $smf_attachments_dir);
+			$row['fileext'] = $ext;
+			$row['mime_type'] = '';
+			$row['id_folder'] = 0;
+			$row['full_path'] = $this->getAttachmentDirs();
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
-
-	// If something is broken, better try to account for it as well.
-	if (isset($row['id_folder']) && isset($smf_folders[$row['id_folder']]))
-		$smf_attachments_dir = $smf_folders[$row['id_folder']];
-	else
-		$smf_attachments_dir = $smf_folders[1];
-
-	if (empty($row['file_hash']))
-	{
-		$row['file_hash'] = createAttachmentFileHash($row['filename']);
-		$source_file = $row['filename'];
-	}
-	else
-		$source_file = $row['id_attach'] . '_' . $row['file_hash'];
-
-	copy_file($smf_attachments_dir . '/' . $source_file, $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 }

@@ -142,6 +142,7 @@ class XmlProcessor
 			{
 				$newrow = array($row);
 				$newrow = $this->config->source->callMethod('preparse' . $id, array($newrow));
+				// @todo maybe consider adding a check to ensure all the keys expected are present (see skeleton)
 				$newrow = $this->config->destination->callMethod('preparse' . $id, array($newrow));
 
 				if (!empty($newrow))
