@@ -39,6 +39,147 @@ class UBB_7_5 extends AbstractSourceImporter
 	{
 		return 'USERS';
 	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['signature'] = fix_quotes($row['signature'], false);
+			$row['birthdate'] = convert_birthdate($row['birthdate']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseBoards($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['description'] = fix_quotes($row['description'], false);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['subject'] = fix_quotes($row['subject'], false);
+			$row['body'] = fix_quotes($row['body'], true);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparsePollvotes($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			// A guest?...I hope so, skip it
+			$row['id_member'] = (int) $row['id_member'];
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparsePm($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$result = $this->db->query("
+				SELECT MIN(POST_ID)
+				FROM {$this->config->from_prefix}PRIVATE_MESSAGE_POSTS
+				WHERE TOPIC_ID = " . $row['TOPIC_ID']);
+
+			unset($row['TOPIC_ID']);
+			list($res) = convert_fetch_row($result);
+			convert_free_result($result);
+
+			$rows[] = array(
+				'id_pm' => $row['id_pm'],
+				'id_pm_head' => $res,
+				'id_member_from' => $row['id_member_from'],
+				'deleted_by_sender' => 0,
+				'from_name' => $row['from_name'],
+				'msgtime' => $row['msgtime'],
+				'subject' => fix_quotes($row['subject'], false),
+				'body' => fix_quotes($row['body'], true),
+			);
+		}
+
+		return $rows;
+	}
+
+	public function preparsePmrecipients($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			// Grab all the "other" users in the conversation
+			$result = $this->db->query("
+				SELECT DISTINCT(USER_ID)
+				FROM {$this->config->from_prefix}PRIVATE_MESSAGE_POSTS
+				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
+					AND USER_ID != " . $row['USER_ID'] . "");
+
+			$ins = array();
+			while ($pmrec = $this->db->fetch_assoc($result))
+			{
+				$id_members[] = 
+				$ins[$pmrec['USER_ID']] = array(
+					'id_pm' => $row['POST_ID'],
+					'id_member' => $pmrec['USER_ID'],
+				);
+			}
+			$this->db->free_result($result);
+
+			// And try also with the PRIVATE_MESSAGE_USERS table
+			$result = convert_query("
+				SELECT DISTINCT(USER_ID)
+				FROM {$from_prefix}PRIVATE_MESSAGE_USERS
+				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
+					AND USER_ID != " . $row['USER_ID'] . "");
+
+			while ($pmrec = $this->db->fetch_assoc($result))
+				$ins[$pmrec['USER_ID']] = array(
+					'id_pm' => $row['POST_ID'],
+					'id_member' => $pmrec['USER_ID'],
+				);
+			$this->db->free_result($result);
+
+			foreach ($ins as $in)
+			{
+				$rows[] = array(
+					'id_pm' => $in['id_pm'],
+					'id_member' => $in['id_member'],
+					'labels' => '',
+					'bcc' => '',
+					'is_read' => 1,
+					'is_new' => 0,
+					'deleted' => 0,
+				);
+			}
+		}
+
+		return $rows;
+	}
 }
 
 /**

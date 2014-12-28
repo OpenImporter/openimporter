@@ -10,10 +10,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}USERS</detect>
-		<preparsecode>
-			$row['signature'] = fix_quotes($row['signature'], false);
-			$row['birthdate'] = convert_birthdate($row['birthdate']);
-		</preparsecode>
 		<query>
 			SELECT
 				m.USER_ID AS id_member, SUBSTRING(m.USER_LOGIN_NAME, 1, 80) AS member_name,
@@ -61,9 +57,6 @@
 	<step id="boards">
 		<title>Importing boards</title>
 		<detect>{$from_prefix}FORUMS</detect>
-		<preparsecode>
-			$row['description'] = fix_quotes($row['description'], false);
-		</preparsecode>
 		<query>
 			SELECT
 				FORUM_ID AS id_board, CATEGORY_ID as id_cat, SUBSTRING(FORUM_TITLE, 1, 255) AS name,
@@ -94,10 +87,6 @@
 	<step id="messages">
 		<title>Importing Messages</title>
 		<detect>{$from_prefix}POSTS</detect>
-		<preparsecode>
-			$row['subject'] = fix_quotes($row['subject'], true);
-			$row['body'] = fix_quotes($row['body'], true);
-		</preparsecode>
 		<query>
 			SELECT
 				p.POST_ID AS id_msg, p.TOPIC_ID AS id_topic, IFNULL(t.FORUM_ID, 0) AS id_board,
@@ -138,10 +127,6 @@
 	<step id="pollvotes">
 		<title>Importing poll votes</title>
 		<detect>{$from_prefix}POLL_VOTES</detect>
-		<preparsecode>
-			// A guest?...I hope so, skip it
-			$row['id_member'] = (int) $row['id_member'];
-		</preparsecode>
 		<query>
 			SELECT POLL_ID AS id_poll, OPTION_ID as id_choice, VOTES_USER_ID_IP as id_member
 			FROM {$from_prefix}POLL_VOTES;
@@ -154,20 +139,6 @@
 		<options>
 			<limit>50</limit>
 		</options>
-		<preparsecode>
-			$result = $this->db->query("
-				SELECT MIN(POST_ID)
-				FROM {$from_prefix}PRIVATE_MESSAGE_POSTS
-				WHERE TOPIC_ID = " . $row['TOPIC_ID']);
-
-			unset($row['TOPIC_ID']);
-			list($res) = convert_fetch_row($result);
-			convert_free_result($result);
-
-			$row['id_pm_head'] = $res;
-			$row['subject'] = fix_quotes($row['subject'], true);
-			$row['body'] = fix_quotes($row['body'], true);
-		</preparsecode>
 		<query>
 			SELECT
 				mp.TOPIC_ID,
@@ -184,47 +155,6 @@
 	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}PRIVATE_MESSAGE_POSTS</detect>
-		<options>
-			<noadd>true</noadd>
-		</options>
-		<!-- @todo this needs work, lotsa work -->
-		<preparsecode>
-			// Grab all the "other" users in the conversation
-			$result = convert_query("
-				SELECT DISTINCT(USER_ID)
-				FROM {$from_prefix}PRIVATE_MESSAGE_POSTS
-				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
-					AND USER_ID != " . $row['USER_ID'] . "");
-
-			$ins = array();
-			$ins_keys = array(
-				'id_pm',
-				'id_member',
-			);
-			while ($pmrec = convert_fetch_assoc($result))
-				$id_members[] = 
-				$ins[$pmrec['USER_ID']] = array(
-					'id_pm' => $row['POST_ID'],
-					'id_member' => $pmrec['USER_ID'],
-				);
-			convert_free_result($result);
-
-			// And try also with the PRIVATE_MESSAGE_USERS table
-			$result = convert_query("
-				SELECT DISTINCT(USER_ID)
-				FROM {$from_prefix}PRIVATE_MESSAGE_USERS
-				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
-					AND USER_ID != " . $row['USER_ID'] . "");
-
-			while ($pmrec = convert_fetch_assoc($result))
-				$ins[$pmrec['USER_ID']] = array(
-					'id_pm' => $row['POST_ID'],
-					'id_member' => $pmrec['USER_ID'],
-				);
-			convert_free_result($result);
-
-			convert_insert("pm_recipients", $ins_keys, $ins, 'ignore');
-		</preparsecode>
 		<query>
 			SELECT POST_ID, TOPIC_ID, USER_ID
 			FROM {$from_prefix}PRIVATE_MESSAGE_POSTS;

@@ -58,6 +58,8 @@ class mybb16 extends AbstractSourceImporter
 
 			$rows[] = $row;
 		}
+
+		return $rows;
 	}
 
 	public function preparsePolloptions($originalRows)

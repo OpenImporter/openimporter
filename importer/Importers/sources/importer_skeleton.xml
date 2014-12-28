@@ -225,7 +225,7 @@
 			from_name,
 			msgtime,
 			subject,
-			bodyk
+			body
 		</query>
 	</step>
 	<step id="pmrecipients">
