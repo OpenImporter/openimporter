@@ -126,12 +126,6 @@ class XmlProcessor
 		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
 		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
-		// any preparsing code? Loaded here to be used later.
-// 		$special_code = $this->getPreparsecode();
-
-		// create some handy shortcuts
-// 		$no_add = $this->shoudNotAdd($this->current_step->options);
-
 		while (true)
 		{
 			pastTime($substep);

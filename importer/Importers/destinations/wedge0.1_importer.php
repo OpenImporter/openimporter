@@ -309,7 +309,7 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 			$id_attach = $this->newIdAttach();
 			// @todo the name should come from step1_importer
 			$destination = $this->getAttachDir($row) . DIRECTORY_SEPARATOR . $id_attach . '_' . $file_hash . '.ext';
-			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename']
+			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename'];
 
 			copy_file($source, $destination);
 		}
