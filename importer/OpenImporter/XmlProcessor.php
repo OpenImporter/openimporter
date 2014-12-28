@@ -226,7 +226,7 @@ class XmlProcessor
 	 * @param string string string in which parameters are replaced
 	 * @return string
 	 */
-	public function fix_params($string)
+	protected function fix_params($string)
 	{
 		if (isset($_SESSION['import_parameters']))
 		{
@@ -239,6 +239,23 @@ class XmlProcessor
 		$string = strtr($string, array('{$from_prefix}' => $this->config->from_prefix, '{$to_prefix}' => $this->config->to_prefix));
 
 		return $string;
+	}
+
+	public function getCurrent($table)
+	{
+		$count = $this->fix_params($table);
+		$request = $this->db->query("
+			SELECT COUNT(*)
+			FROM $count", true);
+
+		$current = 0;
+		if (!empty($request))
+		{
+			list ($current) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
+		}
+
+		return $current;
 	}
 
 	/**

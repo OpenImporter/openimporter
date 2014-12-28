@@ -481,16 +481,7 @@ class Importer
 		{
 			if ($counts->detect)
 			{
-				$count = $xmlParser->fix_params((string) $counts->detect);
-				$request = $this->db->query("
-					SELECT COUNT(*)
-					FROM $count", true);
-
-				if (!empty($request))
-				{
-					list ($current) = $this->db->fetch_row($request);
-					$this->db->free_result($request);
-				}
+				$current = $xmlParser->getCurrent((string) $counts->detect);
 
 				$progress_counter = $progress_counter + $current;
 
