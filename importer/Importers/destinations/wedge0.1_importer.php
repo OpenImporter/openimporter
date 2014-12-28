@@ -286,15 +286,21 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	/**
 	 * From here on we have methods to verify code before inserting it into the db
 	 */
-	public function preparseMembers($row)
+	public function preparseMembers($originalRows)
 	{
-		// data field is used temporary to dertermine the type of avatar
-		if ($row['data'] != 'remote')
-			$row['avatar'] = '';
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			// avatartype field is used temporary to dertermine the type of avatar
+			if ($row['avatartype'] != 'remote')
+				$row['avatar'] = '';
 
-		$row['data'] = '';
+			unset($row['avatartype']);
 
-		return $row;
+			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
+		}
+
+		return $rows;
 	}
 
 	/**

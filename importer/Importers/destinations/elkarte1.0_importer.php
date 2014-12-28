@@ -219,6 +219,21 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 	/**
 	 * From here on we have methods to verify code before inserting it into the db
 	 */
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			// avatartype field is used temporary to dertermine the type of avatar
+			if ($row['avatartype'] != 'remote')
+				$row['avatar'] = '';
+
+			unset($row['avatartype']);
+
+			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
+		}
+	}
+
 	public function preparseAttachments($originalRows)
 	{
 		$rows = array();

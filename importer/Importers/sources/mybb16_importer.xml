@@ -20,7 +20,7 @@
 				SUBSTRING(buddylist, 1, 255) AS buddy_list, '' AS ignore_boards,
 				SUBSTRING(regip, 1, 255) AS member_ip, SUBSTRING(regip, 1, 255) AS member_ip2,
 				SUBSTRING(ignorelist, 1, 255) AS pm_ignore_list, avatar,
-				timeonline AS total_time_logged_in, birthday AS birthdate, avatartype AS data
+				timeonline AS total_time_logged_in, birthday AS birthdate, avatartype
 			FROM {$from_prefix}users;
 		</query>
 	</step>

@@ -222,10 +222,10 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		return $row;
 	}
 
-	protected function members($row, $special_code = null)
-	{
-		return $this->prepareRow($this->specialMembers($row), $special_code, $this->config->to_prefix . 'members');
-	}
+// 	protected function members($row, $special_code = null)
+// 	{
+// 		return $this->prepareRow($this->specialMembers($row), $special_code, $this->config->to_prefix . 'members');
+// 	}
 
 	public function doSpecialTable($special_table, $params = null)
 	{
@@ -1061,9 +1061,16 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			}
 		}
 
+		$cat_map = $this->fixBoards($cat_map, $child_map);
+
+		$this->fixInexistentCategories($cat_map);
+	}
+
+	protected function fixBoards($cat_map, $child_map)
+	{
+		$fixed_boards = array();
 		// The above id_parents and id_cats may all be wrong; we know id_parent = 0 is right.
 		$solid_parents = array(array(0, 0));
-		$fixed_boards = array();
 		while (!empty($solid_parents))
 		{
 			list ($parent, $level) = array_pop($solid_parents);
@@ -1089,7 +1096,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			$this->setBoardProperty(0, array('child_level' => 0, 'id_parent' => 0, 'child_level' => (int) $level), empty($fixed_boards) ? "1=1" : "id_board NOT IN (" . implode(', ', $fixed_boards) . ")");
 		}
 
-		$this->fixInexistentCategories($cat_map);
+		return $cat_map;
 	}
 
 	/**
