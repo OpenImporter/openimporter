@@ -89,5 +89,9 @@ abstract class AbstractSourceImporter
 			else
 				return call_user_func_array(array($this, $method), $params);
 		}
+		else
+		{
+			return $params;
+		}
 	}
 }

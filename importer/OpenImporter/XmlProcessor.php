@@ -322,11 +322,14 @@ class XmlProcessor
 
 	protected function doCode()
 	{
-		$row = $this->config->source->callMethod('code' . ucFirst($this->current_step['id']));
+		$id = ucFirst($this->current_step['id']);
+
+		$row = $this->config->source->callMethod('code' . $id);
 
 		if (!empty($row))
 		{
-			return $this->config->destination->callMethod('code' . ucFirst($this->current_step['id']), array($row));
+			$row = $this->config->destination->callMethod('code' . $id, array($row));
+			return $this->config->destination->callMethod('preparse' . $id, array($row));
 		}
 
 		return false;
