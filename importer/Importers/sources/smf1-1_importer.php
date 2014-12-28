@@ -70,13 +70,14 @@ class SMF1_1 extends AbstractSourceImporter
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 
-			//  @todo this is SMF 1.1, it should be useless to unserialize
-			$this->smf_attach_folders = @unserialize($smf_attachments_dir);
-
-			if (!is_array($this->smf_attach_folders))
-				$this->smf_attach_folders = array(1 => $smf_attachments_dir);
+			$this->smf_attach_folders = $smf_attachments_dir;
 		}
 
+		return $this->smf_attach_folders;
+	}
+
+	public function getAttachDir()
+	{
 		return $this->smf_attach_folders;
 	}
 
@@ -95,7 +96,7 @@ class SMF1_1 extends AbstractSourceImporter
 			$row['fileext'] = $ext;
 			$row['mime_type'] = '';
 			$row['id_folder'] = 0;
-			$row['full_path'] = $this->getAttachmentDirs();
+			$row['full_path'] = $this->getAttachDir();
 
 			$rows[] = $row;
 		}

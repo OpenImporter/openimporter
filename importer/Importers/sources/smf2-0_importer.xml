@@ -217,9 +217,6 @@
 	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}attachments</detect>
-		<preparsecode>
-			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
-		</preparsecode>
 		<query>
 			SELECT
 				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,

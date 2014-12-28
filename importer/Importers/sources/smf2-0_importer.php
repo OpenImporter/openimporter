@@ -155,6 +155,22 @@ class SMF2_0 extends AbstractSourceImporter
 		$this->_is_nibogo_like = false;
 		return $this->_is_nibogo_like;
 	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseAttachments($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['full_path'] = $this->getAttachmentDirs();
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
 }
 
 function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
