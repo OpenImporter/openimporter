@@ -126,7 +126,7 @@ class XmlProcessor
 		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
 		// any preparsing code? Loaded here to be used later.
-		$special_code = $this->getPreparsecode();
+// 		$special_code = $this->getPreparsecode();
 
 		// create some handy shortcuts
 		$no_add = $this->shoudNotAdd($this->current_step->options);
@@ -322,21 +322,11 @@ class XmlProcessor
 
 	protected function doCode()
 	{
-		if (isset($this->current_step->code))
+		$row = $this->config->source->callMethod('code' . ucFirst($this->current_step['id']));
+
+		if (!empty($row))
 		{
-			// These are temporarily needed to support the current xml importers
-			// a.k.a. There is more important stuff to do.
-			// a.k.a. I'm too lazy to change all of them now. :P
-			// @todo remove
-			// Both used in eval'ed code
-			$to_prefix = $this->config->to_prefix;
-			$db = $this->db;
-
-			// execute our code block
-			$special_code = $this->fix_params((string) $this->current_step->code);
-			eval($special_code);
-
-			return true;
+			return $this->config->destination->callMethod('code' . ucFirst($this->current_step['id']), array($row));
 		}
 
 		return false;
