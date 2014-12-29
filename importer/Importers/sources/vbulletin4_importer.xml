@@ -7,9 +7,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}user</detect>
-		<preparsecode>
-			$row['signature'] = vb4_replace_bbc($row['signature']);
-		</preparsecode>
 		<query>
 			SELECT
 				u.userid AS id_member, SUBSTRING(u.username, 1, 80) AS member_name,
@@ -134,9 +131,6 @@
 			<slashes>true</slashes>
 			<limit>100</limit>
 		</options>
-		<preparsecode>
-			$row['body'] = vb4_replace_bbc($row['body']);
-		</preparsecode>
 		<query>
 			SELECT
 				p.postid AS id_msg, p.threadid AS id_topic, p.dateline AS poster_time,
@@ -171,26 +165,6 @@
 	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}poll</detect>
-		<options>
-			<no_add>true</no_add>
-		</options>
-		<preparsecode><![CDATA[
-			$keys = array('id_poll', 'id_choice', 'label', 'votes');
-
-			$options = explode('|||', $row['options']);
-			$votes = explode('|||', $row['votes']);
-
-			$id_poll = $row['id_poll'];
-			for ($i = 0, $n = count($options); $i < $n; $i++)
-			{
-				$rows[] = array(
-					'id_poll' => $id_poll,
-					'id_choice' => ($i + 1),
-					'label' => substr(addslashes($options[$i]), 1, 255),
-					'votes' => (is_numeric($votes[$i]) ? $votes[$i] : 0),
-				);
-			}
-		]]></preparsecode>
 		<query>
 			SELECT pollid AS id_poll, options, votes
 			FROM {$from_prefix}poll;
@@ -207,9 +181,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}pm</detect>
-		<preparsecode>
-			$row['body'] = vb4_replace_bbc($row['body']);
-		</preparsecode>
 		<query>
 			SELECT
 				pm.pmid AS id_pm, pmt.fromuserid AS id_member_from, pmt.dateline AS msgtime,

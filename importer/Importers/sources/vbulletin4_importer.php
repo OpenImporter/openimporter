@@ -39,6 +39,73 @@ class vBulletin_4 extends AbstractSourceImporter
 	{
 		return 'user';
 	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['signature'] = vb4_replace_bbc($row['signature']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = vb4_replace_bbc($row['body']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparsePolloptions($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$keys = array('id_poll', 'id_choice', 'label', 'votes');
+
+			$options = explode('|||', $row['options']);
+			$votes = explode('|||', $row['votes']);
+
+			$id_poll = $row['id_poll'];
+			for ($i = 0, $n = count($options); $i < $n; $i++)
+			{
+				$rows[] = array(
+					'id_poll' => $id_poll,
+					'id_choice' => ($i + 1),
+					'label' => substr(addslashes($options[$i]), 1, 255),
+					'votes' => (is_numeric($votes[$i]) ? $votes[$i] : 0),
+				);
+			}
+		}
+
+		return $rows;
+	}
+
+	public function preparsePm($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = vb4_replace_bbc($row['body']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
 }
 
 /**
