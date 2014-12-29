@@ -211,13 +211,7 @@ class Importer
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
 		$form->addOption($this->config->destination->getFormFields($form_path));
 
-		$class = (string) $this->xml->general->className;
-		$settings = new $class();
-
-		if (!isset($this->config->path_from))
-			$this->config->path_from = BASEDIR;
-
-		$path_from = $settings->loadSettings($this->config->path_from, true);
+		$path_from = $this->hasSettingFile();
 		if ($path_from !== null)
 		{
 			$form->addOption(array(
@@ -260,6 +254,24 @@ class Importer
 				'type' => 'steps',
 			));
 		}
+	}
+
+	/**
+	 * Verifies that a configuration file exists.
+	 *
+	 * @return boolean|null
+	 */
+	protected function hasSettingFile()
+	{
+		$class = (string) $this->xml->general->className;
+		$settings = new $class();
+
+		if (!isset($this->config->path_from))
+			$this->config->path_from = BASEDIR;
+
+		$path_from = $settings->loadSettings($this->config->path_from, true);
+
+		return $path_from;
 	}
 
 	/**
