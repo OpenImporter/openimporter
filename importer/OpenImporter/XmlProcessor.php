@@ -88,26 +88,36 @@ class XmlProcessor
 		// pre sql queries first!!
 		$this->doPresqlStep($id, $substep);
 
+		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
+		$from_code = $this->doCode();
+
 		// Codeblock? Then no query.
-		if ($this->doCode())
+		if (!empty($from_code))
 		{
-			$this->advanceSubstep($substep);
-			return;
+			$rows = $this->config->destination->callMethod('preparse' . $id, array($from_code));
+			$keys = array_keys($rows[0]);
+
+			$this->insertRows($rows, $keys, $special_table);
 		}
-
-		// sql block?
-		// @todo $_GET
-		if ($substep >= $_GET['substep'] && isset($this->current_step->query))
+		else
 		{
-			$this->doSql($substep);
+			// sql block?
+			// @todo $_GET
+			if ($substep >= $_GET['substep'] && isset($this->current_step->query))
+			{
+				$this->doSql($substep, $special_table);
 
-			$_REQUEST['start'] = 0;
+				$_REQUEST['start'] = 0;
+			}
 		}
 
 		$this->advanceSubstep($substep);
 	}
 
-	protected function doSql($substep)
+	/**
+	 * @todo one day, doSql will just take care of the current inner loop, while the outer will be somewhere else
+	 */
+	protected function doSql($substep, $special_table)
 	{
 		// These are temporarily needed to support the current xml importers
 		// a.k.a. There is more important stuff to do.
@@ -123,7 +133,6 @@ class XmlProcessor
 
 		$this->doDetect($substep);
 
-		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
 		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
 		while (true)
@@ -321,12 +330,12 @@ class XmlProcessor
 	{
 		$id = ucFirst($this->current_step['id']);
 
-		$row = $this->config->source->callMethod('code' . $id);
+		$rows = $this->config->source->callMethod('code' . $id);
 
-		if (!empty($row))
+		if (!empty($rows))
 		{
-			$row = $this->config->destination->callMethod('code' . $id, array($row));
-			return $this->config->destination->callMethod('preparse' . $id, array($row));
+			// I'm not sure his symmetry is really, really necessary.
+			return $this->config->destination->callMethod('code' . $id, $rows);
 		}
 
 		return false;

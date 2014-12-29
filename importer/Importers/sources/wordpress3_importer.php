@@ -63,4 +63,14 @@ class WP3 extends AbstractSourceImporter
 
 		return $rows;
 	}
+
+	public function codeCategories()
+	{
+		return array(
+			'id_cat' => 1,
+			'name' => 'General Category',
+			'cat_order' => 0,
+			'can_collapse' => 1,
+		);
+	}
 }

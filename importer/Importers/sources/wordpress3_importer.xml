@@ -24,12 +24,6 @@
 	<step id="categories">
 		<title>Creating a default category</title>
 		<detect>{$from_prefix}term_taxonomy</detect>
-		<code>
-			$db->query("
-				INSERT INTO {$to_prefix}categories
-					(id_cat, cat_order, name, can_collapse)
-				VALUES(1, 0, 'General Category', 1)");
-		</code>
 	</step>
 	<step id="boards">
 		<title>Importing wordpress categories</title>
