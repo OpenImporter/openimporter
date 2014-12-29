@@ -156,7 +156,7 @@ class Template
 			function validateField(string)
 			{
 				var target = document.getElementById(string);
-				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&source=', !empty($this->response->script['source']) ? addslashes($this->response->script['source']) : '\'\'', '&destination=', !empty($this->response->script['destination']) ? addslashes($this->response->script['destination']) : '\'\'', '";
+				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&source=', $this->response->source, '&destination=', $this->response->destination, '";
 				var ajax = new AJAXCall(url, validateCallback, string);
 				ajax.doGet();
 			}
@@ -399,7 +399,7 @@ class Template
 	</head>
 	<body>
 		<div id="header">
-			<h1>', isset($this->response->importer->xml->general->{'name'}) ? $this->response->importer->xml->general->{'name'} . ' to ' : '', 'OpenImporter</h1>
+			<h1>', $this->response->page_title, '</h1>
 		</div>
 		<div id="main">';
 
@@ -424,11 +424,14 @@ class Template
 					<ul id="source">';
 
 		foreach ($destination_names as $key => $value)
+		{
+			$id = preg_replace('~[^\w\d]~', '_', $key);
 			echo '
 						<li>
-							<input class="input_select" data-type="destination" type="radio" value="', $key, '" id="destination_', preg_replace('~[^\w\d]~', '_', $key), '" name="destination" />
-							<label for="destination_', preg_replace('~[^\w\d]~', '_', $key), '">', $value, '</label>
+							<input class="input_select" data-type="destination" type="radio" value="', $key, '" id="destination_', $id, '" name="destination" />
+							<label for="destination_', $id, '">', $value, '</label>
 						</li>';
+		}
 
 		echo '
 					</ul>
@@ -448,10 +451,11 @@ class Template
 			// Let's loop and output all the found scripts.
 			foreach ($scripts as $key => $script)
 			{
+				$id = preg_replace('~[^\w\d]~', '_', $key);
 				echo '
 						<li>
-							<input class="input_select" data-type="source" type="radio" value="', $script['path'], '" id="source_', preg_replace('~[^\w\d]~', '_', $key), '" name="source" />
-							<label for="source_', preg_replace('~[^\w\d]~', '_', $key), '">', $script['name'], '</label>
+							<input class="input_select" data-type="source" type="radio" value="', $script['path'], '" id="source_', $id, '" name="source" />
+							<label for="source_', $id, '">', $script['name'], '</label>
 						</li>';
 			}
 
@@ -469,7 +473,7 @@ class Template
 			echo '
 				<p>', $this->lng->get('not_found'), '</p>
 				<p>', $this->lng->get('not_found_download'), '</p>
-				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('try_again'), '</a>';
+				<a href="', $this->response->scripturl, '?import_script=">', $this->lng->get('try_again'), '</a>';
 
 		echo '
 			</div>

@@ -272,8 +272,11 @@ class ImportManager
 		else
 			$this->response->page_title = 'OpenImporter';
 
+		$this->response->source = !empty($this->response->script['source']) ? addslashes($this->response->script['source']) : '\'\'';
+		$this->response->destination = !empty($this->response->script['destination']) ? addslashes($this->response->script['destination']) : '\'\'';
 // 		$this->response->from = $this->importer->settings : null
 		$this->response->script = $this->config->script;
+		$this->response->scripturl = $_SERVER['PHP_SELF'];
 // 		$this->response->
 // 		$this->response->
 // 		$this->response->
