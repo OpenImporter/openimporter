@@ -101,7 +101,7 @@ function get_files_recursive($base)
 			continue;
 
 		if (is_dir($base . $file))
-			$files = array_merge($files, get_files_recursive($base . $file);
+			$files = array_merge($files, get_files_recursive($base . $file));
 		else
 			$files[] = $file;
 	}
