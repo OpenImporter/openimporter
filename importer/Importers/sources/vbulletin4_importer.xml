@@ -63,47 +63,6 @@
 			WHERE parentid != -1;
 		</query>
 	</step>
-	<step>
-		<!-- @todo convert to a method after boards -->
-		<title>Assigning Boards to Categories</title>
-		<detect>{$from_prefix}forum</detect>
-		<code>
-			$request = $db->query("
-				SELECT forumid AS id_cat
-				FROM {$from_prefix}forum
-				WHERE parentid = '-1'");
-
-			$cats = array();
-			while ($row = $db->fetch_assoc($request))
-				$cats[$row['id_cat']] = $row['id_cat'];
-			$db->free_result($request);
-
-			// Get the boards now
-			$request = $db->query("
-				SELECT forumid AS id_board, parentid AS id_cat
-				FROM {$from_prefix}forum
-				WHERE parentid != '-1'");
-
-			while ($row = $db->fetch_assoc($request))
-			{
-				foreach ($cats as $key => $value)
-				{
-					if ($key == $row['id_cat'])	
-						$db->query("
-							UPDATE {$to_prefix}boards
-							SET id_cat = '$key'
-							WHERE id_board = '$row[id_board]'");
-				}
-			}
-			$db->free_result($request);
-
-			// id_parent is 0 when the id_cat and id_parent are equal.
-			$db->query("
-				UPDATE {$to_prefix}boards
-				SET id_parent = 0
-				WHERE id_parent = id_cat");
-		</code>
-	</step>
 	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}thread</detect>

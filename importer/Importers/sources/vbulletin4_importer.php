@@ -56,6 +56,36 @@ class vBulletin_4 extends AbstractSourceImporter
 		return $rows;
 	}
 
+	public function preparseBoards($originalRows)
+	{
+		$rows = array();
+		$request = $this->db->query("
+			SELECT forumid AS id_cat
+			FROM {$this->config->from_prefix}forum
+			WHERE parentid = -1");
+
+		$cats = array();
+		while ($row = $this->db->fetch_assoc($request))
+			$cats[$row['id_cat']] = $row['id_cat'];
+		$this->db->free_result($request);
+
+		foreach ($originalRows as $row)
+		{
+			foreach ($cats as $key => $value)
+			{
+				if ($key == $row['id_cat'])
+					$row['id_cat'] = $key;
+
+				if ($row['id_cat'] == $row['id_parent'])
+					$row['id_parent'] = 0;
+			}
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
 	public function preparseMessages($originalRows)
 	{
 		$rows = array();
