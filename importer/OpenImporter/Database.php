@@ -56,6 +56,9 @@ class Database
 	 */
 	public function query($string, $return_error = false)
 	{
+		if (substr($string, -1, 1) !== ';')
+			$string .= ';';
+
 		$result = @mysqli_query($this->con, $string);
 
 		if ($result !== false || $return_error)
