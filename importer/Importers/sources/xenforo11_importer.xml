@@ -11,20 +11,6 @@
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}user</detect>
-		<preparsecode>
-			$pass = unserialize($row['tmp']);
-
-			if (isset($pass['hash']))
-				$row['passwd'] = $pass['hash'];
-			else
-				$row['passwd'] = sha1(md5(mktime()));
-	
-			if	(isset($pass['salt']))
-				$row['password_salt'] = $pass['salt'];
-			else
-				$row['password_salt'] = '';
-			unset($row['tmp']);
-		</preparsecode>
 		<query>
 			SELECT
 				m.user_id AS id_member, SUBSTRING(m.username, 1, 80) AS member_name,
@@ -63,18 +49,6 @@
 		<options>
 			<slashes>true</slashes>
 		</options>
-		<preparsecode>
-		$request = $db->query("
-			SELECT 
-				thread_id, last_post_id
-			FROM {$from_prefix}thread
-			WHERE node_id  = $row[id_board]
-			ORDER BY thread_id DESC
-			LIMIT 1");
-
-			list($tmp, $row['id_last_msg']) = $db->fetch_row($request);
-			$db->free_result($request);
-		</preparsecode>
 		<query>
 			SELECT
 				node_id AS id_board, parent_node_id AS id_cat, display_order AS board_order,
