@@ -62,6 +62,27 @@ class wbb3_1 extends AbstractSourceImporter
 		$db->free_result($request);
 	}
 
+	protected function fixUserGroupId($id_group)
+	{
+		$request = $this->db->query("
+			SELECT groupID
+			FROM {$this->config->from_prefix}{$wcf_prefix}user_to_groups
+			WHERE userID = $row[id_member]");
+
+		while ($groups = $this->db->fetch_assoc($request))
+		{
+			if (in_array('4', $groups))
+				$id_group = '1';
+			elseif (in_array('5', $groups))
+				$id_group = '2';
+			elseif (in_array('6', $groups))
+				$id_group = '2';
+		}
+		$this->db->free_result($request);
+
+		return $id_group;
+	}
+
 	/**
 	 * From here on, all the methods are needed helper for the conversion
 	 */
@@ -75,21 +96,7 @@ class wbb3_1 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$request = $this->db->query("
-				SELECT groupID
-				FROM {$this->config->from_prefix}{$wcf_prefix}user_to_groups
-				WHERE userID = $row[id_member]");
-
-			while ($groups = $this->db->fetch_assoc($request))
-			{
-				if (in_array('4', $groups))
-					$row['id_group'] = '1';
-				elseif (in_array('5', $groups))
-					$row['id_group'] = '2';
-				elseif (in_array('6', $groups))
-					$row['id_group'] = '2';
-			}
-			$this->db->free_result($request);
+			$row['id_group'] = $this->fixUserGroupId($row['id_group']);
 
 			$row['signature'] = wbb_replace_bbc($row['signature']);
 
