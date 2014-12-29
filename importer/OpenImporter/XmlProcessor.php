@@ -96,11 +96,7 @@ class XmlProcessor
 		{
 			$rows = $this->config->destination->callMethod('preparse' . $id, $from_code);
 
-			if (!empty($rows))
-			{
-				$keys = array_keys($rows[0]);
-				$this->insertRows($rows, $keys, $special_table);
-			}
+			$this->insertRows($rows, $special_table);
 		}
 		else
 		{
@@ -163,11 +159,7 @@ class XmlProcessor
 				}
 			}
 
-			if (!empty($rows))
-			{
-				$keys = array_keys($rows[0]);
-				$this->insertRows($rows, $keys, $special_table);
-			}
+			$this->insertRows($rows, $special_table);
 
 			// @todo $_REQUEST
 			$_REQUEST['start'] += $special_limit;
@@ -188,11 +180,12 @@ class XmlProcessor
 		return $current_data;
 	}
 
-	protected function insertRows($rows, $keys, $special_table)
+	protected function insertRows($rows, $special_table)
 	{
 		if (empty($rows))
 			return;
 
+		$keys = array_keys($rows[0]);
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
 
