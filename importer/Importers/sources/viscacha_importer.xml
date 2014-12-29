@@ -50,15 +50,6 @@
 		<options>
 			<ignore>true</ignore>
 		</options>
-		<preparsecode>
-			$row['id_member_started'] = (int) $row['id_member_started'];
-			$row['id_member_updated'] = (int) $row['id_member_updated'];
-
-			if(!empty($row['id_poll']))
-				$row['id_poll'] = $row['id_topic'];
-			else
-				$row['id_poll'] = 0;
-		</preparsecode>
 		<query>
 			SELECT
 				t.id AS id_topic, t.board AS id_board, 
@@ -80,35 +71,6 @@
 			<slashes>true</slashes>
 			<limit>100</limit>
 		</options>
-		<preparsecode>
-			$row['body'] = preg_replace(
-				array(
-					'~\[list=ol\]~is',
-					'~\[ot\](.+?)\[\/ot\]~is',
-				),
-				array(
-					'[list type=lower-alpha]',
-					'$1',
-				),
-				trim($row['body'])
-			);
-			if (!empty($row['modified_name']))
-			{
-				$editdata = explode("\t", $row['modified_name']);
-				$row['modified_name'] = $editdata[0];
-				$row['modified_time'] = $editdata[1];
-			}
-			else 
-				$row['modified_time'] = 0;
-
-			$row['id_member'] = (int) $row['id_member'];
-
-			if(empty($row['poster_name']))
-				$row['poster_name'] = 'Guest';
-
-			if(empty($row['poster_email']))
-				$row['poster_email'] = '';
-		</preparsecode>
 		<query>
 			SELECT
 				p.id AS id_msg, p.topic_id AS id_topic,	p.board  AS id_board, 
@@ -133,22 +95,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}pm</detect>
-		<options>
-			<slashes>true</slashes>
-		</options>
-		<preparsecode>
-			$row['body'] = preg_replace(
-				array(
-					'~\[list=ol\]~is',
-					'~\[ot\](.+?)\[\/ot\]~is',
-				),
-				array(
-					'[list type=lower-alpha]',
-					'$1',
-				),
-				trim($row['body'])
-			);
-		</preparsecode>
 		<query>
 			SELECT
 				pm.id AS id_pm, pm.pm_from AS id_member_from, pm.date AS msgtime,
@@ -174,10 +120,6 @@
 	<step id="polls">
 		<title>Importing polls</title>
 		<detect>{$from_prefix}topics</detect>
-		<preparsecode>
-			if (!is_int($row['id_member']))
-				$row['id_member'] = 0;
-		</preparsecode>
 		<query>
 			SELECT
 				t.id AS id_poll, SUBSTRING(t.vquestion , 1, 255) AS question,
@@ -192,16 +134,6 @@
 	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}vote</detect>
-		<preparsecode>
-			$request = $db->query("
-				SELECT count(*)
-				FROM {$from_prefix}votes
-				WHERE aid = " . $row['id_choice']);
-
-			list ($count) = $db->fetch_row($request);
-			$db->free_result($request);
-			$row['votes'] = $count;
-		</preparsecode>
 		<query>
 			SELECT 
 				tid AS id_poll, id AS id_choice, SUBSTRING(answer, 1, 255) AS label, 0 AS votes
@@ -224,31 +156,6 @@
 	<step id="attachments">
 		<title>Importing attachments</title>
 		<detect>{$from_prefix}uploads</detect>
-		<options>
-			<no_add>true</no_add>
-		</options>
-		<preparsecode>
-			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_msg', 'downloads', 'width', 'height');
-			$file_hash = getAttachmentFilename($row['filename'], $id_attach, null, true);
-			$physical_filename = $id_attach . '_' . $file_hash;
-
-			if (strlen($physical_filename) > 255)
-				return;
-
-			if (copy_file($_POST['path_from'] . '/uploads/topics/' . $row['filename'] , $attachmentUploadDir . '/' . $physical_filename))
-			{
-				$rows[] = array(
-					'id_attach' => $id_attach,
-					'size' => filesize($attachmentUploadDir . '/' . $physical_filename),
-					'filename' => $row['filename'],
-					'file_hash' => $file_hash,
-					'id_msg' => $row['id_msg'],
-					'downloads' => $row['downloads'],
-				);
-
-				$id_attach++;
-			}
-		</preparsecode>
 		<query>
 			SELECT
 				id, tid AS id_msg, hits AS downloads, file AS filename
@@ -258,34 +165,6 @@
 	<step id="avatars">
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}user</detect>
-		<options>
-			<no_add>true</no_add>
-		</options>
-		<preparsecode>
-			$file = explode('/', $row['filenamepath']);
-			$row['filename'] = end($file);
-			
-			$source = $_POST['path_from'] . '/' . $row['filenamepath'];
-			$destination = $attachmentUploadDir . '/' . $physical_filename;
-
-			$file_hash = getAttachmentFilename($row['filename'], $id_attach, null, true);
-			$physical_filename = $id_attach . '_' . $file_hash;
-
-			if (strlen($physical_filename) > 255)
-				return;
-
-			if (copy_file($source, $destination))
-			{
-				$rows[] = array(
-					'id_attach' => $id_attach,
-					'size' => filesize($attachmentUploadDir . '/' . $physical_filename),
-					'filename' => $row['filename'],
-					'file_hash' => $file_hash,
-					'id_member' => $row['id_member'],
-				);
-				$id_attach++;
-			}
-		</preparsecode>
 		<query>
 			SELECT
 				pic AS filenamepath, id AS id_member

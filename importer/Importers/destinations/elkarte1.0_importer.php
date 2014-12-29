@@ -245,6 +245,9 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 			$destination = $this->getAttachDir($row) . DIRECTORY_SEPARATOR . $id_attach . '_' . $file_hash . '.elk';
 			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename'];
 
+			// Ensure the id_attach is the one we want... I think.
+			$row['id_attach'] = $id_attach;
+
 			copy_file($source, $destination);
 			$rows[] = $row;
 		}
