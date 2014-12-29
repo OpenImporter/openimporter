@@ -80,7 +80,7 @@ class XenForo1_1 extends AbstractSourceImporter
 				ORDER BY thread_id DESC
 				LIMIT 1");
 
-				list($tmp, $row['id_last_msg']) = $this->db->fetch_row($request);
+				list(, $row['id_last_msg']) = $this->db->fetch_row($request);
 				$this->db->free_result($request);
 
 			$rows[] = $row;

@@ -46,7 +46,7 @@ class wbb3_1 extends AbstractSourceImporter
 	{
 		// @todo I'm not sure this goes to global.
 		// in any case it should be converted in to a property of config->source
-		global $wcf_prefix:
+		global $wcf_prefix;
 
 		if (!empty($this->userOptions))
 			return;
@@ -107,7 +107,7 @@ class wbb3_1 extends AbstractSourceImporter
 			/* now we can fix some profile options*/	
 			$row['birthdate'] = $options['userOption'. $this->userOptions['birthday']];
 			$row['show_online'] = !empty($options['userOption'. $this->userOptions['invisible']]) ? (int) $options['userOption'. $this->userOptions['invisible']] : 0;
-			$row['hide_email'] = (int)$options['userOption'. $this->userOptions['hideEmailAddress']];
+			$row['hide_email'] = (int) $options['userOption'. $this->userOptions['hideEmailAddress']];
 			$row['location'] = !empty($options['userOption'. $this->userOptions['location']]) ? $options['userOption'. $this->userOptions['location']] : '';
 			$row['gender'] = !empty($options['userOption'. $this->userOptions['gender']])? $options['userOption'. $this->userOptions['gender']] : 0;
 			$row['website_title'] = $options['userOption'. $this->userOptions['homepage']];

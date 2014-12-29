@@ -104,8 +104,6 @@ class vBulletin_4 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$keys = array('id_poll', 'id_choice', 'label', 'votes');
-
 			$options = explode('|||', $row['options']);
 			$votes = explode('|||', $row['votes']);
 
