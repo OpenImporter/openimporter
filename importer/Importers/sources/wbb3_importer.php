@@ -69,7 +69,7 @@ class wbb3_1 extends AbstractSourceImporter
 	{
 		// @todo I'm not sure this goes to global.
 		// in any case it should be converted in to a property of config->source
-		global $wcf_prefix:
+		global $wcf_prefix;
 
 		$this->fetchUserOptions();
 		$rows = array();
