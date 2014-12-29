@@ -1,3 +1,8 @@
+Messages import is broken
+The destination database is used to keep track of the "topics" (i.e. taxonomy)
+in this version of the exporter it is not acceptable to query the "destination" database.
+Workaround needed.
+
 <?xml version="1.0"?>
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>

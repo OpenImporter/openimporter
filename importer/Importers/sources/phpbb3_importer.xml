@@ -1,3 +1,9 @@
+Members import is broken
+In the original importer the membergroups were converted first adding
+a "phpbb " prefix and using them later.
+Here the "pre-work" is missing and is not acceptable to query the "destination"
+database fromo here in this new configuration.
+
 <?xml version="1.0"?>
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>

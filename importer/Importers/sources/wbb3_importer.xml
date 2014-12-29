@@ -1,3 +1,8 @@
+Poll options import is broken
+In the original importer a new column (old_choice) was created in the
+destination database. This is not acceptable in this config,
+so we need a workaround.
+
 <?xml version="1.0"?>
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
@@ -121,7 +126,7 @@
 	</step>
 	<step id="pollvotes">
 		<title>Importing poll votes</title>
-		// @todo verify table, it may be {$from_prefix}{$wcf_prefix}poll
+		<!-- @todo this is broken -->
 		<detect>{$from_prefix}{$wcf_prefix}poll_option_vote</detect>
 		<query>
 			SELECT
