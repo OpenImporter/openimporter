@@ -99,12 +99,10 @@ class wbb3_1 extends AbstractSourceImporter
 				FROM {$this->config->from_prefix}{$wcf_prefix}user_option_value
 				WHERE userID = $row[id_member]");
 	
-			while ($userdata = $this->db->fetch_assoc($request))
-				$options = $userdata;
-
+			$options = $this->db->fetch_assoc($request);
 			$this->db->free_result($request);
 
-			/* now we can fix some profile options*/	
+			/* now we can fix some profile options*/
 			$row['birthdate'] = $options['userOption'. $this->userOptions['birthday']];
 			$row['show_online'] = !empty($options['userOption'. $this->userOptions['invisible']]) ? (int) $options['userOption'. $this->userOptions['invisible']] : 0;
 			$row['hide_email'] = (int) $options['userOption'. $this->userOptions['hideEmailAddress']];

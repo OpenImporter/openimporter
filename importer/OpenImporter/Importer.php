@@ -459,7 +459,7 @@ class Importer
 
 	/**
 	 * Looks at the importer and returns the steps that it's able to make.
-	 * @return int
+	 * @return mixed[]
 	 */
 	protected function _find_steps()
 	{
