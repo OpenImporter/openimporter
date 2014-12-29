@@ -94,7 +94,7 @@ class XmlProcessor
 		// Codeblock? Then no query.
 		if (!empty($from_code))
 		{
-			$rows = $this->config->destination->callMethod('preparse' . $id, array($from_code));
+			$rows = $this->config->destination->callMethod('preparse' . $id, $from_code);
 			$keys = array_keys($rows[0]);
 
 			$this->insertRows($rows, $keys, $special_table);
@@ -150,9 +150,9 @@ class XmlProcessor
 			while ($row = $this->db->fetch_assoc($special_result))
 			{
 				$newrow = array($row);
-				$newrow = $this->config->source->callMethod('preparse' . $id, array($newrow));
+				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
 				// @todo maybe consider adding a check to ensure all the keys expected are present (see skeleton)
-				$newrow = $this->config->destination->callMethod('preparse' . $id, array($newrow));
+				$newrow = $this->config->destination->callMethod('preparse' . $id, $newrow);
 
 				if (!empty($newrow))
 				{
