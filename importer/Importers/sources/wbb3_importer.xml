@@ -13,65 +13,10 @@
 		<!-- @todo move to a method? -->
 		<title>Analysing WCF options</title>
 		<detect>{$from_prefix}{$wbb_prefix}user</detect>
-		<code>
-			global $userOptions;
-			$userOptions = array();
-			$request = $db->query("
-				SELECT optionName, optionID
-				FROM{$from_prefix}{$wcf_prefix}user_option");
-
-			while ($wbbOpt = $db->fetch_assoc($request))
-				$userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
-
-			store_global('userOptions',$userOptions);
-			$db->free_result($request);
-		</code>
 	</step>
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>
 		<detect>{$from_prefix}{$wbb_prefix}user</detect>
-		<preparsecode>
-			$request = $db->query("
-				SELECT groupID
-				FROM {$from_prefix}{$wcf_prefix}user_to_groups
-				WHERE userID = $row[id_member]");
-
-			while ($groups = $db->fetch_assoc($request))
-			{
-				if (in_array('4', $groups))
-					$row['id_group'] = '1';
-				elseif (in_array('5', $groups))
-					$row['id_group'] = '2';
-				elseif (in_array('6', $groups))
-					$row['id_group'] = '2';
-			}
-			$db->free_result($request);
-
-			$row['signature'] = wbb_replace_bbc($row['signature']);
-
-			/* load wbb userOptions */
-			$request = $db->query("
-				SELECT *
-				FROM {$from_prefix}{$wcf_prefix}user_option_value
-				WHERE userID = $row[id_member]");
-	
-			while ($userdata = $db->fetch_assoc($request))
-				$smfOptions = $userdata;
-	
-			$db->free_result($request);
-
-			/* now we can fix some profile options*/	
-			$row['birthdate'] = $smfOptions['userOption'. $userOptions['birthday']];
-			$row['show_online'] = !empty($smfOptions['userOption'. $userOptions['invisible']]) ? (int) $smfOptions['userOption'. $userOptions['invisible']] : 0;
-			$row['hide_email'] = (int)$smfOptions['userOption'. $userOptions['hideEmailAddress']];
-			$row['location'] = !empty($smfOptions['userOption'. $userOptions['location']]) ? $smfOptions['userOption'. $userOptions['location']] : '';
-			$row['gender'] = !empty($smfOptions['userOption'. $userOptions['gender']])? $smfOptions['userOption'. $userOptions['gender']] : 0;
-			$row['website_title'] = $smfOptions['userOption'. $userOptions['homepage']];
-			$row['website_url'] = $smfOptions['userOption'. $userOptions['homepage']];
-			/* fix invalid birthdates */
-			if(!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
-				$row['birthdate'] = '0001-01-01';
-		</preparsecode>
 		<query>
 			SELECT
 				u.userID AS id_member, SUBSTRING(u.username, 1, 80) AS member_name, '' AS buddy_list,
@@ -112,19 +57,6 @@
 	<step id="topics">
 		<title>Importing Topics</title>
 		<detect>{$from_prefix}{$wbb_prefix}thread</detect>
-		<preparsecode>
-			$request = $db->query("
-				SELECT
-					pollID
-				FROM {$from_prefix}{$wbb_prefix}post
-				WHERE threadID = $row[id_topic] AND pollID > 0
-				GROUP BY threadID");
-
-			list ($pollID) = $db->fetch_row($request);
-			$db->free_result($request);
-			if ($pollID > 0)
-				$row['id_poll'] = $pollID;
-		</preparsecode>
 		<query>
 			SELECT
 				t.threadID AS id_topic, t.isSticky AS is_sticky, t.boardID AS id_board,
@@ -146,9 +78,6 @@
 			<slashes>false</slashes>
 			<limit>100</limit>
 		</options>
-		<preparsecode>
-			$row['body'] = wbb_replace_bbc($row['body']);
-		</preparsecode>
 		<query>
 			SELECT
 				p.postID AS id_msg, p.threadID AS id_topic, t.boardID AS id_board,
@@ -182,14 +111,6 @@
 	<step id="polloptions">
 		<title>Importing poll choices</title>
 		<detect>{$from_prefix}{$wcf_prefix}poll</detect>
-		<preparsecode>
-			if (!isset($_SESSION['convert_last_poll']) || $_SESSION['convert_last_poll'] != $row['id_poll'])
-			{	
-				$_SESSION['convert_last_poll'] = $row['id_poll'];
-				$_SESSION['convert_last_choice'] = 0;
-			}
-			$row['id_choice'] = ++$_SESSION['convert_last_choice'];
-		</preparsecode>
 		<query>
 			SELECT
 				pollID AS id_poll, 1 AS id_choice, SUBSTRING(pollOption, 1, 255) AS label,
@@ -213,9 +134,6 @@
 	<step id="pm">
 		<title>Importing personal messages</title>
 		<detect>{$from_prefix}{$wcf_prefix}pm</detect>
-		<preparsecode>
-			$row['body'] = wbb_replace_bbc($row['body']);
-		</preparsecode>
 		<query>
 			SELECT
 				pmID AS id_pm, userID AS id_member_from, '0' AS deleted_by_sender,

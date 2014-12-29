@@ -10,6 +10,7 @@
 class wbb3_1 extends AbstractSourceImporter
 {
 	protected $setting_file = '/wc/config.inc.php';
+	protected $userOptions = array();
 
 	public function getName()
 	{
@@ -39,6 +40,153 @@ class wbb3_1 extends AbstractSourceImporter
 		global $wbb_prefix;
 
 		return $wbb_prefix . 'user';
+	}
+
+	protected function fetchUserOptions()
+	{
+		// @todo I'm not sure this goes to global.
+		// in any case it should be converted in to a property of config->source
+		global $wcf_prefix:
+
+		if (!empty($this->userOptions))
+			return;
+
+		$this->userOptions = array();
+		$request = $db->query("
+			SELECT optionName, optionID
+			FROM{$from_prefix}{$wcf_prefix}user_option");
+
+		while ($wbbOpt = $db->fetch_assoc($request))
+			$this->userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
+
+		$db->free_result($request);
+	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
+	{
+		// @todo I'm not sure this goes to global.
+		// in any case it should be converted in to a property of config->source
+		global $wcf_prefix:
+
+		$this->fetchUserOptions();
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$request = $this->db->query("
+				SELECT groupID
+				FROM {$this->config->from_prefix}{$wcf_prefix}user_to_groups
+				WHERE userID = $row[id_member]");
+
+			while ($groups = $this->db->fetch_assoc($request))
+			{
+				if (in_array('4', $groups))
+					$row['id_group'] = '1';
+				elseif (in_array('5', $groups))
+					$row['id_group'] = '2';
+				elseif (in_array('6', $groups))
+					$row['id_group'] = '2';
+			}
+			$this->db->free_result($request);
+
+			$row['signature'] = wbb_replace_bbc($row['signature']);
+
+			/* load wbb userOptions */
+			$request = $this->db->query("
+				SELECT *
+				FROM {$this->config->from_prefix}{$wcf_prefix}user_option_value
+				WHERE userID = $row[id_member]");
+	
+			while ($userdata = $this->db->fetch_assoc($request))
+				$options = $userdata;
+
+			$this->db->free_result($request);
+
+			/* now we can fix some profile options*/	
+			$row['birthdate'] = $options['userOption'. $this->userOptions['birthday']];
+			$row['show_online'] = !empty($options['userOption'. $this->userOptions['invisible']]) ? (int) $options['userOption'. $this->userOptions['invisible']] : 0;
+			$row['hide_email'] = (int)$options['userOption'. $this->userOptions['hideEmailAddress']];
+			$row['location'] = !empty($options['userOption'. $this->userOptions['location']]) ? $options['userOption'. $this->userOptions['location']] : '';
+			$row['gender'] = !empty($options['userOption'. $this->userOptions['gender']])? $options['userOption'. $this->userOptions['gender']] : 0;
+			$row['website_title'] = $options['userOption'. $this->userOptions['homepage']];
+			$row['website_url'] = $options['userOption'. $this->userOptions['homepage']];
+			/* fix invalid birthdates */
+			if(!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
+				$row['birthdate'] = '0001-01-01';
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseTopics($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$request = $db->query("
+				SELECT
+					pollID
+				FROM {$from_prefix}{$wbb_prefix}post
+				WHERE threadID = $row[id_topic] AND pollID > 0
+				GROUP BY threadID");
+
+			list ($pollID) = $db->fetch_row($request);
+			$db->free_result($request);
+			if ($pollID > 0)
+				$row['id_poll'] = $pollID;
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = wbb_replace_bbc($row['body']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparsePolloptions($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			if (!isset($_SESSION['convert_last_poll']) || $_SESSION['convert_last_poll'] != $row['id_poll'])
+			{
+				$_SESSION['convert_last_poll'] = $row['id_poll'];
+				$_SESSION['convert_last_choice'] = 0;
+			}
+			$row['id_choice'] = ++$_SESSION['convert_last_choice'];
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparsePm($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = wbb_replace_bbc($row['body']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 }
 
