@@ -6,10 +6,10 @@
 	</general>
 	<step id="settings">
 		<title>Importing settings</title>
+		<!-- @todo There is to define also some kind of values for common variable names -->
 		<query>
 			variable, // The name of the setting (varchar-255?)
-			value,    // The value of the setting (text)
-			position  // Settings may come from different sources, for example database or file (varchar-255?)
+			value     // The value of the setting (text)
 		</query>
 	</step>
 	<step id="members">
@@ -353,8 +353,9 @@
 	<step id="copysmiley">
 		<title>Copying smileys</title>
 		<query>
-			id_smiley,
-			source_file
+			full_path,
+			basedir,
+			filename
 		</code>
 	</step>
 	<step id="statistics">

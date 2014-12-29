@@ -286,6 +286,177 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	/**
 	 * From here on we have methods to verify code before inserting it into the db
 	 */
+	/**
+	 * @todo likely broken in Wedge (comes from SMF)
+	 */
+	public function preparseSettings($originalRows)
+	{
+		// @todo this list needs review
+		$do_import = array(
+			'news',
+			'compactTopicPagesContiguous',
+			'compactTopicPagesEnable',
+			'enablePinnedTopics',
+			'todayMod',
+			'enablePreviousNext',
+			'pollMode',
+			'enableVBStyleLogin',
+			'enableCompressedOutput',
+			'attachmentSizeLimit',
+			'attachmentPostLimit',
+			'attachmentNumPerPostLimit',
+			'attachmentDirSizeLimit',
+			'attachmentExtensions',
+			'attachmentCheckExtensions',
+			'attachmentShowImages',
+			'attachmentEnable',
+			'attachmentEncryptFilenames',
+			'attachmentThumbnails',
+			'attachmentThumbWidth',
+			'attachmentThumbHeight',
+			'censorIgnoreCase',
+			'mostOnline',
+			'mostOnlineToday',
+			'mostDate',
+			'allow_disableAnnounce',
+			'trackStats',
+			'userLanguage',
+			'titlesEnable',
+			'topicSummaryPosts',
+			'enableErrorLogging',
+			'max_image_width',
+			'max_image_height',
+			'onlineEnable',
+			'smtp_host',
+			'smtp_port',
+			'smtp_username',
+			'smtp_password',
+			'mail_type',
+			'timeLoadPageEnable',
+			'totalMembers',
+			'totalTopics',
+			'totalMessages',
+			'simpleSearch',
+			'censor_vulgar',
+			'censor_proper',
+			'enablePostHTML',
+			'enableEmbeddedFlash',
+			'xmlnews_enable',
+			'xmlnews_maxlen',
+			'hotTopicPosts',
+			'hotTopicVeryPosts',
+			'registration_method',
+			'send_validation_onChange',
+			'send_welcomeEmail',
+			'allow_editDisplayName',
+			'allow_hideOnline',
+			'guest_hideContacts',
+			'spamWaitTime',
+			'pm_spam_settings',
+			'reserveWord',
+			'reserveCase',
+			'reserveUser',
+			'reserveName',
+			'reserveNames',
+			'autoLinkUrls',
+			'banLastUpdated',
+			'avatar_max_height_external',
+			'avatar_max_width_external',
+			'avatar_action_too_large',
+			'avatar_max_height_upload',
+			'avatar_max_width_upload',
+			'avatar_resize_upload',
+			'avatar_download_png',
+			'failed_login_threshold',
+			'oldTopicDays',
+			'edit_wait_time',
+			'edit_disable_time',
+			'autoFixDatabase',
+			'allow_guestAccess',
+			'time_format',
+			'number_format',
+			'enableBBC',
+			'max_messageLength',
+			'signature_settings',
+			'autoOptMaxOnline',
+			'defaultMaxMessages',
+			'defaultMaxTopics',
+			'defaultMaxMembers',
+			'enableParticipation',
+			'recycle_enable',
+			'recycle_board',
+			'maxMsgID',
+			'enableAllMessages',
+			'fixLongWords',
+			'who_enabled',
+			'time_offset',
+			'cookieTime',
+			'lastActive',
+			'requireAgreement',
+			'unapprovedMembers',
+			'package_make_backups',
+			'databaseSession_enable',
+			'databaseSession_loose',
+			'databaseSession_lifetime',
+			'search_cache_size',
+			'search_results_per_page',
+			'search_weight_frequency',
+			'search_weight_age',
+			'search_weight_length',
+			'search_weight_subject',
+			'search_weight_first_message',
+			'search_max_results',
+			'search_floodcontrol_time',
+			'permission_enable_deny',
+			'permission_enable_postgroups',
+			'mail_next_send',
+			'mail_recent',
+			'settings_updated',
+			'next_task_time',
+			'warning_settings',
+			'admin_features',
+			'last_mod_report_action',
+			'pruningOptions',
+			'cache_enable',
+			'reg_verification',
+			'enable_buddylist',
+			'birthday_email',
+			'globalCookies',
+			'default_timezone',
+			'memberlist_updated',
+			'latestMember',
+			'latestRealName',
+			'db_mysql_group_by_fix',
+			'rand_seed',
+			'mostOnlineUpdated',
+			'search_pointer',
+			'spider_name_cache',
+			'modlog_enabled',
+			'disabledBBC',
+			'latest_member',
+			'latest_real_name',
+			'total_members',
+			'total_messages',
+			'max_msg_id',
+			'total_topics',
+			'disable_hash_time',
+			'latestreal_name',
+			'disableHashTime',
+		);
+		foreach ($originalRows as $row)
+		{
+			if (in_array($row['variable'], $do_import))
+			{
+				$this->db->query("
+					REPLACE INTO {$this->config->to_prefix}settings
+						(variable, value)
+					VALUES('$row[variable]', '" . addcslashes($row['value'], '\'\\"') . "')");
+			}
+		}
+
+		return array();
+	}
+
 	public function preparseMembers($originalRows)
 	{
 		$rows = array();
@@ -304,7 +475,7 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	}
 
 	/**
-	 * @todo it may be broken for Wedge
+	 * @todo it may be broken in Wedge
 	 */
 	public function preparseAttachments($originalRows)
 	{
@@ -314,8 +485,8 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 			$file_hash = createAttachmentFileHash($row['filename']);
 			$id_attach = $this->newIdAttach();
 			// @todo the name should come from step1_importer
-			$destination = $this->getAttachDir($row) . DIRECTORY_SEPARATOR . $id_attach . '_' . $file_hash . '.ext';
-			$source = $row['full_path'] . DIRECTORY_SEPARATOR . $row['filename'];
+			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.ext';
+			$source = $row['full_path'] . '/' . $row['filename'];
 
 			copy_file($source, $destination);
 			$rows[] = $row;
@@ -327,6 +498,29 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 	public function preparseAvatars($originalRows)
 	{
 		// @todo I think I messed up something and deleted the relevant code at some point
+
+		return array();
+	}
+
+	/**
+	 * @todo it may be broken in Wedge
+	 */
+	public function codeCopysmiley($rows)
+	{
+		$request = $this->db->query("
+			SELECT value
+			FROM {$this->config->to_prefix}settings
+			WHERE variable='smileys_dir';");
+		list ($smileys_dir) = $this->db->fetch_row($request);
+		$this->db->free_result($request);
+
+		foreach ($rows as $row)
+		{
+			$source = $row['full_path'] . '/' . $row['filename'];
+			$relative_path = str_replace($row['basedir'], '', $row['full_path']);
+
+			copy_file($source, $smileys_dir . '/' . $relative_path . '/' . $row['filename']);
+		}
 
 		return array();
 	}

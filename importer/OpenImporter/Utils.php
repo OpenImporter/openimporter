@@ -85,6 +85,30 @@ function copy_dir_recursive($source, $destination)
 	}
 }
 
+function get_files_recursive($base)
+{
+	$files = array();
+	$base = rtrim($base, '\\/') . DIRECTORY_SEPARATOR;
+
+	if (!file_exists($base))
+		return false;
+
+	$dir = opendir($base);
+
+	while ($file = readdir($dir))
+	{
+		if ($file == '.' || $file == '..')
+			continue;
+
+		if (is_dir($base . $file))
+			$files = array_merge($files, get_files_recursive($base . $file);
+		else
+			$files[] = $file;
+	}
+
+	return $files;
+}
+
 function create_folders_recursive($path)
 {
 	$parent = dirname($path);

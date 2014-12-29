@@ -95,9 +95,12 @@ class XmlProcessor
 		if (!empty($from_code))
 		{
 			$rows = $this->config->destination->callMethod('preparse' . $id, $from_code);
-			$keys = array_keys($rows[0]);
 
-			$this->insertRows($rows, $keys, $special_table);
+			if (!empty($rows))
+			{
+				$keys = array_keys($rows[0]);
+				$this->insertRows($rows, $keys, $special_table);
+			}
 		}
 		else
 		{
@@ -142,7 +145,6 @@ class XmlProcessor
 			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
 			$rows = array();
-			$keys = array();
 
 			if (isset($this->current_step->detect))
 				$_SESSION['import_progress'] += $special_limit;
@@ -158,13 +160,14 @@ class XmlProcessor
 				{
 // 					$row = $this->step1_importer->$special_table($row, $special_code);
 					$rows[] = array_merge($rows, $newrow);
-
-					if (empty($keys))
-						$keys = array_keys($newrow[0]);
 				}
 			}
 
-			$this->insertRows($rows, $keys, $special_table);
+			if (!empty($rows))
+			{
+				$keys = array_keys($rows[0]);
+				$this->insertRows($rows, $keys, $special_table);
+			}
 
 			// @todo $_REQUEST
 			$_REQUEST['start'] += $special_limit;

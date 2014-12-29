@@ -158,6 +158,8 @@ abstract class SmfCommonOrigin
 			$attachment_UploadDir = @unserialize($attachmentdir);
 
 			$this->attachmentUploadDirs = !empty($attachment_UploadDir) ? $attachment_UploadDir : array(1 => $attachmentdir);
+			foreach ($this->attachmentUploadDirs as $key => $val)
+				$this->attachmentUploadDirs[$key] = str_replace('\\', '/', $val);
 
 			$result = $this->db->query("
 				SELECT value
@@ -169,6 +171,8 @@ abstract class SmfCommonOrigin
 
 			if (empty($this->avatarUploadDir))
 				$this->avatarUploadDir = null;
+			else
+				$this->avatarUploadDir = str_replace('\\', '/', $this->avatarUploadDir);
 
 			if (empty($this->id_attach))
 				$this->id_attach = 1;
@@ -417,7 +421,6 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 		return $return;
 	}
-
 	protected function specialMembers($row)
 	{
 		// Let's ensure there are no illegal characters.
