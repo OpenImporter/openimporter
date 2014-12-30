@@ -21,14 +21,11 @@ abstract class BaseImporter
 		$this->config = $config;
 	}
 
-	public function callMethod($method, $params = array())
+	public function callMethod($method, $params = null)
 	{
 		if (method_exists($this, $method))
 		{
-			if (!empty($params))
-				return $this->$method();
-			else
-				return call_user_func_array(array($this, $method), $params);
+			return call_user_func_array(array($this, $method), array($params));
 		}
 		else
 		{

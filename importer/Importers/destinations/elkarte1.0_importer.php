@@ -414,11 +414,13 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 			$source = $row['full_path'] . '/' . $row['filename'];
 
 			// Ensure the id_attach is the one we want... I think.
-			$row['id_attach'] = $id_attach;
+			if (empty($row['id_attach']))
+				$row['id_attach'] = $id_attach;
 
 			copy_file($source, $destination);
 			$rows[] = $row;
 		}
+			print_dbg($rows);
 
 		return $rows;
 	}

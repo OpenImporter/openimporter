@@ -81,6 +81,17 @@ class SMF2_0 extends AbstractSourceImporter
 		return $this->smf_attach_folders;
 	}
 
+	public function getAttachDir($row)
+	{
+		if ($this->smf_attach_folders === null)
+			$this->getAttachmentDirs();
+
+		if (!empty($row['id_folder']) && !empty($this->smf_attach_folders[$row['id_folder']]))
+			return $this->smf_attach_folders[$row['id_folder']];
+		else
+			return $this->smf_attach_folders[1];
+	}
+
 	public function fetchLikes()
 	{
 		if ($this->isNibogo())
@@ -164,7 +175,7 @@ class SMF2_0 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['full_path'] = $this->getAttachmentDirs();
+			$row['full_path'] = $this->getAttachDir($row);
 
 			$rows[] = $row;
 		}

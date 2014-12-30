@@ -76,7 +76,7 @@ class XmlProcessor
 	public function processSteps($step, &$substep, &$do_steps)
 	{
 		$this->current_step = $step;
-		$id = $this->current_step['id'];
+		$id = ucFirst($this->current_step['id']);
 
 		// @todo do detection on destination side (e.g. friendly urls)
 		$table_test = $this->updateStatus($substep, $do_steps);
@@ -94,7 +94,7 @@ class XmlProcessor
 		// Codeblock? Then no query.
 		if (!empty($from_code))
 		{
-			$rows = $this->config->destination->callMethod('preparse' . $id, $from_code);
+			$rows = $this->step1_importer->callMethod('preparse' . $id, $from_code);
 
 			$this->insertRows($rows, $special_table);
 		}
@@ -150,12 +150,11 @@ class XmlProcessor
 				$newrow = array($row);
 				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
 				// @todo maybe consider adding a check to ensure all the keys expected are present (see skeleton)
-				$newrow = $this->config->destination->callMethod('preparse' . $id, $newrow);
+				$newrow = $this->step1_importer->callMethod('preparse' . $id, $newrow);
 
 				if (!empty($newrow))
 				{
-// 					$row = $this->step1_importer->$special_table($row, $special_code);
-					$rows[] = array_merge($rows, $newrow);
+					$rows = array_merge($rows, $newrow);
 				}
 			}
 
@@ -192,6 +191,7 @@ class XmlProcessor
 		$insert_rows = array();
 		foreach ($rows as $row)
 		{
+// 			print_dbg($rows);
 			if (empty($ignore_slashes))
 				$insert_rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
 			else
@@ -304,7 +304,7 @@ class XmlProcessor
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
-		$this->config->destination->callMethod('before' . ucFirst($id));
+		$this->step1_importer->callMethod('before' . ucFirst($id));
 		$this->config->source->callMethod('before' . ucFirst($id));
 
 		// don't do this twice..
@@ -331,7 +331,7 @@ class XmlProcessor
 		if (!empty($rows))
 		{
 			// I'm not sure his symmetry is really, really necessary.
-			return $this->config->destination->callMethod('code' . $id, $rows);
+			return $this->step1_importer->callMethod('code' . $id, $rows);
 		}
 
 		return false;

@@ -23,7 +23,7 @@
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
 				total_time_logged_in, password_salt, ignore_boards,
 				IFNULL(warning, 0) AS warning, passwd_flood,
-				pm_receive_from AS receive_from
+				pm_receive_from AS receive_from, '' as avatartype
 			FROM {$from_prefix}members;
 		</query>
 	</step>
