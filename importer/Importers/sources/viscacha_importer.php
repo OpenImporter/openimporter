@@ -74,29 +74,6 @@ class Viscacha extends AbstractSourceImporter
 		return $rows;
 	}
 
-	public function preparsePm($originalRows)
-	{
-		$rows = array();
-		foreach ($originalRows as $row)
-		{
-			$row['body'] = preg_replace(
-				array(
-					'~\[list=ol\]~is',
-					'~\[ot\](.+?)\[\/ot\]~is',
-				),
-				array(
-					'[list type=lower-alpha]',
-					'$1',
-				),
-				trim($row['body'])
-			);
-
-			$rows[] = $row;
-		}
-
-		return $rows;
-	}
-
 	public function preparseMessages($originalRows)
 	{
 		$rows = array();
