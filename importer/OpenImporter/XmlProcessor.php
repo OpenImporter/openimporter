@@ -351,12 +351,24 @@ class XmlProcessor
 
 	protected function stepDefaults($rows, $id)
 	{
-		foreach ($this->skeleton[$id]['query'] as $index)
+		foreach ($this->skeleton[$id]['query'] as $index => $default)
 		{
+			// No default, use an empty string
+			if (is_array($default))
+			{
+				$index = key($default);
+				$default = $default[$index];
+			}
+			else
+			{
+				$index = $default;
+				$default = '';
+			}
+
 			foreach ($rows as $key => $row)
 			{
 				if (!isset($row[$index]))
-					$rows[$key][$index] = '';
+					$rows[$key][$index] = $default;
 			}
 		}
 

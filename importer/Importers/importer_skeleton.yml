@@ -8,16 +8,16 @@ members:
   title: Importing members
   #<!-- @todo There is to define some common meaning for id_group -->
   query:
-    - id_member             # Id of the member (unsigned int)
-    - member_name           # The name the members use to log int (varchar-255)
-    - date_registered       # Date at which the account was created (yyyy-mm-dd)
-    - posts                 # Number of posts (int)
-    - id_group              # Id of the primary or the most important membergroup (int)
+    - id_member: 0             # Id of the member (unsigned int)
+    - member_name: ''           # The name the members use to log int (varchar-255)
+    - date_registered: '0001-01-01'       # Date at which the account was created (yyyy-mm-dd)
+    - posts: 0                 # Number of posts (int)
+    - id_group: 0              # Id of the primary or the most important membergroup (int)
     - language              # Language the member is using (format TBD)
-    - last_login            # Timestamp of the last login (int)
+    - last_login: 0            # Timestamp of the last login (int)
     - real_name             # Name shown around the forum (varchar-255)
-    - unread_messages       # Number of unread messages (int)
-    - new_pm                # Number of new personal messages (int) @todo consider drop
+    - unread_messages: 0       # Number of unread messages (int)
+    - new_pm: 0                # Number of new personal messages (int) @todo consider drop
     - buddy_list            # @todo move to its own step
     - pm_ignore_list        # @todo move to PM rules
     - pm_prefs              # @todo move to PM rules
@@ -27,19 +27,19 @@ members:
     - email_address         # email address
     - personal_text         # @todo move to custom fields?
     - gender                # Male/Female/Other (varchar-50)
-    - birthdate             # Dath of birth of the member (yyyy-mm-dd)
+    - birthdate: '0001-01-01'             # Dath of birth of the member (yyyy-mm-dd)
     - website_url
     - website_title
     - location
-    - hide_email
-    - show_online
+    - hide_email: 1
+    - show_online: 1
     - time_format
     - signature
-    - time_offset
+    - time_offset: 0
     - avatar
-    - pm_email_notify
+    - pm_email_notify: 1
     - usertitle
-    - notify_announcements
+    - notify_announcements: 1
     - notify_regularity
     - notify_send_body
     - notify_types
@@ -47,14 +47,14 @@ members:
     - member_ip2
     - secret_question
     - secret_answer
-    - id_theme
-    - is_activated
+    - id_theme: 1
+    - is_activated: 1
     - validation_code
-    - id_msg_last_visit
+    - id_msg_last_visit: 0
     - additional_groups
     - smiley_set
-    - id_post_group
-    - total_time_logged_in
+    - id_post_group: 0
+    - total_time_logged_in: 0
     - password_salt
     - ignore_boards
     - warning
