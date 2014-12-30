@@ -83,8 +83,8 @@ avatars:
   #<!-- @doc: this step is here to move avatars from directory to directory -->
   title: Importing avatars
   query:
-    - id_member  # Obviously the id of the member the avatar belongs to (int)
     - filename   # The name of the file (string)
+    - basedir
     - full_path   # The path to the position of the file (string)
 categories:
   title: Importing categories

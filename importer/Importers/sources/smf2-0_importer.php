@@ -360,6 +360,8 @@ class SMF2_0 extends AbstractSourceImporter
 
 	public function codeAvatars()
 	{
+		$rows = array();
+
 		$avatarg = $this->db->query("
 			SELECT value
 			FROM {$this->config->from_prefix}settings
@@ -370,6 +372,17 @@ class SMF2_0 extends AbstractSourceImporter
 		$avatar_gallery = array();
 		if (!empty($smf_avatarg) && file_exists($smf_avatarg))
 			$avatar_gallery = get_files_recursive($smf_avatarg);
+
+		foreach ($avatar_gallery as $file)
+		{
+			$file = str_replace('\\', '/', $file);
+			$rows[] = array(
+				'id_member' => 0,
+				'basedir' => $smf_avatarg,
+				'full_path' => dirname($file),
+				'filename' => basename($file),
+			);
+		}
 
 		$avatarg = $this->db->query("
 			SELECT value
@@ -382,7 +395,24 @@ class SMF2_0 extends AbstractSourceImporter
 		if (!empty($smf_avatarg) && file_exists($smf_avatarg))
 			$avatar_custom = get_files_recursive($smf_avatarg);
 
-		return array_merge($avatar_gallery, $avatar_custom);
+		foreach ($avatar_custom as $file)
+		{
+			$file = str_replace('\\', '/', $file);
+			preg_match('~avatar_(\d+)_\d+~i', $file, $match);
+			if (!empty($match[1]))
+				$id_member = $match[1];
+			else
+				$id_member = 0;
+
+			$rows[] = array(
+				'id_member' => $id_member,
+				'basedir' => $smf_avatarg,
+				'full_path' => dirname($file),
+				'filename' => basename($file),
+			);
+		}
+
+		return $rows;
 	}
 
 	public function codeCopysmiley()
@@ -395,12 +425,12 @@ class SMF2_0 extends AbstractSourceImporter
 
 		if (!empty($smf_smileys_dir) && file_exists($smf_smileys_dir))
 		{
-			$smf_smileys_dir = str_repeat('\\', '/', $smf_smileys_dir);
+			$smf_smileys_dir = str_replace('\\', '/', $smf_smileys_dir);
 			$smiley = array();
 			$files = get_files_recursive($smf_smileys_dir);
 			foreach ($files as $file)
 			{
-				$file = str_repeat('\\', '/', $file);
+				$file = str_replace('\\', '/', $file);
 				$smiley[] = array(
 					'basedir' => $smf_smileys_dir,
 					'full_path' => dirname($file),

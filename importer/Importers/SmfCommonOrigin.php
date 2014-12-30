@@ -378,6 +378,22 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 	{
 		$avatar_attach_folder = $this->getAvatarFolderId($row);
 
+		if (empty($row['id_member']))
+		{
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$this->config->to_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+			if (!empty($elk_avatarg))
+			{
+				$destination = str_replace($row['basedir'], $elk_avatarg, $row['filename']);
+				copy_file($row['basedir'] . '/' . $row['filename'], $destination);
+			}
+			return false;
+		}
+
 		if ($avatar_attach_folder === false)
 		{
 			$extensions = array(
@@ -409,7 +425,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 			$return = array(
 				'id_attach' => $id_attach,
-				'size' => filesize($destination),
+				'size' => filesize($source),
 				'filename' => '\'' . $row['filename'] . '\'',
 				'file_hash' => '\'' . $file_hash . '\'',
 				'id_member' => $row['id_member'],
