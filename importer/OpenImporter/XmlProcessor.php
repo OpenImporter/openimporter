@@ -202,7 +202,6 @@ class XmlProcessor
 		$insert_rows = array();
 		foreach ($rows as $row)
 		{
-// 			print_dbg($rows);
 			if (empty($ignore_slashes))
 				$insert_rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
 			else

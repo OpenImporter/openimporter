@@ -418,9 +418,9 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 				$row['id_attach'] = $id_attach;
 
 			copy_file($source, $destination);
+			unset($row['full_path']);
 			$rows[] = $row;
 		}
-			print_dbg($rows);
 
 		return $rows;
 	}
