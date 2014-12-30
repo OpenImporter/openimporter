@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+use Symfony\Component\Yaml\Parser;
+
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 
@@ -522,8 +524,13 @@ class Importer
 
 		$substep = 0;
 
+
+		$skeleton = new Parser();
+		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
+
 		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
 		$xmlParser->setImporter($step1_importer);
+		$xmlParser->setSkeleton($skeleton_parsed);
 
 		foreach ($this->xml->step as $step)
 			$xmlParser->processSteps($step, $substep, $do_steps);

@@ -7,7 +7,9 @@
  * @version 1.0 Alpha
  */
 
+// @todo this should probably go somewhere else...
 require_once(BASEDIR . '/OpenImporter/Utils.php');
+
 // A shortcut
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);

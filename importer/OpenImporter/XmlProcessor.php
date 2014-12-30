@@ -58,6 +58,12 @@ class XmlProcessor
 	public $step1_importer;
 
 	/**
+	 * The object defining the intermediate array between source and destination.
+	 * @var object
+	 */
+	public $skeleton;
+
+	/**
 	 * initialize the main Importer object
 	 */
 	public function __construct($db, $config, $template, $xml)
@@ -71,6 +77,11 @@ class XmlProcessor
 	public function setImporter($step1_importer)
 	{
 		$this->step1_importer = $step1_importer;
+	}
+
+	public function setSkeleton($skeleton)
+	{
+		$this->skeleton = $skeleton;
 	}
 
 	public function processSteps($step, &$substep, &$do_steps)
@@ -149,7 +160,7 @@ class XmlProcessor
 			{
 				$newrow = array($row);
 				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
-				// @todo maybe consider adding a check to ensure all the keys expected are present (see skeleton)
+				$newrow = $this->stepDefaults($newrow, (string) $this->current_step['id']);
 				$newrow = $this->step1_importer->callMethod('preparse' . $id, $newrow);
 
 				if (!empty($newrow))
@@ -331,10 +342,25 @@ class XmlProcessor
 		if (!empty($rows))
 		{
 			// I'm not sure his symmetry is really, really necessary.
+			$rows = $this->stepDefaults($rows, (string) $this->current_step['id']);
 			return $this->step1_importer->callMethod('code' . $id, $rows);
 		}
 
 		return false;
+	}
+
+	protected function stepDefaults($rows, $id)
+	{
+		foreach ($this->skeleton[$id]['query'] as $index)
+		{
+			foreach ($rows as $key => $row)
+			{
+				if (!isset($row[$index]))
+					$rows[$key][$index] = '';
+			}
+		}
+
+		return $rows;
 	}
 
 	protected function detect($table)

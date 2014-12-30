@@ -14,6 +14,8 @@ $classLoader = new SplClassLoader(null, BASEDIR . '/OpenImporter');
 $classLoader->register();
 $classLoader2 = new SplClassLoader(null, BASEDIR . '/Importers');
 $classLoader2->register();
+// Composer stuff
+require_once(BASEDIR . '/vendor/autoload.php');
 
 @set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exception_handler'));
