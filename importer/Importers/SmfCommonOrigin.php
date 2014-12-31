@@ -390,7 +390,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			$this->db->free_result($avatarg);
 			if (!empty($elk_avatarg))
 			{
-				$destination = str_replace($row['basedir'], $elk_avatarg, $row['filename']);
+				$destination = str_replace($row['basedir'], $elk_avatarg, $row['basedir'] . '/' . $row['filename']);
 				copy_file($row['basedir'] . '/' . $row['filename'], $destination);
 			}
 			return false;
