@@ -451,37 +451,3 @@ class SMF2_0 extends AbstractSourceImporter
 		return $this->fetchLikes();
 	}
 }
-
-function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
-{
-	static $smf_folders = null;
-
-	if ($smf_folders === null)
-	{
-		$request = $db->query("
-			SELECT value
-			FROM {$from_prefix}settings
-			WHERE variable='attachmentUploadDir';");
-		list ($smf_attachments_dir) = $db->fetch_row($request);
-
-		$smf_folders = @unserialize($smf_attachments_dir);
-		if (!is_array($smf_folders))
-			$smf_folders = array(1 => $smf_attachments_dir);
-	}
-
-	// If something is broken, better try to account for it as well.
-	if (isset($smf_folders[$row['id_folder']]))
-		$smf_attachments_dir = $smf_folders[$row['id_folder']];
-	else
-		$smf_attachments_dir = $smf_folders[1];
-
-	if (empty($row['file_hash']))
-	{
-		$row['file_hash'] = createAttachmentFileHash($row['filename']);
-		$source_file = $row['filename'];
-	}
-	else
-		$source_file = $row['id_attach'] . '_' . $row['file_hash'];
-
-	copy_file($smf_attachments_dir . '/' . $source_file, $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-}
