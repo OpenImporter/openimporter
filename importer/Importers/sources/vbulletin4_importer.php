@@ -159,7 +159,7 @@ function vb4_replace_bbc($content)
 
 	// fixing Code tags
 	$replace = array();
-	
+
 	preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
 	foreach ($matches as $temp)
 		$replace[$temp] = htmlspecialchars($temp);

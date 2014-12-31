@@ -105,7 +105,7 @@ class wbb3_1 extends AbstractSourceImporter
 				SELECT *
 				FROM {$this->config->from_prefix}{$wcf_prefix}user_option_value
 				WHERE userID = $row[id_member]");
-	
+
 			$options = $this->db->fetch_assoc($request);
 			$this->db->free_result($request);
 

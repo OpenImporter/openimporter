@@ -43,7 +43,7 @@ so we need a workaround.
 				o.position AS cat_order
 			FROM {$from_prefix}{$wbb_prefix}board AS c
 				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = c.boardID)
-			WHERE boardType = 1;		
+			WHERE boardType = 1;
 		</query>
 	</step>
 	<step id="boards">
@@ -56,7 +56,7 @@ so we need a workaround.
 				b.threads AS num_topics, b.countUserPosts AS num_posts, '2,-1,0,1' AS member_groups
 			FROM {$from_prefix}{$wbb_prefix}board AS b
 				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = b.boardID)
-			WHERE boardType = 0;		
+			WHERE boardType = 0;
 		</query>
 	</step>
 	<step id="topics">

@@ -30,7 +30,7 @@
 		<query>
 			SELECT fid AS id_cat, SUBSTRING(name, 1, 255) AS name, disporder AS cat_order
 			FROM {$from_prefix}forums
-			WHERE type = 'c';	
+			WHERE type = 'c';
 		</query>
 	</step>
 	<step id="boards">

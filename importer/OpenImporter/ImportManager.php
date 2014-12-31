@@ -589,7 +589,7 @@ class ImportManager
 		$this->response->use_template = 'step3';
 		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
-		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
+		unset($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		$this->data = array();
 
 		return true;

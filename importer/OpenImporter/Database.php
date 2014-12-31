@@ -31,9 +31,9 @@ class Database
 	 * @var bool
 	 */
 	protected $second_try = true;
-	
+
 	/**
-	 * 
+	 *
 	 * @param string $db_server
 	 * @param string $db_user
 	 * @param string $db_password
@@ -42,9 +42,9 @@ class Database
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
 		$this->con = mysqli_connect(($db_persist == 1 ? 'p:' : '') . $db_server, $db_user, $db_password);
- 
+
 		if (mysqli_connect_error())
- 			die('Database error: ' . mysqli_connect_error());
+			die('Database error: ' . mysqli_connect_error());
 	}
 
 	/**

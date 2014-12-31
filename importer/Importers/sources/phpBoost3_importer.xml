@@ -41,7 +41,7 @@
 		</options>
 		<query>
 			SELECT
-				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups, 
+				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups,
 				SUBSTRING(subname, 1, 65534) AS description, id_left AS board_order,
 				nbr_msg AS num_posts, nbr_topic AS num_topics, id_left AS id_cat, id_left AS id_parent
 			FROM {$from_prefix}forum_cats
@@ -53,10 +53,10 @@
 		<detect>{$from_prefix}forum_msg</detect>
 		<query>
 			SELECT
-				t.id AS id_topic, t.idcat AS id_board, 
-				t.type AS is_sticky, t.user_id AS id_member_started, 
+				t.id AS id_topic, t.idcat AS id_board,
+				t.type AS is_sticky, t.user_id AS id_member_started,
 				t.last_user_id AS id_member_updated, poll.id AS id_poll,
-				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg, 
+				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg,
 				0 AS locked
 			FROM {$from_prefix}forum_topics AS t
 			LEFT JOIN {$from_prefix}forum_msg AS p ON (p.idtopic = t.id)
@@ -75,16 +75,16 @@
 		</options>
 		<query>
 			SELECT
-				p.id AS id_msg, p.idtopic AS id_topic,	t.idcat  AS id_board, 
+				p.id AS id_msg, p.idtopic AS id_topic,	t.idcat  AS id_board,
 				p.timestamp AS poster_time, p.user_id AS id_member, t.title AS subject,
-				u.login AS poster_name, u.user_mail AS poster_email, p.user_ip AS poster_ip, 
+				u.login AS poster_name, u.user_mail AS poster_email, p.user_ip AS poster_ip,
 				1 AS smileys_enabled, e.login AS modified_name, p.timestamp_edit AS modified_time, 
 				p.contents AS body, 'xx' AS icon
 			FROM {$from_prefix}forum_msg AS p
 			LEFT JOIN {$from_prefix}member AS u ON (u.user_id = p.user_id)
 			LEFT JOIN {$from_prefix}member AS e ON (e.user_id = p.user_id_edit)
 			LEFT JOIN {$from_prefix}forum_topics AS t ON (p.idtopic = t.id)
-			GROUP BY p.id;		
+			GROUP BY p.id;
 		</query>
 	</step>
 </importer>

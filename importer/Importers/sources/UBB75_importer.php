@@ -142,7 +142,6 @@ class UBB_7_5 extends AbstractSourceImporter
 			$ins = array();
 			while ($pmrec = $this->db->fetch_assoc($result))
 			{
-				$id_members[] = 
 				$ins[$pmrec['USER_ID']] = array(
 					'id_pm' => $row['POST_ID'],
 					'id_member' => $pmrec['USER_ID'],

@@ -54,7 +54,7 @@ class XenForo1_1 extends AbstractSourceImporter
 				$row['passwd'] = $pass['hash'];
 			else
 				$row['passwd'] = sha1(md5(mktime()));
-	
+
 			if	(isset($pass['salt']))
 				$row['password_salt'] = $pass['salt'];
 			else
@@ -73,7 +73,7 @@ class XenForo1_1 extends AbstractSourceImporter
 		foreach ($originalRows as $row)
 		{
 			$request = $this->db->query("
-				SELECT 
+				SELECT
 					thread_id, last_post_id
 				FROM {$from_prefix}thread
 				WHERE node_id  = $row[id_board]

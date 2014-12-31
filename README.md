@@ -1,6 +1,6 @@
 This is the **OpenImporter** development repository.
 
-OpenImporter was inspired by SMF's forum converter engine and is supposed to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination. 
+OpenImporter was inspired by SMF's forum converter engine and is supposed to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination.
 
 Supported Source systems:
 ===

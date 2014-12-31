@@ -20,7 +20,7 @@
 				'' AS openid_uri, m.register_date AS date_registered,
 				m.last_activity AS last_login, '' AS ignore_boards,
 				1 AS hide_email, details.homepage AS website_title,
-				details.homepage AS website_url, IF(m.is_admin = 1, 1, 0) AS id_group, 
+				details.homepage AS website_url, IF(m.is_admin = 1, 1, 0) AS id_group,
 				details.location AS location,
 				'' AS lngfile, '' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
 				'' AS personal_text, '' AS time_format, '' AS avatar,
@@ -37,7 +37,7 @@
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}node WHERE node_type_id = 'Category'</detect>
 		<query>
-			SELECT 
+			SELECT
 				node_id AS id_cat, SUBSTRING(title, 1, 255) AS name, display_order AS cat_order
 			FROM {$from_prefix}node
 			WHERE node_type_id = 'Category';
@@ -63,7 +63,7 @@
 		<detect>{$from_prefix}thread</detect>
 		<query>
 			SELECT
-				t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky, 
+				t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky,
 				IF(t.discussion_open = 1, 0, 1) AS locked, t.last_post_user_id AS id_member_updated,
 				t.view_count AS num_views, t.reply_count AS num_replies, t.user_id AS id_member_started,
 				t.first_post_id id_first_msg, t.last_post_id AS id_last_msg
