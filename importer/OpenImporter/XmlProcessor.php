@@ -313,9 +313,6 @@ class XmlProcessor
 
 	protected function doPresqlStep($id, $substep)
 	{
-		if (!isset($this->current_step->presql))
-			return;
-
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
