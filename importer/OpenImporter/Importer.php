@@ -139,8 +139,8 @@ class Importer
 		$this->template = $template;
 
 		// The current step - starts at 0.
-		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
-		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
+		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
+		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
 		if (!empty($this->config->script))
 			$this->_loadImporter($this->config->importers_dir . DS . $this->config->script);
