@@ -100,10 +100,10 @@ function get_files_recursive($base)
 		if ($file == '.' || $file == '..')
 			continue;
 
-		if (is_dir($base . '/' . $file))
-			$files = array_merge($files, get_files_recursive($base . '/' . $file));
+		if (is_dir($base . $file))
+			$files = array_merge($files, get_files_recursive($base . $file));
 		else
-			$files[] = $base . '/' . $file;
+			$files[] = $base . $file;
 	}
 
 	return $files;
