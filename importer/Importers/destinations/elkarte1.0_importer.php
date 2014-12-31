@@ -156,7 +156,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 		return '{$to_prefix}permissions';
 	}
 
-	public function tablePermissionboardss()
+	public function tablePermissionboards()
 	{
 		return '{$to_prefix}board_permissions';
 	}
