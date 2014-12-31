@@ -138,7 +138,6 @@ class XmlProcessor
 		$db = $this->db;
 
 		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
-		$current_data = $this->fixCurrentData($current_data);
 		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
@@ -179,15 +178,6 @@ class XmlProcessor
 
 			$this->db->free_result($special_result);
 		}
-	}
-
-	protected function fixCurrentData($current_data)
-	{
-		// @todo why eval? ???
-		if (strpos($current_data, '{$') !== false)
-			$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
-
-		return $current_data;
 	}
 
 	protected function insertRows($rows, $special_table)
