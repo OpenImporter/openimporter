@@ -28,7 +28,7 @@
 		<title>Importing Categories</title>
 		<detect>{$from_prefix}categories</detect>
 		<query>
-			SELECT 	id AS id_cat, name AS name, id_left AS cat_order
+			SELECT id AS id_cat, name AS name, id_left AS cat_order
 			FROM {$from_prefix}forum_cats
 			WHERE level = 0;
 		</query>
