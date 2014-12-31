@@ -143,11 +143,7 @@ abstract class SmfCommonOrigin
 
 		if ($force === true || !isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
 		{
-			$result = $this->db->query("
-				SELECT MAX(id_attach) + 1
-				FROM {$to_prefix}attachments");
-			list ($this->id_attach) = $this->db->fetch_row($result);
-			$this->db->free_result($result);
+			$this->newMaxIdAttach();
 
 			$result = $this->db->query("
 				SELECT value
@@ -173,10 +169,19 @@ abstract class SmfCommonOrigin
 				$this->avatarUploadDir = null;
 			else
 				$this->avatarUploadDir = str_replace('\\', '/', $this->avatarUploadDir);
-
-			if (empty($this->id_attach))
-				$this->id_attach = 1;
 		}
+	}
+
+	public function newMaxIdAttach()
+	{
+		$result = $this->db->query("
+			SELECT MAX(id_attach) + 1
+			FROM {$this->config->to_prefix}attachments");
+		list ($this->id_attach) = $this->db->fetch_row($result);
+		$this->db->free_result($result);
+
+		if (empty($this->id_attach))
+			$this->id_attach = 1;
 	}
 
 	public function getAvatarDir($row)
@@ -365,13 +370,10 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 	public function newIdAttach()
 	{
+		$this->config->destination->newMaxIdAttach();
+
 		// The one to return
-		$current = $this->config->destination->id_attach;
-
-		// Increase preparing for the next one
-		$this->config->destination->id_attach++;
-
-		return $current;
+		return $this->config->destination->id_attach;
 	}
 
 	public function moveAvatar($row, $source, $filename)
