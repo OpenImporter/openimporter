@@ -73,10 +73,10 @@
 		</options>
 		<query>
 			SELECT
-				p.id AS id_msg, p.topic_id AS id_topic,	p.board  AS id_board,
+				p.id AS id_msg, p.topic_id AS id_topic, p.board  AS id_board,
 				p.date AS poster_time, p.name AS id_member, p.topic AS subject,
-				u.name AS poster_name, u.mail AS poster_email,	p.ip AS poster_ip,
-				p.dosmileys AS smileys_enabled,	p.edit AS modified_name, '' AS modified_time,
+				u.name AS poster_name, u.mail AS poster_email, p.ip AS poster_ip,
+				p.dosmileys AS smileys_enabled, p.edit AS modified_name, '' AS modified_time,
 				p.comment AS body, 'xx' AS icon
 			FROM {$from_prefix}replies AS p
 				LEFT JOIN {$from_prefix}user AS u ON (u.id = p.name)

@@ -16,7 +16,7 @@
 			SELECT
 				user_id AS id_member, SUBSTRING(login, 1, 80) AS member_name,
 				SUBSTRING(login, 1, 255) AS real_name, SUBSTRING(password, 1, 64) AS passwd,
-				user_sex AS gender,	SUBSTRING(user_mail, 1, 255) AS email_address,
+				user_sex AS gender, SUBSTRING(user_mail, 1, 255) AS email_address,
 				last_connect AS last_login, timestamp AS date_registered,
 				user_born AS birthdate, user_local AS location,
 				IF (level = 2, 1, 0) AS id_group, user_msg AS posts,
@@ -75,7 +75,7 @@
 		</options>
 		<query>
 			SELECT
-				p.id AS id_msg, p.idtopic AS id_topic,	t.idcat  AS id_board,
+				p.id AS id_msg, p.idtopic AS id_topic, t.idcat  AS id_board,
 				p.timestamp AS poster_time, p.user_id AS id_member, t.title AS subject,
 				u.login AS poster_name, u.user_mail AS poster_email, p.user_ip AS poster_ip,
 				1 AS smileys_enabled, e.login AS modified_name, p.timestamp_edit AS modified_time, 

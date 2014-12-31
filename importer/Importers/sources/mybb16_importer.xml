@@ -97,7 +97,7 @@
 		<query>
 			SELECT
 				p.pid AS id_poll, SUBSTRING(p.question, 1, 255) AS question, p.closed AS voting_locked,
-				t.uid AS id_member,	IF(p.timeout = 0, 0, p.dateline + p.timeout * 86400) AS expire_time,
+				t.uid AS id_member, IF(p.timeout = 0, 0, p.dateline + p.timeout * 86400) AS expire_time,
 				SUBSTRING(t.username, 1, 255) AS poster_name
 			FROM {$from_prefix}polls AS p
 				LEFT JOIN {$from_prefix}threads AS t ON (t.tid = p.tid);

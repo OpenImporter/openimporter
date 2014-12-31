@@ -98,7 +98,7 @@ database fromo here in this new configuration.
 			SELECT
 				p.post_id AS id_msg, p.topic_id AS id_topic, p.forum_id AS id_board,
 				p.post_time AS poster_time, p.poster_id AS id_member, p.post_subject AS subject,
-				IFNULL(m.username, 'Guest') AS poster_name,	IFNULL(m.user_email, 'Unknown') AS poster_email,
+				IFNULL(m.username, 'Guest') AS poster_name, IFNULL(m.user_email, 'Unknown') AS poster_email,
 				IFNULL(p.poster_ip, '0.0.0.0') AS poster_ip, p.enable_smilies AS smileys_enabled,
 				IFNULL(p.post_edit_time,0) AS modified_time, p.bbcode_uid AS tmp_bbc_replace,
 				IFNULL(CASE p.post_edit_user WHEN 0 THEN 'Guest' ELSE m2.username END, 0) AS modified_name,
