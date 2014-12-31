@@ -284,22 +284,27 @@ class XmlProcessor
 		if (!isset($_SESSION['import_steps'][$substep]['status']))
 			$_SESSION['import_steps'][$substep]['status'] = 0;
 
-		if (!in_array($substep, $do_steps))
+		if ($_SESSION['import_steps'][$substep]['status'] == 0)
 		{
-			$_SESSION['import_steps'][$substep]['status'] = 2;
-			$_SESSION['import_steps'][$substep]['presql'] = true;
-		}
-		// Detect the table, then count rows.. 
-		elseif ($this->current_step->detect)
-		{
-			$table_test = $this->detect((string) $this->current_step->detect);
-
-			if ($table_test === false)
+			if (!in_array($substep, $do_steps))
 			{
-				$_SESSION['import_steps'][$substep]['status'] = 3;
+				$_SESSION['import_steps'][$substep]['status'] = 2;
 				$_SESSION['import_steps'][$substep]['presql'] = true;
 			}
+			// Detect the table, then count rows..
+			elseif ($this->current_step->detect)
+			{
+				$table_test = $this->detect((string) $this->current_step->detect);
+
+				if ($table_test === false)
+				{
+					$_SESSION['import_steps'][$substep]['status'] = 3;
+					$_SESSION['import_steps'][$substep]['presql'] = true;
+				}
+			}
 		}
+		else
+			$table_test = false;
 
 		$this->template->status($substep, $_SESSION['import_steps'][$substep]['status'], $_SESSION['import_steps'][$substep]['title']);
 
