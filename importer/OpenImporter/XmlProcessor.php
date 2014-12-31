@@ -192,7 +192,7 @@ class XmlProcessor
 
 	protected function insertRows($rows, $special_table)
 	{
-		if (empty($rows))
+		if (empty($rows) || empty($special_table))
 			return;
 
 		$keys = array_keys($rows[0]);
