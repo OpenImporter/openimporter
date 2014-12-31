@@ -98,7 +98,7 @@
 			id_member,  // Obviously the id of the member the avatar belongs to (int)
 			filename,   // The name of the file (string)
 			full_path   // The path to the position of the file (string)
-		</code>
+		</query>
 	</step>
 	<step id="categories">
 		<title>Importing categories</title>
@@ -357,7 +357,7 @@
 			full_path,
 			basedir,
 			filename
-		</code>
+		</query>
 	</step>
 	<step id="statistics">
 		<title>Importing statistics (activity log)</title>
