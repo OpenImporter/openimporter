@@ -605,7 +605,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 	public function beforeSmiley()
 	{
 		$this->db->query("
-			TRUNCATE {$this->config->to_prefix}smiley");
+			TRUNCATE {$this->config->to_prefix}smileys");
 	}
 
 	public function beforeCopysmiley()
