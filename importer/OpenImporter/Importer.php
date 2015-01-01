@@ -524,7 +524,6 @@ class Importer
 
 		$substep = 0;
 
-
 		$skeleton = new Parser();
 		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
