@@ -47,7 +47,8 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 	{
 		$this->utils['db'] = new DummyDb();
 		// @todo this should be detected from the XML?
-		$this->utils['importer'] = new SMF2_0($this->utils['db'], new DummyConfig());
+		$this->utils['importer'] = new SMF2_0();
+		$this->utils['importer']->setUtils($this->utils['db'], new DummyConfig());
 	}
 
 	protected function stepQueryTester($step)
@@ -58,10 +59,10 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 		$tmp = $this->utils['db']->query($step->query);
 
 		$generated = $this->utils['db']->fetch_assoc($tmp);
-		$generated = $this->utils['importer']->callMethod('preparse' . ucFirst($id), $generated);
+		$generated = $this->utils['importer']->callMethod('preparse' . ucFirst($id), array($generated));
 
-		foreach ($generated as $entry)
-			$this->assertContains($entry, $this_config);
+		foreach ($generated[0] as $key => $entry)
+			$this->assertContains($key, $this_config);
 	}
 
 	public function testAll()

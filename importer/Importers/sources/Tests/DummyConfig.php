@@ -6,4 +6,9 @@ class DummyConfig
 	{
 		return 'something';
 	}
+
+	public function __get($name)
+	{
+		return 'something';
+	}
 }

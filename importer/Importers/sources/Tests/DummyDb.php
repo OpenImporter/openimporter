@@ -38,12 +38,31 @@ class DummyDb
 		{
 			$res = explode(' as ', strtolower($chunk));
 			if (count($res) == 2)
-				$array[] = $res[1];
+				$array[$res[1]] = '';
 			else
-				$array[] = $res[0];
+				$array[$res[0]] = '';
 		}
 
-		return $array;
+		return $this->trimDots($array);
+	}
+
+	protected function trimDots($array)
+	{
+		$return = array();
+		foreach ($array as $key => $val)
+		{
+			if (strpos($key, '.') === false)
+			{
+				$return[$key] = $val;
+			}
+			else
+			{
+				$exp = explode('.', $key);
+				$return[$exp[1]] = $val;
+			}
+		}
+
+		return $return;
 	}
 }
 
