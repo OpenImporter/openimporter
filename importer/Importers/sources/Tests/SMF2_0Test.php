@@ -24,15 +24,6 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 		return Yaml::parse(file_get_contents($file));
 	}
 
-	protected function getStep($name)
-	{
-		foreach (self::$xml->step as $step)
-		{
-			if ($step['id'] == $name)
-				return $step;
-		}
-	}
-
 	public static function setUpBeforeClass()
 	{
 		self::$xml = self::read(BASEDIR . '/Importers/sources/smf2-0_importer.xml');
@@ -59,20 +50,28 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 		$this->utils['importer'] = new SMF2_0($this->utils['db'], new DummyConfig());
 	}
 
-	public function testMembers()
+	protected function stepQueryTester($step)
 	{
-		$id = 'members';
-		$step = $this->getStep($id);
-		if (isset($step->query))
+		$id = $step['id'];
+
+		$this_config = $this->getStepConfig($id);
+		$tmp = $this->utils['db']->query($step->query);
+
+		$generated = $this->utils['db']->fetch_assoc($tmp);
+		$generated = $this->utils['importer']->callMethod('preparse' . ucFirst($id), $generated);
+
+		foreach ($generated as $entry)
+			$this->assertContains($entry, $this_config);
+	}
+
+	public function testAll()
+	{
+		foreach (self::$xml->step as $step)
 		{
-			$this_config = $this->getStepConfig($id);
-			$tmp = $this->utils['db']->query($step->query);
-
-			$generated = $this->utils['db']->fetch_assoc($tmp);
-			$generated = $this->utils['importer']->callMethod('preparse' . ucFirst($id), $generated);
-
-			foreach ($generated as $entry)
-				$this->assertContains($entry, $this_config);
+			if (isset($step->query))
+			{
+				$this->stepQueryTester($step);
+			}
 		}
 	}
 }
