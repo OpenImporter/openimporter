@@ -13,7 +13,7 @@
 		<detect>{$from_prefix}members</detect>
 		<query>
 			SELECT
-				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
+				id_member, member_name, date_registered, posts, id_group, lngfile as language, last_login,
 				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
 				pm_prefs, mod_prefs, message_labels, passwd, email_address, personal_text,
 				gender, birthdate, website_url, website_title, location, hide_email, show_online,
