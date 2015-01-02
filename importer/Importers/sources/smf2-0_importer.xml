@@ -346,7 +346,7 @@
 		<detect>{$from_prefix}pretty_topic_urls</detect>
 		<query>
 			SELECT
-				id_topic, pretty_url
+				id_topic, pretty_url as friendly_url
 			FROM {$from_prefix}pretty_topic_urls;
 		</query>
 	</step>
