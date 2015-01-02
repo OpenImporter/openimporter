@@ -52,7 +52,7 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 
 	protected function stepQueryTester($step)
 	{
-		$id = $step['id'];
+		$id = (string) $step['id'];
 
 		$this_config = $this->getStepConfig($id);
 		$tmp = $this->utils['db']->query($step->query);
