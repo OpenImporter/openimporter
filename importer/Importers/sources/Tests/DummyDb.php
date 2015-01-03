@@ -2,9 +2,19 @@
 
 class DummyDb
 {
+	protected $customValues = null;
+
+	public function __construct($customValues = null)
+	{
+		$this->customValues = $customValues;
+	}
+
 	public function query($string)
 	{
-		$array = $this->parseSql($string);
+		if ($this->customValues !== null && $this->customValues->hasRes($string))
+			$array = $this->customValues->getRes($string);
+		else
+			$array = array($this->parseSql($string));
 
 		return new DummyDbResults($array);
 	}
@@ -20,6 +30,10 @@ class DummyDb
 	}
 
 	public function insert()
+	{
+	}
+
+	public function free_result()
 	{
 	}
 
@@ -149,7 +163,7 @@ class DummyDb
 class DummyDbResults
 {
 	protected $array;
-	protected $returned = false;
+	protected $returned = 0;
 
 	public function __construct($array)
 	{
@@ -163,10 +177,11 @@ class DummyDbResults
 
 	public function getArray()
 	{
-		if ($this->returned)
+		if ($this->returned >= count($this->array))
 			return false;
 
-		$this->returned = true;
-		return $this->array;
+		$current = $this->array[$this->returned];
+		$this->returned++;
+		return $current;
 	}
 }

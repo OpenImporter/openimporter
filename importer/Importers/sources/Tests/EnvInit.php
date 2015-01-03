@@ -12,6 +12,7 @@ require_once(BASEDIR . '/vendor/autoload.php');
 
 require_once(BASEDIR . '/Importers/sources/Tests/DummyDb.php');
 require_once(BASEDIR . '/Importers/sources/Tests/DummyConfig.php');
+require_once(BASEDIR . '/Importers/sources/Tests/CustomDb.php');
 
 @set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exception_handler'));
