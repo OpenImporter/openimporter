@@ -106,13 +106,13 @@ class mybb16 extends AbstractSourceImporter
 		{
 			if (!isset($mybb_attachment_dir))
 			{
-				$result = $db->query("
+				$result = $this->db->query("
 					SELECT value
 					FROM {$this->config->source->from_prefix}settings
 					WHERE name = 'uploadspath'
 					LIMIT 1");
-				list ($mybb_attachment_dir) = $db->fetch_row($result);
-				$db->free_result($result);
+				list ($mybb_attachment_dir) = $this->db->fetch_row($result);
+				$this->db->free_result($result);
 
 				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
 			}
@@ -139,7 +139,7 @@ class mybb16 extends AbstractSourceImporter
 
 			//prepare our insert
 			$rows[] = array(
-				'id_attach' => $id_attach,
+				'id_attach' => 0,
 				'id_thumb' => 0,
 				'id_msg' => $row['id_msg'],
 				'id_member' => 0, //@todo check
@@ -169,7 +169,8 @@ class mybb16 extends AbstractSourceImporter
 			$full_path = $this->config->path_from . DIRECTORY_SEPARATOR . dirname($row['filename']);
 
 			$rows[] = array(
-				'id_member' => $row['id_member'],
+				'id_member' => $row['type'] == 'gallery' ? 0 : $row['id_member'],
+				'basedir' => $this->config->path_from,
 				'filename' => $source_name,
 				'full_path' => $full_path,
 			);

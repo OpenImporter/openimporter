@@ -169,7 +169,7 @@
 		<title>Importing avatars</title>
 		<detect>{$from_prefix}users</detect>
 		<query>
-			SELECT uid AS id_member, avatar AS filename
+			SELECT uid AS id_member, avatar AS filename, avatartype as type
 			FROM {$from_prefix}users
 			WHERE avatartype = 'upload'
 			OR avatartype = 'gallery';

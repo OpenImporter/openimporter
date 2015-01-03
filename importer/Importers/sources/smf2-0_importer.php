@@ -381,6 +381,7 @@ class SMF2_0 extends AbstractSourceImporter
 				'basedir' => $smf_avatarg,
 				'full_path' => dirname($file),
 				'filename' => basename($file),
+				'type' => 'gallery',
 			);
 		}
 
@@ -409,6 +410,7 @@ class SMF2_0 extends AbstractSourceImporter
 				'basedir' => $smf_avatarg,
 				'full_path' => dirname($file),
 				'filename' => basename($file),
+				'type' => 'upload',
 			);
 		}
 

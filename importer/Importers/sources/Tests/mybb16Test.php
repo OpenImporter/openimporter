@@ -45,7 +45,7 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 
 	protected function setUp()
 	{
-		$this->utils['db'] = new DummyDb();
+		$this->utils['db'] = new DummyDb(new CustomDbValues());
 		// @todo this should be detected from the XML?
 		$this->utils['importer'] = new mybb16();
 		$this->utils['importer']->setUtils($this->utils['db'], new DummyConfig());
@@ -74,5 +74,35 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 				$this->stepQueryTester($step);
 			}
 		}
+	}
+}
+
+class CustomDbValues extends CustomDb
+{
+	protected $queries = array();
+
+	public function __construct()
+	{
+		$this->config = new DummyConfig();
+
+		$this->queries = array(
+			md5("
+					SELECT value
+					FROM {$this->config->source->from_prefix}settings
+					WHERE name = 'uploadspath'
+					LIMIT 1") => array(array(
+				'value' => BASEDIR . '/Importers/sources'
+			)),
+			md5('
+			SELECT pid AS id_msg, downloads, filename, filesize, attachname
+			FROM {$from_prefix}attachments;
+		') => array(array(
+				'id_msg' => 1,
+				'downloads' => 0,
+				'filename' => 'mybb16_importer.php',
+				'filesize' => 0,
+				'attachname' => 'mybb16_importer.php'
+			))
+		);
 	}
 }
