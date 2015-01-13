@@ -120,6 +120,7 @@ class Template
 		<meta charset="UTF-8" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>', $this->response->page_title, '</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script type="text/javascript">
 			function AJAXCall(url, callback, string)
 			{
@@ -155,7 +156,7 @@ class Template
 			function validateField(string)
 			{
 				var target = document.getElementById(string);
-				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&import_script=', addslashes($this->response->script) , '";
+				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&source=', $this->response->source, '&destination=', $this->response->destination, '";
 				var ajax = new AJAXCall(url, validateCallback, string);
 				ajax.doGet();
 			}
@@ -346,37 +347,35 @@ class Template
 			{
 				font-size: 8pt;
 			}
-			#destinations ul, #source
+			#destinations, #source
 			{
 				padding: 0 1em;
 			}
-			#destinations ul li a
+			#destinations li label, #source li label
 			{
 				display: block;
-				margin-bottom: 3px;
-				padding-bottom: 3px;
+				padding: 0.5em;
+				cursor: pointer;
 			}
-			#destinations ul li, #source li
+			#destinations li, #source li
 			{
 				cursor: pointer;
 				float: left;
 				list-style: none;
-				padding: 0.5em;
 				margin: 0 0.5em;
 				border: 1px solid #abadb3;
 				border-radius: 3px;
 			}
-			#destinations ul li
+			#destinations li, #source li
 			{
-				width: 20%;
+				width: 12em;
 				float: none;
 				display: inline-block;
-				height: 4em;
 				cursor: default;
 				vertical-align: middle;
 				margin-top: 1em;
 			}
-			#destinations ul li.active, #source li.active
+			#destinations li.active, #source li.active
 			{
 				background-color: #fff;
 			}
@@ -386,11 +385,21 @@ class Template
 				display: block;
 				clear: both;
 			}
+			.start_conversion
+			{
+				float: right;
+			}
+			.conversion:after
+			{
+				content: "";
+				display: block;
+				clear: both;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="header">
-			<h1>', isset($this->response->importer->xml->general->{'name'}) ? $this->response->importer->xml->general->{'name'} . ' to ' : '', 'OpenImporter</h1>
+			<h1>', $this->response->page_title, '</h1>
 		</div>
 		<div id="main">';
 
@@ -409,47 +418,52 @@ class Template
 	{
 		echo '
 			<h2>', $this->lng->get('to_what'), '</h2>
-			<div class="content">
-				<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
-				<ul id="source">';
+			<form class="conversion" action="', $_SERVER['PHP_SELF'], '" method="post">
+				<div class="content">
+					<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
+					<ul id="source">';
 
-		foreach ($destination_names as $key => $values)
+		foreach ($destination_names as $key => $value)
+		{
+			$id = preg_replace('~[^\w\d]~', '_', $key);
 			echo '
-					<li onclick="toggle_to(this);" data-value="', preg_replace('~[^\w\d]~', '_', $key), '">', $values, '</li>';
+						<li>
+							<input class="input_select" data-type="destination" type="radio" value="', $key, '" id="destination_', $id, '" name="destination" />
+							<label for="destination_', $id, '">', $value, '</label>
+						</li>';
+		}
 
 		echo '
-				</ul>
-			</div>';
+					</ul>
+				</div>';
 
 		echo '
-			<h2>', $this->lng->get('which_software'), '</h2>
-			<div id="destinations" class="content">';
+				<h2>', $this->lng->get('which_software'), '</h2>
+				<div class="content">';
 
 		// We found at least one?
 		if (!empty($scripts))
 		{
 			echo '
-				<p>', $this->lng->get('multiple_files'), '</p>';
+					<p>', $this->lng->get('multiple_files'), '</p>
+					<ul id="destinations">';
 
-			foreach ($scripts as $key => $value)
+			// Let's loop and output all the found scripts.
+			foreach ($scripts as $key => $script)
 			{
+				$id = preg_replace('~[^\w\d]~', '_', $key);
 				echo '
-				<ul id="', preg_replace('~[^\w\d]~', '_', $key), '">';
-
-				// Let's loop and output all the found scripts.
-				foreach ($value as $script)
-					echo '
-					<li>
-						<a href="', $_SERVER['PHP_SELF'], '?import_script=', $script['path'], '">', $script['name'], '</a>
-						<span>(', $script['path'], ')</span>
-					</li>';
-
-				echo '
-				</ul>';
+						<li>
+							<input class="input_select" data-type="source" type="radio" value="', $script['path'], '" id="source_', $id, '" name="source" />
+							<label for="source_', $id, '">', $script['name'], '</label>
+						</li>';
 			}
 
 			echo '
-			</div>
+					</ul>
+				</div>
+				<input class="start_conversion" type="submit" value="', $this->lng->get('start_conversion'), '" />
+			</form>
 			<h2>', $this->lng->get('not_here'), '</h2>
 			<div class="content">
 				<p>', $this->lng->get('check_more'), '</p>
@@ -459,30 +473,39 @@ class Template
 			echo '
 				<p>', $this->lng->get('not_found'), '</p>
 				<p>', $this->lng->get('not_found_download'), '</p>
-				<a href="', $_SERVER['PHP_SELF'], '?import_script=">', $this->lng->get('try_again'), '</a>';
+				<a href="', $this->response->scripturl, '?import_script=">', $this->lng->get('try_again'), '</a>';
 
 		echo '
+			</div>
 			<script>
-				function toggle_to(e)
-				{
-					var dest_container = document.getElementById(\'destinations\');
-					var dests = dest_container.getElementsByTagName(\'ul\');
-					var sources = document.getElementById(\'source\').getElementsByTagName(\'li\');
+				$(document).ready(function() {
+					$(".input_select").each(function() {
+						var $input = $(this),
+							$button = $input.next();
 
-					for (var i = 0; i < dests.length; i++)
-						dests[i].style.display = \'none\';
+						$button.click(function() {
+							var $elem = $(this),
+								type = $input.data("type");
 
-					if (typeof e === \'undefined\')
-						e = sources[0];
+							$(".input_select").each(function() {
+								if ($(this).data("type") == type)
+								{
+									if ($(this).val() == $input.val())
+										return true;
 
-					for (var i = 0; i < sources.length; i++)
-						sources[i].removeAttribute("class");
-					e.setAttribute("class", "active");
-					document.getElementById(e.getAttribute(\'data-value\')).style.display = \'block\';
-				}
-				toggle_to();
-			</script>
-			</div>';
+									$input.prop("checked", false);
+									$(this).closest("li").removeClass("active");
+								}
+							});
+							$input.prop("checked", !$input.prop("checked"));
+							$(this).closest("li").toggleClass("active");
+						});
+
+						$input.hide();
+						$input.after($button);
+					});
+				});
+			</script>';
 	}
 
 	public function step0($object, $form)

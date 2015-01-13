@@ -5,15 +5,11 @@
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
  * @version 1.0 Alpha
- *
- * This file contains code based on:
- *
- * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+// @todo this should probably go somewhere else...
 require_once(BASEDIR . '/OpenImporter/Utils.php');
+
 // A shortcut
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
@@ -63,12 +59,6 @@ class ImportManager
 	 * @var object
 	 */
 	protected $lng;
-
-	/**
-	 * An array of possible importer scripts
-	 * @var array
-	 */
-	public $sources;
 
 	/**
 	 * Data used by the script and stored in session between a reload and the
@@ -194,15 +184,20 @@ class ImportManager
 	protected function _findScript()
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
-		if (isset($_REQUEST['import_script']))
-			$this->data['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
+		if (isset($_POST['destination']) && isset($_POST['source']))
+		{
+			$this->data['import_script'] = $this->config->script = array(
+				'destination' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $_REQUEST['destination'])),
+				'source' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $_REQUEST['source'])),
+			);
+		}
 		elseif (isset($this->data['import_script']))
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
 		}
 		else
 		{
-			$this->config->script = '';
+			$this->config->script = array();
 			$this->data['import_script'] = null;
 		}
 	}
@@ -279,8 +274,11 @@ class ImportManager
 		else
 			$this->response->page_title = 'OpenImporter';
 
+		$this->response->source = !empty($this->response->script['source']) ? addslashes($this->response->script['source']) : '\'\'';
+		$this->response->destination = !empty($this->response->script['destination']) ? addslashes($this->response->script['destination']) : '\'\'';
 // 		$this->response->from = $this->importer->settings : null
 		$this->response->script = $this->config->script;
+		$this->response->scripturl = $_SERVER['PHP_SELF'];
 // 		$this->response->
 // 		$this->response->
 // 		$this->response->
@@ -298,14 +296,30 @@ class ImportManager
 		$this->data['import_script'] = null;
 	}
 
-	protected function validateScript($script)
+	/**
+	 * Verifies the scripts exist.
+	 * @param string[] $scripts Destination and source script in an associative
+	 *                 array:
+	 *                   array(
+	 *                     'destination' => 'destination_name.php',
+	 *                     'source' => 'source_name.xml',
+	 *                   )
+	 */
+	protected function validateScript($scripts)
 	{
-		$script = preg_replace('~[\.]+~', '.', $script);
+		$return = array();
+		foreach ((array) $scripts as $key => $script)
+		{
+			$script = preg_replace('~[\.]+~', '.', $script);
+			$key = preg_replace('~[\.]+~', '.', $key);
 
-		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script) && preg_match('~_importer\.xml$~', $script) != 0)
-			return $script;
-		else
-			return false;
+			if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_importer\.(xml|php)$~', $script) == 0)
+				return false;
+
+			$return[$key] = $script;
+		}
+
+		return $return;
 	}
 
 	/**
@@ -319,43 +333,19 @@ class ImportManager
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
 		}
+		$destination_names = $this->findDestinations();
 
-		$sources = glob(BASEDIR . DS . 'Importers' . DS . '*', GLOB_ONLYDIR);
-		$count_scripts = 0;
-		$scripts = array();
-		$destination_names = array();
-		foreach ($sources as $source)
-		{
-			$from = basename($source);
-			$scripts[$from] = array();
-			$possible_scripts = glob($source . DS . '*_importer.xml');
-
-			// Silence simplexml errors
-			libxml_use_internal_errors(true);
-			foreach ($possible_scripts as $entry)
-			{
-				// If a script is broken simply skip it.
-				if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
-				{
-					continue;
-				}
-
-				$scripts[$from][] = array('path' => $from . DS . basename($entry), 'name' => (string) $xmlObj->general->name);
-				$destination_names[$from] = (string) $xmlObj->general->version;
-				$count_scripts++;
-			}
-		}
+		$scripts = $this->findSources();
+		$count_scripts = count($scripts);
 
 		if (!empty($this->data['import_script']))
 		{
-			if ($count_scripts > 1)
-				$this->sources[$from] = $scripts[$from];
 			return false;
 		}
 
 		if ($count_scripts == 1)
 		{
-			$this->data['import_script'] = basename($scripts[$from][0]['path']);
+			$this->data['import_script'] = basename($scripts[0]['path']);
 			if (substr($this->data['import_script'], -4) == '.xml')
 			{
 				try
@@ -369,15 +359,68 @@ class ImportManager
 			}
 			return false;
 		}
-		foreach ($scripts as $key => $val)
-			usort($scripts[$key], function ($v1, $v2) {
-				return strcasecmp($v1['name'], $v2['name']);
-			});
 
 		$this->response->use_template = 'select_script';
 		$this->response->params_template = array($scripts, $destination_names);
 
 		return true;
+	}
+
+	/**
+	 * Simply scans the Importers/sources directory looking for source
+	 * files.
+	 *
+	 * @return string[]
+	 */
+	protected function findSources()
+	{
+		$scripts = array();
+
+		// Silence simplexml errors
+		libxml_use_internal_errors(true);
+		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_importer.xml') as $entry)
+		{
+			// If a script is broken simply skip it.
+			if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
+			{
+				continue;
+			}
+			$file_name = basename($entry);
+
+			$scripts[$file_name] = array(
+				'path' => $file_name,
+				'name' => (string) $xmlObj->general->name
+			);
+		}
+
+		usort($scripts, function ($v1, $v2) {
+			return strcasecmp($v1['name'], $v2['name']);
+		});
+
+		return $scripts;
+	}
+
+	/**
+	 * Simply scans the Importers/destinations directory looking for destination
+	 * files.
+	 *
+	 * @return string[]
+	 */
+	protected function findDestinations()
+	{
+		$destinations = array();
+		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*_importer.php') as $file)
+		{
+			require_once($file);
+			$file_name = basename($file);
+			$class_name = strtr($file_name, array('.php' => '', '.' => '_'));
+			$obj = new $class_name();
+			$destinations[$file_name] = $obj->getName();
+		}
+
+		asort($destinations);
+
+		return $destinations;
 	}
 
 	/**
@@ -546,7 +589,7 @@ class ImportManager
 		$this->response->use_template = 'step3';
 		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
-		unset ($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
+		unset($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
 		$this->data = array();
 
 		return true;

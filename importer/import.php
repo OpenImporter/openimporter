@@ -14,6 +14,8 @@ $classLoader = new SplClassLoader(null, BASEDIR . '/OpenImporter');
 $classLoader->register();
 $classLoader2 = new SplClassLoader(null, BASEDIR . '/Importers');
 $classLoader2->register();
+// Composer stuff
+require_once(BASEDIR . '/vendor/autoload.php');
 
 @set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exception_handler'));
@@ -42,7 +44,8 @@ if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 	$_POST = stripslashes_recursive($_POST);
 
 $config = new Configurator();
-$config->lang_dir = BASEDIR . '/Languages';
+$config->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
+$config->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
 
 try
 {

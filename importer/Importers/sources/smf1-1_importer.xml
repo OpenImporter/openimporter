@@ -1,0 +1,259 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>SMF 1.1</name>
+		<className>SMF1_1</className>
+	</general>
+	<step id="settings">
+		<title>Importing settings</title>
+		<detect>{$from_prefix}settings</detect>
+	</step>
+	<step id="members" type="mandatory">
+		<title>Importing members</title>
+		<detect>{$from_prefix}members</detect>
+		<query>
+			SELECT
+				ID_MEMBER as id_member, memberName AS member_name, dateRegistered AS date_registered,
+				posts, ID_GROUP as id_group, lngfile, lastLogin AS last_login,
+				realName AS real_name, instantMessages AS personal_messages,
+				unreadMessages AS unread_messages, buddy_list, pm_ignore_list,
+				messageLabels AS message_labels, passwd, emailAddress AS email_address,
+				personalText AS personal_text, gender, birthdate, websiteUrl AS website_url,
+				websiteTitle AS website_title, location, hideEmail AS hide_email,
+				showOnline AS show_online, timeFormat AS time_format, signature,
+				timeOffset AS time_offset, avatar, pm_email_notify, usertitle, '' AS ignore_boards,
+				notifyAnnouncements AS notify_announcements, notifyOnce AS notify_regularity,
+				notifySendBody AS notify_send_body, notifyTypes AS notify_types,
+				memberIP AS member_ip, memberIP2 AS member_ip2, secretQuestion AS secret_question,
+				secretAnswer AS secret_answer, is_activated,
+				validation_code, ID_MSG_LAST_VISIT AS id_msg_last_visit, additionalGroups AS additional_groups,
+				smileySet AS smiley_set, ID_POST_GROUP AS id_post_group,
+				totalTimeLoggedIn AS total_time_logged_in, passwordSalt AS password_salt
+			FROM {$from_prefix}members;
+		</query>
+	</step>
+	<step id="attachments">
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}attachments</detect>
+		<query>
+			SELECT
+				ID_ATTACH AS id_attach, ID_THUMB AS id_thumb, ID_MSG AS id_msg, ID_MEMBER AS id_member,
+				attachmentType AS attachment_type, filename, file_hash, size, downloads,
+				width, height
+			FROM {$from_prefix}attachments;
+		</query>
+	</step>
+	<step id="avatars">
+		<title>Importing avatars</title>
+	</step>
+	<step id="categories">
+		<title>Importing categories</title>
+		<detect>{$from_prefix}categories</detect>
+		<query>
+			SELECT
+				ID_CAT AS id_cat, name, catOrder AS cat_order, canCollapse AS can_collapse
+			FROM {$from_prefix}categories;
+		</query>
+	</step>
+	<step id="collapsedcats">
+		<title>Importing collapsed categories</title>
+		<detect>{$from_prefix}collapsed_categories</detect>
+		<query>
+			SELECT
+				ID_CAT AS id_cat, ID_MEMBER AS id_member
+			FROM {$from_prefix}collapsed_categories;
+		</query>
+	</step>
+	<step id="boards">
+		<title>Importing boards</title>
+		<detect>{$from_prefix}boards</detect>
+		<query>
+			SELECT
+				ID_BOARD AS id_board, ID_CAT AS id_cat, childLevel AS child_level,
+				ID_PARENT AS id_parent, boardOrder AS board_order, ID_LAST_MSG AS id_last_msg,
+				ID_MSG_UPDATED AS id_msg_updated, memberGroups AS member_groups,
+				name, description, numTopics AS num_topics, numPosts AS num_posts,
+				countPosts AS count_posts, ID_THEME AS id_theme, override_theme
+			FROM {$from_prefix}boards;
+		</query>
+	</step>
+	<step id="topics">
+		<title>Importing topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<query>
+			SELECT
+				ID_TOPIC AS id_topic, isSticky AS is_sticky, ID_BOARD AS id_board,
+				ID_FIRST_MSG AS id_first_msg, ID_LAST_MSG AS id_last_msg,
+				ID_MEMBER_STARTED AS id_member_started, ID_MEMBER_UPDATED AS id_member_updated,
+				ID_POLL AS id_poll,numReplies AS num_replies, numViews AS num_views, locked
+			FROM {$from_prefix}topics;
+		</query>
+	</step>
+	<step id="messages">
+		<title>Importing messages</title>
+		<detect>{$from_prefix}messages</detect>
+		<options>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				ID_MSG AS id_msg, ID_TOPIC AS id_topic, ID_BOARD AS id_board, posterTime AS poster_time,
+				ID_MEMBER AS id_member, ID_MSG_MODIFIED AS id_msg_modified,
+				subject, posterName AS poster_name, posterEmail AS poster_email,
+				posterIP AS poster_ip, smileysEnabled AS smileys_enabled,
+				modifiedTime AS modified_time, modifiedName AS modified_name, body, icon
+			FROM {$from_prefix}messages;
+		</query>
+	</step>
+	<step id="polls">
+		<title>Importing polls</title>
+		<detect>{$from_prefix}polls</detect>
+		<query>
+			SELECT
+				ID_POLL AS id_poll, question, votingLocked AS voting_locked,
+				maxVotes AS max_votes, expireTime AS expire_time, hideResults AS hide_results,
+				changeVote AS change_vote, ID_MEMBER AS id_member, posterName AS poster_name
+			FROM {$from_prefix}polls;
+		</query>
+	</step>
+	<step id="polloptions">
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}poll_choices</detect>
+		<query>
+			SELECT
+				ID_POLL AS id_poll, ID_CHOICE AS id_choice, label, votes
+			FROM {$from_prefix}poll_choices;
+		</query>
+	</step>
+	<step id="pollvotes">
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}log_polls</detect>
+		<query>
+			SELECT
+				ID_POLL AS id_poll, ID_MEMBER AS id_member, ID_CHOICE AS id_choice
+			FROM {$from_prefix}log_polls;
+		</query>
+	</step>
+	<step id="pm">
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}personal_messages</detect>
+		<options>
+			<limit>200</limit>
+		</options>
+		<query>
+			SELECT
+				ID_PM AS id_pm, ID_PM AS id_pm_head, ID_MEMBER_FROM AS id_member_from, deletedBySender AS deleted_by_sender,
+				fromName AS from_name, msgtime, subject, body
+			FROM {$from_prefix}personal_messages;
+		</query>
+	</step>
+	<step id="pmrecipients">
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}pm_recipients</detect>
+		<query>
+			SELECT
+				ID_PM AS id_pm, ID_MEMBER AS id_member, labels, bcc, is_read, deleted
+			FROM {$from_prefix}pm_recipients;
+		</query>
+	</step>
+	<step id="boardmods">
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}moderators</detect>
+		<query>
+			SELECT
+				ID_BOARD AS id_board, ID_MEMBER AS id_member
+			FROM {$from_prefix}moderators;
+		</query>
+	</step>
+	<step id="markreadboards">
+		<title>Importing mark read data (boards)</title>
+		<detect>{$from_prefix}log_boards</detect>
+		<query>
+			SELECT
+				ID_MEMBER AS id_member, ID_BOARD AS id_board, ID_MSG AS id_msg
+			FROM {$from_prefix}log_boards;
+		</query>
+	</step>
+	<step id="markreadtopics">
+		<title>Importing mark read data (topics)</title>
+		<detect>{$from_prefix}log_topics</detect>
+		<query>
+			SELECT
+				ID_MEMBER AS id_member, ID_TOPIC AS id_topic, ID_MSG AS id_msg
+			FROM {$from_prefix}log_topics;
+		</query>
+	</step>
+	<step id="markread">
+		<title>Importing mark read data</title>
+		<detect>{$from_prefix}log_mark_read</detect>
+		<query>
+			SELECT
+				ID_MEMBER AS id_member, ID_BOARD AS id_board, ID_MSG AS id_msg
+			FROM {$from_prefix}log_mark_read;
+		</query>
+	</step>
+	<step id="notifications">
+		<title>Importing notifications</title>
+		<detect>{$from_prefix}log_notify</detect>
+		<query>
+			SELECT
+				ID_MEMBER AS id_member, ID_TOPIC AS id_topic, ID_BOARD AS id_board, sent
+			FROM {$from_prefix}log_notify;
+		</query>
+	</step>
+	<step id="membergroups">
+		<title>Importing membergroups</title>
+		<detect>{$from_prefix}membergroups</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				ID_GROUP AS id_group, groupName AS group_name, onlineColor AS online_color, minPosts AS min_posts,
+				maxMessages AS max_messages, stars AS icons, 1 AS group_type,
+				'' AS description
+			FROM {$from_prefix}membergroups;
+		</query>
+	</step>
+	<step id="permissions">
+		<title>Importing permissions</title>
+		<detect>{$from_prefix}permissions</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				ID_GROUP AS id_group, permission, addDeny AS add_deny
+			FROM {$from_prefix}permissions;
+		</query>
+	</step>
+	<step id="permissionboards">
+		<title>Importing board permissions</title>
+		<detect>{$from_prefix}board_permissions</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				ID_GROUP AS id_group, 1 as id_profile, permission, addDeny AS add_deny
+			FROM {$from_prefix}board_permissions;
+		</query>
+	</step>
+	<step id="smiley">
+		<title>Importing smileys</title>
+		<detect>{$from_prefix}smileys</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				ID_SMILEY AS id_smiley, code, filename, description, smileyRow AS smiley_row,
+				smileyOrder AS smiley_order, hidden
+			FROM {$from_prefix}smileys;
+		</query>
+	</step>
+	<step id="copysmiley">
+		<title>Copying smileys</title>
+		<detect>{$from_prefix}smileys</detect>
+	</step>
+</importer>

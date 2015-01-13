@@ -15,10 +15,28 @@
  */
 abstract class Step1BaseImporter extends BaseImporter
 {
-	public function beforeSql($method)
+	public function __call($name, $arguments)
 	{
-		if (method_exists($this, $method))
-			$this->$method();
+		$function = str_replace($this->config->to_prefix, '', $name);
+		if (method_exists($this, $function))
+			return call_user_func_array(array($this, $function), $arguments);
+		else
+			return $this->prepareRow($arguments[0], $arguments[1], $name);
+	}
+
+	protected function prepareRow($row, $special_code, $special_table)
+	{
+		if ($special_code !== null)
+			eval($special_code);
+
+		$row = $this->doSpecialTable($special_table, $row);
+
+		// fixing the charset, we need proper utf-8
+		$row = fix_charset($row);
+
+		$row = $this->fixTexts($row);
+
+		return $row;
 	}
 
 	public function doSpecialTable($table, $params = null)

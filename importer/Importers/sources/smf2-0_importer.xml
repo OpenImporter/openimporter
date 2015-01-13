@@ -1,0 +1,405 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>SMF 2.0</name>
+		<className>SMF2_0</className>
+	</general>
+	<step id="settings">
+		<title>Importing settings</title>
+		<detect>{$from_prefix}settings</detect>
+	</step>
+	<step id="members" type="mandatory">
+		<title>Importing members</title>
+		<detect>{$from_prefix}members</detect>
+		<query>
+			SELECT
+				id_member, member_name, date_registered, posts, id_group, lngfile as language, last_login,
+				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
+				pm_prefs, mod_prefs, message_labels, passwd, email_address, personal_text,
+				gender, birthdate, website_url, website_title, location, hide_email, show_online,
+				time_format, signature, time_offset, avatar, pm_email_notify,
+				usertitle, notify_announcements, notify_regularity, notify_send_body,
+				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
+				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
+				total_time_logged_in, password_salt, ignore_boards,
+				IFNULL(warning, 0) AS warning, passwd_flood,
+				pm_receive_from, '' as avatartype
+			FROM {$from_prefix}members;
+		</query>
+	</step>
+	<step id="attachments">
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}attachments</detect>
+		<query>
+			SELECT
+				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
+				width, height, fileext, mime_type, id_folder
+			FROM {$from_prefix}attachments;
+		</query>
+	</step>
+	<step id="avatars">
+		<title>Importing avatars</title>
+	</step>
+	<step id="categories">
+		<title>Importing categories</title>
+		<detect>{$from_prefix}categories</detect>
+		<query>
+			SELECT
+				id_cat, name, cat_order, can_collapse
+			FROM {$from_prefix}categories;
+		</query>
+	</step>
+	<step id="collapsedcats">
+		<title>Importing collapsed categories</title>
+		<detect>{$from_prefix}collapsed_categories</detect>
+		<query>
+			SELECT
+				id_cat, id_member
+			FROM {$from_prefix}collapsed_categories;
+		</query>
+	</step>
+	<step id="boards">
+		<title>Importing boards</title>
+		<detect>{$from_prefix}boards</detect>
+		<query>
+			SELECT
+				id_board, id_cat, child_level, id_parent, board_order, id_last_msg, id_msg_updated, member_groups,
+				id_profile, name, description, num_topics, num_posts, count_posts, id_theme,
+				override_theme, unapproved_posts, unapproved_topics, redirect
+			FROM {$from_prefix}boards;
+		</query>
+	</step>
+	<step id="topics">
+		<title>Importing topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<query>
+			SELECT
+				id_topic, is_sticky, id_board, id_first_msg, id_last_msg, id_member_started,
+				id_member_updated, id_poll,id_previous_board, id_previous_topic, num_replies,
+				num_views, locked, unapproved_posts, approved
+			FROM {$from_prefix}topics;
+		</query>
+	</step>
+	<step id="messages">
+		<title>Importing messages</title>
+		<detect>{$from_prefix}messages</detect>
+		<options>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				id_msg, id_topic, id_board, poster_time, id_member, id_msg_modified, subject, poster_name,
+				poster_email, poster_ip, smileys_enabled, modified_time, modified_name, body, icon, approved
+			FROM {$from_prefix}messages;
+		</query>
+	</step>
+	<step id="polls">
+		<title>Importing polls</title>
+		<detect>{$from_prefix}polls</detect>
+		<query>
+			SELECT
+				id_poll, question, voting_locked, max_votes, expire_time, hide_results, change_vote,
+				guest_vote, num_guest_voters, reset_poll, id_member, poster_name
+			FROM {$from_prefix}polls;
+		</query>
+	</step>
+	<step id="polloptions">
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}poll_choices</detect>
+		<query>
+			SELECT
+				id_poll, id_choice, label, votes
+			FROM {$from_prefix}poll_choices;
+		</query>
+	</step>
+	<step id="pollvotes">
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}log_polls</detect>
+		<query>
+			SELECT
+				id_poll, id_member, id_choice
+			FROM {$from_prefix}log_polls;
+		</query>
+	</step>
+	<step id="pm">
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}personal_messages</detect>
+		<options>
+			<limit>200</limit>
+		</options>
+		<query>
+			SELECT
+				id_pm, id_pm_head, id_member_from, deleted_by_sender, from_name,
+				msgtime, subject, body
+			FROM {$from_prefix}personal_messages;
+		</query>
+	</step>
+	<step id="pmrecipients">
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}pm_recipients</detect>
+		<query>
+			SELECT
+				id_pm, id_member, labels, bcc, is_read, is_new, deleted
+			FROM {$from_prefix}pm_recipients;
+		</query>
+	</step>
+	<step id="pmrules">
+		<title>Importing pm rules</title>
+		<detect>{$from_prefix}pm_rules</detect>
+		<query>
+			SELECT
+				id_rule, id_member, rule_name, criteria, actions, delete_pm, is_or
+			FROM {$from_prefix}pm_rules;
+		</query>
+	</step>
+	<step id="boardmods">
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}moderators</detect>
+		<query>
+			SELECT
+				id_board, id_member
+			FROM {$from_prefix}moderators;
+		</query>
+	</step>
+	<step id="markreadboards">
+		<title>Importing mark read data (boards)</title>
+		<detect>{$from_prefix}log_boards</detect>
+		<query>
+			SELECT
+				id_member, id_board, id_msg
+			FROM {$from_prefix}log_boards;
+		</query>
+	</step>
+	<step id="markreadtopics">
+		<title>Importing mark read data (topics)</title>
+		<detect>{$from_prefix}log_topics</detect>
+		<query>
+			SELECT
+				id_member, id_topic, id_msg
+			FROM {$from_prefix}log_topics;
+		</query>
+	</step>
+	<step id="markread">
+		<title>Importing mark read data</title>
+		<detect>{$from_prefix}log_mark_read</detect>
+		<query>
+			SELECT
+				id_member, id_board, id_msg
+			FROM {$from_prefix}log_mark_read;
+		</query>
+	</step>
+	<step id="notifications">
+		<title>Importing notifications</title>
+		<detect>{$from_prefix}log_notify</detect>
+		<query>
+			SELECT
+				id_member, id_topic, id_board, sent
+			FROM {$from_prefix}log_notify;
+		</query>
+	</step>
+	<step id="membergroups">
+		<title>Importing membergroups</title>
+		<detect>{$from_prefix}membergroups</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, group_name, description, online_color, min_posts,
+				max_messages, stars AS icons, group_type, hidden, id_parent
+			FROM {$from_prefix}membergroups;
+		</query>
+	</step>
+	<step id="groupmods">
+		<title>Importing group moderators</title>
+		<detect>{$from_prefix}group_moderators</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, id_member
+			FROM {$from_prefix}group_moderators;
+		</query>
+	</step>
+	<step id="permissionprofiles">
+		<title>Importing permission profiles</title>
+		<detect>{$from_prefix}permission_profiles</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_profile, profile_name
+			FROM {$from_prefix}permission_profiles;
+		</query>
+	</step>
+	<step id="permissions">
+		<title>Importing permissions</title>
+		<detect>{$from_prefix}permissions</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, permission, add_deny
+			FROM {$from_prefix}permissions;
+		</query>
+	</step>
+	<step id="permissionboards">
+		<title>Importing board permissions</title>
+		<detect>{$from_prefix}board_permissions</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_group, id_profile, permission, add_deny
+			FROM {$from_prefix}board_permissions;
+		</query>
+	</step>
+	<step id="smiley">
+		<title>Importing smileys</title>
+		<detect>{$from_prefix}smileys</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id_smiley, code, filename, description, smiley_row,
+				smiley_order, hidden
+			FROM {$from_prefix}smileys;
+		</query>
+	</step>
+	<step id="copysmiley">
+		<title>Copying smileys</title>
+		<detect>{$from_prefix}smileys</detect>
+	</step>
+	<step id="statistics">
+		<title>Importing statistics (activity log)</title>
+		<detect>{$from_prefix}log_activity</detect>
+		<query>
+			SELECT
+				date, hits, topics, posts, registers, most_on
+			FROM {$from_prefix}log_activity;
+		</query>
+	</step>
+	<step id="logactions">
+		<title>Importing logged actions</title>
+		<detect>{$from_prefix}log_actions</detect>
+		<query>
+			SELECT
+				id_action, id_log, log_time, id_member, ip, action, id_board,
+				id_topic, id_msg, extra
+			FROM {$from_prefix}log_actions;
+		</query>
+	</step>
+	<step id="reports">
+		<title>Importing reported posts</title>
+		<detect>{$from_prefix}log_reported</detect>
+		<query>
+			SELECT
+				id_report, id_msg, id_topic, id_board, id_member, membername, subject,
+				body, time_started, time_updated, num_reports, closed, ignore_all
+			FROM {$from_prefix}log_reported;
+		</query>
+	</step>
+	<step id="reportscomments">
+		<title>Importing reported comments</title>
+		<detect>{$from_prefix}log_reported_comments</detect>
+		<query>
+			SELECT
+				id_comment, id_report, id_member, membername, comment, time_sent
+			FROM {$from_prefix}log_reported_comments;
+		</query>
+	</step>
+	<step id="spiderhits">
+		<title>Importing spider hits</title>
+		<detect>{$from_prefix}log_spider_hits</detect>
+		<query>
+			SELECT
+				id_hit, id_spider, log_time, url, processed
+			FROM {$from_prefix}log_spider_hits;
+		</query>
+	</step>
+	<step id="spiderstats">
+		<title>Importing spider stats</title>
+		<detect>{$from_prefix}log_spider_stats</detect>
+		<query>
+			SELECT
+				id_spider, page_hits, last_seen, stat_date
+			FROM {$from_prefix}log_spider_stats;
+		</query>
+	</step>
+	<step id="paidscubscriptions">
+		<title>Importing subscriptions</title>
+		<detect>{$from_prefix}subscriptions</detect>
+		<query>
+			SELECT
+				id_subscribe, name, description, cost, length, id_group,
+				add_groups, active, repeatable, allow_partial, reminder, email_complete
+			FROM {$from_prefix}subscriptions;
+		</query>
+	</step>
+	<step id="friendlyurls">
+		<title>Importing pretty topic urls</title>
+		<detect>{$from_prefix}pretty_topic_urls</detect>
+		<query>
+			SELECT
+				id_topic, pretty_url as friendly_url
+			FROM {$from_prefix}pretty_topic_urls;
+		</query>
+	</step>
+	<step id="friendlyurlcache">
+		<title>Importing pretty urls cache</title>
+		<detect>{$from_prefix}pretty_urls_cache</detect>
+		<query>
+			SELECT
+				url_id, replacement
+			FROM {$from_prefix}pretty_urls_cache;
+		</query>
+	</step>
+	<step id="customfields">
+		<title>Importing custom fields</title>
+		<detect>{$from_prefix}custom_fields</detect>
+		<query>
+			SELECT
+				id_field, col_name, field_name, field_desc, field_type, field_length,
+				field_options, mask, show_reg, show_display, show_profile, private,
+				active, bbc, can_search, default_value, enclose, placement
+			FROM {$from_prefix}custom_fields;
+		</query>
+	</step>
+	<step id="customfieldsdata">
+		<title>Importing custom fields data</title>
+		<detect>{$from_prefix}custom_fields</detect>
+		<query>
+			SELECT
+				id_member, variable, value
+			FROM {$from_prefix}themes
+			WHERE variable LIKE 'cust\_%';
+		</query>
+	</step>
+	<step id="likes">
+		<title>Importing likes from Thank you mod</title>
+		<detect>{$from_prefix}thank_you_post</detect>
+		<query>
+			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
+			FROM {$from_prefix}thank_you_post AS th
+				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
+				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
+		</query>
+	</step>
+	<step id="likes">
+		<title>Importing likes from Joker's Like Posts mod</title>
+		<detect>{$from_prefix}like_post</detect>
+		<query>
+			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
+			FROM {$from_prefix}like_post AS lp;
+		</query>
+	</step>
+	<step id="likes">
+		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
+		<detect>{$from_prefix}likes</detect>
+	</step>
+</importer>

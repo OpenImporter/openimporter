@@ -18,7 +18,7 @@ class phpBB3 extends AbstractSourceImporter
 
 	public function getVersion()
 	{
-		return 'Wedge 0.1';
+		return '1.0';
 	}
 
 	public function setDefines()
@@ -28,9 +28,9 @@ class phpBB3 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $dbname, $table_prefix;
+		global $table_prefix;
 
-		return '`' . $this-getDbName() . '`.' . $table_prefix;
+		return '`' . $this->getDbName() . '`.' . $table_prefix;
 	}
 
 	public function getDbName()
@@ -43,6 +43,55 @@ class phpBB3 extends AbstractSourceImporter
 	public function getTableTest()
 	{
 		return 'users';
+	}
+
+	protected function fixBbc($body, $bbc_replace)
+	{
+		$body = phpbb_replace_bbc($body);
+		$body = str_replace($bbc_replace, '', $body);
+
+		return $body;
+	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = $this->fixBbc($row['signature'], $row['tmp_bbc_replace']);
+			unset($row['tmp_bbc_replace']);
+
+			$rows[] = $row;
+		}
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = $this->fixBbc($row['body'], $row['tmp_bbc_replace']);
+			unset($row['tmp_bbc_replace']);
+
+			$rows[] = $row;
+		}
+	}
+
+	public function preparsePm($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['body'] = $this->fixBbc($row['body'], $row['tmp_bbc_replace']);
+			unset($row['tmp_bbc_replace']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 }
 

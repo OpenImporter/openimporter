@@ -2,7 +2,7 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>SMF 2.0</name>
-		<version>Wedge 0.1</version>
+		<version>ElkArte 1.0</version>
 		<className>SMF2_0</className>
 	</general>
 	<step>
@@ -180,10 +180,12 @@
 			while ($row = $this->db->fetch_assoc($request))
 			{
 				if (in_array($row['variable'], $do_import))
+				{
 					$this->db->query("
 						REPLACE INTO {$to_prefix}settings
 							(variable, value)
-						VALUES('$row[variable]', '$row[value]')");
+						VALUES('$row[variable]', '" . addcslashes($row['value'], '\'\\"') . "')");
+				}
 
 				if ($row['variable'] == 'pretty_board_urls')
 				{
@@ -200,32 +202,19 @@
 		<detect>{$from_prefix}members</detect>
 		<destination>{$to_prefix}members</destination>
 		<presql>TRUNCATE {$to_prefix}members;</presql>
-		<preparsecode>
-			// We're going to import some of SMF's member settings into the serialized data array.
-			$data = array(
-				'pmlabs' => $row['message_labels'],
-				'modset' => $row['mod_prefs'],
-			);
-			if (!empty($row['secret_question']))
-				$data['secret'] = $row['secret_question'] . '|' . $row['secret_answer'];
-
-			$row['data'] = serialize($data);
-
-			unset($data, $row['message_labels'], $row['mod_prefs'], $row['secret_question'], $row['secret_answer']);
-		</preparsecode>
 		<query>
 			SELECT
 				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
-				real_name, instant_messages, unread_messages, buddy_list, pm_ignore_list,
-				pm_prefs, passwd, email_address, personal_text, gender, birthdate,
-				website_url, website_title, location, hide_email, show_online,
+				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
+				pm_prefs, mod_prefs, message_labels, passwd, email_address, personal_text,
+				gender, birthdate, website_url, website_title, location, hide_email, show_online,
 				time_format, signature, time_offset, avatar, pm_email_notify,
 				usertitle, notify_announcements, notify_regularity, notify_send_body,
-				notify_types, member_ip, member_ip2, is_activated, validation_code,
-				id_msg_last_visit, additional_groups, smiley_set, id_post_group,
+				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
+				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
 				total_time_logged_in, password_salt, ignore_boards,
-				IFNULL(warning, 0) AS warning, passwd_flood, pm_receive_from,
-				message_labels, secret_question, secret_answer, mod_prefs, '' AS data
+				IFNULL(warning, 0) AS warning, passwd_flood,
+				pm_receive_from AS receive_from
 			FROM {$from_prefix}members;
 		</query>
 	</step>
@@ -236,58 +225,52 @@
 		<presql>TRUNCATE {$to_prefix}attachments;</presql>
 		<presqlMethod>removeAttachments</presqlMethod>
 		<preparsecode>
-			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
+			moveAttachment($row, $this->db, $this->config->from_prefix, $this->getAttachDir($row));
 		</preparsecode>
 		<query>
 			SELECT
 				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder, '' AS transparency
-			FROM {$from_prefix}attachments
-			WHERE id_msg != 0;
+				width, height, fileext, mime_type, id_folder
+			FROM {$from_prefix}attachments;
 		</query>
 	</step>
 	<step>
 		<title>Importing avatars</title>
-		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<preparsecode>
-			// Try custom_avatar_dir first
-			$request = $this->db->query("
+		<code>
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$from_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			if (!empty($smf_avatarg) and !empty($elk_avatarg))
+				copy_dir_recursive($smf_avatarg, $elk_avatarg);
+
+			$avatarg = $this->db->query("
 				SELECT value
 				FROM {$from_prefix}settings
 				WHERE variable = 'custom_avatar_dir';");
-			list ($smf_attachments_dir) = $this->db->fetch_row($request);
+			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
 
-			if (empty($smf_attachments_dir))
-			{
-				$request = $this->db->query("
-					SELECT value
-					FROM {$from_prefix}settings
-					WHERE variable='attachmentUploadDir';");
-				list ($smf_attachments_dir) = $this->db->fetch_row($request);
-			}
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'custom_avatar_dir';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
 
-			$avatarUploadDir = $this->step1_importer->getAvatarDir($row);
-			if ($avatarUploadDir == $this->step1_importer->getAttachDir($row))
-				$row['attachment_type'] = 0;
-
-			if (empty($row['file_hash']))
-			{
-				$row['file_hash'] = createAttachmentFileHash($row['filename']);
-				copy_file($smf_attachments_dir . '/' . $row['filename'], $avatarUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-			}
-			else
-			{
-				copy_file($smf_attachments_dir . '/' . $row['id_attach'] . '_' . $row['file_hash'], $avatarUploadDir . '/'. $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
-			}
-		</preparsecode>
-		<query>
-			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder, '' AS transparency
-			FROM {$from_prefix}attachments
-			WHERE id_member != 0;
-		</query>
+			if (!empty($smf_avatarg) and !empty($elk_avatarg))
+				copy_dir_recursive($smf_avatarg, $elk_avatarg);
+		</code>
 	</step>
 	<step>
 		<title>Importing categories</title>
@@ -316,32 +299,11 @@
 		<detect>{$from_prefix}boards</detect>
 		<destination>{$to_prefix}boards</destination>
 		<presql>TRUNCATE {$to_prefix}boards;</presql>
-		<preparsecode>
-			$row['url'] = substr($this->config->boardurl, strpos($this->config->boardurl, '://') + 3) . '/board' . $row['url'];
-
-			if (!empty($pretty_urls))
-				foreach (unserialize($pretty_urls) as $id_board => $url)
-					if ($id_board == $row['id_board'])
-						$row['url'] = substr($this->config->boardurl, strpos($this->config->boardurl, '://') + 3) . '/' . $url;
-
-			$row['urllen'] = strlen($row['url']);
-
-			if (!empty($row['member_groups']))
-			{
-				$permissions = explode(',', $row['member_groups']);
-				foreach ($permissions as $allowed)
-					$db->query("
-						REPLACE INTO {$to_prefix}board_groups
-							(id_group, id_board, view_perm, enter_perm)
-						VALUES ('$allowed', $row[id_board], 'allow', 'allow')
-					");
-			}
-		</preparsecode>
 		<query>
 			SELECT
 				id_board, id_cat, child_level, id_parent, board_order, id_last_msg, id_msg_updated, member_groups,
-				id_profile, name, description, num_topics, num_posts, count_posts,
-				override_theme AS override_skin, unapproved_posts, unapproved_topics, redirect, id_board AS url
+				id_profile, name, description, num_topics, num_posts, count_posts, id_theme,
+				override_theme, unapproved_posts, unapproved_topics, redirect
 			FROM {$from_prefix}boards;
 		</query>
 	</step>
@@ -352,7 +314,7 @@
 		<presql>TRUNCATE {$to_prefix}topics;</presql>
 		<query>
 			SELECT
-				id_topic, is_sticky AS is_pinned, id_board, id_first_msg, id_last_msg, id_member_started,
+				id_topic, is_sticky, id_board, id_first_msg, id_last_msg, id_member_started,
 				id_member_updated, id_poll,id_previous_board, id_previous_topic, num_replies,
 				num_views, locked, unapproved_posts, approved
 			FROM {$from_prefix}topics;
@@ -364,7 +326,7 @@
 		<destination>{$to_prefix}messages</destination>
 		<presql>TRUNCATE {$to_prefix}messages;</presql>
 		<options>
-			<limit>250</limit>
+			<limit>100</limit>
 		</options>
 		<query>
 			SELECT
@@ -456,6 +418,17 @@
 		</query>
 	</step>
 	<step>
+		<title>Importing mark read data (boards)</title>
+		<detect>{$from_prefix}log_boards</detect>
+		<destination>{$to_prefix}log_boards</destination>
+		<presql>TRUNCATE {$to_prefix}log_boards;</presql>
+		<query>
+			SELECT
+				id_member, id_board, id_msg
+			FROM {$from_prefix}log_boards;
+		</query>
+	</step>
+	<step>
 		<title>Importing mark read data (topics)</title>
 		<detect>{$from_prefix}log_topics</detect>
 		<destination>{$to_prefix}log_topics</destination>
@@ -495,21 +468,10 @@
 		<options>
 			<replace>true</replace>
 		</options>
-		<preparsecode>
-			if (!empty($row['online_color']))
-			{
-				if ($row['online_color'] == '#FF0000') // admin's shiny red?
-					$row['online_color'] =  '#d2653a'; // subdued red is better.
-				if ($row['online_color'] == '#0000FF') // global mod's bright blue?
-					$row['online_color'] =  '#c18933'; // light brown is better.
-			}
-			if (!empty($row['stars']))
-				$row['stars'] = str_replace('#star', '#rank', $row['stars']);
-		</preparsecode>
 		<query>
 			SELECT
 				id_group, group_name, description, online_color, min_posts,
-				max_messages, stars, group_type, hidden, id_parent
+				max_messages, stars AS icons, group_type, hidden, id_parent
 			FROM {$from_prefix}membergroups;
 		</query>
 	</step>
@@ -583,7 +545,11 @@
 		<title>Copying smileys</title>
 		<detect>{$from_prefix}smileys</detect>
 		<code>
-			$smileys_dir = $this->config->path_to . '/assets/smileys';
+			$request = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable='smileys_dir';");
+			list ($smileys_dir) = $this->db->fetch_row($request);
 
 			$request = $this->db->query("
 				SELECT value
@@ -675,25 +641,63 @@
 		</query>
 	</step>
 	<step>
-		<title>Importing pretty topic urls</title>
-		<detect>{$from_prefix}pretty_topic_urls</detect>
-		<destination>{$to_prefix}pretty_topic_urls</destination>
-		<presql>TRUNCATE {$to_prefix}pretty_topic_urls;</presql>
+		<title>Importing custom fields</title>
+		<detect>{$from_prefix}custom_fields</detect>
+		<destination>{$to_prefix}custom_fields</destination>
+		<presql>TRUNCATE {$to_prefix}custom_fields;</presql>
 		<query>
 			SELECT
-				id_topic, pretty_url
-			FROM {$from_prefix}pretty_topic_urls;
+				id_field, col_name, field_name, field_desc, field_type, field_length,
+				field_options, mask, show_reg, show_display, show_profile, private,
+				active, bbc, can_search, default_value, enclose, placement
+			FROM {$from_prefix}custom_fields;
 		</query>
 	</step>
 	<step>
-		<title>Importing pretty urls cache</title>
-		<detect>{$from_prefix}pretty_urls_cache</detect>
-		<destination>{$to_prefix}pretty_urls_cache</destination>
-		<presql>TRUNCATE {$to_prefix}pretty_urls_cache;</presql>
+		<title>Importing custom fields data</title>
+		<detect>{$from_prefix}custom_fields</detect>
+		<destination>{$to_prefix}custom_fields_data</destination>
+		<presql>TRUNCATE {$to_prefix}custom_fields_data;</presql>
 		<query>
 			SELECT
-				url_id, replacement
-			FROM {$from_prefix}pretty_urls_cache;
+				id_member, variable, value
+			FROM {$from_prefix}themes
+			WHERE variable LIKE 'cust\_%';
 		</query>
+	</step>
+	<step>
+		<title>Importing likes from Thank you mod</title>
+		<detect>{$from_prefix}thank_you_post</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<query>
+			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
+			FROM {$from_prefix}thank_you_post AS th
+				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
+				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
+		</query>
+	</step>
+	<step>
+		<title>Importing likes from Joker's Like Posts mod</title>
+		<detect>{$from_prefix}like_post</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<query>
+			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
+			FROM {$from_prefix}like_post AS lp;
+		</query>
+	</step>
+	<step>
+		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
+		<detect>{$from_prefix}likes</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<code>
+			$keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
+			$rows = $this->config->source->fetchLikes();
+			$special_table = $this->config->to_prefix . 'message_likes';
+
+			$this->insertRows($rows, $keys, $special_table);
+		</code>
 	</step>
 </importer>

@@ -95,6 +95,7 @@
 			TRUNCATE {$to_prefix}log_mark_read;
 		</presql>
 		<query>
+			// @todo is_pinned should be replaced in a preparsecode or something
 			SELECT
 				t.tid AS id_topic, t.fid AS id_board, t.sticky AS is_pinned,
 				t.poll AS id_poll, t.views AS num_views, IFNULL(t.uid, 0) AS id_member_started,

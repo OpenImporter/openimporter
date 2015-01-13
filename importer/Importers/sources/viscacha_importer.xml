@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>Viscacha 0.8</name>
+		<className>Viscacha</className>
+	</general>
+	<step id="members" type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}member</detect>
+		<query>
+			SELECT
+				u.id AS id_member, SUBSTRING(u.name, 1, 80) AS member_name,
+				SUBSTRING(u.name, 1, 255) AS real_name,
+				SUBSTRING(u.pw, 1, 64) AS passwd,
+				IF(u.gender != '', u.gender, 0) AS gender,
+				SUBSTRING(u.mail, 1, 255) AS email_address,
+				u.lastvisit AS last_login, u.regdate AS date_registered,
+				u.birthday AS birthdate, u.location AS location,
+				IF (u.groups = 1, 1, 0) AS id_group,
+				u.posts AS posts, IF (u.opt_hidemail = 1, 1, 0) AS hide_email
+			FROM {$from_prefix}user AS u;
+		</query>
+	</step>
+	<step id="categories">
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}categories</detect>
+		<query>
+			SELECT
+				id AS id_cat, name AS name, position AS cat_order
+			FROM {$from_prefix}categories;
+		</query>
+	</step>
+	<step id="boards">
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}forums</detect>
+		<options>
+			<slashes>true</slashes>
+		</options>
+		<query>
+			SELECT
+				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups,
+				SUBSTRING(description, 1, 65534) AS description, position AS board_order,
+				(topics + replies) AS num_posts, topics AS num_topics, parent AS id_cat, parent AS id_parent
+			FROM {$from_prefix}forums;
+		</query>
+	</step>
+	<step id="topics">
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT
+				t.id AS id_topic, t.board AS id_board,
+				t.sticky AS is_sticky, t.name AS id_member_started,
+				t.last_name AS id_member_updated, t.vquestion AS id_poll,
+				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg,
+				t.status AS locked
+			FROM {$from_prefix}topics AS t
+				LEFT JOIN {$from_prefix}replies AS p ON (p.topic_id = t.id)
+			GROUP BY t.id
+				HAVING id_first_msg != 0
+				AND id_last_msg != 0;
+		</query>
+	</step>
+	<step id="messages">
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}posts</detect>
+		<options>
+			<slashes>true</slashes>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				p.id AS id_msg, p.topic_id AS id_topic, p.board  AS id_board,
+				p.date AS poster_time, p.name AS id_member, p.topic AS subject,
+				u.name AS poster_name, u.mail AS poster_email, p.ip AS poster_ip,
+				p.dosmileys AS smileys_enabled, p.edit AS modified_name, '' AS modified_time,
+				p.comment AS body, 'xx' AS icon
+			FROM {$from_prefix}replies AS p
+				LEFT JOIN {$from_prefix}user AS u ON (u.id = p.name)
+			GROUP BY p.id;
+		</query>
+	</step>
+	<step id="boardmods">
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}moderators</detect>
+		<query>
+			SELECT
+				mid AS id_member, bid AS id_board
+			FROM {$from_prefix}moderators;
+		</query>
+	</step>
+	<step id="pm">
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}pm</detect>
+		<query>
+			SELECT
+				pm.id AS id_pm, pm.pm_from AS id_member_from, pm.date AS msgtime,
+				IF(u.name IS NULL, 'Guest', SUBSTRING(u.name, 1, 255)) AS from_name,
+				SUBSTRING(pm.topic, 1, 255) AS subject,
+				SUBSTRING(pm.comment, 1, 65534) AS body
+			FROM {$from_prefix}pm AS pm
+				LEFT JOIN {$from_prefix}user AS u ON (u.id = pm.pm_from)
+			WHERE pm.dir = 1;
+		</query>
+	</step>
+	<step id="pmrecipients">
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}pm</detect>
+		<query>
+			SELECT
+				id AS id_pm, pm_to AS id_member, IF(status = 0 , 0, status) AS is_read,
+				0 AS deleted, '-1' AS labels
+			FROM {$from_prefix}pm
+			WHERE dir = 1;
+		</query>
+	</step>
+	<step id="polls">
+		<title>Importing polls</title>
+		<detect>{$from_prefix}topics</detect>
+		<query>
+			SELECT
+				t.id AS id_poll, SUBSTRING(t.vquestion , 1, 255) AS question,
+				t.name AS id_member, 0 AS expire_time,
+				SUBSTRING(IFNULL(u.name, ''), 1, 255) AS poster_name,
+				'1' AS max_votes
+			FROM {$from_prefix}topics AS t
+				LEFT JOIN {$from_prefix}user AS u ON (t.name = u.id)
+			WHERE t.vquestion != '';
+		</query>
+	</step>
+	<step id="polloptions">
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}vote</detect>
+		<query>
+			SELECT
+				tid AS id_poll, id AS id_choice, SUBSTRING(answer, 1, 255) AS label, 0 AS votes
+			FROM {$from_prefix}vote;
+		</query>
+	</step>
+	<step id="pollvotes">
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}votes</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT
+				p.tid AS id_poll, v.mid AS id_member, v.aid AS id_choice
+			FROM {$from_prefix}votes AS v
+				LEFT JOIN {$from_prefix}vote AS p ON (v.aid = p.id);
+		</query>
+	</step>
+	<step id="attachments">
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}uploads</detect>
+		<query>
+			SELECT
+				id, tid AS id_msg, hits AS downloads, file AS filename
+			FROM {$from_prefix}uploads;
+		</query>
+	</step>
+	<step id="avatars">
+		<title>Importing avatars</title>
+		<detect>{$from_prefix}user</detect>
+		<query>
+			SELECT
+				pic AS filenamepath, id AS id_member
+			FROM {$from_prefix}user
+			WHERE pic != '';
+		</query>
+	</step>
+	<step id="notifications">
+		<title>Importing topic notifications</title>
+		<detect>{$from_prefix}abos</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT mid AS id_member, tid AS id_topic
+			FROM {$from_prefix}abos;
+		</query>
+	</step>
+</importer>

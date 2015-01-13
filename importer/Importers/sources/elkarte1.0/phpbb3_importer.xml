@@ -193,7 +193,7 @@
 			$row['body'] = str_replace($row['tmp_bbc_replace'], '', $row['body']);
 			unset($row['tmp_bbc_replace']);
 		</preparsecode>
-		<query><![CDATA[
+		<query>
 			SELECT
 				pm.msg_id AS id_pm, pm.author_id AS id_member_from, pm.message_time AS msgtime,
 				SUBSTRING(uf.username, 1, 255) AS from_name, SUBSTRING(pm.message_subject, 1, 255) AS subject,
@@ -202,7 +202,7 @@
 				REPLACE(REPLACE(pm.message_text, CONCAT(':1:', pm.bbcode_uid), ''), CONCAT(':', pm.bbcode_uid), '')), '\n', '<br>'), 1, 65534) AS body
 			FROM {$from_prefix}privmsgs AS pm
 				LEFT JOIN {$from_prefix}users AS uf ON (uf.user_id = pm.author_id);
-		]]></query>
+		</query>
 	</step>
 	<step>
 		<title>Importing pm recipients</title>

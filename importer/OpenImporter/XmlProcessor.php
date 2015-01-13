@@ -58,6 +58,12 @@ class XmlProcessor
 	public $step1_importer;
 
 	/**
+	 * The object defining the intermediate array between source and destination.
+	 * @var object
+	 */
+	public $skeleton;
+
+	/**
 	 * initialize the main Importer object
 	 */
 	public function __construct($db, $config, $template, $xml)
@@ -73,9 +79,17 @@ class XmlProcessor
 		$this->step1_importer = $step1_importer;
 	}
 
+	public function setSkeleton($skeleton)
+	{
+		$this->skeleton = $skeleton;
+	}
+
 	public function processSteps($step, &$substep, &$do_steps)
 	{
 		$this->current_step = $step;
+		$id = ucFirst($this->current_step['id']);
+
+		// @todo do detection on destination side (e.g. friendly urls)
 		$table_test = $this->updateStatus($substep, $do_steps);
 
 		// do we need to skip this step?
@@ -83,28 +97,37 @@ class XmlProcessor
 			return;
 
 		// pre sql queries first!!
-		$this->doPresqlStep($substep);
+		$this->doPresqlStep($id, $substep);
+
+		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
+		$from_code = $this->doCode();
 
 		// Codeblock? Then no query.
-		if ($this->doCode())
+		if (!empty($from_code))
 		{
-			$this->advanceSubstep($substep);
-			return;
+			$rows = $this->step1_importer->callMethod('preparse' . $id, $from_code);
+
+			$this->insertRows($rows, $special_table);
 		}
-
-		// sql block?
-		// @todo $_GET
-		if ($substep >= $_GET['substep'] && isset($this->current_step->query))
+		else
 		{
-			$this->doSql($substep);
+			// sql block?
+			// @todo $_GET
+			if ($substep >= $_GET['substep'] && isset($this->current_step->query))
+			{
+				$this->doSql($substep, $special_table);
 
-			$_REQUEST['start'] = 0;
+				$_REQUEST['start'] = 0;
+			}
 		}
 
 		$this->advanceSubstep($substep);
 	}
 
-	protected function doSql($substep)
+	/**
+	 * @todo one day, doSql will just take care of the current inner loop, while the outer will be somewhere else
+	 */
+	protected function doSql($substep, $special_table)
 	{
 		// These are temporarily needed to support the current xml importers
 		// a.k.a. There is more important stuff to do.
@@ -115,78 +138,54 @@ class XmlProcessor
 		$db = $this->db;
 
 		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
-		$current_data = $this->fixCurrentData($current_data);
+		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
 
-		if (!isset($this->current_step->destination))
-			$this->db->query($current_data);
-		else
+		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
+
+		while (true)
 		{
-			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
-			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
+			pastTime($substep);
 
-			// any preparsing code? Loaded here to be used later.
-			$special_code = $this->getPreparsecode();
+			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
-			// create some handy shortcuts
-			$no_add = $this->shoudNotAdd($this->current_step->options);
+			$rows = array();
 
-			$this->step1_importer->doSpecialTable($special_table);
+			if (isset($this->current_step->detect))
+				$_SESSION['import_progress'] += $special_limit;
 
-			while (true)
+			while ($row = $this->db->fetch_assoc($special_result))
 			{
-				pastTime($substep);
+				$newrow = array($row);
+				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
+				$newrow = $this->stepDefaults($newrow, (string) $this->current_step['id']);
+				$newrow = $this->step1_importer->callMethod('preparse' . $id, $newrow);
 
-				$special_result = $this->prepareSpecialResult($current_data, $special_limit);
-
-				$rows = array();
-				$keys = array();
-
-				if (isset($this->current_step->detect))
-					$_SESSION['import_progress'] += $special_limit;
-
-				while ($row = $this->db->fetch_assoc($special_result))
+				if (!empty($newrow))
 				{
-					if ($no_add)
-					{
-						eval($special_code);
-					}
-					else
-					{
-						$rows[] = $this->prepareRow($row, $special_code, $special_table);
-
-						if (empty($keys))
-							$keys = array_keys($row);
-					}
+					$rows = array_merge($rows, $newrow);
 				}
-
-				$this->insertRows($rows, $keys, $special_table);
-
-				// @todo $_REQUEST
-				$_REQUEST['start'] += $special_limit;
-
-				if ($this->db->num_rows($special_result) < $special_limit)
-					break;
-
-				$this->db->free_result($special_result);
 			}
+
+			$this->insertRows($rows, $special_table);
+
+			// @todo $_REQUEST
+			$_REQUEST['start'] += $special_limit;
+
+			if ($this->db->num_rows($special_result) < $special_limit)
+				break;
+
+			$this->db->free_result($special_result);
 		}
 	}
 
-	protected function fixCurrentData($current_data)
+	protected function insertRows($rows, $special_table)
 	{
-		if (strpos($current_data, '{$') !== false)
-			$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
-
-		return $current_data;
-	}
-
-	protected function insertRows($rows, $keys, $special_table)
-	{
-		if (empty($rows))
+		if (empty($rows) || empty($special_table))
 			return;
 
+		$keys = array_keys($rows[0]);
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
 
@@ -204,21 +203,6 @@ class XmlProcessor
 				(" . implode(', ', $keys) . ")
 			VALUES (" . implode('),
 				(', $insert_rows) . ")");
-	}
-
-	protected function prepareRow($row, $special_code, $special_table)
-	{
-		if ($special_code !== null)
-			eval($special_code);
-
-		$row = $this->step1_importer->doSpecialTable($special_table, $row);
-
-		// fixing the charset, we need proper utf-8
-		$row = fix_charset($row);
-
-		$row = $this->step1_importer->fixTexts($row);
-
-		return $row;
 	}
 
 	protected function getPreparsecode()
@@ -244,7 +228,7 @@ class XmlProcessor
 	 * @param string string string in which parameters are replaced
 	 * @return string
 	 */
-	public function fix_params($string)
+	protected function fix_params($string)
 	{
 		if (isset($_SESSION['import_parameters']))
 		{
@@ -259,6 +243,26 @@ class XmlProcessor
 		return $string;
 	}
 
+	public function getCurrent($table)
+	{
+		$count = $this->fix_params($table);
+		$request = $this->db->query("
+			SELECT COUNT(*)
+			FROM $count", true);
+
+		$current = 0;
+		if (!empty($request))
+		{
+			list ($current) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
+		}
+
+		return $current;
+	}
+
+	/**
+	 * @todo extract the detection step
+	 */
 	protected function updateStatus(&$substep, &$do_steps)
 	{
 		$table_test = true;
@@ -270,49 +274,48 @@ class XmlProcessor
 		if (!isset($_SESSION['import_steps'][$substep]['status']))
 			$_SESSION['import_steps'][$substep]['status'] = 0;
 
-		if (!in_array($substep, $do_steps))
+		if ($_SESSION['import_steps'][$substep]['status'] == 0)
 		{
-			$_SESSION['import_steps'][$substep]['status'] = 2;
-			$_SESSION['import_steps'][$substep]['presql'] = true;
-		}
-		// Detect the table, then count rows.. 
-		elseif ($this->current_step->detect)
-		{
-			$table_test = $this->detect((string) $this->current_step->detect);
-
-			if ($table_test === false)
+			if (!in_array($substep, $do_steps))
 			{
-				$_SESSION['import_steps'][$substep]['status'] = 3;
+				$_SESSION['import_steps'][$substep]['status'] = 2;
 				$_SESSION['import_steps'][$substep]['presql'] = true;
 			}
+			// Detect the table, then count rows..
+			elseif ($this->current_step->detect)
+			{
+				$table_test = $this->detect((string) $this->current_step->detect);
+
+				if ($table_test === false)
+				{
+					$_SESSION['import_steps'][$substep]['status'] = 3;
+					$_SESSION['import_steps'][$substep]['presql'] = true;
+				}
+			}
 		}
+		else
+			$table_test = false;
 
 		$this->template->status($substep, $_SESSION['import_steps'][$substep]['status'], $_SESSION['import_steps'][$substep]['title']);
 
 		return $table_test;
 	}
 
-	protected function doPresqlStep($substep)
+	protected function doPresqlStep($id, $substep)
 	{
-		if (!isset($this->current_step->presql))
-			return;
-
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
-		if (isset($this->current_step->presqlMethod))
-			$this->step1_importer->beforeSql((string) $this->current_step->presqlMethod);
-
-		$presql = $this->fix_params((string) $this->current_step->presql);
-		$presql_array = array_filter(explode(';', $presql));
-
-		foreach ($presql_array as $exec)
-			$this->db->query($exec . ';');
+		$this->step1_importer->callMethod('before' . ucFirst($id));
+		$this->config->source->callMethod('before' . ucFirst($id));
 
 		// don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
+	/**
+	 * @todo this should probably be merged with the detect done in updateStatus
+	 */
 	protected function doDetect($substep)
 	{
 		global $import;
@@ -323,24 +326,44 @@ class XmlProcessor
 
 	protected function doCode()
 	{
-		if (isset($this->current_step->code))
+		$id = ucFirst($this->current_step['id']);
+
+		$rows = $this->config->source->callMethod('code' . $id);
+
+		if (!empty($rows))
 		{
-			// These are temporarily needed to support the current xml importers
-			// a.k.a. There is more important stuff to do.
-			// a.k.a. I'm too lazy to change all of them now. :P
-			// @todo remove
-			// Both used in eval'ed code
-			$to_prefix = $this->config->to_prefix;
-			$db = $this->db;
-
-			// execute our code block
-			$special_code = $this->fix_params((string) $this->current_step->code);
-			eval($special_code);
-
-			return true;
+			// I'm not sure his symmetry is really, really necessary.
+			$rows = $this->stepDefaults($rows, (string) $this->current_step['id']);
+			return $this->step1_importer->callMethod('code' . $id, $rows);
 		}
 
 		return false;
+	}
+
+	protected function stepDefaults($rows, $id)
+	{
+		foreach ($this->skeleton[$id]['query'] as $index => $default)
+		{
+			// No default, use an empty string
+			if (is_array($default))
+			{
+				$index = key($default);
+				$default = $default[$index];
+			}
+			else
+			{
+				$index = $default;
+				$default = '';
+			}
+
+			foreach ($rows as $key => $row)
+			{
+				if (!isset($row[$index]))
+					$rows[$key][$index] = $default;
+			}
+		}
+
+		return $rows;
 	}
 
 	protected function detect($table)

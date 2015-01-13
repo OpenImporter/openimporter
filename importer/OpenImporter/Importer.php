@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+use Symfony\Component\Yaml\Parser;
+
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 
@@ -137,11 +139,11 @@ class Importer
 		$this->template = $template;
 
 		// The current step - starts at 0.
-		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
-		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
+		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
+		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
 		if (!empty($this->config->script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->script);
+			$this->_loadImporter($this->config->importers_dir . DS . $this->config->script);
 	}
 
 	public function setData($data)
@@ -152,23 +154,33 @@ class Importer
 	public function reloadImporter()
 	{
 		if (!empty($this->config->script))
-			$this->_loadImporter(BASEDIR . DS . 'Importers' . DS . $this->config->script);
+			$this->_loadImporter($this->config->script);
 	}
 
-	protected function _loadImporter($file)
+	protected function _loadImporter($files)
 	{
-		$this->_preparse_xml($file);
+		$this->_loadSource($files['source']);
+		$this->_loadDestination($files['destination']);
+	}
+
+	protected function _loadSource($file)
+	{
+		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
+		$this->_preparse_xml($full_path);
 
 		// This is the helper class
-		$source_helper = str_replace('.xml', '.php', $file);
+		$source_helper = str_replace('.xml', '.php', $full_path);
 		require_once($source_helper);
+	}
 
-		// Maybe the "destination" comes with php helper functions?
-		$path = dirname($file);
-		$dest_helper = $path . DS . basename($path) . '_importer.php';
-		require_once($dest_helper);
+	protected function _loadDestination($file)
+	{
+		$full_path = $this->config->importers_dir . DS . 'destinations' . DS . $file;
 
-		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
+		require_once($full_path);
+
+		$this->_importer_base_class_name = str_replace('.', '_', basename($file, '.php'));
+
 		$this->config->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
@@ -201,13 +213,7 @@ class Importer
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
 		$form->addOption($this->config->destination->getFormFields($form_path));
 
-		$class = (string) $this->xml->general->className;
-		$settings = new $class();
-
-		if (!isset($this->config->path_from))
-			$this->config->path_from = BASEDIR;
-
-		$path_from = $settings->loadSettings($this->config->path_from, true);
+		$path_from = $this->hasSettingFile();
 		if ($path_from !== null)
 		{
 			$form->addOption(array(
@@ -250,6 +256,24 @@ class Importer
 				'type' => 'steps',
 			));
 		}
+	}
+
+	/**
+	 * Verifies that a configuration file exists.
+	 *
+	 * @return boolean|null
+	 */
+	protected function hasSettingFile()
+	{
+		$class = (string) $this->xml->general->className;
+		$settings = new $class();
+
+		if (!isset($this->config->path_from))
+			$this->config->path_from = BASEDIR;
+
+		$path_from = $settings->loadSettings($this->config->path_from, true);
+
+		return $path_from;
 	}
 
 	/**
@@ -306,17 +330,17 @@ class Importer
 		$this->init_db();
 		$this->config->source->setUtils($this->db, $this->config);
 
-		// @todo What is the use-case for these?
-		// Custom variables from our importer?
-		if (isset($this->xml->general->variables))
-		{
-			foreach ($this->xml->general->variables as $eval_me)
-				eval($eval_me);
-		}
-
 		$this->testTable();
 	}
 
+	/**
+	 * This method is supposed to run a spot-test on a single table to verify...
+	 * What?
+	 * Dunno exactly, maybe that the converter is not wrong, but in that case, one
+	 * table may not be enough...
+	 *
+	 * @todo make it useful or remove it?
+	 */
 	protected function testTable()
 	{
 		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
@@ -437,7 +461,7 @@ class Importer
 
 	/**
 	 * Looks at the importer and returns the steps that it's able to make.
-	 * @return int
+	 * @return mixed[]
 	 */
 	protected function _find_steps()
 	{
@@ -471,16 +495,7 @@ class Importer
 		{
 			if ($counts->detect)
 			{
-				$count = $xmlParser->fix_params((string) $counts->detect);
-				$request = $this->db->query("
-					SELECT COUNT(*)
-					FROM $count", true);
-
-				if (!empty($request))
-				{
-					list ($current) = $this->db->fetch_row($request);
-					$this->db->free_result($request);
-				}
+				$current = $xmlParser->getCurrent((string) $counts->detect);
 
 				$progress_counter = $progress_counter + $current;
 
@@ -509,8 +524,12 @@ class Importer
 
 		$substep = 0;
 
+		$skeleton = new Parser();
+		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
+
 		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
 		$xmlParser->setImporter($step1_importer);
+		$xmlParser->setSkeleton($skeleton_parsed);
 
 		foreach ($this->xml->step as $step)
 			$xmlParser->processSteps($step, $substep, $do_steps);
@@ -519,8 +538,6 @@ class Importer
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
-	 * @global Database $db
-	 * @global type $to_prefix
 	 * @return boolean
 	 */
 	public function doStep2()
@@ -557,8 +574,6 @@ class Importer
 	/**
 	 * we are done :)
 	 *
-	 * @global Database $db
-	 * @global type $boardurl
 	 * @return boolean
 	 */
 	public function doStep3()

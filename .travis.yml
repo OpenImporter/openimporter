@@ -4,4 +4,9 @@ php:
   - 5.4
   - 5.3
 
-script: phpunit --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/
+before_script:
+  - cd importer
+  - composer install
+  - cd ..
+
+script: sh testing.sh

@@ -17,7 +17,7 @@
  * The class contains code that allows the Importer to obtain settings
  * from softwares that still have an SMF heritage.
  */
-abstract class SmfCommonSource
+abstract class SmfCommonOrigin
 {
 	public $attach_extension = '';
 
@@ -143,11 +143,7 @@ abstract class SmfCommonSource
 
 		if ($force === true || !isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
 		{
-			$result = $this->db->query("
-				SELECT MAX(id_attach) + 1
-				FROM {$to_prefix}attachments");
-			list ($this->id_attach) = $this->db->fetch_row($result);
-			$this->db->free_result($result);
+			$this->newMaxIdAttach();
 
 			$result = $this->db->query("
 				SELECT value
@@ -158,6 +154,8 @@ abstract class SmfCommonSource
 			$attachment_UploadDir = @unserialize($attachmentdir);
 
 			$this->attachmentUploadDirs = !empty($attachment_UploadDir) ? $attachment_UploadDir : array(1 => $attachmentdir);
+			foreach ($this->attachmentUploadDirs as $key => $val)
+				$this->attachmentUploadDirs[$key] = str_replace('\\', '/', $val);
 
 			$result = $this->db->query("
 				SELECT value
@@ -169,10 +167,21 @@ abstract class SmfCommonSource
 
 			if (empty($this->avatarUploadDir))
 				$this->avatarUploadDir = null;
-
-			if (empty($this->id_attach))
-				$this->id_attach = 1;
+			else
+				$this->avatarUploadDir = str_replace('\\', '/', $this->avatarUploadDir);
 		}
+	}
+
+	public function newMaxIdAttach()
+	{
+		$result = $this->db->query("
+			SELECT MAX(id_attach) + 1
+			FROM {$this->config->to_prefix}attachments");
+		list ($this->id_attach) = $this->db->fetch_row($result);
+		$this->db->free_result($result);
+
+		if (empty($this->id_attach))
+			$this->id_attach = 1;
 	}
 
 	public function getAvatarDir($row)
@@ -202,8 +211,10 @@ abstract class SmfCommonSource
 	}
 }
 
-abstract class SmfCommonSourceStep1 extends Step1BaseImporter
+abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 {
+	protected $beforeOnce = array();
+
 	public function fixTexts($row)
 	{
 		// If we have a message here, we'll want to convert <br /> to <br>.
@@ -220,17 +231,22 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		return $row;
 	}
 
+// 	protected function members($row, $special_code = null)
+// 	{
+// 		return $this->prepareRow($this->specialMembers($row), $special_code, $this->config->to_prefix . 'members');
+// 	}
+
 	public function doSpecialTable($special_table, $params = null)
 	{
 		// Are we doing attachments? They're going to want a few things...
-		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
-		{
-			$this->config->destination->specialAttachments();
-			return $params;
-		}
-		// Here we have various bits of custom code for some known problems global to all importers.
-		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
-			return $this->specialMembers($params);
+// 		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
+// 		{
+// 			$this->config->destination->specialAttachments();
+// 			return $params;
+// 		}
+// 		// Here we have various bits of custom code for some known problems global to all importers.
+// 		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
+// 			return $this->specialMembers($params);
 
 		return $params;
 	}
@@ -266,7 +282,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		$this->db->free_result($result);
 
-		// This is valid for some of the srouces (e.g. Elk/SMF/Wedge), but not for others
+		// This is valid for some of the sources (e.g. Elk/SMF/Wedge), but not for others
 		if (method_exists($this->config->source, 'getAttachmentDirs'))
 			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
 	}
@@ -354,18 +370,31 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 	public function newIdAttach()
 	{
+		$this->config->destination->newMaxIdAttach();
+
 		// The one to return
-		$current = $this->config->destination->id_attach;
-
-		// Increase preparing for the next one
-		$this->config->destination->id_attach++;
-
-		return $current;
+		return $this->config->destination->id_attach;
 	}
 
 	public function moveAvatar($row, $source, $filename)
 	{
 		$avatar_attach_folder = $this->getAvatarFolderId($row);
+
+		if (empty($row['id_member']))
+		{
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$this->config->to_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+			if (!empty($elk_avatarg))
+			{
+				$destination = str_replace($row['basedir'], $elk_avatarg, $row['basedir'] . '/' . $row['filename']);
+				copy_file($row['basedir'] . '/' . $row['filename'], $destination);
+			}
+			return false;
+		}
 
 		if ($avatar_attach_folder === false)
 		{
@@ -377,7 +406,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			);
 
 			$sizes = @getimagesize($source);
-			$extension = isset($extensions[$sizes[2]]) ? $extensions[$sizes[2]] : 'bmp';
+			$extension = isset($sizes[2]) && isset($extensions[$sizes[2]]) ? $extensions[$sizes[2]] : 'bmp';
 			$file_hash = 'avatar_' . $row['id_member'] . '_' . time() . '.' . $extension;
 
 			$this->db->query("
@@ -398,7 +427,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 			$return = array(
 				'id_attach' => $id_attach,
-				'size' => filesize($destination),
+				'size' => filesize($source),
 				'filename' => '\'' . $row['filename'] . '\'',
 				'file_hash' => '\'' . $file_hash . '\'',
 				'id_member' => $row['id_member'],
@@ -410,7 +439,6 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		return $return;
 	}
-
 	protected function specialMembers($row)
 	{
 		// Let's ensure there are no illegal characters.
@@ -424,13 +452,249 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		return $row;
 	}
+
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+
+	public function beforeMembers()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}members");
+	}
+
+	public function beforeAttachments()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}attachments");
+		$this->removeAttachments();
+
+		$this->config->destination->specialAttachments();
+	}
+
+	public function beforeCategories()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}categories");
+	}
+
+	public function beforeCollapsedcats()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}collapsed_categories");
+	}
+
+	public function beforeBoards()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}boards");
+
+		// The following removes any board-specific permission setting.
+		$this->db->query("
+			DELETE FROM {$this->config->to_prefix}board_permissions
+			WHERE id_profile > 4");
+	}
+
+	public function beforeTopics()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}topics");
+	}
+
+	public function beforeMessages()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}messages");
+	}
+
+	public function beforePolls()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}polls");
+	}
+
+	public function beforePolloptions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}poll_choices");
+	}
+
+	public function beforePollvotes()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_polls");
+	}
+
+	public function beforePm()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}personal_messages");
+	}
+
+	public function beforePmrecipients()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pm_recipients");
+	}
+
+	public function beforePmrules()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pm_rules");
+	}
+
+	public function beforeBoardmods()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}moderators");
+	}
+
+	public function beforeMarkreadboards()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_boards");
+	}
+
+	public function beforeMarkreadtopics()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_topics");
+	}
+
+	public function beforeMarkread()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_mark_read");
+	}
+
+	public function beforeNotifications()
+	{
+		// This should be done only once.
+		if (!empty($this->beforeOnce['Notifications']))
+			return;
+
+		$this->beforeOnce['Notifications'] = true;
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_notify;");
+	}
+
+	public function beforeMembergroups()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}membergroups");
+	}
+
+	public function beforePermissionprofiles()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}permission_profiles");
+	}
+
+	public function beforePermissions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}permissions");
+	}
+
+	public function beforePermissionboards()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}board_permissions");
+	}
+
+	public function beforeSmiley()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}smileys");
+	}
+
+	public function beforeCopysmiley()
+	{
+		// @todo probably to remove
+	}
+
+	public function beforeStatistics()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_activity");
+	}
+
+	public function beforeLogactions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_actions");
+	}
+
+	public function beforeReports()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_reported");
+	}
+
+	public function beforeReportscomments()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_reported_comments");
+	}
+
+	public function beforeSpiderhits()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_spider_hits");
+	}
+
+	public function beforeSpiderstats()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_spider_stats");
+	}
+
+	public function beforePaidsubscriptions()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}subscriptions");
+	}
+
+	public function beforeFriendlyurls()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pretty_topic_urls");
+	}
+
+	public function beforeFriendlyurlcache()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}pretty_urls_cache");
+	}
+
+	public function beforeCustomfields()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}custom_fields");
+	}
+
+	public function beforeCustomfieldsdata()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}custom_fields_data");
+	}
+
+	public function beforeLikes()
+	{
+		if (!empty($this->beforeOnce['Likes']))
+			return;
+
+		$this->beforeOnce['Likes'] = true;
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}message_likes");
+	}
 }
 
-abstract class SmfCommonSourceStep2 extends Step2BaseImporter
+abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
 
-	public function substep1()
+	public function substep10()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -509,7 +773,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			WHERE $where");
 	}
 
-	public function substep2()
+	public function substep20()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -536,7 +800,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
-	public function substep3()
+	public function substep30()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -594,7 +858,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	/**
 	 * Fix the post-based membergroups
 	 */
-	public function substep4()
+	public function substep40()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -633,7 +897,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	/**
 	 * Fix the boards total posts and topics.
 	 */
-	public function substep5()
+	public function substep50()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -666,7 +930,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		}
 	}
 
-	public function substep6()
+	public function substep60()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -706,7 +970,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		}
 	}
 
-	public function substep7()
+	public function substep70()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -783,7 +1047,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	/**
 	 * Fix the board parents.
 	 */
-	public function substep8()
+	public function substep80()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -818,9 +1082,16 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			}
 		}
 
+		$cat_map = $this->fixBoards($cat_map, $child_map);
+
+		$this->fixInexistentCategories($cat_map);
+	}
+
+	protected function fixBoards($cat_map, $child_map)
+	{
+		$fixed_boards = array();
 		// The above id_parents and id_cats may all be wrong; we know id_parent = 0 is right.
 		$solid_parents = array(array(0, 0));
-		$fixed_boards = array();
 		while (!empty($solid_parents))
 		{
 			list ($parent, $level) = array_pop($solid_parents);
@@ -846,7 +1117,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$this->setBoardProperty(0, array('child_level' => 0, 'id_parent' => 0, 'child_level' => (int) $level), empty($fixed_boards) ? "1=1" : "id_board NOT IN (" . implode(', ', $fixed_boards) . ")");
 		}
 
-		$this->fixInexistentCategories($cat_map);
+		return $cat_map;
 	}
 
 	/**
@@ -888,7 +1159,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	/**
 	 * Adjust boards and categories orders.
 	 */
-	public function substep9()
+	public function substep90()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -918,7 +1189,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
-	public function substep11()
+	public function substep100()
 	{
 		$to_prefix = $this->config->to_prefix;
 
@@ -991,7 +1262,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	}
 }
 
-abstract class SmfCommonSourceStep3 extends Step3BaseImporter
+abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 {
 	public function run($import_script)
 	{
