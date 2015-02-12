@@ -26,6 +26,8 @@ abstract class SmfCommonOrigin
 	public $id_attach = null;
 	public $attachmentUploadDirs = null;
 	public $avatarUploadDir = null;
+	
+	public $scriptname = null;
 
 	protected $config = null;
 	protected $db = null;
@@ -58,11 +60,11 @@ abstract class SmfCommonOrigin
 		return $this->fetchSetting('boardurl');
 	}
 
-	public function getFormFields($path_to = '')
+	public function getFormFields($path_to = '', $scriptname)
 	{
 		return array(
 			'id' => 'path_to',
-			'label' => 'path_to_destination',
+			'label' => array('path_to', $scriptname),
 			'type' => 'text',
 			'default' => htmlspecialchars($path_to),
 			'correct' => $this->checkSettingsPath($path_to) ? 'right_path' : 'change_path',

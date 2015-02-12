@@ -182,7 +182,7 @@ class Importer
 		$this->_importer_base_class_name = str_replace('.', '_', basename($file, '.php'));
 
 		$this->config->destination = new $this->_importer_base_class_name();
-
+		
 		$this->_loadSettings();
 
 		$this->config->destination->setParam($this->db, $this->config);
@@ -211,7 +211,7 @@ class Importer
 	public function populateFormFields($form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
-		$form->addOption($this->config->destination->getFormFields($form_path));
+		$form->addOption($this->config->destination->getFormFields($form_path, $this->config->destination->scriptname));
 
 		$path_from = $this->hasSettingFile();
 		if ($path_from !== null)

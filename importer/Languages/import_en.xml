@@ -17,14 +17,14 @@
 	<string name="select_step">You must select at least one step to import.</string>
 	<string name="permission_denied"><![CDATA[Sorry, the database connection information used in the specified installation of your forum cannot access the installation of %2$s. This may either mean that the installation doesn't exist, or that the MySQL account used does not have permissions to access it.<br /><br />The error MySQL gave was: %1$s']]></string>
 	<string name="before_continue">Before you continue</string>
-	<string name="before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly. It copies members, posts and other data from your &quot;source&quot; installation of %s into the destination forum, so it won't work without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.</p>]]></string>
+	<string name="before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly. It copies members, posts and other data from your &quot;source&quot; installation of %s into the &quot;destination&quot; installation of %s, so it won't work without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.</p>]]></string>
 	<string name="destination_installed">Try again!</string>
 	<string name="to_what">Import to which platform?</string>
 	<string name="where">Where are they?</string>
 	<string name="locate_destination">The importer should only need to know where the two installations are, after which it should be able to handle everything for itself.</string>
 	<string name="locate_source">The importer need to know in to which software you are importing your forum.</string>
 	<string name="advanced_options">Advanced options</string>
-	<string name="path_to_destination">Path to destination</string>
+	<string name="path_to">Path to %s</string>
 	<string name="path_from">Path to %s</string>
 	<string name="restart_after">pause script after (seconds)</string>
 	<string name="countdown">Javascript countdown (sleep)</string>
@@ -58,4 +58,5 @@
 	<string name="error_line">Line: %s</string>
 	<string name="error_file">File: %s</string>
 	<string name="imported_from">Forum imported from %s</string>
+	<string name="to">to</string>
 </resources>
