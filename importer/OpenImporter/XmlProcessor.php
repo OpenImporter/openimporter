@@ -137,7 +137,7 @@ class XmlProcessor
 		$to_prefix = $this->config->to_prefix;
 		$db = $this->db;
 
-		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
+		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
