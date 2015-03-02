@@ -71,13 +71,10 @@ class vBulletin_4 extends AbstractSourceImporter
 
 		foreach ($originalRows as $row)
 		{
-			foreach ($cats as $key => $value)
+			if (isset($cats[$row['id_parent']]))
 			{
-				if ($key == $row['id_cat'])
-					$row['id_cat'] = $key;
-
-				if ($row['id_cat'] == $row['id_parent'])
-					$row['id_parent'] = 0;
+				$row['id_cat'] = $cats[$row['id_parent']];
+				$row['id_parent'] = 0;
 			}
 
 			$rows[] = $row;
