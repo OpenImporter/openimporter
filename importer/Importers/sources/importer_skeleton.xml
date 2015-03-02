@@ -196,7 +196,8 @@
 			num_guest_voters,
 			reset_poll,
 			id_member,
-			poster_name
+			poster_name,
+			view_voters
 		</query>
 	</step>
 	<step id="polloptions">
