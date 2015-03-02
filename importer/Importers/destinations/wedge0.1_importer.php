@@ -502,6 +502,23 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 		return array();
 	}
 
+	public function preparseCustomfields($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['col_name'] = preg_replace('~[^a-zA-Z0-9\-_]~', '', $row['col_name']);
+
+			$row['field_options'] = implode(',', array_values($row['field_options']));
+			if ($row['field_type'] == 'input')
+				$row['field_type'] = 'text';
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
 	/**
 	 * @todo it may be broken in Wedge
 	 */
