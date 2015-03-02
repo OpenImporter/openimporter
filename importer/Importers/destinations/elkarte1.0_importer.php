@@ -403,6 +403,47 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 
 			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
 		}
+
+		return $rows;
+	}
+
+	protected function mapBoardsGroups($group)
+	{
+		$known = array(
+			-1 => -1,
+			0 => 0,
+			1 => 1,
+			2 => 3,
+		);
+
+		$new_group = null;
+		if (isset($known[$group]))
+			$new_group = $known[$group];
+		else
+		{
+			$new_group = $group - 10;
+			if ($new_group == 1)
+				$new_group = null;
+		}
+
+		return $new_group;
+	}
+
+	public function preparseBoards($originalRows)
+	{
+		foreach ($originalRows as $row)
+		{
+			$memberGroups = explode(',', $row['member_groups']);
+			$groups = array();
+			foreach ($memberGroups as $group)
+				$groups[] = $this->mapBoardsGroups($group);
+
+			$row['member_groups'] = implode(',', array_filter($groups, function($val) {return $val !== false && $val !== null;}));
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 
 	public function preparseAttachments($originalRows)

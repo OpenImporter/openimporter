@@ -183,6 +183,35 @@ class SMF2_0 extends AbstractSourceImporter
 		return $rows;
 	}
 
+	protected function mapBoardsGroups($group)
+	{
+		$known = array(
+			-1 => -1,
+			0 => 0,
+			1 => 1,
+			3 => 2,
+		);
+
+		return isset($known[$group]) ? $known[$group] : $group + 10;
+	}
+
+	public function preparseBoards($originalRows)
+	{
+		foreach ($originalRows as $row)
+		{
+			$memberGroups = array_filter(explode(',', $row['member_groups']));
+			$groups = array();
+			foreach ($memberGroups as $group)
+				$groups[] = $this->mapBoardsGroups($group);
+
+			$row['member_groups'] = implode(',', $groups);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
 	public function codeSettings()
 	{
 		// @todo this list looks broken (I don't remember any enablePinnedTopics in SMF 1.1)

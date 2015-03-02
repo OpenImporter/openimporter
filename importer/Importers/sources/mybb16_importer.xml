@@ -41,7 +41,7 @@
 				fid AS id_board, SUBSTRING(name, 1, 255) AS name,
 				SUBSTRING(description, 1, 65534) AS description, disporder AS board_order,
 				posts AS num_posts, threads AS num_topics, pid AS id_cat,
-				usepostcounts != 'yes' AS count_posts, '-1,0' AS member_groups
+				usepostcounts != 'yes' AS count_posts, '1' AS member_groups
 			FROM {$from_prefix}forums
 			WHERE type = 'f';
 		</query>

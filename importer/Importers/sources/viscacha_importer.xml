@@ -38,7 +38,7 @@
 		</options>
 		<query>
 			SELECT
-				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups,
+				id AS id_board, SUBSTRING(name, 1, 255) AS name, '1' AS member_groups,
 				SUBSTRING(description, 1, 65534) AS description, position AS board_order,
 				(topics + replies) AS num_posts, topics AS num_topics, parent AS id_cat, parent AS id_parent
 			FROM {$from_prefix}forums;
