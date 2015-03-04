@@ -335,7 +335,8 @@
 				ID_MEMBER AS id_member, ID_MSG_MODIFIED AS id_msg_modified,
 				subject, posterName AS poster_name, posterEmail AS poster_email,
 				posterIP AS poster_ip, smileysEnabled AS smileys_enabled, 
-				modifiedTime AS modified_time, modifiedName AS modified_name, body, icon
+				modifiedTime AS modified_time, modifiedName AS modified_name,
+				REPLACE(body, '<br>', '<br />') as body, icon
 			FROM {$from_prefix}messages;
 		</query>
 	</step>
