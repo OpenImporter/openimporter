@@ -261,14 +261,14 @@ class IPB3_4 extends AbstractSourceImporter
 
 			$row['date_registered'] = date('Y-m-d', $row['date_registered']);
 
-			$row['id_group'] = $this->mapGroups($row['id_group']);
-
 			// @todo verify
-			if ($this->is_disabled)
+			if ($this->is_disabled == $row['id_group'])
 				$row['is_activated'] = 0;
 
-			if ($this->is_banned)
+			if ($this->is_banned == $row['id_group'])
 				$row['is_activated'] = $row['is_activated'] + 10;
+
+			$row['id_group'] = $this->mapGroups($row['id_group']);
 
 			// That's pretty much a guess, @todo verify!
 			if (!empty($row['pm_ignore_list']))
