@@ -478,18 +478,6 @@ class ImportManager
 		return $form;
 	}
 
-	protected function testFiles($files, $path)
-	{
-		$files = (array) $files;
-
-		$test = empty($files);
-
-		foreach ($files as $file)
-			$test |= @file_exists($path . DS . $file);
-
-		return $test;
-	}
-
 	/**
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
