@@ -182,7 +182,7 @@ class Importer
 		$this->_importer_base_class_name = str_replace('.', '_', basename($file, '.php'));
 
 		$this->config->destination = new $this->_importer_base_class_name();
-		
+
 		$this->_loadSettings();
 
 		$this->config->destination->setParam($this->db, $this->config);
