@@ -369,6 +369,7 @@ class IPB3_4 extends AbstractSourceImporter
 			$row['unapproved_posts'] = (int) $unapproved;
 
 			$row['approved'] = $row['approved'] > 3 ? 3 : $row['approved'];
+			$row['id_poll'] = (int) $row['id_poll'];
 
 			$rows[] = $row;
 		}
