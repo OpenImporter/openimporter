@@ -28,6 +28,11 @@ class wedge0_1_importer extends SmfCommonOrigin
 	{
 		return 'Wedge 0.1';
 	}
+
+	public function __construct()
+	{
+		$this->scriptname = $this->getName();
+	}
 }
 
 /**

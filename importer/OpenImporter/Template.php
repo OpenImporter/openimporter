@@ -513,9 +513,8 @@ class Template
 		echo '
 			<h2>', $this->lng->get('before_continue'), '</h2>
 			<div class="content">
-				<p>', sprintf($this->lng->get('before_details'), (string) $object->importer->xml->general->name ), '</p>
+				<p>', sprintf($this->lng->get('before_details'), (string) $object->importer->xml->general->name, (string) $object->config->destination->scriptname ), '</p>
 			</div>';
-
 		$form->title = $this->lng->get('where');
 		$form->description = $this->lng->get('locate_destination');
 		$form->submit = array(

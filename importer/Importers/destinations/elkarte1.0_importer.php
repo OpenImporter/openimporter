@@ -25,6 +25,11 @@ class elkarte1_0_importer extends SmfCommonOrigin
 	{
 		return 'ElkArte 1.0';
 	}
+
+	public function __construct()
+	{
+		$this->scriptname = $this->getName();
+	}
 }
 
 class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
@@ -392,6 +397,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
+
 			// avatartype field is used temporary to dertermine the type of avatar
 			if ($row['avatartype'] != 'remote')
 				$row['avatar'] = '';

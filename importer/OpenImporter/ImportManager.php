@@ -40,7 +40,7 @@ class ImportManager
 	 * The configurator that holds all the settings
 	 * @var object
 	 */
-	protected $config;
+	public $config;
 
 	/**
 	 * The template, basically our UI.
@@ -269,8 +269,8 @@ class ImportManager
 
 	protected function populateResponseDetails()
 	{
-		if (isset($this->importer->xml->general->name))
-			$this->response->page_title = $this->importer->xml->general->name . ' to ' . $this->config->destination->getName();
+		if (isset($this->importer->xml->general->name) && isset($this->importer->config->destination->scriptname))
+			$this->response->page_title = $this->importer->xml->general->name . ' ' . $this->lng->to . ' ' . $this->importer->config->destination->scriptname;
 		else
 			$this->response->page_title = 'OpenImporter';
 

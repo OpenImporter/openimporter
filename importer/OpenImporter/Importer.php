@@ -211,7 +211,7 @@ class Importer
 	public function populateFormFields($form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
-		$form->addOption($this->config->destination->getFormFields($form_path));
+		$form->addOption($this->config->destination->getFormFields($form_path, $this->config->destination->scriptname));
 
 		$path_from = $this->hasSettingFile();
 		if ($path_from !== null)
