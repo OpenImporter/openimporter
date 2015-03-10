@@ -70,6 +70,7 @@ class IPB3_4 extends AbstractSourceImporter
 				'~<!--QuoteEnd-->.+?<!--QuoteEEnd-->~is',
 				'~<!--quoteo\(post=(.+?):date=(.+?):name=(.+?)\)-->.+?<!--quotec-->~is',
 				'~<!--quoteo-->.+?<!--quotec-->~is',
+				'~<blockquote .+? data-author="(.+?)" data-cid="(.+?)" data-time="(.+?)">.+?</blockquote>~is',
 				'~<!--c1-->.+?<!--ec1-->~is',
 				'~<!--c2-->.+?<!--ec2-->~is',
 				'~<!--coloro:.+?--><span style=\'color:([^;]+?)\'><!--/coloro-->~is',
@@ -100,12 +101,14 @@ class IPB3_4 extends AbstractSourceImporter
 				'~<a href="(.+?)" target="_blank">(.+?)</a>~is',
 				'~<a href=\'(.+?)\' target=\'_blank\'>(.+?)</a>~is',
 				'~<p>(.+?)</p>~is',
+				'~<div>(.+?)</div>~is',
 			),
 			array(
 				'[quote]',
 				'[/quote]',
 				'[quote=$3]',
 				'[quote]',
+				'[quote author=$1 link=msg=$2 date=$3]',
 				'[code]',
 				'[/code]',
 				'[color=$1]',
@@ -135,6 +138,7 @@ class IPB3_4 extends AbstractSourceImporter
 				'[email=$1]$2[/email]',
 				'[url=$1]$2[/url]',
 				'[url=$1]$2[/url]',
+				'$1<br />',
 				'$1<br />',
 			), ltrim(stripslashes($text)));
 		return strtr(strtr($text, '<>', '[]'), array('[br /]' => '<br />'));
