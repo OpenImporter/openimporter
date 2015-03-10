@@ -140,10 +140,10 @@
 				t.pinned AS is_sticky,
 				t.forum_id AS id_board,
 				t.topic_firstpost AS id_first_msg,
-				0 AS id_last_msg,
+				MAX(p.pid) AS id_last_msg,
 				t.starter_id AS id_member_started,
 				t.last_poster_id AS id_member_updated,
-				p.pid AS id_poll,
+				pl.pid AS id_poll,
 				0 AS id_previous_board,
 				0 AS id_previous_topic,
 				t.posts AS num_replies,
@@ -155,8 +155,13 @@
 					END AS locked,
 				0 AS unapproved_posts,
 				t.approved
-			FROM {$from_prefix}topics AS t
-				LEFT JOIN {$from_prefix}polls AS p ON (t.tid = p.tid)
+			FROM ({$from_prefix}topics AS t,
+				{$from_prefix}posts AS p)
+				LEFT JOIN {$from_prefix}polls AS pl ON (t.tid = pl.tid)
+			WHERE p.topic_id = t.tid
+			GROUP BY t.tid
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0
 		</query>
 	</step>
 	<step id="messages">
