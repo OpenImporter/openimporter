@@ -62,7 +62,7 @@ I should also have written down *what* is broken...
 				FORUM_ID AS id_board, CATEGORY_ID as id_cat, SUBSTRING(FORUM_TITLE, 1, 255) AS name,
 				SUBSTRING(FORUM_DESCRIPTION, 1, 65534) AS description, FORUM_SORT_ORDER AS board_order,
 				FORUM_POSTS AS num_posts, IFNULL(FORUM_PARENT, 0) as id_parent, FORUM_POSTS_COUNT AS count_posts,
-				'' AS member_groups
+				'1' AS member_groups
 			FROM {$from_prefix}FORUMS;
 		</query>
 	</step>

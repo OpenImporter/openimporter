@@ -53,7 +53,7 @@ so we need a workaround.
 			SELECT
 				b.boardID AS id_board, o.parentID AS id_parent, o.position AS board_order, 0 AS id_cat,
 				SUBSTRING(b.title, 1, 255) AS name, SUBSTRING(b.description, 1, 65534) AS description,
-				b.threads AS num_topics, b.countUserPosts AS num_posts, '2,-1,0,1' AS member_groups
+				b.threads AS num_topics, b.countUserPosts AS num_posts, '1' AS member_groups
 			FROM {$from_prefix}{$wbb_prefix}board AS b
 				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = b.boardID)
 			WHERE boardType = 0;

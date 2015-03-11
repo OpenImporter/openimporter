@@ -48,7 +48,7 @@ members:
     - secret_question
     - secret_answer
     - id_theme: 1
-    - is_activated: 1
+    - is_activated: 1  # @todo this currently follows SMF/Elk rules, see https://github.com/elkarte/Elkarte/wiki/is_activated
     - validation_code
     - id_msg_last_visit: 0
     - additional_groups
@@ -65,12 +65,12 @@ attachments:
   title: Importing attachments
   query:
     - id_attach
-    - id_thumb
+    - id_thumb  # Probably to remove, thumbs should be generated (if needed) during the maintenance task
     - id_msg
     - id_member
     - attachment_type  # Probably SMF-specific, to check if needed (int)
     - filename
-    - file_hash
+    - file_hash  # SMF-specific?
     - size
     - downloads
     - width
@@ -111,7 +111,7 @@ boards:
     - board_order
     - id_last_msg
     - id_msg_updated
-    - member_groups
+    - member_groups   # @todo this needs a list of valid groups, it may be: -1 guests, 0 registered members, 1 admins, 2 moderators, 3 banned, other things may be tricky to port, but they may be defined starting from 10 upwards
     - id_profile
     - name
     - description
@@ -140,7 +140,7 @@ topics:
     - num_views
     - locked
     - unapproved_posts
-    - approved
+    - approved  # This will assume the values: 0 approved, 1 unapproved, 2 soft-deleted, 3 or above permantly deleted.
 messages:
   title: Importing messages
   query:
@@ -159,7 +159,7 @@ messages:
     - modified_name
     - body
     - icon
-    - approved
+    - approved  # This will assume the values: 0 approved, 1 unapproved, 2 soft-deleted, 3 or above permantly deleted.
 polls:
   title: Importing polls
   query:
@@ -205,10 +205,10 @@ pmrecipients:
     - id_pm
     - id_member
     - labels
-    - bcc
-    - is_read
-    - is_new
-    - deleted
+    - bcc: 1
+    - is_read: 1
+    - is_new: 0
+    - deleted: 0
 pmrules:
   title: Importing pm rules
   query:
@@ -395,14 +395,14 @@ customfields:
     - col_name
     - field_name
     - field_desc
-    - field_type
+    - field_type     # @todo this needs a list of valid types, a short one may be: input, select, check, radio, textarea, password (?)
     - field_length
-    - field_options
+    - field_options  # @todo this requires a format, it could be a simple array
     - mask
     - show_reg
     - show_display
     - show_profile
-    - private
+    - private # @todo maybe split in multiple items, for the moment: 0 visible+owner can edit; 1 visible+only admin can edit; 2 invisible+owner can edit; 3 only admin can see/edit
     - active
     - bbc
     - can_search

@@ -53,7 +53,7 @@
 			SELECT
 				node_id AS id_board, parent_node_id AS id_cat, display_order AS board_order,
 				SUBSTRING(title, 1, 255) AS name,
-				SUBSTRING(description, 1, 65534) AS description, '-1,0' AS member_groups
+				SUBSTRING(description, 1, 65534) AS description, '1' AS member_groups
 			FROM {$from_prefix}node
 			WHERE node_type_id = 'Forum';
 		</query>

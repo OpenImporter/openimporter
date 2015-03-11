@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 2.0 Alpha
  *
  * This file contains code based on:
  *
@@ -402,10 +402,54 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 			if ($row['avatartype'] != 'remote')
 				$row['avatar'] = '';
 
-			unset($row['avatartype']);
+			$row['lngfile'] = $row['language'];
+			$row['receive_from'] = $row['pm_receive_from'];
+
+			unset($row['avatartype'], $row['language'], $row['pm_receive_from']);
 
 			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
 		}
+
+		return $rows;
+	}
+
+	protected function mapBoardsGroups($group)
+	{
+		$known = array(
+			-1 => -1,
+			0 => 0,
+			1 => 1,
+			2 => 3,
+		);
+
+		$new_group = null;
+		if (isset($known[$group]))
+			$new_group = $known[$group];
+		else
+		{
+			$new_group = $group - 10;
+			if ($new_group == 1)
+				$new_group = null;
+		}
+
+		return $new_group;
+	}
+
+	public function preparseBoards($originalRows)
+	{
+		foreach ($originalRows as $row)
+		{
+			$memberGroups = explode(',', $row['member_groups']);
+			$groups = array();
+			foreach ($memberGroups as $group)
+				$groups[] = $this->mapBoardsGroups($group);
+
+			$row['member_groups'] = implode(',', array_filter($groups, function($val) {return $val !== false && $val !== null;}));
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 
 	public function preparseAttachments($originalRows)
@@ -466,6 +510,64 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 		}
 
 		return array();
+	}
+
+	public function preparseTopics($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			// @todo deal with soft-deleted topics!
+			if ($row['approved'] > 1)
+				continue;
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			// @todo deal with soft-deleted messages!
+			if ($row['approved'] > 1)
+				continue;
+
+			if (empty($row['icon']))
+				$row['icon'] = 'xx';
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseCustomfields($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['col_name'] = preg_replace('~[^a-zA-Z0-9\-_]~', '', $row['col_name']);
+
+			if (!empty($row['field_options']))
+				$row['field_options'] = implode(',', array_values($row['field_options']));
+
+			if ($row['field_type'] == 'input')
+				$row['field_type'] = 'text';
+
+			// @todo add a list of valid masks and check on that
+			if (empty($row['mask']))
+				$row['mask'] = 'nohtml';
+
+			$row['enclose'] = str_replace('{content}', '{INPUT}', $row['enclose']);
+				$row['field_type'] = 'text';
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 }
 

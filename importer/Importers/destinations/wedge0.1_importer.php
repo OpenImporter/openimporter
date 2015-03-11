@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 2.0 Alpha
  *
  * This file contains code based on:
  *
@@ -500,11 +500,67 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 		return $rows;
 	}
 
+	protected function mapBoardsGroups($group)
+	{
+		$known = array(
+			-1 => -1,
+			0 => 0,
+			1 => 1,
+			2 => 3,
+		);
+
+		$new_group = null;
+		if (isset($known[$group]))
+			$new_group = $known[$group];
+		else
+		{
+			$new_group = $group - 10;
+			if ($new_group == 1)
+				$new_group = null;
+		}
+
+		return $new_group;
+	}
+
+	public function preparseBoards($originalRows)
+	{
+		foreach ($originalRows as $row)
+		{
+			$memberGroups = array_filter(explode(',', $row['member_groups']));
+			$groups = array();
+			foreach ($memberGroups as $group)
+				$groups[] = $this->mapBoardsGroups($group);
+
+			$row['member_groups'] = implode(',', array_filter($groups, function($val) {return $val !== false && $val !== null;}));
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
 	public function preparseAvatars($originalRows)
 	{
 		// @todo I think I messed up something and deleted the relevant code at some point
 
 		return array();
+	}
+
+	public function preparseCustomfields($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['col_name'] = preg_replace('~[^a-zA-Z0-9\-_]~', '', $row['col_name']);
+
+			$row['field_options'] = implode(',', array_values($row['field_options']));
+			if ($row['field_type'] == 'input')
+				$row['field_type'] = 'text';
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 
 	/**

@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 2.0 Alpha
  */
 
 // @todo this should probably go somewhere else...
@@ -476,18 +476,6 @@ class ImportManager
 		$this->importer->populateFormFields($form);
 
 		return $form;
-	}
-
-	protected function testFiles($files, $path)
-	{
-		$files = (array) $files;
-
-		$test = empty($files);
-
-		foreach ($files as $file)
-			$test |= @file_exists($path . DS . $file);
-
-		return $test;
 	}
 
 	/**

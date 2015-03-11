@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 2.0 Alpha
  *
  * This file contains code based on:
  *
@@ -137,7 +137,7 @@ class XmlProcessor
 		$to_prefix = $this->config->to_prefix;
 		$db = $this->db;
 
-		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
+		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
@@ -389,7 +389,7 @@ class XmlProcessor
 		if (isset($options->ignore) && $options->ignore == false)
 			return false;
 
-		return !isset($options->replace);
+		return !isset($options->ignore) && !isset($options->replace);
 	}
 
 	protected function shouldReplace($options)

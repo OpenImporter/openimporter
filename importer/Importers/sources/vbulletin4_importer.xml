@@ -58,7 +58,7 @@
 				forumid AS id_board, 1 AS id_cat, title AS name,
 				SUBSTRING(description, 1, 65534) AS description,
 				displayorder AS board_order, replycount AS num_posts,
-				threadcount AS num_topics, parentid AS id_parent, '-1,0' AS member_groups
+				threadcount AS num_topics, parentid AS id_parent, '1' AS member_groups
 			FROM {$from_prefix}forum
 			WHERE parentid != -1;
 		</query>
