@@ -7,7 +7,7 @@ php:
 before_script:
   - cd importer
   - composer self-update
-  - composer install
+  - composer install --no-interaction
   - cd ..
 
 script: sh testing.sh

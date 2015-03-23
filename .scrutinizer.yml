@@ -47,7 +47,7 @@ build:
     dependencies:
         before:
             - cd importer
-            - composer install
+            - composer install --no-interaction
             - cd ..
     tests:
         override:
