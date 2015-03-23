@@ -1,5 +1,7 @@
 <?php
 
+use OpenImporter\Core
+
 /**
  * we need Cooooookies..
  */
