@@ -1,5 +1,8 @@
 <?php
 
+use OpenImporter\Core
+use OpenImporter\Importers
+
 define('BASEDIR', __DIR__ . '/../../..');
 
 // Composer stuff
