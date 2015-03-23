@@ -7,15 +7,16 @@
  * @version 2.0 Alpha
  */
 
-define('BASEDIR', __DIR__);
+use Symfony\Component\ClassLoader\Psr4ClassLoader;
 
-require_once(BASEDIR . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader(null, BASEDIR . '/OpenImporter');
-$classLoader->register();
-$classLoader2 = new SplClassLoader(null, BASEDIR . '/Importers');
-$classLoader2->register();
+define('BASEDIR', __DIR__);
 // Composer stuff
 require_once(BASEDIR . '/vendor/autoload.php');
+
+$loader = new Psr4ClassLoader();
+$loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');
+$loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers/Mappers');
+$loader->register();
 
 @set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exception_handler'));
