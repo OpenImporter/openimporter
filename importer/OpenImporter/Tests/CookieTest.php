@@ -1,6 +1,6 @@
 <?php
 
-use OpenImporter\Core
+use OpenImporter\Core;
 
 /**
  * we need Cooooookies..

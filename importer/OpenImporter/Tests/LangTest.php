@@ -1,6 +1,6 @@
 <?php
 
-use OpenImporter\Core
+use OpenImporter\Core;
 
 class LangTest extends \PHPUnit_Framework_TestCase
 {
