@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core
+
 /**
  * class ImportException extends the build-in Exception class and
  * catches potential errors

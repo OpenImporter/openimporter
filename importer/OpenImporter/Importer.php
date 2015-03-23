@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter\Core
+
 use Symfony\Component\Yaml\Parser;
 
 if (!defined('DS'))

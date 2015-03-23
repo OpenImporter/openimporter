@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core
+
 /**
  * Class Lang loads the appropriate language file(s) if they exist.
  *

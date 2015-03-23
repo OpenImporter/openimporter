@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core
+
 // @todo this should probably go somewhere else...
 require_once(BASEDIR . '/OpenImporter/Utils.php');
 

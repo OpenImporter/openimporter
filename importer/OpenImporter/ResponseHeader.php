@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core
+
 /**
  * Any page served needs an header.
  */
