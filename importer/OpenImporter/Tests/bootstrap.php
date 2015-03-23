@@ -8,8 +8,8 @@
  */
 
 use Symfony\Component\ClassLoader\Psr4ClassLoader;
-use OpenImporter\Core
-use OpenImporter\Importers
+use OpenImporter\Core;
+use OpenImporter\Importers;
 
 if (!defined('BASEDIR'))
 	define('BASEDIR', __DIR__ . '/../..');
