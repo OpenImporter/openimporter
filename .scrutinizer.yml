@@ -47,7 +47,6 @@ build:
     dependencies:
         before:
             - cd importer
-            - composer self-update
             - composer install
             - cd ..
     tests:
