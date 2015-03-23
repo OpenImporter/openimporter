@@ -6,6 +6,7 @@ php:
 
 before_script:
   - cd importer
+  - composer self-update
   - composer install
   - cd ..
 
