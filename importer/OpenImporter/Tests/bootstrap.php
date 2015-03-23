@@ -7,12 +7,18 @@
  * @version 2.0 Alpha
  */
 
-/**
- * Bootstraps the autoloader for the testing with phpunit.
- */
-require_once(__DIR__ . '/../SplClassLoader.php');
-$classLoader = new SplClassLoader(null, __DIR__ . '/..');
-$classLoader->register();
+use Symfony\Component\ClassLoader\Psr4ClassLoader;
 
 if (!defined('BASEDIR'))
 	define('BASEDIR', __DIR__ . '/../..');
+
+/**
+ * Bootstraps the autoloader for the testing with phpunit.
+ */
+// Composer stuff
+require_once(BASEDIR . '/vendor/autoload.php');
+
+$loader = new Psr4ClassLoader();
+$loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');
+$loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers/Mappers');
+$loader->register();
