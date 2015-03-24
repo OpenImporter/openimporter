@@ -19,26 +19,15 @@ namespace OpenImporter\Importers;
  * The class contains code that allows the Importer to obtain settings
  * from softwares that still have an SMF heritage.
  */
-abstract class SmfCommonOrigin
+abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinationImporter
 {
 	public $attach_extension = '';
-
-	protected $path = null;
 
 	public $id_attach = null;
 	public $attachmentUploadDirs = null;
 	public $avatarUploadDir = null;
 	
 	public $scriptname = null;
-
-	protected $config = null;
-	protected $db = null;
-
-	public function setParam($db, $config)
-	{
-		$this->db = $db;
-		$this->config = $config;
-	}
 
 	abstract public function getName();
 

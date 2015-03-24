@@ -190,7 +190,7 @@ class Importer
 
 		$this->_loadSettings();
 
-		$this->config->destination->setParam($this->db, $this->config);
+		$this->config->destination->setUtils($this->db, $this->config);
 	}
 
 	/**
@@ -404,7 +404,7 @@ class Importer
 			$this->config->to_prefix = $db_prefix;
 		}
 
-		$this->config->from_prefix = $this->config->source->getPrefix();
+		$this->config->from_prefix = $this->config->source->getDbPrefix();
 
 		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
 		{

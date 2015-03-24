@@ -41,6 +41,8 @@ abstract class AbstractSourceImporter
 
 	abstract public function getTableTest();
 
+	abstract public function dbConnectionData();
+
 	public function loadSettings($path, $test = false)
 	{
 		if ($test)

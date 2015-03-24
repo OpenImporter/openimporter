@@ -93,7 +93,7 @@ class CustomDbValues extends CustomDb
 		$this->queries = array(
 			md5("
 					SELECT value
-					FROM {$this->config->source->from_prefix}settings
+					FROM {$this->config->from_prefix}settings
 					WHERE name = 'uploadspath'
 					LIMIT 1") => array(array(
 				'value' => BASEDIR . '/Importers/sources'

@@ -110,7 +110,7 @@ class mybb16 extends \OpenImporter\Importers\AbstractSourceImporter
 			{
 				$result = $this->db->query("
 					SELECT value
-					FROM {$this->config->source->from_prefix}settings
+					FROM {$this->config->from_prefix}settings
 					WHERE name = 'uploadspath'
 					LIMIT 1");
 				list ($mybb_attachment_dir) = $this->db->fetch_row($result);
