@@ -1291,14 +1291,3 @@ abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 					('imported_from', '" . $import_script . "')");
 	}
 }
-
-/**
- * function copy_smileys is used to copy smileys from a source to destination.
- * @param type $source
- * @param type $dest
- * @return type
- */
-function copy_smileys($source, $dest)
-{
-	copy_dir($source, $dest);
-}
