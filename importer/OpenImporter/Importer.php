@@ -378,9 +378,10 @@ class Importer
 	{
 		try
 		{
-			list ($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name) = $this->config->destination->dbConnectionData();
+			$connectionParams = $this->config->destination->dbConnectionData();
+			$db_prefix = $this->config->destination->getDbPrefix();
 
-			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
+			$this->db = new Database($connectionParams);
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$this->db->query('SET NAMES \'utf8\'');
 		}
@@ -394,9 +395,9 @@ class Importer
 		{
 			// @todo ???
 			if (is_numeric(substr($db_prefix, 0, 1)))
-				$this->config->to_prefix = $db_name . '.' . $db_prefix;
+				$this->config->to_prefix = $connectionParams['dbname'] . '.' . $db_prefix;
 			else
-				$this->config->to_prefix = '`' . $db_name . '`.' . $db_prefix;
+				$this->config->to_prefix = '`' . $connectionParams['dbname'] . '`.' . $db_prefix;
 		}
 		else
 		{

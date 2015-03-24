@@ -89,14 +89,31 @@ abstract class SmfCommonOrigin
 		if ($this->path === null)
 			return false;
 
-		$db_server = $this->fetchSetting('db_server');
-		$db_user = $this->fetchSetting('db_user');
-		$db_passwd = $this->fetchSetting('db_passwd');
-		$db_persist = $this->fetchSetting('db_persist');
-		$db_prefix = $this->fetchSetting('db_prefix');
-		$db_name = $this->fetchSetting('db_name');
+		return array(
+					'dbname' => $this->fetchSetting('db_name'),
+					'user' => $this->fetchSetting('db_user'),
+					'password' => $this->fetchSetting('db_passwd'),
+					'host' => $this->fetchSetting('db_server'),
+					'driver' => $this->fetchDriver(),
+			);
+	}
 
-		return array($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name);
+	public function getDbPrefix()
+	{
+		return $this->fetchSetting('db_prefix');
+	}
+
+	protected function fetchDriver()
+	{
+		$type = $this->fetchSetting('db_type');
+		$drivers = array(
+			'mysql' => 'pdo_mysql',
+			'mysqli' => 'pdo_mysql',
+			'postgresql' => 'pdo_mysql',
+			'sqlite' => 'pdo_sqlite',
+		);
+
+		return $drivers[$type];
 	}
 
 	protected function fetchSetting($name)
