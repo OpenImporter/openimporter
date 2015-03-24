@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter\Importers\sources\Tests;
+
 use OpenImporter\Core\Lang;
 
 class LangTest extends \PHPUnit_Framework_TestCase

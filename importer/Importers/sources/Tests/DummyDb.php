@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter\Importers\sources\Tests;
+
 class DummyDb
 {
 	protected $customValues = null;

@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter\Importers\sources\Tests;
+
 class CustomDb
 {
 	protected $queries = array();

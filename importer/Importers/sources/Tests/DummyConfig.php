@@ -1,5 +1,7 @@
 <?php
 
+namespace OpenImporter\Importers\sources\Tests;
+
 class DummyConfig
 {
 	public function __call($name, $args)
