@@ -19,7 +19,6 @@ use Symfony\Component\Yaml\Parser;
 use OpenImporter\Core\Database;
 use OpenImporter\Core\XmlProcessor;
 use OpenImporter\Core\ImportException;
-use OpenImporter\Importers;
 
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
@@ -185,7 +184,7 @@ class Importer
 
 		require_once($full_path);
 
-		$this->_importer_base_class_name = 'Importers\\destinations\\' . str_replace('.', '_', basename($file, '.php'));
+		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . str_replace('.', '_', basename($file, '.php'));
 
 		$this->config->destination = new $this->_importer_base_class_name();
 
@@ -271,13 +270,10 @@ class Importer
 	 */
 	protected function hasSettingFile()
 	{
-		$class = (string) $this->xml->general->className;
-		$settings = new $class();
-
 		if (!isset($this->config->path_from))
 			$this->config->path_from = BASEDIR;
 
-		$path_from = $settings->loadSettings($this->config->path_from, true);
+		$path_from = $this->config->source->loadSettings($this->config->path_from, true);
 
 		return $path_from;
 	}
@@ -290,7 +286,7 @@ class Importer
 	 */
 	private function _loadSettings()
 	{
-		$class = 'Importers\\sources\\' . (string) $this->xml->general->className;
+		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className;
 		$this->config->source = new $class();
 
 		$this->config->source->setDefines();

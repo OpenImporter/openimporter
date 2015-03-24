@@ -417,7 +417,7 @@ class ImportManager
 		{
 			require_once($file);
 			$file_name = basename($file);
-			$class_name = strtr($file_name, array('.php' => '', '.' => '_'));
+			$class_name = '\\OpenImporter\\Importers\\destinations\\' . strtr($file_name, array('.php' => '', '.' => '_'));
 			$obj = new $class_name();
 			$destinations[$file_name] = $obj->getName();
 		}

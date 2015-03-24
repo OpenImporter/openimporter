@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class PHPBoost3 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	public function getName()
 	{

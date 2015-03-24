@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class wbb3_1 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class wbb3_1 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/wc/config.inc.php';
 	protected $userOptions = array();

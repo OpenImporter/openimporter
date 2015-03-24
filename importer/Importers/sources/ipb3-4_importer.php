@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class IPB3_4 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class IPB3_4 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/conf_global.php';
 

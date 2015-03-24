@@ -13,13 +13,13 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-namespace OpenImporter\Importers\destination;
+namespace OpenImporter\Importers\destinations;
 
 /**
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
  */
-class elkarte1_0_importer extends SmfCommonOrigin
+class elkarte1_0_importer extends \OpenImporter\Importers\SmfCommonOrigin
 {
 	public $attach_extension = 'elk';
 
@@ -34,7 +34,7 @@ class elkarte1_0_importer extends SmfCommonOrigin
 	}
 }
 
-class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
+class elkarte1_0_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginStep1
 {
 
 	/**
@@ -471,6 +471,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 
 			copy_file($source, $destination);
 			unset($row['full_path']);
+			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}
 
@@ -573,7 +574,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 	}
 }
 
-class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
+class elkarte1_0_importer_step2 extends \OpenImporter\Importers\SmfCommonOriginStep2
 {
 	public function substep0()
 	{
@@ -682,6 +683,6 @@ class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
 	}
 }
 
-class elkarte1_0_importer_step3 extends SmfCommonOriginStep3
+class elkarte1_0_importer_step3 extends \OpenImporter\Importers\SmfCommonOriginStep3
 {
 }

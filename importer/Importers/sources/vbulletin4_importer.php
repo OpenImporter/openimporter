@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class vBulletin_4 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.php';
 

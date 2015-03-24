@@ -7,10 +7,12 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers\sources;
+
 /**
- * Settings for the MyBB 1.6 system.
+ * Settings for the Viscacha system.
  */
-class Viscacha extends AbstractSourceImporter
+class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/data/config.inc.php';
 

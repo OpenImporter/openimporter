@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class phpBB3 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/config.php';
 

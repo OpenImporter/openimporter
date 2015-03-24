@@ -16,13 +16,13 @@
  * All rights reserved.
  */
 
-namespace OpenImporter\Importers\destination;
+namespace OpenImporter\Importers\destinations;
 
 /**
  * The class contains code that allows the Importer to obtain settings
  * from the Wedge installation.
  */
-class wedge0_1_importer extends SmfCommonOrigin
+class wedge0_1_importer extends \OpenImporter\Importers\SmfCommonOrigin
 {
 	public $attach_extension = 'ext';
 
@@ -40,7 +40,7 @@ class wedge0_1_importer extends SmfCommonOrigin
 /**
  * Does the actual conversion.
  */
-class wedge0_1_importer_step1 extends SmfCommonOriginStep1
+class wedge0_1_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginStep1
 {
 	public function doSpecialTable($special_table, $params = null)
 	{
@@ -496,6 +496,7 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 			$source = $row['full_path'] . '/' . $row['filename'];
 
 			copy_file($source, $destination);
+			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}
 
@@ -592,7 +593,7 @@ class wedge0_1_importer_step1 extends SmfCommonOriginStep1
 /**
  * Recount statistics, and fixes stuff.
  */
-class wedge0_1_importer_step2 extends SmfCommonOriginStep2
+class wedge0_1_importer_step2 extends \OpenImporter\Importers\SmfCommonOriginStep2
 {
 	public function substep0()
 	{
@@ -761,7 +762,7 @@ class wedge0_1_importer_step2 extends SmfCommonOriginStep2
 /**
  * Records the conversion
  */
-class wedge0_1_importer_step3 extends SmfCommonOriginStep3
+class wedge0_1_importer_step3 extends \OpenImporter\Importers\SmfCommonOriginStep3
 {
 	public function run($import_script)
 	{

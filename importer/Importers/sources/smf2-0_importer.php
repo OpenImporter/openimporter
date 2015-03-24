@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class SMF2_0 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 

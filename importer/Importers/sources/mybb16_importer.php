@@ -7,10 +7,12 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers\sources;
+
 /**
  * Settings for the MyBB 1.6 system.
  */
-class mybb16 extends AbstractSourceImporter
+class mybb16 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/inc/config.php';
 
