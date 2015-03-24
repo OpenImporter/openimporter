@@ -459,7 +459,7 @@ class elkarte1_0_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginS
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$file_hash = createAttachmentFileHash($row['filename']);
+			$file_hash = $this->createAttachmentFileHash($row['filename']);
 			$id_attach = $this->newIdAttach();
 			// @todo the name should come from step1_importer
 			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';

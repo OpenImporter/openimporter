@@ -291,6 +291,17 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
 	}
 
+	/**
+	 * helper function to create an encrypted attachment name
+	 *
+	 * @param string $filename
+	 * @return string
+	 */
+	protected function createAttachmentFilehash($filename)
+	{
+		return sha1(md5($filename . time()) . mt_rand());
+	}
+
 	protected function createAttachFoldersStructure($folders)
 	{
 		$source_base = $this->guessBase($folders);
@@ -424,7 +435,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		}
 		else
 		{
-			$file_hash = createAttachmentFileHash($filename);
+			$file_hash = $this->createAttachmentFileHash($filename);
 			$id_attach = $this->newIdAttach();
 
 			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.' . $this->config->destination->attach_extension;
@@ -1279,17 +1290,6 @@ abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 					('enable_password_conversion', '1'),
 					('imported_from', '" . $import_script . "')");
 	}
-}
-
-/**
- * helper function to create an encrypted attachment name
- *
- * @param string $filename
- * @return string
- */
-function createAttachmentFilehash($filename)
-{
-	return sha1(md5($filename . time()) . mt_rand());
 }
 
 /**
