@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\Template;
+
 /**
  * class ImportException extends the build-in Exception class and
  * catches potential errors

@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\DatabaseException;
+
 /**
  * The database class.
  *

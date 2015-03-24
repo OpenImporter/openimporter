@@ -50,6 +50,9 @@ function pastTime($substep = null, $stop_time = 5)
 
 /**
  * helper function, simple file copy at all
+ * @todo consider using:
+ *    http://symfony.com/components/Filesystem
+ *    http://symfony.com/components/Finder
  *
  * @param string $source
  * @param string $destination

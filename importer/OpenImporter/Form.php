@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\FormException;
+
 /**
  * Just a way to collect a bunch of stuff to be used to build a form.
  */

@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\Form;
+
 // @todo this should probably go somewhere else...
 require_once(BASEDIR . '/OpenImporter/Utils.php');
 

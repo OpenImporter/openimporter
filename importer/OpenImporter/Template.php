@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\DummyLang;
+
 /**
  * this is our UI
  *

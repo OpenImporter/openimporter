@@ -16,6 +16,9 @@
 namespace OpenImporter\Core;
 
 use Symfony\Component\Yaml\Parser;
+use OpenImporter\Core\Database;
+use OpenImporter\Core\XmlProcessor;
+use OpenImporter\Core\ImportException;
 
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
