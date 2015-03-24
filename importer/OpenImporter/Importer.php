@@ -336,7 +336,8 @@ class Importer
 		}
 
 		$this->init_db();
-		$this->config->source->setUtils($this->db, $this->config);
+		$this->config->source->setUtils($this->source_db, $this->config);
+		$this->config->destination->setUtils($this->db, $this->config);
 
 		$this->testTable();
 	}
