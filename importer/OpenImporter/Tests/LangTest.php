@@ -1,6 +1,6 @@
 <?php
 
-use OpenImporter\Core;
+use OpenImporter\Core\Lang;
 
 class LangTest extends \PHPUnit_Framework_TestCase
 {
@@ -34,7 +34,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @expectedException ImportException
+	 * @expectedException OpenImporter\Core\ImportException
 	 * @expectedExceptionMessage XML-Syntax error in file:
 	 */
 	public function testLoadLangBadXML()
@@ -51,8 +51,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testFindLanguage()
 	{
-		$method = new ReflectionMethod(
-			'Lang', 'findLanguage'
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'findLanguage'
 		);
 
 		$method->setAccessible(true);
@@ -81,8 +81,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSet()
 	{
-		$method = new ReflectionMethod(
-			'Lang', 'set'
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'set'
 		);
 
 		$method->setAccessible(true);
@@ -99,8 +99,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetAll()
 	{
-		$method = new ReflectionMethod(
-			'Lang', 'set'
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'set'
 		);
 
 		$method->setAccessible(true);
@@ -137,8 +137,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetException()
 	{
-		$method = new ReflectionMethod(
-			'Lang', 'set'
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'set'
 		);
 
 		$method->setAccessible(true);
@@ -154,8 +154,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGet()
 	{
-		$method = new ReflectionMethod(
-			'Lang', 'set'
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'set'
 		);
 
 		$method->setAccessible(true);
@@ -179,8 +179,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetter()
 	{
-		$method = new ReflectionMethod(
-			'Lang', 'set'
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'set'
 		);
 
 		$method->setAccessible(true);
@@ -199,10 +199,10 @@ class LangTest extends \PHPUnit_Framework_TestCase
  * Temporary class to forward the currently static exception handler to a
  * default exception
  */
-class ImportException extends Exception
+class ImportException extends \Exception
 {
 	public static function exception_handler($e)
 	{
-		throw new Exception($e->getMessage(), $e->getCode(), $e);
+		throw new \Exception($e->getMessage(), $e->getCode(), $e);
 	}
 }

@@ -13,7 +13,7 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 /**
  * Object Importer creates the main XML object.

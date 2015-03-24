@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 /**
  * Class DummyLang replaces the Lang class if something bad happens,

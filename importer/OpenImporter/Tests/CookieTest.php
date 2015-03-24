@@ -1,6 +1,6 @@
 <?php
 
-use OpenImporter\Core;
+use OpenImporter\Core\Cookie;
 
 /**
  * we need Cooooookies..

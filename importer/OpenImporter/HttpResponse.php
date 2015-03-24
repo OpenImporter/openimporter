@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 /**
  * This should contain the data used by the template.

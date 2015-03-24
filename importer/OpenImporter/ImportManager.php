@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 // @todo this should probably go somewhere else...
 require_once(BASEDIR . '/OpenImporter/Utils.php');
@@ -484,7 +484,7 @@ class ImportManager
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean
 	 */
 	public function doStep1()
@@ -503,7 +503,7 @@ class ImportManager
 			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new Exception($e->getMessage());
+			throw new \Exception($e->getMessage());
 		}
 
 		$_GET['substep'] = 0;
@@ -538,7 +538,7 @@ class ImportManager
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean
 	 */
 	public function doStep2()
@@ -557,7 +557,7 @@ class ImportManager
 			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new Exception($e->getMessage());
+			throw new \Exception($e->getMessage());
 		}
 
 		$this->template->status($key + 1, 1, false, true);

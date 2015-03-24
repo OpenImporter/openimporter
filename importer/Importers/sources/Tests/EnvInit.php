@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\ClassLoader\Psr4ClassLoader;
 use OpenImporter\Core;
 use OpenImporter\Importers;
 

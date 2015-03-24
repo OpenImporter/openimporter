@@ -13,7 +13,7 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 use Symfony\Component\Yaml\Parser;
 
@@ -281,7 +281,7 @@ class Importer
 	/**
 	 * Prepare the importer with custom settings of the source
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean|null
 	 */
 	private function _loadSettings()
@@ -312,15 +312,15 @@ class Importer
 		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 
 		if ($this->config->boardurl === false)
-			throw new Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
+			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
 
 		if (!$this->config->destination->verifyDbPass($this->data['db_pass']))
-			throw new Exception($this->lng->get('password_incorrect'));
+			throw new \Exception($this->lng->get('password_incorrect'));
 
 		// Check the steps that we have decided to go through.
 		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
 		{
-			throw new Exception($this->lng->get('select_step'));
+			throw new \Exception($this->lng->get('select_step'));
 		}
 		elseif (isset($_POST['do_steps']))
 		{
@@ -352,7 +352,7 @@ class Importer
 				FROM ' . $this->config->from_prefix . $this->config->source->getTableTest(), true);
 
 			if ($result === false)
-				throw new Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
 
 			$this->db->free_result($result);
 		}
@@ -368,9 +368,9 @@ class Importer
 		if ($found === false)
 		{
 			if (@ini_get('open_basedir') != '')
-				throw new Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
 
-			throw new Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
+			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
 		}
 	}
 

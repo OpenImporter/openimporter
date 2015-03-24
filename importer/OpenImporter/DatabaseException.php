@@ -7,12 +7,12 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 /**
  * class DatabaseException extends the build-in Exception class and
  * catches potential errors
  */
-class DatabaseException extends Exception
+class DatabaseException extends \Exception
 {
 }

@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 /**
  * The configurator is just a class holding the common configuration

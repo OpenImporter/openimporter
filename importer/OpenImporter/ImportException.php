@@ -7,13 +7,13 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Core
+namespace OpenImporter\Core;
 
 /**
  * class ImportException extends the build-in Exception class and
  * catches potential errors
  */
-class ImportException extends Exception
+class ImportException extends \Exception
 {
 	public static function error_handler_callback($code, $string, $file, $line)
 	{
