@@ -154,7 +154,7 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 			// And try also with the PRIVATE_MESSAGE_USERS table
 			$result = convert_query("
 				SELECT DISTINCT(USER_ID)
-				FROM {$from_prefix}PRIVATE_MESSAGE_USERS
+				FROM {$this->config->from_prefix}PRIVATE_MESSAGE_USERS
 				WHERE TOPIC_ID = " . $row['TOPIC_ID'] . "
 					AND USER_ID != " . $row['USER_ID'] . "");
 

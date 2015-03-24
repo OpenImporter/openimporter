@@ -64,11 +64,9 @@ class SMF1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 	{
 		if ($this->smf_attach_folders === null)
 		{
-			$from_prefix = $this->config->from_prefix;
-
 			$request = $this->db->query("
 				SELECT value
-				FROM {$from_prefix}settings
+				FROM {$this->config->from_prefix}settings
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 

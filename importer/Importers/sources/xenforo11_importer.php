@@ -77,7 +77,7 @@ class XenForo1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 			$request = $this->db->query("
 				SELECT
 					thread_id, last_post_id
-				FROM {$from_prefix}thread
+				FROM {$this->config->from_prefix}thread
 				WHERE node_id  = $row[id_board]
 				ORDER BY thread_id DESC
 				LIMIT 1");

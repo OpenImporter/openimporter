@@ -66,11 +66,9 @@ class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
 	{
 		if ($this->smf_attach_folders === null)
 		{
-			$from_prefix = $this->config->from_prefix;
-
 			$request = $this->db->query("
 				SELECT value
-				FROM {$from_prefix}settings
+				FROM {$this->config->from_prefix}settings
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 
@@ -104,12 +102,10 @@ class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchNibogo()
 	{
-		$from_prefix = $this->config->from_prefix;
-
 		$request = $this->db->query("
 			SELECT l.id_member, t.id_first_msg, t.id_member_started
-			FROM {$from_prefix}likes
-				INNER JOIN {$from_prefix}topics AS t ON (t.id_topic = l.id_topic)");
+			FROM {$this->config->from_prefix}likes
+				INNER JOIN {$this->config->from_prefix}topics AS t ON (t.id_topic = l.id_topic)");
 		$return = array();
 		while ($row = $this->db->fetch_assoc($request))
 			$return[] = array(
@@ -125,12 +121,10 @@ class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchIllori()
 	{
-		$from_prefix = $this->config->from_prefix;
-
 		$request = $this->db->query("
 			SELECT l.id_member, l.id_message, m.id_member as id_poster
-			FROM {$from_prefix}likes AS l
-				INNER JOIN {$from_prefix}messages AS m ON (m.id_msg = l.id_message)");
+			FROM {$this->config->from_prefix}likes AS l
+				INNER JOIN {$this->config->from_prefix}messages AS m ON (m.id_msg = l.id_message)");
 		$return = array();
 		while ($row = $this->db->fetch_assoc($request))
 			$return[] = array(
@@ -146,14 +140,12 @@ class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function isNibogo()
 	{
-		$from_prefix = $this->config->from_prefix;
-
 		if ($this->_is_nibogo_like !== null)
 			return $this->_is_nibogo_like;
 
 		$request = $this->db->query("
 			SHOW COLUMNS
-			FROM {$from_prefix}likes");
+			FROM {$this->config->from_prefix}likes");
 		while ($row = $this->db->fetch_assoc($request))
 		{
 			// This is Nibogo

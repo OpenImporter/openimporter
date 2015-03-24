@@ -54,11 +54,11 @@ class wbb3_1 extends \OpenImporter\Importers\AbstractSourceImporter
 			return;
 
 		$this->userOptions = array();
-		$request = $db->query("
+		$request = $this->db->query("
 			SELECT optionName, optionID
-			FROM{$from_prefix}{$wcf_prefix}user_option");
+			FROM{$this->config->from_prefix}{$wcf_prefix}user_option");
 
-		while ($wbbOpt = $db->fetch_assoc($request))
+		while ($wbbOpt = $this->->fetch_assoc($request))
 			$this->userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
 
 		$db->free_result($request);
@@ -131,13 +131,15 @@ class wbb3_1 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function preparseTopics($originalRows)
 	{
+		global $wbb_prefix;
+
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
 			$request = $db->query("
 				SELECT
 					pollID
-				FROM {$from_prefix}{$wbb_prefix}post
+				FROM {$this->config->from_prefix}{$wbb_prefix}post
 				WHERE threadID = $row[id_topic] AND pollID > 0
 				GROUP BY threadID");
 

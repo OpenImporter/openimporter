@@ -158,7 +158,7 @@ class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 		{
 			$request = $this->db->query("
 				SELECT count(*)
-				FROM {$from_prefix}votes
+				FROM {$this->config->from_prefix}votes
 				WHERE aid = " . $row['id_choice']);
 
 			list ($count) = $this->db->fetch_row($request);
