@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The starting point for the first step of any importer.
  * Step 1 is where the actual conversion happens, where the data are moved

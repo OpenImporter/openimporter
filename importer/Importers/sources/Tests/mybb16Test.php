@@ -1,6 +1,6 @@
 <?php
 use Symfony\Component\Yaml\Yaml;
-use OpenImporter\Core;
+use OpenImporter\Core\ImportException;
 
 require_once(__DIR__ . '/EnvInit.php');
 require_once(BASEDIR . '/Importers/sources/mybb16_importer.php');

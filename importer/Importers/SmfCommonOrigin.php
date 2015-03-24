@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The class contains code that allows the Importer to obtain settings
  * from softwares that still have an SMF heritage.

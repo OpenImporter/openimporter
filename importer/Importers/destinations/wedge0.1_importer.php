@@ -16,6 +16,8 @@
  * All rights reserved.
  */
 
+namespace OpenImporter\Importers\destination;
+
 /**
  * The class contains code that allows the Importer to obtain settings
  * from the Wedge installation.

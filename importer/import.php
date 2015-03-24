@@ -8,8 +8,6 @@
  */
 
 use Symfony\Component\ClassLoader\Psr4ClassLoader;
-use OpenImporter\Core;
-use OpenImporter\Importers;
 
 define('BASEDIR', __DIR__);
 // Composer stuff
@@ -17,7 +15,7 @@ require_once(BASEDIR . '/vendor/autoload.php');
 
 $loader = new Psr4ClassLoader();
 $loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');
-$loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers/Mappers');
+$loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers');
 $loader->register();
 
 @set_time_limit(600);

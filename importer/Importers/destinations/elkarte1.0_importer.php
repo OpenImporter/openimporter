@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter\Importers\destination;
+
 /**
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
