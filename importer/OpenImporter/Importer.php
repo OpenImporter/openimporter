@@ -37,6 +37,12 @@ class Importer
 	protected $db;
 
 	/**
+	 * This is the connection to the source database.
+	 * @var object
+	 */
+	protected $source_db;
+
+	/**
 	 * The "translator" (i.e. the Lang object)
 	 * @var object
 	 */
@@ -404,7 +410,19 @@ class Importer
 			$this->config->to_prefix = $db_prefix;
 		}
 
-		$this->config->from_prefix = $this->config->source->getDbPrefix();
+		try
+		{
+			$connectionParams = $this->config->source->dbConnectionData();
+			$this->config->from_prefix = $this->config->source->getDbPrefix();
+
+			$this->source_db = new Database($connectionParams);
+			//We want UTF8 only, let's set our mysql connetction to utf8
+			$this->source_db->query('SET NAMES \'utf8\'');
+		}
+		catch(Exception $e)
+		{
+			$this->source_db = $this->db;
+		}
 
 		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
 		{
