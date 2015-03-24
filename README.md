@@ -15,8 +15,8 @@ Supported Source systems:
 
 Supported destination systems:
 ===
-* ElkArte www.elkarte.net
-* Wedge [wedge.org](wedge.org)
+* ElkArte [www.elkarte.net](http://www.elkarte.net)
+* Wedge [wedge.org](http://wedge.org)
 
 The software is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
 
