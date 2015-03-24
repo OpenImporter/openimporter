@@ -49,7 +49,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::findLanguage
+	 * @covers OpenImporter\Core\Lang::findLanguage
 	 */
 	public function testFindLanguage()
 	{
@@ -79,7 +79,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::set
+	 * @covers OpenImporter\Core\Lang::set
 	 */
 	public function testSet()
 	{
@@ -133,7 +133,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::set
+	 * @covers OpenImporter\Core\Lang::set
 	 * @expectedException Exception
 	 * @expectedExceptionMessage Unable to set language string for <em>testing</em>. It was already set.
 	 */
@@ -152,7 +152,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::get
+	 * @covers OpenImporter\Core\Lang::get
 	 */
 	public function testGet()
 	{
@@ -177,7 +177,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::__get
+	 * @covers OpenImporter\Core\Lang::__get
 	 */
 	public function testGetter()
 	{
