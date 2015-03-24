@@ -25,21 +25,39 @@ class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $config;
-
-		return '`' . $this->getDbName() . '`.' . $config['Database']['tableprefix'];
+		return $this->fetchSetting('tableprefix');
 	}
 
 	public function getDbName()
 	{
-		global $config;
-
-		return $config['Database']['dbname'];
+		return $this->fetchSetting('dbname');
 	}
 
 	public function getTableTest()
 	{
 		return 'user';
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('dbname'),
+			'user' => $this->fetchSetting('username'),
+			'password' => $this->fetchSetting('password'),
+			'host' => $this->fetchSetting('servername'),
+			'driver' => 'pdo_mysqli',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['config']['Database']))
+			require_once($this->path . $this->setting_file);
+
+		return $GLOBALS['config']['Database'][$name];
 	}
 
 	/**

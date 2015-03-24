@@ -30,16 +30,52 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $table_prefix;
+		return $this->fetchSetting('table_prefix');
+	}
 
-		return '`' . $this->getDbName() . '`.' . $table_prefix;
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('dbname'),
+			'user' => $this->fetchSetting('dbuser'),
+			'password' => $this->fetchSetting('dbpasswd'),
+			'host' => $this->fetchSetting('dbhost'),
+			'driver' => $this->fetchDriver(),
+		);
+	}
+
+	protected function fetchDriver()
+	{
+		$type = $this->fetchSetting('dbms');
+		$drivers = array(
+// 			'firebird' => '', // Not supported by Doctrine DBAL (yet)
+			'mssql' => 'pdo_sqlsrv',
+			'mssql_odbc' => 'pdo_sqlsrv',
+			'mssqlnative' => 'pdo_sqlsrv',
+			'mysql' => 'pdo_mysql',
+			'mysqli' => 'pdo_mysql',
+			'oracle' => 'pdo_oci',
+			'postgres' => 'pdo_pgsql',
+			'sqlite' => 'pdo_sqlite',
+		);
+
+		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
 	}
 
 	public function getDbName()
 	{
-		global $dbname;
+		return $this->fetchSetting('dbname');
+	}
 
-		return $dbname;
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['dbms']))
+			require_once($this->path . $this->setting_file);
+
+		return $GLOBALS[$name];
 	}
 
 	public function getTableTest()

@@ -79,12 +79,12 @@ abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinati
 			return false;
 
 		return array(
-					'dbname' => $this->fetchSetting('db_name'),
-					'user' => $this->fetchSetting('db_user'),
-					'password' => $this->fetchSetting('db_passwd'),
-					'host' => $this->fetchSetting('db_server'),
-					'driver' => $this->fetchDriver(),
-			);
+			'dbname' => $this->fetchSetting('db_name'),
+			'user' => $this->fetchSetting('db_user'),
+			'password' => $this->fetchSetting('db_passwd'),
+			'host' => $this->fetchSetting('db_server'),
+			'driver' => $this->fetchDriver(),
+		);
 	}
 
 	public function getDbPrefix()
@@ -98,11 +98,11 @@ abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinati
 		$drivers = array(
 			'mysql' => 'pdo_mysql',
 			'mysqli' => 'pdo_mysql',
-			'postgresql' => 'pdo_mysql',
+			'postgresql' => 'pdo_pgsql',
 			'sqlite' => 'pdo_sqlite',
 		);
 
-		return $drivers[$type];
+		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
 	}
 
 	protected function fetchSetting($name)

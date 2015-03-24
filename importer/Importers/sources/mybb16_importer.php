@@ -28,18 +28,50 @@ class mybb16 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
+		return $this->fetchSetting('table_prefix');
+	}
 
-		return '`' . $this->getDbName() . '`.' . $config['database']['table_prefix'];
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('database'),
+			'user' => $this->fetchSetting('username'),
+			'password' => $this->fetchSetting('password'),
+			'host' => $this->fetchSetting('hostname'),
+			'driver' => $this->fetchDriver(),
+		);
+	}
+
+	protected function fetchDriver()
+	{
+		$type = $this->fetchSetting('type');
+		$drivers = array(
+			'mysql' => 'pdo_mysql',
+			'mysqli' => 'pdo_mysql',
+			'pgsql' => 'pdo_pgsql',
+			'sqlite' => 'pdo_sqlite',
+		);
+
+		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
 	}
 
 	public function getDbName()
 	{
+		return $this->fetchSetting('database');
+	}
+
+	protected function fetchSetting($name)
+	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
 		global $config;
 
-		return $config['database']['database'];
+		if (empty($config))
+			require_once($this->path . $this->setting_file);
+
+		return $config['database'][$name];
 	}
 
 	public function getTableTest()

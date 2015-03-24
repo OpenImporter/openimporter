@@ -34,6 +34,20 @@ class IPB3_4 extends \OpenImporter\Importers\AbstractSourceImporter
 	{
 	}
 
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('sql_database'),
+			'user' => $this->fetchSetting('sql_user'),
+			'password' => $this->fetchSetting('sql_pass'),
+			'host' => $this->fetchSetting('sql_host'),
+			'driver' => 'pdo_mysql',  // As far as I can tell IPB is MySQL only
+		);
+	}
+
 	public function getPrefix()
 	{
 		$db_name = $this->getDbName();

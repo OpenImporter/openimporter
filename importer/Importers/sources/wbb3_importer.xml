@@ -1,7 +1,8 @@
-Poll options import is broken
-In the original importer a new column (old_choice) was created in the
-destination database. This is not acceptable in this config,
-so we need a workaround.
+* The prefix handling is rather messy, needs review
+* Poll options import is broken
+  In the original importer a new column (old_choice) was created in the
+  destination database. This is not acceptable in this config,
+  so we need a workaround.
 
 <?xml version="1.0"?>
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
@@ -30,7 +31,7 @@ so we need a workaround.
 				u.password AS passwd, SUBSTRING(u.email, 1, 64) AS email_address, '' AS message_labels,
 				1 AS show_online, 0 AS id_group, 1 AS hide_email, '' AS ignore_boards,
 				SUBSTRING(u.signature, 1, 65534) AS signature, salt AS password_salt
-			FROM {$from_prefix}wcf1_user AS u
+			FROM {$from_prefix}{$wcf_prefix}user AS u
 				LEFT JOIN {$from_prefix}{$wbb_prefix}user AS p ON (u.userID = p.UserID);
 		</query>
 	</step>

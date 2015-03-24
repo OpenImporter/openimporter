@@ -9,10 +9,8 @@
 
 namespace OpenImporter\Importers\sources;
 
-class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
+class SMF2_0 extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
-	protected $setting_file = '/Settings.php';
-
 	protected $smf_attach_folders = null;
 
 	protected $_is_nibogo_like = null;
@@ -30,36 +28,6 @@ class SMF2_0 extends \OpenImporter\Importers\AbstractSourceImporter
 	public function setDefines()
 	{
 		define('SMF', 1);
-	}
-
-	public function getPrefix()
-	{
-		$db_name = $this->getDbName();
-		$db_prefix = $this->fetchSetting('db_prefix');
-		return '`' . $db_name . '`.' . $db_prefix;
-	}
-
-	public function getDbName()
-	{
-		return $this->fetchSetting('db_name');
-	}
-
-	public function getTableTest()
-	{
-		return 'members';
-	}
-
-	protected function fetchSetting($name)
-	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . '/Settings.php');
-
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
-
-		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getAttachmentDirs()

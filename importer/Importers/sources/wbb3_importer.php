@@ -29,19 +29,36 @@ class wbb3_1 extends \OpenImporter\Importers\AbstractSourceImporter
 		return '`' . $this->getDbName() . '`.';
 	}
 
-	public function getDbName()
+	public function dbConnectionData()
 	{
-		global $dbName;
+		if ($this->path === null)
+			return false;
 
-		return $dbName;
+		return array(
+			'dbname' => $this->fetchSetting('dbName'),
+			'user' => $this->fetchSetting('dbUser'),
+			'password' => $this->fetchSetting('dbPassword'),
+			'host' => $this->fetchSetting('dbHost'),
+			'driver' => 'pdo_mysqli',
+		);
 	}
 
-	// @todo why $wbb_prefix is not in getPrefix?
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['dbHost']))
+			require_once($this->path . $this->setting_file);
+
+		return $GLOBALS[$name];
+	}
+
+	public function getDbName()
+	{
+		return $this->fetchSetting('dbName');
+	}
+
 	public function getTableTest()
 	{
-		global $wbb_prefix;
-
-		return $wbb_prefix . 'user';
+		return 'user';
 	}
 
 	protected function fetchUserOptions()
@@ -58,7 +75,7 @@ class wbb3_1 extends \OpenImporter\Importers\AbstractSourceImporter
 			SELECT optionName, optionID
 			FROM{$this->config->from_prefix}{$wcf_prefix}user_option");
 
-		while ($wbbOpt = $this->->fetch_assoc($request))
+		while ($wbbOpt = $this->db->fetch_assoc($request))
 			$this->userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
 
 		$db->free_result($request);

@@ -9,10 +9,8 @@
 
 namespace OpenImporter\Importers\sources;
 
-class SMF1_1 extends \OpenImporter\Importers\AbstractSourceImporter
+class SMF1_1 extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
-	protected $setting_file = '/Settings.php';
-
 	protected $smf_attach_folders = null;
 
 	public function getName()
@@ -22,29 +20,12 @@ class SMF1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getVersion()
 	{
-		return 'ElkArte 1.0';
+		return '1.0';
 	}
 
 	public function setDefines()
 	{
 		define('SMF', 1);
-	}
-
-	public function getPrefix()
-	{
-		$db_name = $this->getDbName();
-		$db_prefix = $this->fetchSetting('db_prefix');
-		return '`' . $db_name . '`.' . $db_prefix;
-	}
-
-	public function getDbName()
-	{
-		return $this->fetchSetting('db_name');
-	}
-
-	public function getTableTest()
-	{
-		return 'members';
 	}
 
 	protected function fetchSetting($name)

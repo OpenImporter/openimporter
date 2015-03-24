@@ -11,6 +11,8 @@ namespace OpenImporter\Importers\sources;
 
 class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 {
+	protected $setting_file = '/kernel/db/config.php';
+
 	public function getName()
 	{
 		return 'PHPBoost3';
@@ -18,21 +20,42 @@ class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getVersion()
 	{
-		return 'ElkArte 1.0';
+		return '1.0';
 	}
 
 	public function getPrefix()
 	{
-		global $boost_prefix;
+		if (!defined('PREFIX'))
+			$this->fetchSetting('sql_host');
 
-		return '`' . $this->getDbName() . '`.' . $boost_prefix;
+		return PREFIX;
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('sql_base'),
+			'user' => $this->fetchSetting('sql_login'),
+			'password' => $this->fetchSetting('sql_pass'),
+			'host' => $this->fetchSetting('sql_host'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['sql_host']))
+			require_once($this->path . $this->setting_file);
+
+		return $GLOBALS[$name];
 	}
 
 	public function getDbName()
 	{
-		global $boost_database;
-
-		return $boost_database;
+		return $this->fetchSetting('sql_base');
 	}
 
 	public function getTableTest()

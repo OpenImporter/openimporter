@@ -33,18 +33,37 @@ class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
-
-		return '`' . $this->getDbName() . '`.' . $config['dbprefix'];
+		return $this->fetchSetting('dbprefix');
 	}
 
 	public function getDbName()
 	{
+		return $this->fetchSetting('database');
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('database'),
+			'user' => $this->fetchSetting('dbuser'),
+			'password' => $this->fetchSetting('dbpw'),
+			'host' => $this->fetchSetting('host'),
+			'driver' => 'pdo_mysqli',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
 		global $config;
 
-		return $config['database'];
+		if (empty($config))
+			require_once($this->path . $this->setting_file);
+
+		return $config[$name];
 	}
 
 	public function getTableTest()

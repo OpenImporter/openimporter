@@ -33,8 +33,6 @@ abstract class AbstractDestinationImporter
 
 	abstract public function getName();
 
-	abstract public function checkSettingsPath();
-
 	abstract public function getDestinationURL();
 
 	abstract public function getFormFields();
@@ -46,4 +44,14 @@ abstract class AbstractDestinationImporter
 	abstract public function getDbPrefix();
 
 	abstract public function getTableTest();
+
+	public function checkSettingsPath($path)
+	{
+		$found = file_exists($path . $this->setting_file);
+
+		if ($found && $this->path === null)
+			$this->path = $path;
+
+		return $found;
+	}
 }
