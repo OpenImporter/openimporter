@@ -43,8 +43,6 @@ abstract class AbstractDestinationImporter
 
 	abstract public function getDbPrefix();
 
-	abstract public function getTableTest();
-
 	public function checkSettingsPath($path)
 	{
 		$found = file_exists($path . $this->setting_file);
