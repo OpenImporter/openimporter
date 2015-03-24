@@ -8,6 +8,15 @@
  */
 
 use Symfony\Component\ClassLoader\Psr4ClassLoader;
+use OpenImporter\Core\Configurator;
+use OpenImporter\Core\Lang;
+use OpenImporter\Core\Cookie;
+use OpenImporter\Core\Template;
+use OpenImporter\Core\Importer;
+use OpenImporter\Core\HttpResponse;
+use OpenImporter\Core\ResponseHeader;
+use OpenImporter\Core\ImportManager;
+use OpenImporter\Core\ImportException;
 
 define('BASEDIR', __DIR__);
 // Composer stuff
@@ -53,7 +62,7 @@ try
 	$lng = new Lang();
 	$lng->loadLang($config->lang_dir);
 }
-catch (Exception $e)
+catch (\Exception $e)
 {
 	ImportException::exception_handler($e);
 }
@@ -72,7 +81,7 @@ try
 {
 	$import->process();
 }
-catch (Exception $e)
+catch (\Exception $e)
 {
 	// Debug, remember to remove before PR
 	echo '<br>' . $e->getMessage() . '<br>';
