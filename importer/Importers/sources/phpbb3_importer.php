@@ -49,7 +49,7 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fixBbc($body, $bbc_replace)
 	{
-		$body = phpbb_replace_bbc($body);
+		$body = $this->replace_bbc($body);
 		$body = str_replace($bbc_replace, '', $body);
 
 		return $body;
@@ -95,89 +95,89 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function percent_to_px($percent)
-{
-	return intval(11*(intval($percent)/100.0));
-}
+	/**
+	 * Utility functions
+	 */
+	protected function percent_to_px($percent)
+	{
+		return intval(11*(intval($percent)/100.0));
+	}
 
-function phpbb_replace_bbc($message)
-{
-	$message = preg_replace(
-		array(
-			'~\[quote=&quot;(.+?)&quot;\:(.+?)\]~is',
-			'~\[quote\:(.+?)\]~is',
-			'~\[/quote\:(.+?)\]~is',
-			'~\[b\:(.+?)\]~is',
-			'~\[/b\:(.+?)\]~is',
-			'~\[i\:(.+?)\]~is',
-			'~\[/i\:(.+?)\]~is',
-			'~\[u\:(.+?)\]~is',
-			'~\[/u\:(.+?)\]~is',
-			'~\[url\:(.+?)\]~is',
-			'~\[/url\:(.+?)\]~is',
-			'~\[url=(.+?)\:(.+?)\]~is',
-			'~\[/url\:(.+?)\]~is',
-			'~\<a(.+?) href="(.+?)">(.+?)</a>~is',
-			'~\[img\:(.+?)\]~is',
-			'~\[/img\:(.+?)\]~is',
-			'~\[size=(.+?)\:(.+?)\]~is',
-			'~\[/size\:(.+?)?\]~is',
-			'~\[color=(.+?)\:(.+?)\]~is',
-			'~\[/color\:(.+?)\]~is',
-			'~\[code=(.+?)\:(.+?)\]~is',
-			'~\[code\:(.+?)\]~is',
-			'~\[/code\:(.+?)\]~is',
-			'~\[list=(.+?)\:(.+?)\]~is',
-			'~\[list\:(.+?)\]~is',
-			'~\[/list\:(.+?)\]~is',
-			'~\[\*\:(.+?)\]~is',
-			'~\[/\*\:(.+?)\]~is',
-			'~\<img src=\"{SMILIES_PATH}/(.+?)\" alt=\"(.+?)\" title=\"(.+?)\" /\>~is',
-		),
-		array(
-			'[quote author="$1"]',
-			'[quote]',
-			'[/quote]',
-			'[b]',
-			'[/b]',
-			'[i]',
-			'[/i]',
-			'[u]',
-			'[/u]',
-			'[url]',
-			'[/url]',
-			'[url=$1]',
-			'[/url]',
-			'[url=$2]$3[/url]',
-			'[img]',
-			'[/img]',
-			'[size=' . percent_to_px("\1") . 'px]',
-			'[/size]',
-			'[color=$1]',
-			'[/color]',
-			'[code=$1]',
-			'[code]',
-			'[/code]',
-			'[list type=$1]',
-			'[list]',
-			'[/list]',
-			'[li]',
-			'[/li]',
-			'$2',
-		), $message);
+	protected function replace_bbc($message)
+	{
+		$message = preg_replace(
+			array(
+				'~\[quote=&quot;(.+?)&quot;\:(.+?)\]~is',
+				'~\[quote\:(.+?)\]~is',
+				'~\[/quote\:(.+?)\]~is',
+				'~\[b\:(.+?)\]~is',
+				'~\[/b\:(.+?)\]~is',
+				'~\[i\:(.+?)\]~is',
+				'~\[/i\:(.+?)\]~is',
+				'~\[u\:(.+?)\]~is',
+				'~\[/u\:(.+?)\]~is',
+				'~\[url\:(.+?)\]~is',
+				'~\[/url\:(.+?)\]~is',
+				'~\[url=(.+?)\:(.+?)\]~is',
+				'~\[/url\:(.+?)\]~is',
+				'~\<a(.+?) href="(.+?)">(.+?)</a>~is',
+				'~\[img\:(.+?)\]~is',
+				'~\[/img\:(.+?)\]~is',
+				'~\[size=(.+?)\:(.+?)\]~is',
+				'~\[/size\:(.+?)?\]~is',
+				'~\[color=(.+?)\:(.+?)\]~is',
+				'~\[/color\:(.+?)\]~is',
+				'~\[code=(.+?)\:(.+?)\]~is',
+				'~\[code\:(.+?)\]~is',
+				'~\[/code\:(.+?)\]~is',
+				'~\[list=(.+?)\:(.+?)\]~is',
+				'~\[list\:(.+?)\]~is',
+				'~\[/list\:(.+?)\]~is',
+				'~\[\*\:(.+?)\]~is',
+				'~\[/\*\:(.+?)\]~is',
+				'~\<img src=\"{SMILIES_PATH}/(.+?)\" alt=\"(.+?)\" title=\"(.+?)\" /\>~is',
+			),
+			array(
+				'[quote author="$1"]',
+				'[quote]',
+				'[/quote]',
+				'[b]',
+				'[/b]',
+				'[i]',
+				'[/i]',
+				'[u]',
+				'[/u]',
+				'[url]',
+				'[/url]',
+				'[url=$1]',
+				'[/url]',
+				'[url=$2]$3[/url]',
+				'[img]',
+				'[/img]',
+				'[size=' . $this->percent_to_px("\1") . 'px]',
+				'[/size]',
+				'[color=$1]',
+				'[/color]',
+				'[code=$1]',
+				'[code]',
+				'[/code]',
+				'[list type=$1]',
+				'[list]',
+				'[/list]',
+				'[li]',
+				'[/li]',
+				'$2',
+			), $message);
 
-	$message = preg_replace('~\[size=(.+?)px\]~is', "[size=" . ('\1' > '99' ? 99 : '"\1"') . "px]", $message);
+		$message = preg_replace('~\[size=(.+?)px\]~is', "[size=" . ('\1' > '99' ? 99 : '"\1"') . "px]", $message);
 
-	$message = strtr($message, array(
-		'[list type=1]' => '[list type=decimal]',
-		'[list type=a]' => '[list type=lower-alpha]',
-	));
-	$message = stripslashes($message);
+		$message = strtr($message, array(
+			'[list type=1]' => '[list type=decimal]',
+			'[list type=a]' => '[list type=lower-alpha]',
+		));
+		$message = stripslashes($message);
 
-	return $message;
+		return $message;
+	}
 }

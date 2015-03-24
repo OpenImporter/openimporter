@@ -50,8 +50,8 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['signature'] = fix_quotes($row['signature'], false);
-			$row['birthdate'] = convert_birthdate($row['birthdate']);
+			$row['signature'] = $this->fix_quotes($row['signature'], false);
+			$row['birthdate'] = $this->convert_birthdate($row['birthdate']);
 
 			$rows[] = $row;
 		}
@@ -64,7 +64,7 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['description'] = fix_quotes($row['description'], false);
+			$row['description'] = $this->fix_quotes($row['description'], false);
 
 			$rows[] = $row;
 		}
@@ -77,8 +77,8 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['subject'] = fix_quotes($row['subject'], false);
-			$row['body'] = fix_quotes($row['body'], true);
+			$row['subject'] = $this->fix_quotes($row['subject'], false);
+			$row['body'] = $this->fix_quotes($row['body'], true);
 
 			$rows[] = $row;
 		}
@@ -121,8 +121,8 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 				'deleted_by_sender' => 0,
 				'from_name' => $row['from_name'],
 				'msgtime' => $row['msgtime'],
-				'subject' => fix_quotes($row['subject'], false),
-				'body' => fix_quotes($row['body'], true),
+				'subject' => $this->fix_quotes($row['subject'], false),
+				'body' => $this->fix_quotes($row['body'], true),
 			);
 		}
 
@@ -181,28 +181,28 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function fix_quotes($string, $new_lines = true)
-{
-	if ($new_lines)
-		return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'));
-	else
-		return htmlspecialchars($string);
-}
-
-function convert_birthdate($date)
-{
-	$tmp_birthdate = explode('/', $date);
-	if (count($tmp_birthdate) == 3)
+	/**
+	 * Utility functions
+	 */
+	protected function fix_quotes($string, $new_lines = true)
 	{
-		if (strlen($tmp_birthdate[2]) != 4)
-			$tmp_birthdate[2] = '0004';
-		return $tmp_birthdate[2] . '-' . str_pad($tmp_birthdate[0], 2, "0", STR_PAD_LEFT) . '-' . str_pad($tmp_birthdate[1], 2, "0", STR_PAD_LEFT);
+		if ($new_lines)
+			return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'));
+		else
+			return htmlspecialchars($string);
 	}
-	else
-		return '0001-01-01';
+
+	protected function convert_birthdate($date)
+	{
+		$tmp_birthdate = explode('/', $date);
+		if (count($tmp_birthdate) == 3)
+		{
+			if (strlen($tmp_birthdate[2]) != 4)
+				$tmp_birthdate[2] = '0004';
+			return $tmp_birthdate[2] . '-' . str_pad($tmp_birthdate[0], 2, "0", STR_PAD_LEFT) . '-' . str_pad($tmp_birthdate[1], 2, "0", STR_PAD_LEFT);
+		}
+		else
+			return '0001-01-01';
+	}
 }

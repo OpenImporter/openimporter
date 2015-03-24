@@ -65,7 +65,7 @@ class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = boost_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			if (!empty($row['modified_time']) && empty($row['modified_name']))
 			{
@@ -77,42 +77,42 @@ class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function boost_replace_bbc($content)
-{
-	$content = preg_replace(
-		array(
-			'~<strong>~is',
-			'~</strong>~is',
-			'~<em>~is',
-			'~</em>~is',
-			'~<strike>~is',
-			'~</strike>~is',
-			'~\<h3(.+?)\>~is',
-			'~</h3>~is',
-			'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
-			'~\<div class="bb_block">(.+?)<\/div>~is',
-			'~\[style=(.+?)\](.+?)\[\/style\]~is',
-		),
-		array(
-			'[b]',
-			'[/b]',
-			'[i]',
-			'[/i]',
-			'[s]',
-			'[/s]',
-			'',
-			'',
-			'[u]%1[/u]',
-			'%1',
-			'%1',
-		),
-		trim($content)
-	);
+	/**
+	 * Utility functions
+	 */
+	protected function replace_bbc($content)
+	{
+		$content = preg_replace(
+			array(
+				'~<strong>~is',
+				'~</strong>~is',
+				'~<em>~is',
+				'~</em>~is',
+				'~<strike>~is',
+				'~</strike>~is',
+				'~\<h3(.+?)\>~is',
+				'~</h3>~is',
+				'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
+				'~\<div class="bb_block">(.+?)<\/div>~is',
+				'~\[style=(.+?)\](.+?)\[\/style\]~is',
+			),
+			array(
+				'[b]',
+				'[/b]',
+				'[i]',
+				'[/i]',
+				'[s]',
+				'[/s]',
+				'',
+				'',
+				'[u]%1[/u]',
+				'%1',
+				'%1',
+			),
+			trim($content)
+		);
 
-	return $content;
+		return $content;
+	}
 }

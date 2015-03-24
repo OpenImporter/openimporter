@@ -50,7 +50,7 @@ class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['signature'] = vb4_replace_bbc($row['signature']);
+			$row['signature'] = $this->replace_bbc($row['signature']);
 
 			$rows[] = $row;
 		}
@@ -90,7 +90,7 @@ class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = vb4_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -126,43 +126,43 @@ class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = vb4_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			$rows[] = $row;
 		}
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function vb4_replace_bbc($content)
-{
-	$content = preg_replace(
-		array(
-			'~\[(quote)=([^\]]+)\]~i',
-			'~\[(.+?)=&quot;(.+?)&quot;\]~is',
-			'~\[INDENT\]~is',
-			'~\[/INDENT\]~is',
-			'~\[LIST=1\]~is',
-		),
-		array(
-			'[$1=&quot;$2&quot;]',
-			'[$1=$2]',
-			'	',
-			'',
-			'[list type=decimal]',
-		), strtr($content, array('"' => '&quot;')));
+	/**
+	 * Utility functions
+	 */
+	protected function replace_bbc($content)
+	{
+		$content = preg_replace(
+			array(
+				'~\[(quote)=([^\]]+)\]~i',
+				'~\[(.+?)=&quot;(.+?)&quot;\]~is',
+				'~\[INDENT\]~is',
+				'~\[/INDENT\]~is',
+				'~\[LIST=1\]~is',
+			),
+			array(
+				'[$1=&quot;$2&quot;]',
+				'[$1=$2]',
+				'	',
+				'',
+				'[list type=decimal]',
+			), strtr($content, array('"' => '&quot;')));
 
-	// fixing Code tags
-	$replace = array();
+		// fixing Code tags
+		$replace = array();
 
-	preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
-	foreach ($matches as $temp)
-		$replace[$temp] = htmlspecialchars($temp);
-	$content = substr(strtr($content, $replace), 0, 65534);
+		preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
+		foreach ($matches as $temp)
+			$replace[$temp] = htmlspecialchars($temp);
+		$content = substr(strtr($content, $replace), 0, 65534);
 
-	return $content;
+		return $content;
+	}
 }
