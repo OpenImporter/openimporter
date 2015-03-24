@@ -29,7 +29,7 @@ class ImportException extends \Exception
 	}
 
 	/**
-	 * @param Exception $exception
+	 * @param \Exception $exception
 	 */
 	public static function exception_handler($exception, $template = null)
 	{
