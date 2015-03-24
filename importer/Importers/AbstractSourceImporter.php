@@ -31,15 +31,15 @@ abstract class AbstractSourceImporter
 		$this->config = $config;
 	}
 
-	public abstract function getName();
+	abstract public function getName();
 
-	public abstract function getVersion();
+	abstract public function getVersion();
 
-	public abstract function getPrefix();
+	abstract public function getPrefix();
 
-	public abstract function getDbName();
+	abstract public function getDbName();
 
-	public abstract function getTableTest();
+	abstract public function getTableTest();
 
 	public function loadSettings($path, $test = false)
 	{
