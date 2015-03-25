@@ -20,7 +20,7 @@ abstract class AbstractDestinationImporter implements DestinationImporterInterfa
 {
 	protected $setting_file = '';
 
-	protected $path = '';
+	protected $path = null;
 
 	protected $db = null;
 	protected $config = null;
