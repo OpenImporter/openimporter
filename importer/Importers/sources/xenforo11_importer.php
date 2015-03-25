@@ -48,7 +48,7 @@ class XenForo1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 			'user' => $this->fetchSetting('username'),
 			'password' => $this->fetchSetting('password'),
 			'host' => $this->fetchSetting('host'),
-			'driver' => 'pdo_mysqli',
+			'driver' => 'pdo_mysql',
 		);
 	}
 

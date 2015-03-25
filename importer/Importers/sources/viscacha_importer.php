@@ -51,7 +51,7 @@ class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 			'user' => $this->fetchSetting('dbuser'),
 			'password' => $this->fetchSetting('dbpw'),
 			'host' => $this->fetchSetting('host'),
-			'driver' => 'pdo_mysqli',
+			'driver' => 'pdo_mysql',
 		);
 	}
 
@@ -61,7 +61,7 @@ class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 		global $config;
 
 		if (empty($config))
-			require_once($this->path . $this->setting_file);
+			include($this->path . $this->setting_file);
 
 		return $config[$name];
 	}

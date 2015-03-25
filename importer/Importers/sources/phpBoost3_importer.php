@@ -48,7 +48,7 @@ class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 	protected function fetchSetting($name)
 	{
 		if (empty($GLOBALS['sql_host']))
-			require_once($this->path . $this->setting_file);
+			include($this->path . $this->setting_file);
 
 		return $GLOBALS[$name];
 	}

@@ -38,7 +38,7 @@ class WP3 extends \OpenImporter\Importers\AbstractSourceImporter
 			'user' => $this->fetchSetting('DB_USER'),
 			'password' => $this->fetchSetting('DB_PASSWORD'),
 			'host' => $this->fetchSetting('DB_HOST'),
-			'driver' => 'pdo_mysqli',
+			'driver' => 'pdo_mysql',
 		);
 	}
 

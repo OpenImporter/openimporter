@@ -69,7 +69,7 @@ class mybb16 extends \OpenImporter\Importers\AbstractSourceImporter
 		global $config;
 
 		if (empty($config))
-			require_once($this->path . $this->setting_file);
+			include($this->path . $this->setting_file);
 
 		return $config['database'][$name];
 	}

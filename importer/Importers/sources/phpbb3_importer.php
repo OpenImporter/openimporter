@@ -73,7 +73,7 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 	protected function fetchSetting($name)
 	{
 		if (empty($GLOBALS['dbms']))
-			require_once($this->path . $this->setting_file);
+			include($this->path . $this->setting_file);
 
 		return $GLOBALS[$name];
 	}

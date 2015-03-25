@@ -59,7 +59,7 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 		// Error silenced in case of odd server configurations (open_basedir mainly)
 		if ($this->testPath($path))
 		{
-			require_once($path . $this->setting_file);
+			include($path . $this->setting_file);
 			return true;
 		}
 		else

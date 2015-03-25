@@ -48,14 +48,14 @@ class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 			'user' => $this->fetchSetting('username'),
 			'password' => $this->fetchSetting('password'),
 			'host' => $this->fetchSetting('servername'),
-			'driver' => 'pdo_mysqli',
+			'driver' => 'pdo_mysql',
 		);
 	}
 
 	protected function fetchSetting($name)
 	{
 		if (empty($GLOBALS['config']['Database']))
-			require_once($this->path . $this->setting_file);
+			include($this->path . $this->setting_file);
 
 		return $GLOBALS['config']['Database'][$name];
 	}
