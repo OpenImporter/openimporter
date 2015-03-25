@@ -33,11 +33,11 @@ abstract class AbstractDestinationImporter
 
 	abstract public function getName();
 
-	abstract public function getDestinationURL();
+	abstract public function getDestinationURL($path);
 
-	abstract public function getFormFields();
+	abstract public function getFormFields($path_to = '', $scriptname = '');
 
-	abstract public function verifyDbPass();
+	abstract public function verifyDbPass($pwd_to_verify);
 
 	abstract public function dbConnectionData();
 

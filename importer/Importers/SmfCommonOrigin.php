@@ -29,8 +29,6 @@ abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinati
 	
 	public $scriptname = null;
 
-	abstract public function getName();
-
 	public function checkSettingsPath($path)
 	{
 		$found = file_exists($path . '/Settings.php');
@@ -51,7 +49,7 @@ abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinati
 		return $this->fetchSetting('boardurl');
 	}
 
-	public function getFormFields($path_to = '', $scriptname)
+	public function getFormFields($path_to = '', $scriptname = '')
 	{
 		return array(
 			'id' => 'path_to',
