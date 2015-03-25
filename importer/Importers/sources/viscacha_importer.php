@@ -31,7 +31,7 @@ class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 		define('VISCACHA_CORE', 1);
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		return $this->fetchSetting('dbprefix');
 	}

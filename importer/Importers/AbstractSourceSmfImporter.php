@@ -20,7 +20,7 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 {
 	protected $setting_file = '/Settings.php';
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		return $this->fetchSetting('db_prefix');
 	}

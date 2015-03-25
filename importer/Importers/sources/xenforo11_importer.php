@@ -23,7 +23,7 @@ class XenForo1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		return 'xf_';
 	}

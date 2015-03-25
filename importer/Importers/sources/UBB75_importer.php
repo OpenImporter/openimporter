@@ -20,10 +20,10 @@ class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getVersion()
 	{
-		return 'ElkArte 1.0';
+		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		global $db_prefix;
 

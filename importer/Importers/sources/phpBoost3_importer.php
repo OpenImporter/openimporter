@@ -23,7 +23,7 @@ class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		if (!defined('PREFIX'))
 			$this->fetchSetting('sql_host');

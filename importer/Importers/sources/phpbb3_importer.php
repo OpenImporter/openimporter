@@ -28,7 +28,7 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 		define('IN_PHPBB', 1);
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		return $this->fetchSetting('table_prefix');
 	}
