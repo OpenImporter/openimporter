@@ -132,7 +132,14 @@ class ImportManager
 
 		if (!empty($this->config->script))
 		{
-			$this->importer->reloadImporter();
+			try
+			{
+				$this->importer->reloadImporter();
+			}
+			catch(\Exception $e)
+			{
+				// Do nothing, let the code die
+			}
 		}
 	}
 
@@ -252,7 +259,7 @@ class ImportManager
 		{
 			$this->importer->reloadImporter();
 		}
-		catch(Exception $e)
+		catch(\Exception $e)
 		{
 			// Do nothing, let the code die
 		}

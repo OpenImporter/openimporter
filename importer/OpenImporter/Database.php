@@ -57,15 +57,22 @@ class Database
 		if (substr($string, -1, 1) !== ';')
 			$string .= ';';
 
-		$result = $this->con->query($string);
-
-		if ($result !== false || $return_error)
+		try
 		{
-			$this->second_try = true;
-			return $result;
+			$result = $this->con->query($string);
 		}
-		else
-			return $this->sendError($string);
+		catch (\Exception $e)
+		{
+			if ($return_error)
+			{
+				$this->second_try = true;
+				return false;
+			}
+			else
+			{
+				return $this->sendError($e->getMessage());
+			}
+		}
 	}
 
 	/**
@@ -75,7 +82,7 @@ class Database
 	 */
 	public function getLastError()
 	{
-		return $this->con->errorInfo();
+		return $this->con->errorCode();
 	}
 
 	/**
@@ -98,7 +105,7 @@ class Database
 			$this->second_try = false;
 
 			// Try to repair the table and run the query again.
-			if ($errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $error, $match) != 0 && !empty($match[1]))
+			if ($errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $error[2], $match) != 0 && !empty($match[1]))
 				$this->con->query("
 					REPAIR TABLE $match[1]");
 
@@ -111,7 +118,7 @@ class Database
 				<b>Unsuccessful!</b><br />
 				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
 				Caused the error:<br />
-				<blockquote>' . nl2br(htmlspecialchars($error)) . '</blockquote>
+				<blockquote>' . nl2br(htmlspecialchars($error[2])) . '</blockquote>
 				<form action="' . $action_url . '" method="post">
 					<input type="submit" value="Try again" />
 				</form>

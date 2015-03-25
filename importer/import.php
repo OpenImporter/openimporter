@@ -53,14 +53,14 @@ if (@ini_get('session.save_handler') == 'user')
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 	$_POST = stripslashes_recursive($_POST);
 
-$config = new Configurator();
-$config->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
-$config->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
+$OI_configurator = new Configurator();
+$OI_configurator->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
+$OI_configurator->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
 
 try
 {
 	$lng = new Lang();
-	$lng->loadLang($config->lang_dir);
+	$lng->loadLang($OI_configurator->lang_dir);
 }
 catch (\Exception $e)
 {
@@ -70,12 +70,12 @@ catch (\Exception $e)
 $template = new Template($lng);
 
 global $import;
-$importer = new Importer($config, $lng, $template);
+$importer = new Importer($OI_configurator, $lng, $template);
 $response = new HttpResponse(new ResponseHeader());
 
 $template->setResponse($response);
 
-$import = new ImportManager($config, $importer, $template, new Cookie(), $response);
+$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
 
 try
 {
