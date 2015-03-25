@@ -16,7 +16,7 @@ namespace OpenImporter\Importers;
  * so that Importer can do its job without having to test for existinance
  * of methods every two/three lines of code.
  */
-abstract class AbstractDestinationImporter
+abstract class AbstractDestinationImporter implements DestinationImporterInterface
 {
 	protected $setting_file = '';
 

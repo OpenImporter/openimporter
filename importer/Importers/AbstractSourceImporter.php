@@ -16,7 +16,7 @@ namespace OpenImporter\Importers;
  * so that Importer can do its job without having to test for existinance
  * of methods every two/three lines of code.
  */
-abstract class AbstractSourceImporter
+abstract class AbstractSourceImporter implements SourceImporterInterface
 {
 	protected $setting_file = '';
 
@@ -35,7 +35,7 @@ abstract class AbstractSourceImporter
 
 	abstract public function getVersion();
 
-	abstract public function getPrefix();
+	abstract public function getDbPrefix();
 
 	abstract public function getDbName();
 

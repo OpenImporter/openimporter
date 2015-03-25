@@ -48,7 +48,7 @@ class IPB3_4 extends \OpenImporter\Importers\AbstractSourceImporter
 		);
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		$db_name = $this->getDbName();
 		$db_prefix = $this->fetchSetting('sql_tbl_prefix');
