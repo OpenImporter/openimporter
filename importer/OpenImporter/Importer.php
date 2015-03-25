@@ -385,14 +385,14 @@ class Importer
 	{
 		try
 		{
-			$connectionParams = $this->config->destination->dbConnectionData();
+			$DestConnectionParams = $this->config->destination->dbConnectionData();
 			$db_prefix = $this->config->destination->getDbPrefix();
 
-			$this->db = new Database($connectionParams);
+			$this->db = new Database($DestConnectionParams);
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$this->db->query('SET NAMES \'utf8\'');
 		}
-		catch(Exception $e)
+		catch(\Exception $e)
 		{
 			ImportException::exception_handler($e, $this->template);
 			die();
@@ -402,9 +402,9 @@ class Importer
 		{
 			// @todo ???
 			if (is_numeric(substr($db_prefix, 0, 1)))
-				$this->config->to_prefix = $connectionParams['dbname'] . '.' . $db_prefix;
+				$this->config->to_prefix = $DestConnectionParams['dbname'] . '.' . $db_prefix;
 			else
-				$this->config->to_prefix = '`' . $connectionParams['dbname'] . '`.' . $db_prefix;
+				$this->config->to_prefix = '`' . $DestConnectionParams['dbname'] . '`.' . $db_prefix;
 		}
 		else
 		{
@@ -413,16 +413,19 @@ class Importer
 
 		try
 		{
-			$connectionParams = $this->config->source->dbConnectionData();
+			$SourceConnectionParams = $this->config->source->dbConnectionData();
 			$this->config->from_prefix = $this->config->source->getDbPrefix();
 
-			$this->source_db = new Database($connectionParams);
+			$this->source_db = new Database($SourceConnectionParams);
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$this->source_db->query('SET NAMES \'utf8\'');
 		}
 		catch(Exception $e)
 		{
-			$this->source_db = $this->db;
+			$SourceConnectionParams['user'] = $DestConnectionParams['user'];
+			$SourceConnectionParams['password'] = $DestConnectionParams['password'];
+
+			$this->source_db = new Database($SourceConnectionParams);
 		}
 
 		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
