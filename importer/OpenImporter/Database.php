@@ -180,7 +180,7 @@ class Database
 	/**
 	 * Wrapper for free_result.
 	 *
-	 * @param object $result
+	 * @param Statement $result
 	 */
 	public function free_result(Statement $result)
 	{
@@ -190,7 +190,7 @@ class Database
 	/**
 	 * Wrapper for fetch_assoc.
 	 *
-	 * @param object $result
+	 * @param Statement $result
 	 * @return mixed[]
 	 */
 	public function fetch_assoc(Statement $result)
@@ -201,7 +201,7 @@ class Database
 	/**
 	 * wrapper for fetch_row
 	 *
-	 * @param object $result
+	 * @param Statement $result
 	 * @return mixed[]
 	 */
 	public function fetch_row(Statement $result)
@@ -212,7 +212,7 @@ class Database
 	/**
 	 * wrapper for num_rows
 	 *
-	 * @param object $result
+	 * @param Statement $result
 	 * @return integer
 	 */
 	public function num_rows(Statement $result)
