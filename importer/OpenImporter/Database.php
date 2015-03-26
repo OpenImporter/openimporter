@@ -87,6 +87,31 @@ class Database
 		return $this->con->errorCode();
 	}
 
+	public function insert($table, $data, $type)
+	{
+		if ($type === 'update' || $type === 'replace')
+			$this->conn->update($table, $data);
+		elseif ($type === 'ignore')
+			$this->insertIgnore($table, $data);
+		else
+			$this->con->insert($table, $data);
+	}
+
+	public function insertIgnore($table, $data)
+	{
+		try
+		{
+			$this->con->insert($table, $data);
+		}
+		catch(Doctrine_Connection_Exception $e)
+		{
+			if($e->getPortableCode() != Doctrine::ERR_ALREADY_EXISTS)
+			{
+					throw $e;
+			}
+		}
+	}
+
 	/**
 	 * Analyze and sends an error.
 	 *

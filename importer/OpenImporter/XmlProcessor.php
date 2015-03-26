@@ -199,19 +199,14 @@ class XmlProcessor
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
 
 		$insert_rows = array();
+
 		foreach ($rows as $row)
 		{
 			if (empty($ignore_slashes))
-				$insert_rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
-			else
-				$insert_rows[] = "'" . implode("', '", $row) . "'";
-		}
+				$row = addslashes_recursive($row);
 
-		$this->db->query("
-			$insert_statement $special_table
-				(" . implode(', ', $keys) . ")
-			VALUES (" . implode('),
-				(', $insert_rows) . ")");
+			$this->db->insert($special_table, $row, $insert_statement);
+		}
 	}
 
 	protected function getPreparsecode()
@@ -425,16 +420,11 @@ class XmlProcessor
 	protected function insertStatement($options)
 	{
 		if ($this->shouldIgnore($options))
-			$ignore = 'IGNORE';
+			return 'ignore';
+		elseif ($this->shouldReplace($options))
+			return 'replace';
 		else
-			$ignore = '';
-
-		if ($this->shouldReplace($options))
-			$replace = 'REPLACE';
-		else
-			$replace = 'INSERT';
-
-		return $replace . ' ' . $ignore . ' INTO';
+			return 'insert';
 	}
 
 	protected function prepareSpecialResult($current_data, $special_limit)
