@@ -73,6 +73,8 @@ class Database
 				return $this->sendError($e->getMessage());
 			}
 		}
+
+		return $result;
 	}
 
 	/**
