@@ -12,6 +12,7 @@ namespace OpenImporter\Core;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use OpenImporter\Core\DatabaseException;
 
 /**
@@ -90,7 +91,7 @@ class Database
 	public function insert($table, $data, $type)
 	{
 		if ($type === 'update' || $type === 'replace')
-			$this->conn->update($table, $data);
+			$this->con->update($table, $data, $data);
 		elseif ($type === 'ignore')
 			$this->insertIgnore($table, $data);
 		else
@@ -103,12 +104,13 @@ class Database
 		{
 			$this->con->insert($table, $data);
 		}
-		catch(Doctrine_Connection_Exception $e)
+		catch (UniqueConstraintViolationException $e)
 		{
-			if($e->getPortableCode() != Doctrine::ERR_ALREADY_EXISTS)
-			{
-					throw $e;
-			}
+			return;
+		}
+		catch (\Exception $e)
+		{
+			throw $e;
 		}
 	}
 
