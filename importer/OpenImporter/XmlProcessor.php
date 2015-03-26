@@ -138,14 +138,6 @@ class XmlProcessor
 	 */
 	protected function doSql($substep, $special_table)
 	{
-		// These are temporarily needed to support the current xml importers
-		// a.k.a. There is more important stuff to do.
-		// a.k.a. I'm too lazy to change all of them now. :P
-		// @todo remove
-		// Both used in eval'ed code
-		$to_prefix = $this->config->to_prefix;
-		$db = $this->source_db;
-
 		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
 
