@@ -23,10 +23,16 @@ namespace OpenImporter\Core;
 class XmlProcessor
 {
 	/**
-	 * This is our main database object.
+	 * This is the database object of the destination system.
 	 * @var object
 	 */
 	protected $db;
+
+	/**
+	 * This is the database object of the source system.
+	 * @var object
+	 */
+	protected $source_db;
 
 	/**
 	 * Contains any kind of configuration.
@@ -68,9 +74,10 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $config, $template, $xml)
+	public function __construct($db, $source_db, $config, $template, $xml)
 	{
 		$this->db = $db;
+		$this->source_db = $source_db;
 		$this->config = $config;
 		$this->template = $template;
 		$this->xml = $xml;
@@ -137,7 +144,7 @@ class XmlProcessor
 		// @todo remove
 		// Both used in eval'ed code
 		$to_prefix = $this->config->to_prefix;
-		$db = $this->db;
+		$db = $this->source_db;
 
 		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
@@ -157,7 +164,7 @@ class XmlProcessor
 			if (isset($this->current_step->detect))
 				$_SESSION['import_progress'] += $special_limit;
 
-			while ($row = $this->db->fetch_assoc($special_result))
+			while ($row = $this->source_db->fetch_assoc($special_result))
 			{
 				$newrow = array($row);
 				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
@@ -175,10 +182,10 @@ class XmlProcessor
 			// @todo $_REQUEST
 			$_REQUEST['start'] += $special_limit;
 
-			if ($this->db->num_rows($special_result) < $special_limit)
+			if ($this->source_db->num_rows($special_result) < $special_limit)
 				break;
 
-			$this->db->free_result($special_result);
+			$this->source_db->free_result($special_result);
 		}
 	}
 
@@ -227,7 +234,7 @@ class XmlProcessor
 	/**
 	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
-	 * @param string string string in which parameters are replaced
+	 * @param string string in which parameters are replaced
 	 * @return string
 	 */
 	protected function fix_params($string)
@@ -245,18 +252,24 @@ class XmlProcessor
 		return $string;
 	}
 
+	/**
+	 * Counts the records in a table of the source database
+	 *
+	 * @param string the table name
+	 * @return int the number of records in the table
+	 */
 	public function getCurrent($table)
 	{
 		$count = $this->fix_params($table);
-		$request = $this->db->query("
+		$request = $this->source_db->query("
 			SELECT COUNT(*)
 			FROM $count", true);
 
 		$current = 0;
 		if (!empty($request))
 		{
-			list ($current) = $this->db->fetch_row($request);
-			$this->db->free_result($request);
+			list ($current) = $this->source_db->fetch_row($request);
+			$this->source_db->free_result($request);
 		}
 
 		return $current;
@@ -428,9 +441,9 @@ class XmlProcessor
 	{
 		// @todo $_REQUEST
 		if (strpos($current_data, '%d') !== false)
-			return $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+			return $this->source_db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
 		else
-			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
 
 	}
 }

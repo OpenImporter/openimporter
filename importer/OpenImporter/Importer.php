@@ -513,7 +513,7 @@ class Importer
 		$counter_current_step = 0;
 		$import_steps = array();
 
-		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
+		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
 
 		// loop through each step
 		foreach ($this->xml->step as $counts)
@@ -552,7 +552,7 @@ class Importer
 		$skeleton = new Parser();
 		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
-		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
+		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
 		$xmlParser->setImporter($step1_importer);
 		$xmlParser->setSkeleton($skeleton_parsed);
 
