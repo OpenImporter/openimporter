@@ -50,7 +50,7 @@ class Database
 	 *
 	 * @param string $string
 	 * @param bool $return_error
-	 * @return type
+	 * @return bool|null|\Doctrine\DBAL\Driver\Statement
 	 */
 	public function query($string, $return_error = false)
 	{
