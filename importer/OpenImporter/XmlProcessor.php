@@ -399,7 +399,7 @@ class XmlProcessor
 		if (isset($options->ignore) && $options->ignore == false)
 			return false;
 
-		return !isset($options->ignore) && !isset($options->replace);
+		return isset($options->ignore) && !isset($options->replace);
 	}
 
 	protected function shouldReplace($options)
