@@ -380,7 +380,7 @@ class XmlProcessor
 			FROM `{$db_name_str}`
 			LIKE '{$table}'");
 
-		if ($result === false || $this->db->num_rows($result) == 0)
+		if (!($result instanceof \Doctrine\DBAL\Driver\Statement) || $this->db->num_rows($result) == 0)
 			return false;
 		else
 			return true;
