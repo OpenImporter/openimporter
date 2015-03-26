@@ -194,11 +194,8 @@ class XmlProcessor
 		if (empty($rows) || empty($special_table))
 			return;
 
-		$keys = array_keys($rows[0]);
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
-
-		$insert_rows = array();
 
 		foreach ($rows as $row)
 		{
