@@ -475,7 +475,7 @@ class wedge0_1_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginSte
 
 			unset($row['avatartype']);
 
-			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
+			$rows[] = $this->prepareRow($this->specialMembers($row), $this->config->to_prefix . 'members');
 		}
 
 		return $rows;

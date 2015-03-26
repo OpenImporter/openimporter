@@ -419,7 +419,7 @@ class elkarte1_0_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginS
 			$row['gender'] = $this->translateGender($row['gender']);
 			unset($row['avatartype'], $row['language'], $row['pm_receive_from']);
 
-			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
+			$rows[] = $this->prepareRow($this->specialMembers($row), $this->config->to_prefix . 'members');
 		}
 
 		return $rows;
