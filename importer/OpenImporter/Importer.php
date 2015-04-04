@@ -20,9 +20,6 @@ use OpenImporter\Core\Database;
 use OpenImporter\Core\XmlProcessor;
 use OpenImporter\Core\ImportException;
 
-if (!defined('DS'))
-	define('DS', DIRECTORY_SEPARATOR);
-
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.

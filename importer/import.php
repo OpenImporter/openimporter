@@ -20,8 +20,12 @@ use OpenImporter\Core\ImportException;
 use OpenImporter\Core\PasttimeException;
 
 define('BASEDIR', __DIR__);
+// A shortcut
+define('DS', DIRECTORY_SEPARATOR);
+
 // Composer stuff
 require_once(BASEDIR . '/vendor/autoload.php');
+require_once(BASEDIR . '/OpenImporter/Utils.php');
 
 $loader = new Psr4ClassLoader();
 $loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');

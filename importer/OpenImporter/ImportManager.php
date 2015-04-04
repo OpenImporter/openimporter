@@ -12,13 +12,6 @@ namespace OpenImporter\Core;
 use OpenImporter\Core\Form;
 use OpenImporter\Core\StepException;
 
-// @todo this should probably go somewhere else...
-require_once(BASEDIR . '/OpenImporter/Utils.php');
-
-// A shortcut
-if (!defined('DS'))
-	define('DS', DIRECTORY_SEPARATOR);
-
 /**
  * Object ImportManager loads the main importer.
  * It handles all steps to completion.
