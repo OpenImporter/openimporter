@@ -38,3 +38,4 @@ Project site: http://openimporter.github.io/openimporter/
 [![Build Status](https://travis-ci.org/OpenImporter/openimporter.png?branch=master)](https://travis-ci.org/OpenImporter/openimporter)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/e35e9761-ef31-4f96-bf2c-687ef6cd01e8/mini.png)](https://insight.sensiolabs.com/projects/e35e9761-ef31-4f96-bf2c-687ef6cd01e8)
