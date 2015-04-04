@@ -10,6 +10,7 @@
 namespace OpenImporter\Core;
 
 use OpenImporter\Core\Form;
+use OpenImporter\Core\StepException;
 
 // @todo this should probably go somewhere else...
 require_once(BASEDIR . '/OpenImporter/Utils.php');
@@ -473,8 +474,7 @@ class ImportManager
 
 		if ($error_message !== null)
 		{
-			$this->template->footer();
-			exit;
+			throw new StepException($this->template);
 		}
 
 		return;

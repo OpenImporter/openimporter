@@ -86,6 +86,10 @@ catch (PasttimeException $e)
 {
 	$e->doExit();
 }
+catch (StepException $e)
+{
+	$e->doExit();
+}
 catch (\Exception $e)
 {
 	// Debug, remember to remove before PR

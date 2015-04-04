@@ -30,7 +30,7 @@ class PasttimeException extends \Exception
 
 	public function doExit()
 	{
-		$template->time_limit($this->template, $this->bar, $this->import_progress, $this->import_overall);
-		$template->footer();
+		$this->template->time_limit($this->template, $this->bar, $this->import_progress, $this->import_overall);
+		$this->template->footer();
 	}
 }
