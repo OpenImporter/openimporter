@@ -71,16 +71,21 @@ catch (\Exception $e)
 $template = new Template($lng);
 
 global $import;
-$importer = new Importer($OI_configurator, $lng, $template);
-$response = new HttpResponse(new ResponseHeader());
-
-$template->setResponse($response);
-
-$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
 
 try
 {
+	$importer = new Importer($OI_configurator, $lng, $template);
+	$response = new HttpResponse(new ResponseHeader());
+
+	$template->setResponse($response);
+
+	$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
+
 	$import->process();
+}
+catch (ImportException $e)
+{
+	$e->doExit($template);
 }
 catch (PasttimeException $e)
 {

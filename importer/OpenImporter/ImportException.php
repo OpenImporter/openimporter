@@ -17,6 +17,11 @@ use OpenImporter\Core\Template;
  */
 class ImportException extends \Exception
 {
+	public function doExit($template = null)
+	{
+		self::exception_handler($this, $template);
+	}
+
 	public static function error_handler_callback($code, $string, $file, $line)
 	{
 		if (error_reporting() == 0)

@@ -206,17 +206,10 @@ class Importer
 	 */
 	private function _preparse_xml($file)
 	{
-		try
-		{
-			if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
-				throw new ImportException('XML-Syntax error in file: ' . $file);
+		if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
+			throw new ImportException('XML-Syntax error in file: ' . $file);
 
-			$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
-		}
-		catch (Exception $e)
-		{
-			ImportException::exception_handler($e, $this->template);
-		}
+		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
 
 	public function populateFormFields($form)
@@ -383,20 +376,12 @@ class Importer
 
 	protected function init_db()
 	{
-		try
-		{
-			$DestConnectionParams = $this->config->destination->dbConnectionData();
-			$db_prefix = $this->config->destination->getDbPrefix();
+		$DestConnectionParams = $this->config->destination->dbConnectionData();
+		$db_prefix = $this->config->destination->getDbPrefix();
 
-			$this->db = new Database($DestConnectionParams);
-			//We want UTF8 only, let's set our mysql connetction to utf8
-			$this->db->query('SET NAMES \'utf8\'');
-		}
-		catch(\Exception $e)
-		{
-			ImportException::exception_handler($e, $this->template);
-			die();
-		}
+		$this->db = new Database($DestConnectionParams);
+		//We want UTF8 only, let's set our mysql connetction to utf8
+		$this->db->query('SET NAMES \'utf8\'');
 
 		if (strpos($db_prefix, '.') === false)
 		{
