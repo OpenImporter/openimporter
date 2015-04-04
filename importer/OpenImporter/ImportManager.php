@@ -105,7 +105,7 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($config, $importer, $template, $cookie, $response)
+	public function __construct($config, Importer $importer, $template, $cookie, $response)
 	{
 		global $time_start;
 

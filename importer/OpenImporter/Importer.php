@@ -212,7 +212,7 @@ class Importer
 		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
 
-	public function populateFormFields($form)
+	public function populateFormFields(Form $form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
 		$form->addOption($this->config->destination->getFormFields($form_path, $this->config->destination->scriptname));

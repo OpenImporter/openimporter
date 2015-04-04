@@ -512,7 +512,7 @@ class Template
 			</script>';
 	}
 
-	public function step0($object, $form)
+	public function step0(ImportManager $object, Form $form)
 	{
 		echo '
 			<h2>', $this->lng->get('before_continue'), '</h2>
@@ -661,7 +661,7 @@ class Template
 	<valid>', $this->response->valid ? 'true' : 'false' ,'</valid>';
 	}
 
-	public function renderForm($form)
+	public function renderForm(Form $form)
 	{
 		$toggle = false;
 
