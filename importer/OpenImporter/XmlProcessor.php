@@ -385,7 +385,7 @@ class XmlProcessor
 
 	protected function shouldIgnore($options)
 	{
-		if (isset($options->ignore) && $options->ignore == false)
+		if (isset($options->ignore) && (bool) $options->ignore === false)
 			return false;
 
 		return isset($options->ignore) && !isset($options->replace);
@@ -393,17 +393,17 @@ class XmlProcessor
 
 	protected function shouldReplace($options)
 	{
-		return isset($options->replace) && $options->replace == true;
+		return isset($options->replace) && (bool) $options->replace === true;
 	}
 
 	protected function shoudNotAdd($options)
 	{
-		return isset($options->no_add) && $options->no_add == true;
+		return isset($options->no_add) && (bool) $options->no_add === true;
 	}
 
 	protected function ignoreSlashes($options)
 	{
-		return isset($options->ignore_slashes) && $options->ignore_slashes == true;
+		return isset($options->ignore_slashes) && (bool) $options->ignore_slashes === true;
 	}
 
 	protected function insertStatement($options)

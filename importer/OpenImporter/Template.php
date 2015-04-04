@@ -101,7 +101,7 @@ class Template
 	 */
 	public function footer($inner = true)
 	{
-		if (($this->response->step == 1 || $this->response->step == 2) && $inner == true)
+		if (($this->response->step == 1 || $this->response->step == 2) && (bool) $inner === true)
 			echo '
 				</p>
 			</div>';
@@ -407,7 +407,7 @@ class Template
 		</div>
 		<div id="main">';
 
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
+		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && (bool) $inner === true)
 			echo '
 			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
@@ -547,7 +547,7 @@ class Template
 	 */
 	public function status($substep, $status, $title, $hide = false)
 	{
-		if (isset($title) && $hide == false)
+		if (isset($title) && (bool) $hide === false)
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
 
 		if ($status == 1)
