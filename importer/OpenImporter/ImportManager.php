@@ -525,8 +525,6 @@ class ImportManager
 	{
 
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
-		// @TODO: check if this is needed
-		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
 
 		// Skipping steps?
 		if (isset($_SESSION['do_steps']))

@@ -13,8 +13,6 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-use OpenImporter\Core;
-
 /**
  * Checks if we've passed a time limit..
  *
