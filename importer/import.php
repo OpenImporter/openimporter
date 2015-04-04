@@ -17,6 +17,7 @@ use OpenImporter\Core\HttpResponse;
 use OpenImporter\Core\ResponseHeader;
 use OpenImporter\Core\ImportManager;
 use OpenImporter\Core\ImportException;
+use OpenImporter\Core\PasttimeException;
 
 define('BASEDIR', __DIR__);
 // Composer stuff
@@ -80,6 +81,10 @@ $import = new ImportManager($OI_configurator, $importer, $template, new Cookie()
 try
 {
 	$import->process();
+}
+catch (PasttimeException $e)
+{
+	$e->doExit();
 }
 catch (\Exception $e)
 {

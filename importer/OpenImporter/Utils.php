@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+use OpenImporter\Core;
+
 /**
  * Checks if we've passed a time limit..
  *
@@ -40,10 +42,7 @@ function pastTime($substep = null, $stop_time = 5)
 	if (time() - $time_start < $stop_time)
 		return;
 
-	// @todo maybe throw an exception?
-	$import->template->time_limit($bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
-	$import->template->footer();
-	exit;
+	Throw new PasttimeException($import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
 }
 
 /**
