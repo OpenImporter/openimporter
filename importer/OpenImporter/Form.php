@@ -13,6 +13,11 @@ use OpenImporter\Core\FormException;
 
 /**
  * Just a way to collect a bunch of stuff to be used to build a form.
+ *
+ * @property string $title
+ * @property string $description
+ * @property string $submit
+ * @property string $options
  */
 class Form
 {
