@@ -17,7 +17,7 @@ use OpenImporter\Core\FormException;
  * @property string $title
  * @property string $description
  * @property string $submit
- * @property string $options
+ * @property mixed[] $options
  */
 class Form
 {
