@@ -104,6 +104,8 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 			$rows[] = $row;
 		}
+
+		return $rows;
 	}
 
 	public function preparseMessages($originalRows)
@@ -116,6 +118,8 @@ class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
 
 			$rows[] = $row;
 		}
+
+		return $rows;
 	}
 
 	public function preparsePm($originalRows)
