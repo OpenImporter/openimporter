@@ -347,9 +347,11 @@ class Importer
 	{
 		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
 		{
-			$result = $this->db->query('
+			$test_table = $this->config->from_prefix . $this->config->source->getTableTest();
+
+			$result = $this->db->query("
 				SELECT COUNT(*)
-				FROM ' . $this->config->from_prefix . $this->config->source->getTableTest(), true);
+				FROM {$test_table}", true);
 
 			if ($result === false)
 				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
