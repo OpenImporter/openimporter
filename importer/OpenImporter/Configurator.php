@@ -7,10 +7,15 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core;
+
 /**
  * The configurator is just a class holding the common configuration
  * info such as the paths (to/from), prefixes, etc.
  * Basically a getter/setter
+ *
+ * @property string $lang_dir
+ * @property string $importers_dir
  */
 class Configurator
 {

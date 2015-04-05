@@ -7,6 +7,10 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core;
+
+use OpenImporter\Core\ImportException;
+
 /**
  * Class Lang loads the appropriate language file(s) if they exist.
  *
@@ -23,7 +27,7 @@ class Lang
 	 *
 	 * @param string $key Name of the variable
 	 * @param string $value Value of the variable
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean|null
 	 */
 	protected function set($key, $value)
@@ -31,7 +35,7 @@ class Lang
 		try
 		{
 			if ($this->has($key))
-				throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
+				throw new \Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
 
 			$this->_lang[$key] = $value;
 			return true;
@@ -47,7 +51,7 @@ class Lang
 	 * Loads the language xml file.
 	 *
 	 * @return null
-	 * @throws Exception if it cannot find the XML file.
+	 * @throws \Exception if it cannot find the XML file.
 	 * @throws ImportException if the XML file has got a corrupted structure.
 	 */
 	public function loadLang($path)
@@ -58,7 +62,7 @@ class Lang
 
 		// ouch, we really should never arrive here..
 		if (!$lngfile)
-			throw new Exception('Unable to detect language file!');
+			throw new \Exception('Unable to detect language file!');
 
 		// Silence simplexml errors because we take care of them by ourselves
 		libxml_use_internal_errors(true);

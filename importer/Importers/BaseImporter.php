@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The starting point for any step of any importer.
  */

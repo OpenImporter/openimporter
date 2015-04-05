@@ -7,10 +7,10 @@
  * @version 2.0 Alpha
  */
 
-class SMF2_0 extends AbstractSourceImporter
-{
-	protected $setting_file = '/Settings.php';
+namespace OpenImporter\Importers\sources;
 
+class SMF2_0 extends \OpenImporter\Importers\AbstractSourceSmfImporter
+{
 	protected $smf_attach_folders = null;
 
 	protected $_is_nibogo_like = null;
@@ -30,45 +30,13 @@ class SMF2_0 extends AbstractSourceImporter
 		define('SMF', 1);
 	}
 
-	public function getPrefix()
-	{
-		$db_name = $this->getDbName();
-		$db_prefix = $this->fetchSetting('db_prefix');
-		return '`' . $db_name . '`.' . $db_prefix;
-	}
-
-	public function getDbName()
-	{
-		return $this->fetchSetting('db_name');
-	}
-
-	public function getTableTest()
-	{
-		return 'members';
-	}
-
-	protected function fetchSetting($name)
-	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . '/Settings.php');
-
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
-
-		return isset($match[1]) ? $match[1] : '';
-	}
-
 	public function getAttachmentDirs()
 	{
 		if ($this->smf_attach_folders === null)
 		{
-			$from_prefix = $this->config->from_prefix;
-
 			$request = $this->db->query("
 				SELECT value
-				FROM {$from_prefix}settings
+				FROM {$this->config->from_prefix}settings
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 
@@ -102,12 +70,10 @@ class SMF2_0 extends AbstractSourceImporter
 
 	protected function fetchNibogo()
 	{
-		$from_prefix = $this->config->from_prefix;
-
 		$request = $this->db->query("
 			SELECT l.id_member, t.id_first_msg, t.id_member_started
-			FROM {$from_prefix}likes
-				INNER JOIN {$from_prefix}topics AS t ON (t.id_topic = l.id_topic)");
+			FROM {$this->config->from_prefix}likes
+				INNER JOIN {$this->config->from_prefix}topics AS t ON (t.id_topic = l.id_topic)");
 		$return = array();
 		while ($row = $this->db->fetch_assoc($request))
 			$return[] = array(
@@ -123,12 +89,10 @@ class SMF2_0 extends AbstractSourceImporter
 
 	protected function fetchIllori()
 	{
-		$from_prefix = $this->config->from_prefix;
-
 		$request = $this->db->query("
 			SELECT l.id_member, l.id_message, m.id_member as id_poster
-			FROM {$from_prefix}likes AS l
-				INNER JOIN {$from_prefix}messages AS m ON (m.id_msg = l.id_message)");
+			FROM {$this->config->from_prefix}likes AS l
+				INNER JOIN {$this->config->from_prefix}messages AS m ON (m.id_msg = l.id_message)");
 		$return = array();
 		while ($row = $this->db->fetch_assoc($request))
 			$return[] = array(
@@ -144,14 +108,12 @@ class SMF2_0 extends AbstractSourceImporter
 
 	protected function isNibogo()
 	{
-		$from_prefix = $this->config->from_prefix;
-
 		if ($this->_is_nibogo_like !== null)
 			return $this->_is_nibogo_like;
 
 		$request = $this->db->query("
 			SHOW COLUMNS
-			FROM {$from_prefix}likes");
+			FROM {$this->config->from_prefix}likes");
 		while ($row = $this->db->fetch_assoc($request))
 		{
 			// This is Nibogo

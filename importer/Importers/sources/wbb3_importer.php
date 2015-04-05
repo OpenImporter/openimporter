@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class wbb3_1 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class wbb3_1 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/wc/config.inc.php';
 	protected $userOptions = array();
@@ -22,24 +24,41 @@ class wbb3_1 extends AbstractSourceImporter
 		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
 		return '`' . $this->getDbName() . '`.';
 	}
 
-	public function getDbName()
+	public function dbConnectionData()
 	{
-		global $dbName;
+		if ($this->path === null)
+			return false;
 
-		return $dbName;
+		return array(
+			'dbname' => $this->fetchSetting('dbName'),
+			'user' => $this->fetchSetting('dbUser'),
+			'password' => $this->fetchSetting('dbPassword'),
+			'host' => $this->fetchSetting('dbHost'),
+			'driver' => 'pdo_mysql',
+		);
 	}
 
-	// @todo why $wbb_prefix is not in getPrefix?
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['dbHost']))
+			include($this->path . $this->setting_file);
+
+		return $GLOBALS[$name];
+	}
+
+	public function getDbName()
+	{
+		return $this->fetchSetting('dbName');
+	}
+
 	public function getTableTest()
 	{
-		global $wbb_prefix;
-
-		return $wbb_prefix . 'user';
+		return 'user';
 	}
 
 	protected function fetchUserOptions()
@@ -52,11 +71,11 @@ class wbb3_1 extends AbstractSourceImporter
 			return;
 
 		$this->userOptions = array();
-		$request = $db->query("
+		$request = $this->db->query("
 			SELECT optionName, optionID
-			FROM{$from_prefix}{$wcf_prefix}user_option");
+			FROM{$this->config->from_prefix}{$wcf_prefix}user_option");
 
-		while ($wbbOpt = $db->fetch_assoc($request))
+		while ($wbbOpt = $this->db->fetch_assoc($request))
 			$this->userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
 
 		$db->free_result($request);
@@ -98,7 +117,7 @@ class wbb3_1 extends AbstractSourceImporter
 		{
 			$row['id_group'] = $this->fixUserGroupId($row['id_group']);
 
-			$row['signature'] = wbb_replace_bbc($row['signature']);
+			$row['signature'] = $this->replace_bbc($row['signature']);
 
 			/* load wbb userOptions */
 			$request = $this->db->query("
@@ -129,13 +148,15 @@ class wbb3_1 extends AbstractSourceImporter
 
 	public function preparseTopics($originalRows)
 	{
+		global $wbb_prefix;
+
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
 			$request = $db->query("
 				SELECT
 					pollID
-				FROM {$from_prefix}{$wbb_prefix}post
+				FROM {$this->config->from_prefix}{$wbb_prefix}post
 				WHERE threadID = $row[id_topic] AND pollID > 0
 				GROUP BY threadID");
 
@@ -155,7 +176,7 @@ class wbb3_1 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = wbb_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -186,72 +207,72 @@ class wbb3_1 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = wbb_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			$rows[] = $row;
 		}
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function wbb_replace_bbc($message)
-{
-	$message = preg_replace(
-		array(
-			'~\[size=(.+?)\]~is',
-			'~\[align=left\](.+?)\[\/align\]~is',
-			'~\[align=right\](.+?)\[\/align\]~is',
-			'~\[align=center\](.+?)\[\/align\]~is',
-			'~\[align=justify\](.+?)\[\/align\]~is',
-			'~.Geneva, Arial, Helvetica, sans-serif.~is',
-			'~.Tahoma, Arial, Helvetica, sans-serif.~is',
-			'~.Arial, Helvetica, sans-serif.~is',
-			'~.Chicago, Impact, Compacta, sans-serif.~is',
-			'~.Comic Sans MS, sans-serif.~is',
-			'~.Courier New, Courier, mono.~is',
-			'~.Georgia, Times New Roman, Times, serif.~is',
-			'~.Helvetica, Verdana, sans-serif.~is',
-			'~.Impact, Compacta, Chicago, sans-serif.~is',
-			'~.Lucida Sans, Monaco, Geneva, sans-serif.~is',
-			'~.Times New Roman, Times, Georgia, serif.~is',
-			'~.Trebuchet MS, Arial, sans-serif.~is',
-			'~.Verdana, Helvetica, sans-serif.~is',
-			'~\[list=1\]\[\*\]~is',
-			'~\[list\]\[\*\]~is',
-			'~\[\*\]~is',
-			'~\[\/list\]~is',
-			'~\[attach\](.+?)\[\/attach\]~is'
-		),
-		array(
-			'[size=$1pt]',
-			'[left]$1[/left]',
-			'[right]$1[/right]',
-			'[center]$1[/center]',
-			'$1',
-			'Geneva',
-			'Tahoma',
-			'Arial',
-			'Chicago',
-			'Comic Sans MS',
-			'Courier New',
-			'Georgia',
-			'Helvetica',
-			'Impact',
-			'Lucida Sans',
-			'Times New Roman',
-			'Trebuchet MS',
-			'Verdana',
-			'[list type=decimal][li]',
-			'[list][li]',
-			'[/li][li]',
-			'[/li][/list]',
-			'',
-		),
-		trim($message)
-	);
-	return $message;
+	/**
+	 * Utility functions
+	 */
+	function replace_bbc($message)
+	{
+		$message = preg_replace(
+			array(
+				'~\[size=(.+?)\]~is',
+				'~\[align=left\](.+?)\[\/align\]~is',
+				'~\[align=right\](.+?)\[\/align\]~is',
+				'~\[align=center\](.+?)\[\/align\]~is',
+				'~\[align=justify\](.+?)\[\/align\]~is',
+				'~.Geneva, Arial, Helvetica, sans-serif.~is',
+				'~.Tahoma, Arial, Helvetica, sans-serif.~is',
+				'~.Arial, Helvetica, sans-serif.~is',
+				'~.Chicago, Impact, Compacta, sans-serif.~is',
+				'~.Comic Sans MS, sans-serif.~is',
+				'~.Courier New, Courier, mono.~is',
+				'~.Georgia, Times New Roman, Times, serif.~is',
+				'~.Helvetica, Verdana, sans-serif.~is',
+				'~.Impact, Compacta, Chicago, sans-serif.~is',
+				'~.Lucida Sans, Monaco, Geneva, sans-serif.~is',
+				'~.Times New Roman, Times, Georgia, serif.~is',
+				'~.Trebuchet MS, Arial, sans-serif.~is',
+				'~.Verdana, Helvetica, sans-serif.~is',
+				'~\[list=1\]\[\*\]~is',
+				'~\[list\]\[\*\]~is',
+				'~\[\*\]~is',
+				'~\[\/list\]~is',
+				'~\[attach\](.+?)\[\/attach\]~is'
+			),
+			array(
+				'[size=$1pt]',
+				'[left]$1[/left]',
+				'[right]$1[/right]',
+				'[center]$1[/center]',
+				'$1',
+				'Geneva',
+				'Tahoma',
+				'Arial',
+				'Chicago',
+				'Comic Sans MS',
+				'Courier New',
+				'Georgia',
+				'Helvetica',
+				'Impact',
+				'Lucida Sans',
+				'Times New Roman',
+				'Trebuchet MS',
+				'Verdana',
+				'[list type=decimal][li]',
+				'[list][li]',
+				'[/li][li]',
+				'[/li][/list]',
+				'',
+			),
+			trim($message)
+		);
+		return $message;
+	}
 }

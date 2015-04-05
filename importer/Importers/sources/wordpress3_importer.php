@@ -7,9 +7,11 @@
  * @version 2.0 Alpha
  */
 
-class WP3 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class WP3 extends \OpenImporter\Importers\AbstractSourceImporter
 {
-	protected $setting_file = '/wp-includes/version.php';
+	protected $setting_file = '/wp-config.php';
 
 	public function getName()
 	{
@@ -21,18 +23,45 @@ class WP3 extends AbstractSourceImporter
 		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
-		global $wp_prefix;
+		return $this->fetchSetting('table_prefix');
+	}
 
-		return '`' . $this->getDbName() . '`.' . $wp_prefix;
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('DB_NAME'),
+			'user' => $this->fetchSetting('DB_USER'),
+			'password' => $this->fetchSetting('DB_PASSWORD'),
+			'host' => $this->fetchSetting('DB_HOST'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		static $content = null;
+
+		if ($content === null)
+			$content = file_get_contents($this->path . $this->setting_file);
+
+		if ($name == 'table_prefix')
+			$pattern = '\$table_prefix\s*=\*\'(.*?)\';';
+		else
+			$pattern = 'define\s*\(\s*\'' . $name . '\',\s*\'(.*?)\'\);';
+		$match = array();
+		preg_match('~' . $pattern . '~i', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getDbName()
 	{
-		global $wp_database;
-
-		return $wp_database;
+		return $this->fetchSetting('DB_NAME');
 	}
 
 	public function getTableTest()

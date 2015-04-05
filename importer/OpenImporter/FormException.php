@@ -7,10 +7,12 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core;
+
 /**
  * class FormException extends the build-in Exception class and
  * catches potential errors
  */
-class FormException extends Exception
+class FormException extends \Exception
 {
 }

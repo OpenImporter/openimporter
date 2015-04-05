@@ -7,12 +7,21 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core;
+
+use OpenImporter\Core\Template;
+
 /**
  * class ImportException extends the build-in Exception class and
  * catches potential errors
  */
-class ImportException extends Exception
+class ImportException extends \Exception
 {
+	public function doExit($template = null)
+	{
+		self::exception_handler($this, $template);
+	}
+
 	public static function error_handler_callback($code, $string, $file, $line)
 	{
 		if (error_reporting() == 0)
@@ -25,7 +34,7 @@ class ImportException extends Exception
 	}
 
 	/**
-	 * @param Exception $exception
+	 * @param \Exception $exception
 	 */
 	public static function exception_handler($exception, $template = null)
 	{

@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The starting point for the third step of any importer.
  * Nothing fancy, just one last step that, if needed/wanted, allows for example

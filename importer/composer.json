@@ -1,3 +1,9 @@
 {
-    "require": {"symfony/yaml": "2.6.1"}
+    "require": {
+        "symfony/yaml": "2.6.*",
+        "doctrine/dbal": "2.5.*",
+        "symfony/class-loader": "2.7.*"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

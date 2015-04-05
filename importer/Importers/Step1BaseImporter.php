@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The starting point for the first step of any importer.
  * Step 1 is where the actual conversion happens, where the data are moved
@@ -15,20 +17,8 @@
  */
 abstract class Step1BaseImporter extends BaseImporter
 {
-	public function __call($name, $arguments)
+	protected function prepareRow($row, $special_table)
 	{
-		$function = str_replace($this->config->to_prefix, '', $name);
-		if (method_exists($this, $function))
-			return call_user_func_array(array($this, $function), $arguments);
-		else
-			return $this->prepareRow($arguments[0], $arguments[1], $name);
-	}
-
-	protected function prepareRow($row, $special_code, $special_table)
-	{
-		if ($special_code !== null)
-			eval($special_code);
-
 		$row = $this->doSpecialTable($special_table, $row);
 
 		// fixing the charset, we need proper utf-8

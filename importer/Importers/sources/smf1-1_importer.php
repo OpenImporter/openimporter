@@ -7,10 +7,10 @@
  * @version 2.0 Alpha
  */
 
-class SMF1_1 extends AbstractSourceImporter
-{
-	protected $setting_file = '/Settings.php';
+namespace OpenImporter\Importers\sources;
 
+class SMF1_1 extends \OpenImporter\Importers\AbstractSourceSmfImporter
+{
 	protected $smf_attach_folders = null;
 
 	public function getName()
@@ -20,29 +20,12 @@ class SMF1_1 extends AbstractSourceImporter
 
 	public function getVersion()
 	{
-		return 'ElkArte 1.0';
+		return '1.0';
 	}
 
 	public function setDefines()
 	{
 		define('SMF', 1);
-	}
-
-	public function getPrefix()
-	{
-		$db_name = $this->getDbName();
-		$db_prefix = $this->fetchSetting('db_prefix');
-		return '`' . $db_name . '`.' . $db_prefix;
-	}
-
-	public function getDbName()
-	{
-		return $this->fetchSetting('db_name');
-	}
-
-	public function getTableTest()
-	{
-		return 'members';
 	}
 
 	protected function fetchSetting($name)
@@ -62,11 +45,9 @@ class SMF1_1 extends AbstractSourceImporter
 	{
 		if ($this->smf_attach_folders === null)
 		{
-			$from_prefix = $this->config->from_prefix;
-
 			$request = $this->db->query("
 				SELECT value
-				FROM {$from_prefix}settings
+				FROM {$this->config->from_prefix}settings
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 

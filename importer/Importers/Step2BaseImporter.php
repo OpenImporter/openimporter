@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The starting point for the second step of any importer.
  * Step2 is usually used to recalculate statistics and "fix" any data that

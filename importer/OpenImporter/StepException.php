@@ -13,6 +13,17 @@ namespace OpenImporter\Core;
  * class DatabaseException extends the build-in Exception class and
  * catches potential errors
  */
-class DatabaseException extends \Exception
+class StepException extends \Exception
 {
+	protected $template;
+
+	public function __construct($template)
+	{
+		$this->template = $template;
+	}
+
+	public function doExit()
+	{
+		$this->template->footer();
+	}
 }

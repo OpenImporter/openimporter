@@ -1,5 +1,9 @@
 <?php
 
+namespace OpenImporter\Importers\sources\Tests;
+
+use OpenImporter\Core\Cookie;
+
 /**
  * we need Cooooookies..
  */

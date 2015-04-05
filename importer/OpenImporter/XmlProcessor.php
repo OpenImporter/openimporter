@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter\Core;
+
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
@@ -21,10 +23,16 @@
 class XmlProcessor
 {
 	/**
-	 * This is our main database object.
+	 * This is the database object of the destination system.
 	 * @var object
 	 */
 	protected $db;
+
+	/**
+	 * This is the database object of the source system.
+	 * @var object
+	 */
+	protected $source_db;
 
 	/**
 	 * Contains any kind of configuration.
@@ -66,9 +74,10 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $config, $template, $xml)
+	public function __construct($db, $source_db, $config, $template, $xml)
 	{
 		$this->db = $db;
+		$this->source_db = $source_db;
 		$this->config = $config;
 		$this->template = $template;
 		$this->xml = $xml;
@@ -129,14 +138,6 @@ class XmlProcessor
 	 */
 	protected function doSql($substep, $special_table)
 	{
-		// These are temporarily needed to support the current xml importers
-		// a.k.a. There is more important stuff to do.
-		// a.k.a. I'm too lazy to change all of them now. :P
-		// @todo remove
-		// Both used in eval'ed code
-		$to_prefix = $this->config->to_prefix;
-		$db = $this->db;
-
 		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
 
@@ -155,7 +156,7 @@ class XmlProcessor
 			if (isset($this->current_step->detect))
 				$_SESSION['import_progress'] += $special_limit;
 
-			while ($row = $this->db->fetch_assoc($special_result))
+			while ($row = $this->source_db->fetch_assoc($special_result))
 			{
 				$newrow = array($row);
 				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
@@ -173,10 +174,10 @@ class XmlProcessor
 			// @todo $_REQUEST
 			$_REQUEST['start'] += $special_limit;
 
-			if ($this->db->num_rows($special_result) < $special_limit)
+			if ($this->source_db->num_rows($special_result) < $special_limit)
 				break;
 
-			$this->db->free_result($special_result);
+			$this->source_db->free_result($special_result);
 		}
 	}
 
@@ -185,24 +186,16 @@ class XmlProcessor
 		if (empty($rows) || empty($special_table))
 			return;
 
-		$keys = array_keys($rows[0]);
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
 
-		$insert_rows = array();
 		foreach ($rows as $row)
 		{
 			if (empty($ignore_slashes))
-				$insert_rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
-			else
-				$insert_rows[] = "'" . implode("', '", $row) . "'";
-		}
+				$row = addslashes_recursive($row);
 
-		$this->db->query("
-			$insert_statement $special_table
-				(" . implode(', ', $keys) . ")
-			VALUES (" . implode('),
-				(', $insert_rows) . ")");
+			$this->db->insert($special_table, $row, $insert_statement);
+		}
 	}
 
 	protected function getPreparsecode()
@@ -225,7 +218,7 @@ class XmlProcessor
 	/**
 	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
-	 * @param string string string in which parameters are replaced
+	 * @param string string in which parameters are replaced
 	 * @return string
 	 */
 	protected function fix_params($string)
@@ -243,18 +236,24 @@ class XmlProcessor
 		return $string;
 	}
 
+	/**
+	 * Counts the records in a table of the source database
+	 *
+	 * @param string the table name
+	 * @return int the number of records in the table
+	 */
 	public function getCurrent($table)
 	{
 		$count = $this->fix_params($table);
-		$request = $this->db->query("
+		$request = $this->source_db->query("
 			SELECT COUNT(*)
 			FROM $count", true);
 
 		$current = 0;
 		if (!empty($request))
 		{
-			list ($current) = $this->db->fetch_row($request);
-			$this->db->free_result($request);
+			list ($current) = $this->source_db->fetch_row($request);
+			$this->source_db->free_result($request);
 		}
 
 		return $current;
@@ -378,7 +377,7 @@ class XmlProcessor
 			FROM `{$db_name_str}`
 			LIKE '{$table}'");
 
-		if ($result === false || $this->db->num_rows($result) == 0)
+		if (!($result instanceof \Doctrine\DBAL\Driver\Statement) || $this->db->num_rows($result) == 0)
 			return false;
 		else
 			return true;
@@ -386,49 +385,44 @@ class XmlProcessor
 
 	protected function shouldIgnore($options)
 	{
-		if (isset($options->ignore) && $options->ignore == false)
+		if (isset($options->ignore) && (bool) $options->ignore === false)
 			return false;
 
-		return !isset($options->ignore) && !isset($options->replace);
+		return isset($options->ignore) && !isset($options->replace);
 	}
 
 	protected function shouldReplace($options)
 	{
-		return isset($options->replace) && $options->replace == true;
+		return isset($options->replace) && (bool) $options->replace === true;
 	}
 
 	protected function shoudNotAdd($options)
 	{
-		return isset($options->no_add) && $options->no_add == true;
+		return isset($options->no_add) && (bool) $options->no_add === true;
 	}
 
 	protected function ignoreSlashes($options)
 	{
-		return isset($options->ignore_slashes) && $options->ignore_slashes == true;
+		return isset($options->ignore_slashes) && (bool) $options->ignore_slashes === true;
 	}
 
 	protected function insertStatement($options)
 	{
 		if ($this->shouldIgnore($options))
-			$ignore = 'IGNORE';
+			return 'ignore';
+		elseif ($this->shouldReplace($options))
+			return 'replace';
 		else
-			$ignore = '';
-
-		if ($this->shouldReplace($options))
-			$replace = 'REPLACE';
-		else
-			$replace = 'INSERT';
-
-		return $replace . ' ' . $ignore . ' INTO';
+			return 'insert';
 	}
 
 	protected function prepareSpecialResult($current_data, $special_limit)
 	{
 		// @todo $_REQUEST
 		if (strpos($current_data, '%d') !== false)
-			return $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+			return $this->source_db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
 		else
-			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
 
 	}
 }

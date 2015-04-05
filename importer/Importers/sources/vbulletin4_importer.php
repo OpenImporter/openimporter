@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class vBulletin_4 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.php';
 
@@ -21,23 +23,41 @@ class vBulletin_4 extends AbstractSourceImporter
 		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
-		global $config;
-
-		return '`' . $this->getDbName() . '`.' . $config['Database']['tableprefix'];
+		return $this->fetchSetting('tableprefix');
 	}
 
 	public function getDbName()
 	{
-		global $config;
-
-		return $config['Database']['dbname'];
+		return $this->fetchSetting('dbname');
 	}
 
 	public function getTableTest()
 	{
 		return 'user';
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('dbname'),
+			'user' => $this->fetchSetting('username'),
+			'password' => $this->fetchSetting('password'),
+			'host' => $this->fetchSetting('servername'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['config']['Database']))
+			include($this->path . $this->setting_file);
+
+		return $GLOBALS['config']['Database'][$name];
 	}
 
 	/**
@@ -48,7 +68,7 @@ class vBulletin_4 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['signature'] = vb4_replace_bbc($row['signature']);
+			$row['signature'] = $this->replace_bbc($row['signature']);
 
 			$rows[] = $row;
 		}
@@ -88,7 +108,7 @@ class vBulletin_4 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = vb4_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -124,43 +144,43 @@ class vBulletin_4 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = vb4_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			$rows[] = $row;
 		}
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function vb4_replace_bbc($content)
-{
-	$content = preg_replace(
-		array(
-			'~\[(quote)=([^\]]+)\]~i',
-			'~\[(.+?)=&quot;(.+?)&quot;\]~is',
-			'~\[INDENT\]~is',
-			'~\[/INDENT\]~is',
-			'~\[LIST=1\]~is',
-		),
-		array(
-			'[$1=&quot;$2&quot;]',
-			'[$1=$2]',
-			'	',
-			'',
-			'[list type=decimal]',
-		), strtr($content, array('"' => '&quot;')));
+	/**
+	 * Utility functions
+	 */
+	protected function replace_bbc($content)
+	{
+		$content = preg_replace(
+			array(
+				'~\[(quote)=([^\]]+)\]~i',
+				'~\[(.+?)=&quot;(.+?)&quot;\]~is',
+				'~\[INDENT\]~is',
+				'~\[/INDENT\]~is',
+				'~\[LIST=1\]~is',
+			),
+			array(
+				'[$1=&quot;$2&quot;]',
+				'[$1=$2]',
+				'	',
+				'',
+				'[list type=decimal]',
+			), strtr($content, array('"' => '&quot;')));
 
-	// fixing Code tags
-	$replace = array();
+		// fixing Code tags
+		$replace = array();
 
-	preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
-	foreach ($matches as $temp)
-		$replace[$temp] = htmlspecialchars($temp);
-	$content = substr(strtr($content, $replace), 0, 65534);
+		preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
+		foreach ($matches as $temp)
+			$replace[$temp] = htmlspecialchars($temp);
+		$content = substr(strtr($content, $replace), 0, 65534);
 
-	return $content;
+		return $content;
+	}
 }

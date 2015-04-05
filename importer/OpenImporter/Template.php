@@ -7,6 +7,10 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core;
+
+use OpenImporter\Core\DummyLang;
+
 /**
  * this is our UI
  *
@@ -97,7 +101,7 @@ class Template
 	 */
 	public function footer($inner = true)
 	{
-		if (($this->response->step == 1 || $this->response->step == 2) && $inner == true)
+		if (($this->response->step == 1 || $this->response->step == 2) && (bool) $inner === true)
 			echo '
 				</p>
 			</div>';
@@ -403,7 +407,7 @@ class Template
 		</div>
 		<div id="main">';
 
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
+		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && (bool) $inner === true)
 			echo '
 			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
@@ -508,7 +512,7 @@ class Template
 			</script>';
 	}
 
-	public function step0($object, $form)
+	public function step0(ImportManager $object, Form $form)
 	{
 		echo '
 			<h2>', $this->lng->get('before_continue'), '</h2>
@@ -523,14 +527,11 @@ class Template
 		);
 		$this->renderForm($form);
 
-		if (!empty($object->possible_scripts))
-		{
-			echo '
-			<h2>', $this->lng->get('not_this'),'</h2>
+		echo '
 			<div class="content">
+				<h3>', $this->lng->get('not_this'),'</h3>
 				<p>', sprintf($this->lng->get('pick_different'), $_SERVER['PHP_SELF']), '</p>
 			</div>';
-		}
 	}
 
 	/**
@@ -543,7 +544,7 @@ class Template
 	 */
 	public function status($substep, $status, $title, $hide = false)
 	{
-		if (isset($title) && $hide == false)
+		if (isset($title) && (bool) $hide === false)
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
 
 		if ($status == 1)
@@ -657,7 +658,7 @@ class Template
 	<valid>', $this->response->valid ? 'true' : 'false' ,'</valid>';
 	}
 
-	public function renderForm($form)
+	public function renderForm(Form $form)
 	{
 		$toggle = false;
 

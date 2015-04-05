@@ -1,14 +1,16 @@
 <?php
 
+use Symfony\Component\ClassLoader\Psr4ClassLoader;
+
 define('BASEDIR', __DIR__ . '/../../..');
 
-require_once(BASEDIR . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader(null, BASEDIR . '/OpenImporter');
-$classLoader->register();
-$classLoader2 = new SplClassLoader(null, BASEDIR . '/Importers');
-$classLoader2->register();
 // Composer stuff
 require_once(BASEDIR . '/vendor/autoload.php');
+
+$loader = new Psr4ClassLoader();
+$loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');
+$loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers');
+$loader->register();
 
 require_once(BASEDIR . '/Importers/sources/Tests/DummyDb.php');
 require_once(BASEDIR . '/Importers/sources/Tests/DummyConfig.php');

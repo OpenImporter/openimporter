@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * This abstract class is the base for any php importer file.
  *
@@ -14,7 +16,7 @@
  * so that Importer can do its job without having to test for existinance
  * of methods every two/three lines of code.
  */
-abstract class AbstractSourceImporter
+abstract class AbstractSourceImporter implements SourceImporterInterface
 {
 	protected $setting_file = '';
 
@@ -29,15 +31,17 @@ abstract class AbstractSourceImporter
 		$this->config = $config;
 	}
 
-	public abstract function getName();
+	abstract public function getName();
 
-	public abstract function getVersion();
+	abstract public function getVersion();
 
-	public abstract function getPrefix();
+	abstract public function getDbPrefix();
 
-	public abstract function getDbName();
+	abstract public function getDbName();
 
-	public abstract function getTableTest();
+	abstract public function getTableTest();
+
+	abstract public function dbConnectionData();
 
 	public function loadSettings($path, $test = false)
 	{
@@ -55,7 +59,7 @@ abstract class AbstractSourceImporter
 		// Error silenced in case of odd server configurations (open_basedir mainly)
 		if ($this->testPath($path))
 		{
-			require_once($path . $this->setting_file);
+			include($path . $this->setting_file);
 			return true;
 		}
 		else

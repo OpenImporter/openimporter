@@ -1,5 +1,10 @@
 <?php
+
+namespace OpenImporter\Importers\sources\Tests;
+
 use Symfony\Component\Yaml\Yaml;
+use OpenImporter\Core\ImportException;
+use OpenImporter\Importers\sources\mybb16;
 
 require_once(__DIR__ . '/EnvInit.php');
 require_once(BASEDIR . '/Importers/sources/mybb16_importer.php');
@@ -88,7 +93,7 @@ class CustomDbValues extends CustomDb
 		$this->queries = array(
 			md5("
 					SELECT value
-					FROM {$this->config->source->from_prefix}settings
+					FROM {$this->config->from_prefix}settings
 					WHERE name = 'uploadspath'
 					LIMIT 1") => array(array(
 				'value' => BASEDIR . '/Importers/sources'

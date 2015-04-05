@@ -13,32 +13,21 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter\Importers;
+
 /**
  * The class contains code that allows the Importer to obtain settings
  * from softwares that still have an SMF heritage.
  */
-abstract class SmfCommonOrigin
+abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinationImporter
 {
 	public $attach_extension = '';
-
-	protected $path = null;
 
 	public $id_attach = null;
 	public $attachmentUploadDirs = null;
 	public $avatarUploadDir = null;
 	
 	public $scriptname = null;
-
-	protected $config = null;
-	protected $db = null;
-
-	public function setParam($db, $config)
-	{
-		$this->db = $db;
-		$this->config = $config;
-	}
-
-	abstract public function getName();
 
 	public function checkSettingsPath($path)
 	{
@@ -60,7 +49,7 @@ abstract class SmfCommonOrigin
 		return $this->fetchSetting('boardurl');
 	}
 
-	public function getFormFields($path_to = '', $scriptname)
+	public function getFormFields($path_to = '', $scriptname = '')
 	{
 		return array(
 			'id' => 'path_to',
@@ -87,14 +76,31 @@ abstract class SmfCommonOrigin
 		if ($this->path === null)
 			return false;
 
-		$db_server = $this->fetchSetting('db_server');
-		$db_user = $this->fetchSetting('db_user');
-		$db_passwd = $this->fetchSetting('db_passwd');
-		$db_persist = $this->fetchSetting('db_persist');
-		$db_prefix = $this->fetchSetting('db_prefix');
-		$db_name = $this->fetchSetting('db_name');
+		return array(
+			'dbname' => $this->fetchSetting('db_name'),
+			'user' => $this->fetchSetting('db_user'),
+			'password' => $this->fetchSetting('db_passwd'),
+			'host' => $this->fetchSetting('db_server'),
+			'driver' => $this->fetchDriver(),
+		);
+	}
 
-		return array($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name);
+	public function getDbPrefix()
+	{
+		return $this->fetchSetting('db_prefix');
+	}
+
+	protected function fetchDriver()
+	{
+		$type = $this->fetchSetting('db_type');
+		$drivers = array(
+			'mysql' => 'pdo_mysql',
+			'mysqli' => 'pdo_mysql',
+			'postgresql' => 'pdo_pgsql',
+			'sqlite' => 'pdo_sqlite',
+		);
+
+		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
 	}
 
 	protected function fetchSetting($name)
@@ -233,23 +239,8 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		return $row;
 	}
 
-// 	protected function members($row, $special_code = null)
-// 	{
-// 		return $this->prepareRow($this->specialMembers($row), $special_code, $this->config->to_prefix . 'members');
-// 	}
-
 	public function doSpecialTable($special_table, $params = null)
 	{
-		// Are we doing attachments? They're going to want a few things...
-// 		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
-// 		{
-// 			$this->config->destination->specialAttachments();
-// 			return $params;
-// 		}
-// 		// Here we have various bits of custom code for some known problems global to all importers.
-// 		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
-// 			return $this->specialMembers($params);
-
 		return $params;
 	}
 
@@ -287,6 +278,17 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		// This is valid for some of the sources (e.g. Elk/SMF/Wedge), but not for others
 		if (method_exists($this->config->source, 'getAttachmentDirs'))
 			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
+	}
+
+	/**
+	 * helper function to create an encrypted attachment name
+	 *
+	 * @param string $filename
+	 * @return string
+	 */
+	protected function createAttachmentFilehash($filename)
+	{
+		return sha1(md5($filename . time()) . mt_rand());
 	}
 
 	protected function createAttachFoldersStructure($folders)
@@ -422,7 +424,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		}
 		else
 		{
-			$file_hash = createAttachmentFileHash($filename);
+			$file_hash = $this->createAttachmentFileHash($filename);
 			$id_attach = $this->newIdAttach();
 
 			$destination = $this->getAvatarDir($row) . '/' . $id_attach . '_' . $file_hash . '.' . $this->config->destination->attach_extension;
@@ -1277,26 +1279,4 @@ abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 					('enable_password_conversion', '1'),
 					('imported_from', '" . $import_script . "')");
 	}
-}
-
-/**
- * helper function to create an encrypted attachment name
- *
- * @param string $filename
- * @return string
- */
-function createAttachmentFilehash($filename)
-{
-	return sha1(md5($filename . time()) . mt_rand());
-}
-
-/**
- * function copy_smileys is used to copy smileys from a source to destination.
- * @param type $source
- * @param type $dest
- * @return type
- */
-function copy_smileys($source, $dest)
-{
-	copy_dir($source, $dest);
 }

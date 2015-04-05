@@ -7,6 +7,8 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Core;
+
 /**
  * Class DummyLang replaces the Lang class if something bad happens,
  * for example if the XML file is not properly formatted or if the directory

@@ -13,11 +13,13 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter\Importers\destinations;
+
 /**
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
  */
-class elkarte1_0_importer extends SmfCommonOrigin
+class elkarte1_0_importer extends \OpenImporter\Importers\SmfCommonOrigin
 {
 	public $attach_extension = 'elk';
 
@@ -32,7 +34,7 @@ class elkarte1_0_importer extends SmfCommonOrigin
 	}
 }
 
-class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
+class elkarte1_0_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginStep1
 {
 
 	/**
@@ -397,20 +399,40 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-
 			// avatartype field is used temporary to dertermine the type of avatar
 			if ($row['avatartype'] != 'remote')
 				$row['avatar'] = '';
 
 			$row['lngfile'] = $row['language'];
-			$row['receive_from'] = $row['pm_receive_from'];
+			$row['receive_from'] = (int) $row['pm_receive_from'];
+			$row['pm_prefs'] = (int) $row['pm_prefs'];
+			$row['time_offset'] = (int) $row['time_offset'];
 
+			if (!isset($row['openid_uri']))
+				$row['openid_uri'] = '';
+
+			if (!isset($row['date_registered']))
+				$row['date_registered'] = 0;
+			else
+				$row['date_registered'] = strtotime($row['date_registered']);
+
+			$row['gender'] = $this->translateGender($row['gender']);
 			unset($row['avatartype'], $row['language'], $row['pm_receive_from']);
 
-			$rows[] = $this->prepareRow($this->specialMembers($row), null, $this->config->to_prefix . 'members');
+			$rows[] = $this->prepareRow($this->specialMembers($row), $this->config->to_prefix . 'members');
 		}
 
 		return $rows;
+	}
+
+	protected function translateGender($gender)
+	{
+		if ($gender === 'Male')
+			return 1;
+		elseif ($gender === 'Female')
+			return 2;
+		else
+			return 0;
 	}
 
 	protected function mapBoardsGroups($group)
@@ -445,6 +467,18 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 				$groups[] = $this->mapBoardsGroups($group);
 
 			$row['member_groups'] = implode(',', array_filter($groups, function($val) {return $val !== false && $val !== null;}));
+			$row['child_level'] = (int) $row['child_level'];
+			$row['id_last_msg'] = (int) $row['id_last_msg'];
+			$row['id_msg_updated'] = (int) $row['id_msg_updated'];
+			$row['id_profile'] = (int) $row['id_profile'];
+			$row['count_posts'] = (int) $row['count_posts'];
+			$row['id_theme'] = (int) $row['id_theme'];
+			$row['override_theme'] = (int) $row['override_theme'];
+			$row['unapproved_posts'] = (int) $row['unapproved_posts'];
+			$row['unapproved_topics'] = (int) $row['unapproved_topics'];
+
+			if (empty($row['id_profile']))
+				$row['id_profile'] = 1;
 
 			$rows[] = $row;
 		}
@@ -457,7 +491,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$file_hash = createAttachmentFileHash($row['filename']);
+			$file_hash = $this->createAttachmentFileHash($row['filename']);
 			$id_attach = $this->newIdAttach();
 			// @todo the name should come from step1_importer
 			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
@@ -469,6 +503,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 
 			copy_file($source, $destination);
 			unset($row['full_path']);
+			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}
 
@@ -571,7 +606,7 @@ class elkarte1_0_importer_step1 extends SmfCommonOriginStep1
 	}
 }
 
-class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
+class elkarte1_0_importer_step2 extends \OpenImporter\Importers\SmfCommonOriginStep2
 {
 	public function substep0()
 	{
@@ -680,6 +715,6 @@ class elkarte1_0_importer_step2 extends SmfCommonOriginStep2
 	}
 }
 
-class elkarte1_0_importer_step3 extends SmfCommonOriginStep3
+class elkarte1_0_importer_step3 extends \OpenImporter\Importers\SmfCommonOriginStep3
 {
 }

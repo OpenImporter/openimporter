@@ -44,6 +44,11 @@ checks:
         duplication: true
 
 build:
+    dependencies:
+        before:
+            - cd importer
+            - composer install --no-interaction
+            - cd ..
     tests:
         override:
             -

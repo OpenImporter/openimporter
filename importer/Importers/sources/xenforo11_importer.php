@@ -7,37 +7,57 @@
  * @version 2.0 Alpha
  */
 
-class XenForo1_1 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class XenForo1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 {
-	protected $setting_file = '/includes/config.php';
+	protected $setting_file = '/library/config.php';
 
 	public function getName()
 	{
-		return 'Wordpress 3.x';
+		return 'XenForo 1.1';
 	}
 
 	public function getVersion()
 	{
-		return 'ElkArte 1.0';
+		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
-		global $xf_prefix;
-
-		return '`' . $this->getDbName() . '`.' . $xf_prefix;
+		return 'xf_';
 	}
 
 	public function getDbName()
 	{
-		global $xf_database;
-
-		return $xf_database;
+		return $this->fetchSetting('dbname');
 	}
 
 	public function getTableTest()
 	{
 		return 'user';
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('dbname'),
+			'user' => $this->fetchSetting('username'),
+			'password' => $this->fetchSetting('password'),
+			'host' => $this->fetchSetting('host'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['config']['db']))
+			require_once($this->path . $this->setting_file);
+
+		return $GLOBALS['config']['db'][$name];
 	}
 
 	/**
@@ -75,7 +95,7 @@ class XenForo1_1 extends AbstractSourceImporter
 			$request = $this->db->query("
 				SELECT
 					thread_id, last_post_id
-				FROM {$from_prefix}thread
+				FROM {$this->config->from_prefix}thread
 				WHERE node_id  = $row[id_board]
 				ORDER BY thread_id DESC
 				LIMIT 1");

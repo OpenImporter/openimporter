@@ -7,7 +7,9 @@
  * @version 2.0 Alpha
  */
 
-class IPB3_4 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class IPB3_4 extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/conf_global.php';
 
@@ -32,7 +34,21 @@ class IPB3_4 extends AbstractSourceImporter
 	{
 	}
 
-	public function getPrefix()
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('sql_database'),
+			'user' => $this->fetchSetting('sql_user'),
+			'password' => $this->fetchSetting('sql_pass'),
+			'host' => $this->fetchSetting('sql_host'),
+			'driver' => 'pdo_mysql',  // As far as I can tell IPB is MySQL only
+		);
+	}
+
+	public function getDbPrefix()
 	{
 		$db_name = $this->getDbName();
 		$db_prefix = $this->fetchSetting('sql_tbl_prefix');

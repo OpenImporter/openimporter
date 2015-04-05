@@ -7,12 +7,10 @@
  * @version 2.0 Alpha
  */
 
-// @todo this should probably go somewhere else...
-require_once(BASEDIR . '/OpenImporter/Utils.php');
+namespace OpenImporter\Core;
 
-// A shortcut
-if (!defined('DS'))
-	define('DS', DIRECTORY_SEPARATOR);
+use OpenImporter\Core\Form;
+use OpenImporter\Core\StepException;
 
 /**
  * Object ImportManager loads the main importer.
@@ -100,7 +98,7 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($config, $importer, $template, $cookie, $response)
+	public function __construct($config, Importer $importer, $template, $cookie, $response)
 	{
 		global $time_start;
 
@@ -128,7 +126,14 @@ class ImportManager
 
 		if (!empty($this->config->script))
 		{
-			$this->importer->reloadImporter();
+			try
+			{
+				$this->importer->reloadImporter();
+			}
+			catch(\Exception $e)
+			{
+				// Do nothing, let the code die
+			}
 		}
 	}
 
@@ -248,7 +253,7 @@ class ImportManager
 		{
 			$this->importer->reloadImporter();
 		}
-		catch(Exception $e)
+		catch(\Exception $e)
 		{
 			// Do nothing, let the code die
 		}
@@ -413,7 +418,7 @@ class ImportManager
 		{
 			require_once($file);
 			$file_name = basename($file);
-			$class_name = strtr($file_name, array('.php' => '', '.' => '_'));
+			$class_name = '\\OpenImporter\\Importers\\destinations\\' . strtr($file_name, array('.php' => '', '.' => '_'));
 			$obj = new $class_name();
 			$destinations[$file_name] = $obj->getName();
 		}
@@ -462,8 +467,7 @@ class ImportManager
 
 		if ($error_message !== null)
 		{
-			$this->template->footer();
-			exit;
+			throw new StepException($this->template);
 		}
 
 		return;
@@ -482,7 +486,7 @@ class ImportManager
 	 * the important one, transfer the content from the source forum to our
 	 * destination system
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean
 	 */
 	public function doStep1()
@@ -501,7 +505,7 @@ class ImportManager
 			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new Exception($e->getMessage());
+			throw new \Exception($e->getMessage());
 		}
 
 		$_GET['substep'] = 0;
@@ -514,8 +518,6 @@ class ImportManager
 	{
 
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
-		// @TODO: check if this is needed
-		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
 
 		// Skipping steps?
 		if (isset($_SESSION['do_steps']))
@@ -536,7 +538,7 @@ class ImportManager
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean
 	 */
 	public function doStep2()
@@ -555,7 +557,7 @@ class ImportManager
 			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new Exception($e->getMessage());
+			throw new \Exception($e->getMessage());
 		}
 
 		$this->template->status($key + 1, 1, false, true);

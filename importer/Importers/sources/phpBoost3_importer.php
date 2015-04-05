@@ -7,8 +7,12 @@
  * @version 2.0 Alpha
  */
 
-class PHPBoost3 extends AbstractSourceImporter
+namespace OpenImporter\Importers\sources;
+
+class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
 {
+	protected $setting_file = '/kernel/db/config.php';
+
 	public function getName()
 	{
 		return 'PHPBoost3';
@@ -16,21 +20,42 @@ class PHPBoost3 extends AbstractSourceImporter
 
 	public function getVersion()
 	{
-		return 'ElkArte 1.0';
+		return '1.0';
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
-		global $boost_prefix;
+		if (!defined('PREFIX'))
+			$this->fetchSetting('sql_host');
 
-		return '`' . $this->getDbName() . '`.' . $boost_prefix;
+		return PREFIX;
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('sql_base'),
+			'user' => $this->fetchSetting('sql_login'),
+			'password' => $this->fetchSetting('sql_pass'),
+			'host' => $this->fetchSetting('sql_host'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['sql_host']))
+			include($this->path . $this->setting_file);
+
+		return $GLOBALS[$name];
 	}
 
 	public function getDbName()
 	{
-		global $boost_database;
-
-		return $boost_database;
+		return $this->fetchSetting('sql_base');
 	}
 
 	public function getTableTest()
@@ -63,7 +88,7 @@ class PHPBoost3 extends AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = boost_replace_bbc($row['body']);
+			$row['body'] = $this->replace_bbc($row['body']);
 
 			if (!empty($row['modified_time']) && empty($row['modified_name']))
 			{
@@ -75,42 +100,42 @@ class PHPBoost3 extends AbstractSourceImporter
 
 		return $rows;
 	}
-}
 
-/**
- * Utility functions
- */
-function boost_replace_bbc($content)
-{
-	$content = preg_replace(
-		array(
-			'~<strong>~is',
-			'~</strong>~is',
-			'~<em>~is',
-			'~</em>~is',
-			'~<strike>~is',
-			'~</strike>~is',
-			'~\<h3(.+?)\>~is',
-			'~</h3>~is',
-			'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
-			'~\<div class="bb_block">(.+?)<\/div>~is',
-			'~\[style=(.+?)\](.+?)\[\/style\]~is',
-		),
-		array(
-			'[b]',
-			'[/b]',
-			'[i]',
-			'[/i]',
-			'[s]',
-			'[/s]',
-			'',
-			'',
-			'[u]%1[/u]',
-			'%1',
-			'%1',
-		),
-		trim($content)
-	);
+	/**
+	 * Utility functions
+	 */
+	protected function replace_bbc($content)
+	{
+		$content = preg_replace(
+			array(
+				'~<strong>~is',
+				'~</strong>~is',
+				'~<em>~is',
+				'~</em>~is',
+				'~<strike>~is',
+				'~</strike>~is',
+				'~\<h3(.+?)\>~is',
+				'~</h3>~is',
+				'~\<span stype="text-decoration: underline;">(.+?)</span>~is',
+				'~\<div class="bb_block">(.+?)<\/div>~is',
+				'~\[style=(.+?)\](.+?)\[\/style\]~is',
+			),
+			array(
+				'[b]',
+				'[/b]',
+				'[i]',
+				'[/i]',
+				'[s]',
+				'[/s]',
+				'',
+				'',
+				'[u]%1[/u]',
+				'%1',
+				'%1',
+			),
+			trim($content)
+		);
 
-	return $content;
+		return $content;
+	}
 }

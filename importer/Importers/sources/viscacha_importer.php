@@ -7,10 +7,12 @@
  * @version 2.0 Alpha
  */
 
+namespace OpenImporter\Importers\sources;
+
 /**
- * Settings for the MyBB 1.6 system.
+ * Settings for the Viscacha system.
  */
-class Viscacha extends AbstractSourceImporter
+class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/data/config.inc.php';
 
@@ -29,20 +31,39 @@ class Viscacha extends AbstractSourceImporter
 		define('VISCACHA_CORE', 1);
 	}
 
-	public function getPrefix()
+	public function getDbPrefix()
 	{
-		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
-
-		return '`' . $this->getDbName() . '`.' . $config['dbprefix'];
+		return $this->fetchSetting('dbprefix');
 	}
 
 	public function getDbName()
 	{
+		return $this->fetchSetting('database');
+	}
+
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('database'),
+			'user' => $this->fetchSetting('dbuser'),
+			'password' => $this->fetchSetting('dbpw'),
+			'host' => $this->fetchSetting('host'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
 		global $config;
 
-		return $config['database'];
+		if (empty($config))
+			include($this->path . $this->setting_file);
+
+		return $config[$name];
 	}
 
 	public function getTableTest()
@@ -156,7 +177,7 @@ class Viscacha extends AbstractSourceImporter
 		{
 			$request = $this->db->query("
 				SELECT count(*)
-				FROM {$from_prefix}votes
+				FROM {$this->config->from_prefix}votes
 				WHERE aid = " . $row['id_choice']);
 
 			list ($count) = $this->db->fetch_row($request);

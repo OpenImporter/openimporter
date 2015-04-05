@@ -13,10 +13,12 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-use Symfony\Component\Yaml\Parser;
+namespace OpenImporter\Core;
 
-if (!defined('DS'))
-	define('DS', DIRECTORY_SEPARATOR);
+use Symfony\Component\Yaml\Parser;
+use OpenImporter\Core\Database;
+use OpenImporter\Core\XmlProcessor;
+use OpenImporter\Core\ImportException;
 
 /**
  * Object Importer creates the main XML object.
@@ -30,6 +32,12 @@ class Importer
 	 * @var object
 	 */
 	protected $db;
+
+	/**
+	 * This is the connection to the source database.
+	 * @var object
+	 */
+	protected $source_db;
 
 	/**
 	 * The "translator" (i.e. the Lang object)
@@ -179,13 +187,13 @@ class Importer
 
 		require_once($full_path);
 
-		$this->_importer_base_class_name = str_replace('.', '_', basename($file, '.php'));
+		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . str_replace('.', '_', basename($file, '.php'));
 
 		$this->config->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
 
-		$this->config->destination->setParam($this->db, $this->config);
+		$this->config->destination->setUtils($this->db, $this->config);
 	}
 
 	/**
@@ -195,20 +203,13 @@ class Importer
 	 */
 	private function _preparse_xml($file)
 	{
-		try
-		{
-			if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
-				throw new ImportException('XML-Syntax error in file: ' . $file);
+		if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
+			throw new ImportException('XML-Syntax error in file: ' . $file);
 
-			$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
-		}
-		catch (Exception $e)
-		{
-			ImportException::exception_handler($e, $this->template);
-		}
+		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
 
-	public function populateFormFields($form)
+	public function populateFormFields(Form $form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
 		$form->addOption($this->config->destination->getFormFields($form_path, $this->config->destination->scriptname));
@@ -265,13 +266,10 @@ class Importer
 	 */
 	protected function hasSettingFile()
 	{
-		$class = (string) $this->xml->general->className;
-		$settings = new $class();
-
 		if (!isset($this->config->path_from))
 			$this->config->path_from = BASEDIR;
 
-		$path_from = $settings->loadSettings($this->config->path_from, true);
+		$path_from = $this->config->source->loadSettings($this->config->path_from, true);
 
 		return $path_from;
 	}
@@ -279,12 +277,12 @@ class Importer
 	/**
 	 * Prepare the importer with custom settings of the source
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean|null
 	 */
 	private function _loadSettings()
 	{
-		$class = (string) $this->xml->general->className;
+		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className;
 		$this->config->source = new $class();
 
 		$this->config->source->setDefines();
@@ -310,15 +308,15 @@ class Importer
 		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 
 		if ($this->config->boardurl === false)
-			throw new Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
+			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
 
 		if (!$this->config->destination->verifyDbPass($this->data['db_pass']))
-			throw new Exception($this->lng->get('password_incorrect'));
+			throw new \Exception($this->lng->get('password_incorrect'));
 
 		// Check the steps that we have decided to go through.
 		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
 		{
-			throw new Exception($this->lng->get('select_step'));
+			throw new \Exception($this->lng->get('select_step'));
 		}
 		elseif (isset($_POST['do_steps']))
 		{
@@ -328,7 +326,8 @@ class Importer
 		}
 
 		$this->init_db();
-		$this->config->source->setUtils($this->db, $this->config);
+		$this->config->source->setUtils($this->source_db, $this->config);
+		$this->config->destination->setUtils($this->db, $this->config);
 
 		$this->testTable();
 	}
@@ -345,12 +344,14 @@ class Importer
 	{
 		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
 		{
-			$result = $this->db->query('
+			$test_table = $this->config->from_prefix . $this->config->source->getTableTest();
+
+			$result = $this->db->query("
 				SELECT COUNT(*)
-				FROM ' . $this->config->from_prefix . $this->config->source->getTableTest(), true);
+				FROM {$test_table}", true);
 
 			if ($result === false)
-				throw new Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
 
 			$this->db->free_result($result);
 		}
@@ -366,42 +367,50 @@ class Importer
 		if ($found === false)
 		{
 			if (@ini_get('open_basedir') != '')
-				throw new Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
 
-			throw new Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
+			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
 		}
 	}
 
 	protected function init_db()
 	{
-		try
-		{
-			list ($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name) = $this->config->destination->dbConnectionData();
+		$DestConnectionParams = $this->config->destination->dbConnectionData();
+		$db_prefix = $this->config->destination->getDbPrefix();
 
-			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
-			//We want UTF8 only, let's set our mysql connetction to utf8
-			$this->db->query('SET NAMES \'utf8\'');
-		}
-		catch(Exception $e)
-		{
-			ImportException::exception_handler($e, $this->template);
-			die();
-		}
+		$this->db = new Database($DestConnectionParams);
+		//We want UTF8 only, let's set our mysql connetction to utf8
+		$this->db->query('SET NAMES \'utf8\'');
 
 		if (strpos($db_prefix, '.') === false)
 		{
 			// @todo ???
 			if (is_numeric(substr($db_prefix, 0, 1)))
-				$this->config->to_prefix = $db_name . '.' . $db_prefix;
+				$this->config->to_prefix = $DestConnectionParams['dbname'] . '.' . $db_prefix;
 			else
-				$this->config->to_prefix = '`' . $db_name . '`.' . $db_prefix;
+				$this->config->to_prefix = '`' . $DestConnectionParams['dbname'] . '`.' . $db_prefix;
 		}
 		else
 		{
 			$this->config->to_prefix = $db_prefix;
 		}
 
-		$this->config->from_prefix = $this->config->source->getPrefix();
+		try
+		{
+			$SourceConnectionParams = $this->config->source->dbConnectionData();
+			$this->config->from_prefix = $this->config->source->getDbPrefix();
+
+			$this->source_db = new Database($SourceConnectionParams);
+			//We want UTF8 only, let's set our mysql connetction to utf8
+			$this->source_db->query('SET NAMES \'utf8\'');
+		}
+		catch(Exception $e)
+		{
+			$SourceConnectionParams['user'] = $DestConnectionParams['user'];
+			$SourceConnectionParams['password'] = $DestConnectionParams['password'];
+
+			$this->source_db = new Database($SourceConnectionParams);
+		}
 
 		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
 		{
@@ -488,7 +497,7 @@ class Importer
 		$counter_current_step = 0;
 		$import_steps = array();
 
-		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
+		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
 
 		// loop through each step
 		foreach ($this->xml->step as $counts)
@@ -527,7 +536,7 @@ class Importer
 		$skeleton = new Parser();
 		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
-		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
+		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
 		$xmlParser->setImporter($step1_importer);
 		$xmlParser->setSkeleton($skeleton_parsed);
 

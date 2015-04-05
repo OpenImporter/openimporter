@@ -266,6 +266,9 @@
 	<step id="pmrecipients">
 		<title>Importing pm recipients</title>
 		<detect>{$from_prefix}message_topics</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
 		<query>
 			SELECT
 				pm.msg_id AS id_pm,
