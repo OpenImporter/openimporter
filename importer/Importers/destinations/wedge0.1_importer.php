@@ -235,7 +235,7 @@ class wedge0_1_importer_step1 extends \OpenImporter\Importers\SmfCommonOriginSte
 		return '{$to_prefix}permissions';
 	}
 
-	public function tablePermissionboardss()
+	public function tablePermissionboards()
 	{
 		return '{$to_prefix}board_permissions';
 	}
