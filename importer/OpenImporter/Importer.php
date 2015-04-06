@@ -168,7 +168,7 @@ class Importer
 	protected function loadImporter($files)
 	{
 		$this->loadSource($files['source']);
-		$this->_loadSource($files['destination']);
+		$this->loadDestination($files['destination']);
 
 		$this->loadSettings();
 	}
@@ -179,7 +179,7 @@ class Importer
 		$this->preparseXml($full_path);
 	}
 
-	protected function _loadSource($file)
+	protected function loadDestination($file)
 	{
 		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
 
