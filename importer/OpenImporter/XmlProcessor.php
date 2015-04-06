@@ -16,6 +16,7 @@
 namespace OpenImporter\Core;
 
 use OpenImporter\Core\Strings;
+use OpenImporter\Core\Utils;
 
 /**
  * Object Importer creates the main XML object.
@@ -149,7 +150,7 @@ class XmlProcessor
 
 		while (true)
 		{
-			pastTime($substep);
+			Utils::pastTime($substep);
 
 			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
@@ -269,7 +270,7 @@ class XmlProcessor
 		$table_test = true;
 
 		// Increase the substep slightly...
-		pastTime(++$substep);
+		Utils::pastTime(++$substep);
 
 		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
 		if (!isset($_SESSION['import_steps'][$substep]['status']))

@@ -13,50 +13,57 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-/**
- * Checks if we've passed a time limit..
- *
- * @param int|null $substep
- * @param int $stop_time
- * @return null
- */
-function pastTime($substep = null, $stop_time = 5)
+namespace OpenImporter\Core;
+
+class Utils
 {
-	global $import, $time_start;
+	/**
+	 * Checks if we've passed a time limit..
+	 *
+	 * @param int|null $substep
+	 * @param int $stop_time
+	 * @return null
+	 */
+	public static function pastTime($substep = null, $stop_time = 5)
+	{
+		global $import, $time_start;
 
-	if (isset($_GET['substep']) && $_GET['substep'] < $substep)
-		$_GET['substep'] = $substep;
+		if (isset($_GET['substep']) && $_GET['substep'] < $substep)
+			$_GET['substep'] = $substep;
 
-	// some details for our progress bar
-	if (isset($import->count->$substep) && $import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
-		$bar = round($_REQUEST['start'] / $import->count->$substep * 100, 0);
-	else
-		$bar = false;
+		// some details for our progress bar
+		if (isset($import->count->$substep) && $import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
+			$bar = round($_REQUEST['start'] / $import->count->$substep * 100, 0);
+		else
+			$bar = false;
 
-	@set_time_limit(300);
-	if (is_callable('apache_reset_timeout'))
-		apache_reset_timeout();
+		@set_time_limit(300);
+		if (is_callable('apache_reset_timeout'))
+			apache_reset_timeout();
 
-	if (time() - $time_start < $stop_time)
-		return;
+		if (time() - $time_start < $stop_time)
+			return;
 
-	Throw new PasttimeException($import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
-}
+		Throw new PasttimeException($import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
+	}
 
-/**
- * helper function for storing vars that need to be global
- *
- * @param string $variable
- * @param string $value
- */
-function store_global($variable, $value)
-{
-	$_SESSION['store_globals'][$variable] = $value;
-}
+	/**
+	 * @todo apparently unused
+	 *
+	 * helper function for storing vars that need to be global
+	 *
+	 * @param string $variable
+	 * @param string $value
+	 */
+	public static function store_global($variable, $value)
+	{
+		$_SESSION['store_globals'][$variable] = $value;
+	}
 
-function print_dbg($val)
-{
-	echo '<pre>';
-	print_r($val);
-	echo '</pre>';
+	public static function print_dbg($val)
+	{
+		echo '<pre>';
+		print_r($val);
+		echo '</pre>';
+	}
 }

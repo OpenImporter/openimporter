@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Importers\destinations;
 
+Use OpenImporter\Core\Utils;
+
 abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
@@ -292,7 +294,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 
 			// @todo this should not deal with $_REQUEST and alike
 			$_REQUEST['start'] += 200;
-			pastTime(6);
+			Utils::pastTime(6);
 		}
 	}
 
@@ -335,7 +337,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 
 			// @todo this should not deal with $_REQUEST and alike
 			$_REQUEST['start'] += 100;
-			pastTime(7);
+			Utils::pastTime(7);
 		}
 	}
 
@@ -566,7 +568,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			// More?
 			// We can't keep importing the same files over and over again!
 			$_REQUEST['start'] += 500;
-			pastTime(11);
+			Utils::pastTime(11);
 		}
 	}
 

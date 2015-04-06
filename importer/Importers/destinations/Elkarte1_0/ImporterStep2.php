@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Importers\destinations\ElkArte1_0;
 
+use OpenImporter\Core\Utils;
+
 class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep2
 {
 	public function substep0()
@@ -36,7 +38,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 
@@ -54,7 +56,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -76,7 +78,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_topic = $row[id_topic]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -97,7 +99,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_poster]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -118,7 +120,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 	}

@@ -18,6 +18,8 @@
 
 namespace OpenImporter\Importers\destinations\Wedge1_0;
 
+use OpenImporter\Core\Utils;
+
 /**
  * Recount statistics, and fixes stuff.
  */
@@ -40,7 +42,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 
@@ -58,7 +60,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			pastTime(0);
+			Utils::pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -117,7 +119,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$this->db->alter_table("{$this->config->to_prefix}topics", $index_info);
 
 		$_REQUEST['start'] = 0;
-		pastTime(13);
+		Utils::pastTime(13);
 	}
 
 	public function substep13()
@@ -179,6 +181,6 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$this->db->alter_table("{$this->config->to_prefix}messages", $index_info);
 
 		$_REQUEST['start'] = 0;
-		pastTime(14);
+		Utils::pastTime(14);
 	}
 }
