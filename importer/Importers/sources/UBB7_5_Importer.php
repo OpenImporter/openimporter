@@ -30,6 +30,28 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		return '`' . $this->getDbName() . '`.' . $db_prefix;
 	}
 
+	public function dbConnectionData()
+	{
+		if ($this->path === null)
+			return false;
+
+		return array(
+			'dbname' => $this->fetchSetting('DATABASE_NAME'),
+			'user' => $this->fetchSetting('DATABASE_USER'),
+			'password' => $this->fetchSetting('DATABASE_PASSWORD'),
+			'host' => $this->fetchSetting('DATABASE_SERVER'),
+			'driver' => 'pdo_mysql',
+		);
+	}
+
+	protected function fetchSetting($name)
+	{
+		if (empty($GLOBALS['config']))
+			include($this->path . $this->setting_file);
+
+		return $GLOBALS['config'][$name];
+	}
+
 	public function getDbName()
 	{
 		global $db_name;
