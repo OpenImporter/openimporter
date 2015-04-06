@@ -352,6 +352,8 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 
 	public function preparseBoards($originalRows)
 	{
+		$rows = array();
+
 		foreach ($originalRows as $row)
 		{
 			$memberGroups = array_filter(explode(',', $row['member_groups']));

@@ -416,6 +416,8 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	protected function fixBoards($cat_map, $child_map)
 	{
 		$fixed_boards = array();
+		$level = 0;
+
 		// The above id_parents and id_cats may all be wrong; we know id_parent = 0 is right.
 		$solid_parents = array(array(0, 0));
 		while (!empty($solid_parents))
