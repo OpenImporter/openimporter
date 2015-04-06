@@ -94,6 +94,8 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 
 	public function preparseBoards($originalRows)
 	{
+		$rows = array();
+
 		foreach ($originalRows as $row)
 		{
 			$memberGroups = array_filter(explode(',', $row['member_groups']));

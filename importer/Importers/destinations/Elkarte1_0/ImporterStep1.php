@@ -270,7 +270,6 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			2 => 3,
 		);
 
-		$new_group = null;
 		if (isset($known[$group]))
 			$new_group = $known[$group];
 		else
@@ -285,6 +284,8 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 
 	public function preparseBoards($originalRows)
 	{
+		$rows = array();
+
 		foreach ($originalRows as $row)
 		{
 			$memberGroups = explode(',', $row['member_groups']);

@@ -338,7 +338,6 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			2 => 3,
 		);
 
-		$new_group = null;
 		if (isset($known[$group]))
 			$new_group = $known[$group];
 		else
