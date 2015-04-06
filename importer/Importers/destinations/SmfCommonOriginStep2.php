@@ -344,8 +344,6 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	/**
 	 *
 	 * Get the id_member associated with the specified message.
-	 * @global type $to_prefix
-	 * @global type $db
 	 * @param type $messageID
 	 * @return int
 	 */
