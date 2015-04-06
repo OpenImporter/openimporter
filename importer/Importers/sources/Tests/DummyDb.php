@@ -81,25 +81,18 @@ class DummyDb
 				{
 					// Parentheses
 					case 1:
-					{
 						if ($string[$pos] === ')')
 							$in--;
 						elseif ($string[$pos] === '(')
 							$in++;
 						break;
-					}
 					// Single quotes
 					case 2:
-					{
 						if ($string[$pos] === '\'')
 							$in--;
 						break;
-					}
 					default:
-					{
-					}
 				}
-// 				$in = max($in, 0);
 			}
 			else
 			{

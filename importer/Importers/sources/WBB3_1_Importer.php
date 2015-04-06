@@ -78,7 +78,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		while ($wbbOpt = $this->db->fetch_assoc($request))
 			$this->userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];
 
-		$db->free_result($request);
+		$this->db->free_result($request);
 	}
 
 	protected function fixUserGroupId($id_group)
@@ -161,7 +161,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				GROUP BY threadID");
 
 			list ($pollID) = $db->fetch_row($request);
-			$db->free_result($request);
+			$this->db->free_result($request);
 			if ($pollID > 0)
 				$row['id_poll'] = $pollID;
 

@@ -25,19 +25,17 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 {
 	public function substep0()
 	{
-		$to_prefix = $this->config->to_prefix;
-
 		// Get all members with wrong number of personal messages.
 		$request = $this->db->query("
 			SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.instant_messages
-			FROM {$to_prefix}members AS mem
-				LEFT JOIN {$to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0)
+			FROM {$this->config->to_prefix}members AS mem
+				LEFT JOIN {$this->config->to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0)
 			GROUP BY mem.id_member
 			HAVING real_num != instant_messages");
 		while ($row = $this->db->fetch_assoc($request))
 		{
 			$this->db->query("
-				UPDATE {$to_prefix}members
+				UPDATE {$this->config->to_prefix}members
 				SET instant_messages = $row[real_num]
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
@@ -48,14 +46,14 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 
 		$request = $this->db->query("
 			SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.unread_messages
-			FROM {$to_prefix}members AS mem
-				LEFT JOIN {$to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0 AND pmr.is_read = 0)
+			FROM {$this->config->to_prefix}members AS mem
+				LEFT JOIN {$this->config->to_prefix}pm_recipients AS pmr ON (mem.id_member = pmr.id_member AND pmr.deleted = 0 AND pmr.is_read = 0)
 			GROUP BY mem.id_member
 			HAVING real_num != unread_messages");
 		while ($row = $this->db->fetch_assoc($request))
 		{
 			$this->db->query("
-				UPDATE {$to_prefix}members
+				UPDATE {$this->config->to_prefix}members
 				SET unread_messages = $row[real_num]
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
@@ -67,8 +65,6 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 
 	public function substep12()
 	{
-		$to_prefix = $this->config->to_prefix;
-
 		$indexes = array(
 			'id_topic' => array(
 				'name' => 'id_topic',
@@ -118,7 +114,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		);
 
 		foreach ($indexes as $index_info)
-			$this->db->alter_table("{$to_prefix}topics", $index_info);
+			$this->db->alter_table("{$this->config->to_prefix}topics", $index_info);
 
 		$_REQUEST['start'] = 0;
 		pastTime(13);
@@ -180,7 +176,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		);
 
 		foreach ($indexes as $index_info)
-			$this->db->alter_table("{$to_prefix}messages", $index_info);
+			$this->db->alter_table("{$this->config->to_prefix}messages", $index_info);
 
 		$_REQUEST['start'] = 0;
 		pastTime(14);
