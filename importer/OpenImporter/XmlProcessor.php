@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\Strings;
+
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
@@ -192,7 +194,7 @@ class XmlProcessor
 		foreach ($rows as $row)
 		{
 			if (empty($ignore_slashes))
-				$row = addslashes_recursive($row);
+				$row = Strings::addslashes_recursive($row);
 
 			$this->db->insert($special_table, $row, $insert_statement);
 		}

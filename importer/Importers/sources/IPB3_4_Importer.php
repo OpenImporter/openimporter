@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Importers\sources;
 
+use OpenImporter\Core\Strings;
+
 class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/conf_global.php';
@@ -412,7 +414,7 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				foreach ($choices as $choice)
 				{
 					// Put the slashes back
-					$choice = addslashes_recursive($choice);
+					$choice = Strings::addslashes_recursive($choice);
 
 					// Now go ahead with our choices and votes
 					foreach($choice['choice'] AS $choiceid => $label)

@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Importers\destinations;
 
+use OpenImporter\Core\Strings;
+
 /**
  * The starting point for the first step of any importer.
  * Step 1 is where the actual conversion happens, where the data are moved
@@ -22,7 +24,7 @@ abstract class Step1BaseImporter extends BaseImporter
 		$row = $this->doSpecialTable($special_table, $row);
 
 		// fixing the charset, we need proper utf-8
-		$row = fix_charset($row);
+		$row = Strings::fix_charset($row);
 
 		$row = $this->fixTexts($row);
 

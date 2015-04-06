@@ -13,6 +13,7 @@ use OpenImporter\Core\Lang;
 use OpenImporter\Core\Cookie;
 use OpenImporter\Core\Template;
 use OpenImporter\Core\Importer;
+use OpenImporter\Core\Strings;
 use OpenImporter\Core\HttpResponse;
 use OpenImporter\Core\ResponseHeader;
 use OpenImporter\Core\ImportManager;
@@ -52,7 +53,7 @@ if (@ini_get('session.save_handler') == 'user')
 
 // Add slashes, as long as they aren't already being added.
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
-	$_POST = stripslashes_recursive($_POST);
+	$_POST = Strings::stripslashes_recursive($_POST);
 
 $OI_configurator = new Configurator();
 $OI_configurator->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
