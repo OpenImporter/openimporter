@@ -4,10 +4,10 @@ namespace OpenImporter\Importers\sources\Tests;
 
 use Symfony\Component\Yaml\Yaml;
 use OpenImporter\Core\ImportException;
-use OpenImporter\Importers\sources\SMF2_0;
+use OpenImporter\Importers\sources\SMF2_0_Importer;
 
 require_once(__DIR__ . '/EnvInit.php');
-require_once(BASEDIR . '/Importers/sources/smf2-0_importer.php');
+require_once(BASEDIR . '/Importers/sources/SMF2_0_Importer.php');
 
 class SMF2_0Test extends \PHPUnit_Framework_TestCase
 {
@@ -31,7 +31,7 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		self::$xml = self::read(BASEDIR . '/Importers/sources/smf2-0_importer.xml');
+		self::$xml = self::read(BASEDIR . '/Importers/sources/SMF2_0_Importer.xml');
 		self::$yml = self::getConfig(BASEDIR . '/Importers/importer_skeleton.yml');
 	}
 
@@ -52,7 +52,7 @@ class SMF2_0Test extends \PHPUnit_Framework_TestCase
 	{
 		$this->utils['db'] = new DummyDb();
 		// @todo this should be detected from the XML?
-		$this->utils['importer'] = new SMF2_0();
+		$this->utils['importer'] = new SMF2_0_Importer();
 		$this->utils['importer']->setUtils($this->utils['db'], new DummyConfig());
 	}
 

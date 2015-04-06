@@ -4,10 +4,10 @@ namespace OpenImporter\Importers\sources\Tests;
 
 use Symfony\Component\Yaml\Yaml;
 use OpenImporter\Core\ImportException;
-use OpenImporter\Importers\sources\mybb16;
+use OpenImporter\Importers\sources\MyBB1_6_Importer;
 
 require_once(__DIR__ . '/EnvInit.php');
-require_once(BASEDIR . '/Importers/sources/mybb16_importer.php');
+require_once(BASEDIR . '/Importers/sources/MyBB1_6_Importer.php');
 
 class mybb16Test extends \PHPUnit_Framework_TestCase
 {
@@ -31,7 +31,7 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		self::$xml = self::read(BASEDIR . '/Importers/sources/mybb16_importer.xml');
+		self::$xml = self::read(BASEDIR . '/Importers/sources/MyBB1_6_Importer.xml');
 		self::$yml = self::getConfig(BASEDIR . '/Importers/importer_skeleton.yml');
 	}
 
@@ -52,7 +52,7 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 	{
 		$this->utils['db'] = new DummyDb(new CustomDbValues());
 		// @todo this should be detected from the XML?
-		$this->utils['importer'] = new mybb16();
+		$this->utils['importer'] = new MyBB1_6_Importer();
 		$this->utils['importer']->setUtils($this->utils['db'], new DummyConfig());
 	}
 
@@ -104,9 +104,9 @@ class CustomDbValues extends CustomDb
 		') => array(array(
 				'id_msg' => 1,
 				'downloads' => 0,
-				'filename' => 'mybb16_importer.php',
+				'filename' => 'MyBB1_6_Importer.php',
 				'filesize' => 0,
-				'attachname' => 'mybb16_importer.php'
+				'attachname' => 'MyBB1_6_Importer.php'
 			))
 		);
 	}
