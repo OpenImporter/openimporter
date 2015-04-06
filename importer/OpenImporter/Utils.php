@@ -17,6 +17,13 @@ namespace OpenImporter\Core;
 
 class Utils
 {
+	protected $time_start = 0;
+
+	public static function setStart()
+	{
+		self::$time_start = time();
+	}
+
 	/**
 	 * Checks if we've passed a time limit..
 	 *
@@ -26,7 +33,7 @@ class Utils
 	 */
 	public static function pastTime($substep = null, $stop_time = 5)
 	{
-		global $import, $time_start;
+		global $import;
 
 		if (isset($_GET['substep']) && $_GET['substep'] < $substep)
 			$_GET['substep'] = $substep;
@@ -41,7 +48,7 @@ class Utils
 		if (is_callable('apache_reset_timeout'))
 			apache_reset_timeout();
 
-		if (time() - $time_start < $stop_time)
+		if (time() - self::$time_start < $stop_time)
 			return;
 
 		Throw new PasttimeException($import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);

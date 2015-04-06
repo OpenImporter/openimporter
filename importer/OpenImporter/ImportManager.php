@@ -11,6 +11,7 @@ namespace OpenImporter\Core;
 
 use OpenImporter\Core\Form;
 use OpenImporter\Core\StepException;
+use OpenImporter\Core\Utils;
 
 /**
  * Object ImportManager loads the main importer.
@@ -100,9 +101,7 @@ class ImportManager
 	 */
 	public function __construct($config, Importer $importer, $template, $cookie, $response)
 	{
-		global $time_start;
-
-		$time_start = time();
+		Utils::setStart();
 
 		$this->loadFromSession();
 
