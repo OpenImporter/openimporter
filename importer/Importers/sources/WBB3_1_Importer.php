@@ -117,7 +117,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		{
 			$row['id_group'] = $this->fixUserGroupId($row['id_group']);
 
-			$row['signature'] = $this->replace_bbc($row['signature']);
+			$row['signature'] = $this->replaceBbc($row['signature']);
 
 			/* load wbb userOptions */
 			$request = $this->db->query("
@@ -176,7 +176,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = $this->replace_bbc($row['body']);
+			$row['body'] = $this->replaceBbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -207,7 +207,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = $this->replace_bbc($row['body']);
+			$row['body'] = $this->replaceBbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -218,7 +218,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	/**
 	 * Utility functions
 	 */
-	function replace_bbc($message)
+	function replaceBbc($message)
 	{
 		$message = preg_replace(
 			array(

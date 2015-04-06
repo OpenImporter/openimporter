@@ -203,7 +203,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
  */
 class ImportException extends \Exception
 {
-	public static function exception_handler($e)
+	public static function exceptionHandler($e)
 	{
 		throw new \Exception($e->getMessage(), $e->getCode(), $e);
 	}

@@ -39,7 +39,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		foreach ($convert_ips as $ip)
 		{
 			if (array_key_exists($ip, $row))
-				$row[$ip] = $this->_prepare_ipv6($row[$ip]);
+				$row[$ip] = $this->prepareIpv6($row[$ip]);
 		}
 
 		return $row;
@@ -54,7 +54,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		{
 			if (array_key_exists($ip, $row))
 			{
-				$ipv6ip = $this->_prepare_ipv6($row[$ip]);
+				$ipv6ip = $this->prepareIpv6($row[$ip]);
 
 				$request2 = $this->db->query("
 					SELECT id_ip
@@ -94,7 +94,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 	 * @param string $ip
 	 * @return string $ip
 	 */
-	private function _prepare_ipv6($ip)
+	private function prepareIpv6($ip)
 	{
 		return $ip;
 	}

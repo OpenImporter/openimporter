@@ -19,10 +19,10 @@ class ImportException extends \Exception
 {
 	public function doExit($template = null)
 	{
-		self::exception_handler($this, $template);
+		self::exceptionHandler($this, $template);
 	}
 
-	public static function error_handler_callback($code, $string, $file, $line)
+	public static function errorHandlerCallback($code, $string, $file, $line)
 	{
 		if (error_reporting() == 0)
 			return;
@@ -36,7 +36,7 @@ class ImportException extends \Exception
 	/**
 	 * @param \Exception $exception
 	 */
-	public static function exception_handler($exception, $template = null)
+	public static function exceptionHandler($exception, $template = null)
 	{
 		global $import;
 

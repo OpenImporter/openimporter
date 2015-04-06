@@ -85,7 +85,7 @@ class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fixBbc($body, $bbc_replace)
 	{
-		$body = $this->replace_bbc($body);
+		$body = $this->replaceBbc($body);
 		$body = str_replace($bbc_replace, '', $body);
 
 		return $body;
@@ -139,12 +139,12 @@ class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	/**
 	 * Utility functions
 	 */
-	protected function percent_to_px($percent)
+	protected function percentToPx($percent)
 	{
 		return intval(11*(intval($percent)/100.0));
 	}
 
-	protected function replace_bbc($message)
+	protected function replaceBbc($message)
 	{
 		$message = preg_replace(
 			array(
@@ -195,7 +195,7 @@ class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				'[url=$2]$3[/url]',
 				'[img]',
 				'[/img]',
-				'[size=' . $this->percent_to_px("\1") . 'px]',
+				'[size=' . $this->percentToPx("\1") . 'px]',
 				'[/size]',
 				'[color=$1]',
 				'[/color]',

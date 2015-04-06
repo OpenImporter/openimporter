@@ -43,7 +43,7 @@ class Lang
 		catch(Exception $e)
 		{
 			// @todo this should not be a fatal error
-			ImportException::exception_handler($e);
+			ImportException::exceptionHandler($e);
 		}
 	}
 
@@ -57,7 +57,7 @@ class Lang
 	public function loadLang($path)
 	{
 		// detect the browser language
-		$language = $this->detect_browser_language();
+		$language = $this->detectBrowserLanguage();
 		$lngfile = $this->findLanguage($path, $language);
 
 		// ouch, we really should never arrive here..
@@ -153,7 +153,7 @@ class Lang
 	 *
 	 * @return string the shortened string of the browser's language.
 	 */
-	protected function detect_browser_language()
+	protected function detectBrowserLanguage()
 	{
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 		{

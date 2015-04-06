@@ -151,7 +151,7 @@ class Importer
 		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
 		if (!empty($this->config->script))
-			$this->_loadImporter($this->config->importers_dir . DS . $this->config->script);
+			$this->loadImporter($this->config->importers_dir . DS . $this->config->script);
 	}
 
 	public function setData($data)
@@ -162,28 +162,24 @@ class Importer
 	public function reloadImporter()
 	{
 		if (!empty($this->config->script))
-			$this->_loadImporter($this->config->script);
+			$this->loadImporter($this->config->script);
 	}
 
-	protected function _loadImporter($files)
+	protected function loadImporter($files)
 	{
-		$this->_loadSource($files['source']);
-		$this->_loadDestination($files['destination']);
+		$this->loadSource($files['source']);
+		$this->_loadSource($files['destination']);
 
-		$this->_loadSettings();
+		$this->loadSettings();
+	}
+
+	protected function loadSource($file)
+	{
+		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
+		$this->preparseXml($full_path);
 	}
 
 	protected function _loadSource($file)
-	{
-		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
-		$this->_preparse_xml($full_path);
-
-		// This is the helper class
-// 		$source_helper = str_replace('.xml', '.php', $full_path);
-// 		require_once($source_helper);
-	}
-
-	protected function _loadDestination($file)
 	{
 		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
 
@@ -197,7 +193,7 @@ class Importer
 	 * @param string $file
 	 * @throws ImportException
 	 */
-	private function _preparse_xml($file)
+	private function preparseXml($file)
 	{
 		if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
 			throw new ImportException('XML-Syntax error in file: ' . $file);
@@ -239,7 +235,7 @@ class Importer
 
 		$form->addSeparator();
 
-		$steps = $this->_find_steps();
+		$steps = $this->findSteps();
 
 		if (!empty($steps))
 		{
@@ -276,7 +272,7 @@ class Importer
 	 * @throws \Exception
 	 * @return boolean|null
 	 */
-	private function _loadSettings()
+	private function loadSettings()
 	{
 		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className . '_Importer';
 		$this->config->source = new $class();
@@ -297,7 +293,7 @@ class Importer
 		$this->loadSettings();
 
 		// Any custom form elements to speak of?
-		$this->init_form_data();
+		$this->initFormData();
 
 		if (empty($this->config->path_to))
 			return;
@@ -321,7 +317,7 @@ class Importer
 				$_SESSION['do_steps'][$key] = $step;
 		}
 
-		$this->init_db();
+		$this->initDb();
 		$this->config->source->setUtils($this->source_db, $this->config);
 		$this->config->destination->setUtils($this->db, $this->config);
 
@@ -369,7 +365,7 @@ class Importer
 		}
 	}
 
-	protected function init_db()
+	protected function initDb()
 	{
 		$DestConnectionParams = $this->config->destination->dbConnectionData();
 		$db_prefix = $this->config->destination->getDbPrefix();
@@ -423,7 +419,7 @@ class Importer
 		$this->db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
 	}
 
-	protected function init_form_data()
+	protected function initFormData()
 	{
 		if ($this->xml->general->form && !empty($_SESSION['import_parameters']))
 		{
@@ -468,7 +464,7 @@ class Importer
 	 * Looks at the importer and returns the steps that it's able to make.
 	 * @return mixed[]
 	 */
-	protected function _find_steps()
+	protected function findSteps()
 	{
 		$steps = array();
 		$steps_count = 0;

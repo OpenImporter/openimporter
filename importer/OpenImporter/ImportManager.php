@@ -114,7 +114,7 @@ class ImportManager
 		$this->lng = $importer->lng;
 		$this->response->lng = $importer->lng;
 
-		$this->_findScript();
+		$this->findScript();
 
 		// The current step - starts at 0.
 		$this->response->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
@@ -186,7 +186,7 @@ class ImportManager
 	/**
 	 * Finds the script either in the session or in request
 	 */
-	protected function _findScript()
+	protected function findScript()
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_POST['destination']) && isset($_POST['source']))
@@ -247,7 +247,7 @@ class ImportManager
 
 	protected function validateFields()
 	{
-		$this->_detect_scripts();
+		$this->detectScripts();
 
 		try
 		{
@@ -341,7 +341,7 @@ class ImportManager
 	 * - checks the file system for importer definition files
 	 * @return boolean
 	 */
-	private function _detect_scripts()
+	private function detectScripts()
 	{
 		if ($this->config->script !== null)
 		{
@@ -374,7 +374,7 @@ class ImportManager
 			return false;
 		}
 
-		$this->response->use_template = 'select_script';
+		$this->response->use_template = 'selectScript';
 		$this->response->params_template = array($scripts, $destination_names);
 
 		return true;
@@ -458,7 +458,7 @@ class ImportManager
 		//previously imported? we need to clean some variables ..
 		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
 
-		if ($this->_detect_scripts())
+		if ($this->detectScripts())
 			return true;
 
 		try
@@ -472,7 +472,7 @@ class ImportManager
 		}
 
 		$form = new Form($this->lng);
-		$this->_prepareStep0Form($form);
+		$this->prepareStep0Form($form);
 
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
@@ -485,7 +485,7 @@ class ImportManager
 		return;
 	}
 
-	protected function _prepareStep0Form($form)
+	protected function prepareStep0Form($form)
 	{
 		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1';
 

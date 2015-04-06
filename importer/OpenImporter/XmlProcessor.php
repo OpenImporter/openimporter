@@ -138,7 +138,7 @@ class XmlProcessor
 	 */
 	protected function doSql($substep, $special_table)
 	{
-		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
+		$current_data = rtrim(trim($this->fixParams((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
@@ -201,7 +201,7 @@ class XmlProcessor
 	protected function getPreparsecode()
 	{
 		if (!empty($this->current_step->preparsecode))
-			return $this->fix_params((string) $this->current_step->preparsecode);
+			return $this->fixParams((string) $this->current_step->preparsecode);
 		else
 			return null;
 	}
@@ -221,7 +221,7 @@ class XmlProcessor
 	 * @param string string in which parameters are replaced
 	 * @return string
 	 */
-	protected function fix_params($string)
+	protected function fixParams($string)
 	{
 		if (isset($_SESSION['import_parameters']))
 		{
@@ -244,7 +244,7 @@ class XmlProcessor
 	 */
 	public function getCurrent($table)
 	{
-		$count = $this->fix_params($table);
+		$count = $this->fixParams($table);
 		$request = $this->source_db->query("
 			SELECT COUNT(*)
 			FROM $count", true);
@@ -367,8 +367,8 @@ class XmlProcessor
 
 	protected function detect($table)
 	{
-		$table = $this->fix_params($table);
-		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fix_params($table));
+		$table = $this->fixParams($table);
+		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fixParams($table));
 
 		$db_name_str = $this->config->source->getDbName();
 

@@ -68,7 +68,7 @@ class VBulletin4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['signature'] = $this->replace_bbc($row['signature']);
+			$row['signature'] = $this->replaceBbc($row['signature']);
 
 			$rows[] = $row;
 		}
@@ -108,7 +108,7 @@ class VBulletin4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = $this->replace_bbc($row['body']);
+			$row['body'] = $this->replaceBbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -144,7 +144,7 @@ class VBulletin4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['body'] = $this->replace_bbc($row['body']);
+			$row['body'] = $this->replaceBbc($row['body']);
 
 			$rows[] = $row;
 		}
@@ -155,7 +155,7 @@ class VBulletin4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	/**
 	 * Utility functions
 	 */
-	protected function replace_bbc($content)
+	protected function replaceBbc($content)
 	{
 		$content = preg_replace(
 			array(

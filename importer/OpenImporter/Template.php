@@ -418,7 +418,7 @@ class Template
 	 *
 	 * @param array $scripts
 	 */
-	public function select_script($scripts, $destination_names)
+	public function selectScript($scripts, $destination_names)
 	{
 		echo '
 			<h2>', $this->lng->get('to_what'), '</h2>
@@ -610,7 +610,7 @@ class Template
 	 * @param int $value
 	 * @param int $max
 	 */
-	public function time_limit($bar, $value, $max)
+	public function timeLimit($bar, $value, $max)
 	{
 		if (!empty($bar))
 			echo '

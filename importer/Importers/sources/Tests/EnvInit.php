@@ -17,8 +17,8 @@ require_once(BASEDIR . '/Importers/sources/Tests/DummyConfig.php');
 require_once(BASEDIR . '/Importers/sources/Tests/CustomDb.php');
 
 @set_time_limit(600);
-@set_exception_handler(array('ImportException', 'exception_handler'));
-@set_error_handler(array('ImportException', 'error_handler_callback'), E_ALL);
+@set_exception_handler(array('ImportException', 'exceptionHandler'));
+@set_error_handler(array('ImportException', 'errorHandlerCallback'), E_ALL);
 
 // Clean up after unfriendly php.ini settings.
 if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, '5.3.0') < 0)

@@ -50,8 +50,8 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['signature'] = $this->fix_quotes($row['signature'], false);
-			$row['birthdate'] = $this->convert_birthdate($row['birthdate']);
+			$row['signature'] = $this->fixQuotes($row['signature'], false);
+			$row['birthdate'] = $this->convertBirthdate($row['birthdate']);
 
 			$rows[] = $row;
 		}
@@ -64,7 +64,7 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['description'] = $this->fix_quotes($row['description'], false);
+			$row['description'] = $this->fixQuotes($row['description'], false);
 
 			$rows[] = $row;
 		}
@@ -77,8 +77,8 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['subject'] = $this->fix_quotes($row['subject'], false);
-			$row['body'] = $this->fix_quotes($row['body'], true);
+			$row['subject'] = $this->fixQuotes($row['subject'], false);
+			$row['body'] = $this->fixQuotes($row['body'], true);
 
 			$rows[] = $row;
 		}
@@ -121,8 +121,8 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				'deleted_by_sender' => 0,
 				'from_name' => $row['from_name'],
 				'msgtime' => $row['msgtime'],
-				'subject' => $this->fix_quotes($row['subject'], false),
-				'body' => $this->fix_quotes($row['body'], true),
+				'subject' => $this->fixQuotes($row['subject'], false),
+				'body' => $this->fixQuotes($row['body'], true),
 			);
 		}
 
@@ -185,7 +185,7 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	/**
 	 * Utility functions
 	 */
-	protected function fix_quotes($string, $new_lines = true)
+	protected function fixQuotes($string, $new_lines = true)
 	{
 		if ($new_lines)
 			return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'));
@@ -193,7 +193,7 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			return htmlspecialchars($string);
 	}
 
-	protected function convert_birthdate($date)
+	protected function convertBirthdate($date)
 	{
 		$tmp_birthdate = explode('/', $date);
 		if (count($tmp_birthdate) == 3)

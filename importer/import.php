@@ -33,8 +33,8 @@ $loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers');
 $loader->register();
 
 @set_time_limit(600);
-@set_exception_handler(array('ImportException', 'exception_handler'));
-@set_error_handler(array('ImportException', 'error_handler_callback'), E_ALL);
+@set_exception_handler(array('ImportException', 'exceptionHandler'));
+@set_error_handler(array('ImportException', 'errorHandlerCallback'), E_ALL);
 
 error_reporting(E_ALL);
 ignore_user_abort(true);
@@ -65,7 +65,7 @@ try
 }
 catch (\Exception $e)
 {
-	ImportException::exception_handler($e);
+	ImportException::exceptionHandler($e);
 }
 
 $template = new Template($lng);
