@@ -101,12 +101,11 @@ class SMF1_1 extends \OpenImporter\Importers\AbstractSourceSmfImporter
 	{
 		foreach ($originalRows as $row)
 		{
-			$memberGroups = array_filter(explode(',', $row['memberGroups']));
+			$memberGroups = array_filter(explode(',', $row['member_groups']));
 			$groups = array();
 			foreach ($memberGroups as $group)
 				$groups[] = $this->mapBoardsGroups($group);
 
-			unset($row['memberGroups']);
 			$row['member_groups'] = implode(',', $groups);
 
 			$rows[] = $row;
