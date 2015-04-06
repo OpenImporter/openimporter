@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class PHPBoost3 extends \OpenImporter\Importers\AbstractSourceImporter
+class PHPBoost3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/kernel/db/config.php';
 

@@ -2,7 +2,7 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>MyBB 1.6</name>
-		<className>mybb16</className>
+		<className>MyBB1_6</className>
 	</general>
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>

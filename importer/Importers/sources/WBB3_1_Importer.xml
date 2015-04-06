@@ -8,7 +8,7 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>Woltlab Burning Board 3.1</name>
-		<className>wbb3_1</className>
+		<className>WBB3_1</className>
 		<form>
 			<field id="1" type="text" size="20" default="wcf1_" label="WCF table prefix">wcf_prefix</field>
 			<field id="2" type="text" size="20" default="wbb1_1_" label="WBB table prefix">wbb_prefix</field>

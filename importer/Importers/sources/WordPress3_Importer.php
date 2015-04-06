@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class WP3 extends \OpenImporter\Importers\AbstractSourceImporter
+class WordPress3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/wp-config.php';
 

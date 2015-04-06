@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class IPB3_4 extends \OpenImporter\Importers\AbstractSourceImporter
+class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/conf_global.php';
 

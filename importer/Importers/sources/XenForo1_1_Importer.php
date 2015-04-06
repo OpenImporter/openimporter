@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class XenForo1_1 extends \OpenImporter\Importers\AbstractSourceImporter
+class XenForo1_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/library/config.php';
 

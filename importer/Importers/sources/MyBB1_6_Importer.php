@@ -12,7 +12,7 @@ namespace OpenImporter\Importers\sources;
 /**
  * Settings for the MyBB 1.6 system.
  */
-class mybb16 extends \OpenImporter\Importers\AbstractSourceImporter
+class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/inc/config.php';
 

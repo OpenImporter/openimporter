@@ -5,7 +5,7 @@ I should also have written down *what* is broken...
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>UBB Threads 7.5.x</name>
-		<className>UBB_7_5</className>
+		<className>UBB7_5</className>
 	</general>
 	<step id="members" type="mandatory">
 		<title>Importing members</title>

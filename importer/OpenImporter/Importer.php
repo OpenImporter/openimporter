@@ -169,6 +169,8 @@ class Importer
 	{
 		$this->_loadSource($files['source']);
 		$this->_loadDestination($files['destination']);
+
+		$this->_loadSettings();
 	}
 
 	protected function _loadSource($file)
@@ -177,8 +179,8 @@ class Importer
 		$this->_preparse_xml($full_path);
 
 		// This is the helper class
-		$source_helper = str_replace('.xml', '.php', $full_path);
-		require_once($source_helper);
+// 		$source_helper = str_replace('.xml', '.php', $full_path);
+// 		require_once($source_helper);
 	}
 
 	protected function _loadDestination($file)
@@ -186,8 +188,6 @@ class Importer
 		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
 
 		$this->config->destination = new $this->_importer_base_class_name();
-
-		$this->_loadSettings();
 
 		$this->config->destination->setUtils($this->db, $this->config);
 	}
@@ -278,7 +278,7 @@ class Importer
 	 */
 	private function _loadSettings()
 	{
-		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className;
+		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className . '_Importer';
 		$this->config->source = new $class();
 
 		$this->config->source->setDefines();

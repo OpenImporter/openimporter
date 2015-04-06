@@ -321,7 +321,7 @@ class ImportManager
 
 			if ($key === 'source')
 			{
-				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_importer\.(xml|php)$~', $script) == 0)
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_Importer\.(xml|php)$~', $script) == 0)
 					return false;
 			}
 			else
@@ -392,7 +392,7 @@ class ImportManager
 
 		// Silence simplexml errors
 		libxml_use_internal_errors(true);
-		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_importer.xml') as $entry)
+		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml') as $entry)
 		{
 			// If a script is broken simply skip it.
 			if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))

@@ -8,7 +8,7 @@ database fromo here in this new configuration.
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>phpBB3</name>
-		<className>phpBB3</className>
+		<className>PhpBB3</className>
 	</general>
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>

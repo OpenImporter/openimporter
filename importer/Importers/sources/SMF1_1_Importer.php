@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class SMF1_1 extends \OpenImporter\Importers\AbstractSourceSmfImporter
+class SMF1_1_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
 	protected $smf_attach_folders = null;
 

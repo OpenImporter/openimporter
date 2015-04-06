@@ -7,7 +7,7 @@ Workaround needed.
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>Wordpress 3.x</name>
-		<className>WP3</className>
+		<className>WordPress3</className>
 		<form>
 			<field id="1" type="text" size="20" label="Wordpress database">wp_database</field>
 			<field id="2" type="text" size="10" default="wp_" label="Wordpress table prefix">wp_prefix</field>

@@ -12,7 +12,7 @@ namespace OpenImporter\Importers\sources;
 /**
  * Settings for the Viscacha system.
  */
-class Viscacha extends \OpenImporter\Importers\AbstractSourceImporter
+class Viscacha_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/data/config.inc.php';
 

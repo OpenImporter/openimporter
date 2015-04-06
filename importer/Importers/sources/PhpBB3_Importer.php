@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class phpBB3 extends \OpenImporter\Importers\AbstractSourceImporter
+class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/config.php';
 

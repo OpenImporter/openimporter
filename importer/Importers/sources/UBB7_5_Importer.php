@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class UBB_7_5 extends \OpenImporter\Importers\AbstractSourceImporter
+class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.inc.php';
 

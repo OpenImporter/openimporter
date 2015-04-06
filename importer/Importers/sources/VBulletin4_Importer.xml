@@ -2,7 +2,7 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>vBulletin 4</name>
-		<className>vBulletin_4</className>
+		<className>VBulletin4</className>
 	</general>
 	<step id="members" type="mandatory">
 		<title>Importing Members</title>

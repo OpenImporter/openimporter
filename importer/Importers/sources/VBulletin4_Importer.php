@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class vBulletin_4 extends \OpenImporter\Importers\AbstractSourceImporter
+class VBulletin4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.php';
 
