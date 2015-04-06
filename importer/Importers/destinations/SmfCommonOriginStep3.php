@@ -13,7 +13,7 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-namespace OpenImporter\Importers;
+namespace OpenImporter\Importers\destinations;
 
 abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 {

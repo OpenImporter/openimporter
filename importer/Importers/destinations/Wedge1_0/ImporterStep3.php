@@ -21,7 +21,7 @@ namespace OpenImporter\Importers\destinations\Wedge1_0;
 /**
  * Records the conversion
  */
-class ImporterStep3 extends \OpenImporter\Importers\SmfCommonOriginStep3
+class ImporterStep3 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep3
 {
 	public function run($import_script)
 	{

@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Importers;
+namespace OpenImporter\Importers\destinations;
 
 /**
  * The starting point for the first step of any importer.

@@ -21,7 +21,7 @@ namespace OpenImporter\Importers\destinations\Wedge1_0;
 /**
  * Recount statistics, and fixes stuff.
  */
-class ImporterStep2 extends \OpenImporter\Importers\SmfCommonOriginStep2
+class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep2
 {
 	public function substep0()
 	{

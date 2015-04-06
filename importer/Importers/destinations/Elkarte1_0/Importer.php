@@ -19,7 +19,7 @@ namespace OpenImporter\Importers\destinations\ElkArte1_0;
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
  */
-class Importer extends \OpenImporter\Importers\SmfCommonOrigin
+class Importer extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 {
 	public $attach_extension = 'elk';
 

@@ -15,6 +15,6 @@
 
 namespace OpenImporter\Importers\destinations\ElkArte1_0;
 
-class ImporterStep3 extends \OpenImporter\Importers\SmfCommonOriginStep3
+class ImporterStep3 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep3
 {
 }

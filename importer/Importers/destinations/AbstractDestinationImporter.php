@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Importers;
+namespace OpenImporter\Importers\destinations;
 
 /**
  * This abstract class is the base for any php destination file.

@@ -13,13 +13,13 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-namespace OpenImporter\Importers;
+namespace OpenImporter\Importers\destinations;
 
 /**
  * The class contains code that allows the Importer to obtain settings
  * from softwares that still have an SMF heritage.
  */
-abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinationImporter
+abstract class SmfCommonOrigin extends AbstractDestinationImporter
 {
 	public $attach_extension = '';
 

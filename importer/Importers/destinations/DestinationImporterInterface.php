@@ -7,7 +7,7 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Importers;
+namespace OpenImporter\Importers\destinations;
 
 /**
  * This is the interface that any Destination class should implement.
