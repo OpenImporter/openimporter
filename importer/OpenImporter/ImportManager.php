@@ -101,7 +101,7 @@ class ImportManager
 	 */
 	public function __construct($config, Importer $importer, $template, $cookie, $response)
 	{
-		Utils::setStart();
+		Utils::setStart($this);
 
 		$this->loadFromSession();
 
@@ -234,7 +234,7 @@ class ImportManager
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
 			call_user_func(array($this, 'doStep' . $_GET['step']));
 		else
-			call_user_func(array($this, 'doStep0'));
+			$this->doStep0();
 
 		$this->populateResponseDetails();
 
@@ -443,16 +443,10 @@ class ImportManager
 	 * collects all the important things, the importer can't do anything
 	 * without this information.
 	 *
-	 * @global object $import
-	 * @param string|null $error_message
-	 * @param object|null|false $object
 	 * @return boolean|null
 	 */
-	public function doStep0($error_message = null, $object = false)
+	public function doStep0()
 	{
-		global $import;
-
-		$import = isset($object) ? $object : false;
 		$this->cookie->destroy();
 		//previously imported? we need to clean some variables ..
 		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
