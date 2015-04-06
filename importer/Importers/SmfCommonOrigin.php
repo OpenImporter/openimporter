@@ -217,6 +217,164 @@ abstract class SmfCommonOrigin extends \OpenImporter\Importers\AbstractDestinati
 
 		return $this->attachmentUploadDirs;
 	}
+
+	/**
+	 * Until further notice these methods are for table detection
+	 */
+	public function tableMembers()
+	{
+		return '{$to_prefix}members';
+	}
+
+	public function tableAttachments()
+	{
+		return '{$to_prefix}attachments';
+	}
+
+	public function tableCategories()
+	{
+		return '{$to_prefix}categories';
+	}
+
+	public function tableCollapsedcats()
+	{
+		return '{$to_prefix}collapsed_categories';
+	}
+
+	public function tableBoards()
+	{
+		return '{$to_prefix}boards';
+	}
+
+	public function tableTopics()
+	{
+		return '{$to_prefix}topics';
+	}
+
+	public function tableMessages()
+	{
+		return '{$to_prefix}messages';
+	}
+
+	public function tablePolls()
+	{
+		return '{$to_prefix}polls';
+	}
+
+	public function tablePolloptions()
+	{
+		return '{$to_prefix}poll_choices';
+	}
+
+	public function tablePollvotes()
+	{
+		return '{$to_prefix}log_polls';
+	}
+
+	public function tablePm()
+	{
+		return '{$to_prefix}personal_messages';
+	}
+
+	public function tablePmrecipients()
+	{
+		return '{$to_prefix}pm_recipients';
+	}
+
+	public function tablePmrules()
+	{
+		return '{$to_prefix}pm_rules';
+	}
+
+	public function tableBoardmods()
+	{
+		return '{$to_prefix}moderators';
+	}
+
+	public function tableMarkreadboards()
+	{
+		return '{$to_prefix}log_boards';
+	}
+
+	public function tableMarkreadtopics()
+	{
+		return '{$to_prefix}log_topics';
+	}
+
+	public function tableMarkread()
+	{
+		return '{$to_prefix}log_mark_read';
+	}
+
+	public function tableNotifications()
+	{
+		return '{$to_prefix}log_notify';
+	}
+
+	public function tableMembergroups()
+	{
+		return '{$to_prefix}membergroups';
+	}
+
+	public function tableGroupdmods()
+	{
+		return '{$to_prefix}group_moderators';
+	}
+
+	public function tablePermissionprofiles()
+	{
+		return '{$to_prefix}permission_profiles';
+	}
+
+	public function tablePermissions()
+	{
+		return '{$to_prefix}permissions';
+	}
+
+	public function tablePermissionboards()
+	{
+		return '{$to_prefix}board_permissions';
+	}
+
+	public function tableSmiley()
+	{
+		return '{$to_prefix}smileys';
+	}
+
+	public function tableStatistics()
+	{
+		return '{$to_prefix}log_activity';
+	}
+
+	public function tableLogactions()
+	{
+		return '{$to_prefix}log_actions';
+	}
+
+	public function tableReports()
+	{
+		return '{$to_prefix}log_reported';
+	}
+
+	public function tableReportscomments()
+	{
+		return '{$to_prefix}log_reported_comments';
+	}
+
+	public function tableSpiderhits()
+	{
+		return '{$to_prefix}log_spider_hits';
+	}
+
+	public function tableSpiderstats()
+	{
+		return '{$to_prefix}log_spider_stats';
+	}
+
+	public function tablePaidsubscriptions()
+	{
+		return '{$to_prefix}subscriptions';
+	}
 }
 
 abstract class SmfCommonOriginStep1 extends Step1BaseImporter
