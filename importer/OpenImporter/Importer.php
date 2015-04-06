@@ -183,12 +183,7 @@ class Importer
 
 	protected function _loadDestination($file)
 	{
-// 		$full_path = $this->config->importers_dir . DS . 'destinations' . DS . $file . DS . 'Importer';
-		$class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
-
-// 		require_once($full_path);
-
-		$this->_importer_base_class_name = $class_name;
+		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
 
 		$this->config->destination = new $this->_importer_base_class_name();
 

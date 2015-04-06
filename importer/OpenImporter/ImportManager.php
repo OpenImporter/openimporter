@@ -346,7 +346,6 @@ class ImportManager
 		if ($this->config->script !== null)
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
-// 	print_dbg($this->config);
 		}
 		$destination_names = $this->findDestinations();
 
