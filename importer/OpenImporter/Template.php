@@ -684,7 +684,6 @@ class Template
 			switch ($option['type'])
 			{
 				case 'text':
-				{
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
@@ -692,9 +691,7 @@ class Template
 							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
 						</dd>';
 					break;
-				}
 				case 'checkbox':
-				{
 					echo '
 						<dt></dt>
 						<dd>
@@ -703,9 +700,7 @@ class Template
 							</label>
 						</dd>';
 					break;
-				}
 				case 'password':
-				{
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
@@ -713,9 +708,7 @@ class Template
 							<div style="font-style: italic; font-size: smaller">', $option['correct'], '</div>
 						</dd>';
 					break;
-				}
 				case 'steps':
-				{
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>';
@@ -726,7 +719,6 @@ class Template
 					echo '
 						</dd>';
 					break;
-				}
 			}
 		}
 

@@ -155,6 +155,8 @@ class Lang
 	 */
 	protected function detectBrowserLanguage()
 	{
+		$preferred = array();
+
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 		{
 			// break up string into pieces (languages and q factors)
@@ -177,8 +179,6 @@ class Lang
 				arsort($preferred, SORT_NUMERIC);
 			}
 		}
-		else
-			$preferred = array();
 
 		return array_keys($preferred);
 	}
