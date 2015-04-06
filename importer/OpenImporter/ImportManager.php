@@ -470,11 +470,6 @@ class ImportManager
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
 
-		if ($error_message !== null)
-		{
-			throw new StepException($this->template);
-		}
-
 		return;
 	}
 
