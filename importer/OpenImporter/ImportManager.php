@@ -313,13 +313,22 @@ class ImportManager
 	protected function validateScript($scripts)
 	{
 		$return = array();
+
 		foreach ((array) $scripts as $key => $script)
 		{
 			$script = preg_replace('~[\.]+~', '.', $script);
 			$key = preg_replace('~[\.]+~', '.', $key);
 
-			if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_importer\.(xml|php)$~', $script) == 0)
-				return false;
+			if ($key === 'source')
+			{
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_importer\.(xml|php)$~', $script) == 0)
+					return false;
+			}
+			else
+			{
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script . DS . 'Importer.php'))
+					return false;
+			}
 
 			$return[$key] = $script;
 		}
@@ -337,6 +346,7 @@ class ImportManager
 		if ($this->config->script !== null)
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
+// 	print_dbg($this->config);
 		}
 		$destination_names = $this->findDestinations();
 
@@ -414,13 +424,16 @@ class ImportManager
 	protected function findDestinations()
 	{
 		$destinations = array();
-		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*_importer.php') as $file)
+		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR) as $possible_dir)
 		{
-			require_once($file);
-			$file_name = basename($file);
-			$class_name = '\\OpenImporter\\Importers\\destinations\\' . strtr($file_name, array('.php' => '', '.' => '_'));
-			$obj = new $class_name();
-			$destinations[$file_name] = $obj->getName();
+			$namespace = basename($possible_dir);
+			$class_name = '\\OpenImporter\\Importers\\destinations\\' . $namespace . '\\Importer';
+
+			if (class_exists($class_name))
+			{
+				$obj = new $class_name();
+				$destinations[$namespace] = $obj->getName();
+			}
 		}
 
 		asort($destinations);

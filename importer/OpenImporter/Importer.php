@@ -183,11 +183,12 @@ class Importer
 
 	protected function _loadDestination($file)
 	{
-		$full_path = $this->config->importers_dir . DS . 'destinations' . DS . $file;
+// 		$full_path = $this->config->importers_dir . DS . 'destinations' . DS . $file . DS . 'Importer';
+		$class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
 
-		require_once($full_path);
+// 		require_once($full_path);
 
-		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . str_replace('.', '_', basename($file, '.php'));
+		$this->_importer_base_class_name = $class_name;
 
 		$this->config->destination = new $this->_importer_base_class_name();
 
@@ -524,7 +525,7 @@ class Importer
 	 */
 	public function doStep1($do_steps)
 	{
-		$step1_importer_class = $this->_importer_base_class_name . '_step1';
+		$step1_importer_class = $this->_importer_base_class_name . 'Step1';
 		$step1_importer = new $step1_importer_class($this->db, $this->config);
 
 		if ($this->xml->general->globals)
@@ -551,7 +552,7 @@ class Importer
 	 */
 	public function doStep2()
 	{
-		$step2_importer_class = $this->_importer_base_class_name . '_step2';
+		$step2_importer_class = $this->_importer_base_class_name . 'Step2';
 		$instance = new $step2_importer_class($this->db, $this->config);
 
 		$methods = get_class_methods($instance);
@@ -587,7 +588,7 @@ class Importer
 	 */
 	public function doStep3()
 	{
-		$step3_importer_class = $this->_importer_base_class_name . '_step3';
+		$step3_importer_class = $this->_importer_base_class_name . 'Step3';
 		$instance = new $step3_importer_class($this->db, $this->config);
 
 		$instance->run($this->lng->get(array('imported_from', $this->xml->general->name)));
