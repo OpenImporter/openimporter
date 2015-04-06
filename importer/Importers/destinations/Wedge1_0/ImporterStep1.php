@@ -18,6 +18,8 @@
 
 namespace OpenImporter\Importers\destinations\Wedge1_0;
 
+use OpenImporter\Core\Files;
+
 /**
  * Does the actual conversion.
  */
@@ -321,7 +323,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.ext';
 			$source = $row['full_path'] . '/' . $row['filename'];
 
-			copy_file($source, $destination);
+			Files::copy_file($source, $destination);
 			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}
@@ -410,7 +412,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$source = $row['full_path'] . '/' . $row['filename'];
 			$relative_path = str_replace($row['basedir'], '', $row['full_path']);
 
-			copy_file($source, $smileys_dir . '/' . $relative_path . '/' . $row['filename']);
+			Files::copy_file($source, $smileys_dir . '/' . $relative_path . '/' . $row['filename']);
 		}
 
 		return array();

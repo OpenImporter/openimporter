@@ -9,6 +9,8 @@
 
 namespace OpenImporter\Importers\sources;
 
+use OpenImporter\Core\Files;
+
 class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
 	protected $setting_file = '/Settings.php';
@@ -328,7 +330,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 
 		$avatar_gallery = array();
 		if (!empty($smf_avatarg) && file_exists($smf_avatarg))
-			$avatar_gallery = get_files_recursive($smf_avatarg);
+			$avatar_gallery = Files::get_files_recursive($smf_avatarg);
 
 		foreach ($avatar_gallery as $file)
 		{
@@ -351,7 +353,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 
 		$avatar_custom = array();
 		if (!empty($smf_avatarg) && file_exists($smf_avatarg))
-			$avatar_custom = get_files_recursive($smf_avatarg);
+			$avatar_custom = Files::get_files_recursive($smf_avatarg);
 
 		foreach ($avatar_custom as $file)
 		{
@@ -386,7 +388,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		{
 			$smf_smileys_dir = str_replace('\\', '/', $smf_smileys_dir);
 			$smiley = array();
-			$files = get_files_recursive($smf_smileys_dir);
+			$files = Files::get_files_recursive($smf_smileys_dir);
 			foreach ($files as $file)
 			{
 				$file = str_replace('\\', '/', $file);

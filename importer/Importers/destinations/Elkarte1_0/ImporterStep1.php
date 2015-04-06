@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Importers\destinations\ElkArte1_0;
 
+use OpenImporter\Core\Files;
+
 class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep1
 {
 
@@ -328,7 +330,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			if (empty($row['id_attach']))
 				$row['id_attach'] = $id_attach;
 
-			copy_file($source, $destination);
+			Files::copy_file($source, $destination);
 			unset($row['full_path']);
 			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
@@ -368,7 +370,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$source = $row['full_path'] . '/' . $row['filename'];
 			$relative_path = str_replace($row['basedir'], '', $row['full_path']);
 
-			copy_file($source, $smileys_dir . '/' . $relative_path . '/' . $row['filename']);
+			Files::copy_file($source, $smileys_dir . '/' . $relative_path . '/' . $row['filename']);
 		}
 
 		return array();

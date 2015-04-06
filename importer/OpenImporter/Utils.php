@@ -44,83 +44,6 @@ function pastTime($substep = null, $stop_time = 5)
 }
 
 /**
- * helper function, simple file copy at all
- * @todo consider using:
- *    http://symfony.com/components/Filesystem
- *    http://symfony.com/components/Finder
- *
- * @param string $source
- * @param string $destination
- * @return boolean
- */
-function copy_file($source, $destination)
-{
-	create_folders_recursive(dirname($destination));
-
-	if (is_file($source))
-	{
-		copy($source, $destination);
-		return false;
-	}
-	return true;
-}
-
-function copy_dir_recursive($source, $destination)
-{
-	$source = rtrim($source, '\\/') . DIRECTORY_SEPARATOR;
-	$destination = rtrim($destination, '\\/') . DIRECTORY_SEPARATOR;
-	if (!file_exists($source))
-		return;
-	$dir = opendir($source);
-	create_folders_recursive($destination);
-	while ($file = readdir($dir))
-	{
-		if ($file == '.' || $file == '..')
-			continue;
-
-		if (is_dir($source . $file))
-			copy_dir_recursive($source . $file, $destination . $file);
-		else
-			copy($source . $file, $destination . $file);
-	}
-}
-
-function get_files_recursive($base)
-{
-	$files = array();
-	$base = rtrim($base, '\\/') . DIRECTORY_SEPARATOR;
-
-	if (!file_exists($base))
-		return false;
-
-	$dir = opendir($base);
-
-	while ($file = readdir($dir))
-	{
-		if ($file == '.' || $file == '..')
-			continue;
-
-		if (is_dir($base . $file))
-			$files = array_merge($files, get_files_recursive($base . $file));
-		else
-			$files[] = $base . $file;
-	}
-
-	return $files;
-}
-
-function create_folders_recursive($path)
-{
-	$parent = dirname($path);
-
-	if (!file_exists($parent))
-		create_folders_recursive($parent);
-
-	if (!file_exists($path))
-		@mkdir($path, 0755);
-}
-
-/**
  * // Add slashes recursively...
  *
  * @param array $var
@@ -157,39 +80,6 @@ function stripslashes_recursive($var, $level = 0)
 		$new_var[stripslashes($k)] = $level > 25 ? null : stripslashes_recursive($v, $level + 1);
 
 	return $new_var;
-}
-
-/**
- * function copy_dir copies a directory
- * @param string $source
- * @param string $dest
- * @return type
- */
-function copy_dir($source, $dest)
-{
-	if (!is_dir($source) || !($dir = opendir($source)))
-		return;
-
-	while ($file = readdir($dir))
-	{
-		if ($file == '.' || $file == '..')
-			continue;
-
-			// If we have a directory create it on the destination and copy contents into it!
-		if (is_dir($source . DIRECTORY_SEPARATOR. $file))
-		{
-			if (!is_dir($dest))
-				@mkdir($dest, 0755);
-			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-		}
-		else
-		{
-			if (!is_dir($dest))
-				@mkdir($dest, 0755);
-			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-		}
-	}
-	closedir($dir);
 }
 
 /**

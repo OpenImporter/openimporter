@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Importers\destinations;
 
+use OpenImporter\Core\Files;
+
 abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 {
 	protected $beforeOnce = array();
@@ -101,7 +103,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 		// Prepare the directory structure
 		foreach ($dest_folders as $folder)
-			create_folders_recursive($folder);
+			Files::create_folders_recursive($folder);
 
 		// Save the new structure in the database
 		$this->db->query("
@@ -191,7 +193,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			if (!empty($elk_avatarg))
 			{
 				$destination = str_replace($row['basedir'], $elk_avatarg, $row['basedir'] . '/' . $row['filename']);
-				copy_file($row['basedir'] . '/' . $row['filename'], $destination);
+				Files::copy_file($row['basedir'] . '/' . $row['filename'], $destination);
 			}
 			return false;
 		}
@@ -235,7 +237,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			);
 		}
 
-		copy_file($source, $destination);
+		Files::copy_file($source, $destination);
 
 		return $return;
 	}
