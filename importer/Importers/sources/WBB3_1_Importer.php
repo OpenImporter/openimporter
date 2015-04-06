@@ -83,10 +83,13 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fixUserGroupId($id_group)
 	{
+		// @todo I'm not sure this goes to global.
+		// in any case it should be converted in to a property of config->source
+		global $wcf_prefix;
+
 		$request = $this->db->query("
 			SELECT groupID
-			FROM {$this->config->from_prefix}{$wcf_prefix}user_to_groups
-			WHERE userID = $row[id_member]");
+			FROM {$this->config->from_prefix}{$wcf_prefix}user_to_groups");
 
 		while ($groups = $this->db->fetch_assoc($request))
 		{
@@ -153,14 +156,14 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$request = $db->query("
+			$request = $this->db->query("
 				SELECT
 					pollID
 				FROM {$this->config->from_prefix}{$wbb_prefix}post
 				WHERE threadID = $row[id_topic] AND pollID > 0
 				GROUP BY threadID");
 
-			list ($pollID) = $db->fetch_row($request);
+			list ($pollID) = $this->db->fetch_row($request);
 			$this->db->free_result($request);
 			if ($pollID > 0)
 				$row['id_poll'] = $pollID;
@@ -218,7 +221,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	/**
 	 * Utility functions
 	 */
-	function replaceBbc($message)
+	public function replaceBbc($message)
 	{
 		$message = preg_replace(
 			array(
