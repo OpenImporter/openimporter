@@ -10,7 +10,7 @@ members:
   query:
     - id_member: 0             # Id of the member (unsigned int)
     - member_name: ''           # The name the members use to log int (varchar-255)
-    - date_registered: '0001-01-01'       # Date at which the account was created (yyyy-mm-dd)
+    - date_registered: '0001-01-01 23:59:59'       # Date at which the account was created (yyyy-mm-dd)
     - posts: 0                 # Number of posts (int)
     - id_group: 0              # Id of the primary or the most important membergroup (int)
     - language              # Language the member is using (format TBD)
