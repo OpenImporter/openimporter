@@ -171,7 +171,7 @@ class Importer
 		$this->loadSource($files['source']);
 		$this->loadDestination($files['destination']);
 
-		$this->loadSettings();
+		$this->prepareSettings();
 	}
 
 	protected function loadSource($file)
@@ -273,7 +273,7 @@ class Importer
 	 * @throws \Exception
 	 * @return boolean|null
 	 */
-	private function loadSettings()
+	private function prepareSettings()
 	{
 		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className . '_Importer';
 		$this->config->source = new $class();
