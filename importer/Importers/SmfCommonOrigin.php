@@ -784,7 +784,8 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		$request = $this->db->query("
 			SELECT id_group
 			FROM {$to_prefix}membergroups
-			WHERE min_posts = -1");
+			WHERE min_posts = -1
+				AND id_group != 2");
 
 		$all_groups = array();
 		while ($row = $this->db->fetch_assoc($request))
