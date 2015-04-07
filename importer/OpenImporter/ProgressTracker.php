@@ -31,7 +31,6 @@ class ProgressTracker
 	 * Checks if we've passed a time limit..
 	 *
 	 * @param int|null $substep
-	 * @param int $stop_time
 	 * @return null
 	 */
 	public function pastTime($substep = null)
