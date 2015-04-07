@@ -10,8 +10,6 @@
 namespace OpenImporter\Core;
 
 use OpenImporter\Core\Form;
-use OpenImporter\Core\StepException;
-use OpenImporter\Core\Utils;
 
 /**
  * Object ImportManager loads the main importer.

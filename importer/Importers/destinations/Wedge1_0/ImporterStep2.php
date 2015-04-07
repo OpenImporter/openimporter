@@ -18,8 +18,6 @@
 
 namespace OpenImporter\Importers\destinations\Wedge1_0;
 
-use OpenImporter\Core\Utils;
-
 /**
  * Recount statistics, and fixes stuff.
  */

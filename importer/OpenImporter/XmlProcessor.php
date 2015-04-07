@@ -16,7 +16,6 @@
 namespace OpenImporter\Core;
 
 use OpenImporter\Core\Strings;
-use OpenImporter\Core\Utils;
 
 /**
  * Object Importer creates the main XML object.

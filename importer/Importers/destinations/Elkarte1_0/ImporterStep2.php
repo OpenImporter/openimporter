@@ -15,8 +15,6 @@
 
 namespace OpenImporter\Importers\destinations\ElkArte1_0;
 
-use OpenImporter\Core\Utils;
-
 class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep2
 {
 	public function substep0()

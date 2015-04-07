@@ -19,7 +19,6 @@ use Symfony\Component\Yaml\Parser;
 use OpenImporter\Core\Database;
 use OpenImporter\Core\XmlProcessor;
 use OpenImporter\Core\ImportException;
-use OpenImporter\Core\Utils;
 
 /**
  * Object Importer creates the main XML object.

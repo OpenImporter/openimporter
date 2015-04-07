@@ -15,8 +15,6 @@
 
 namespace OpenImporter\Importers\destinations;
 
-Use OpenImporter\Core\Utils;
-
 abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
