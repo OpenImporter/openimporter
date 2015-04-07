@@ -16,6 +16,7 @@ namespace OpenImporter\Core;
  *
  * @property string $lang_dir
  * @property string $importers_dir
+ * @property OpenImporter\Core\Configurator $progress
  */
 class Configurator
 {
