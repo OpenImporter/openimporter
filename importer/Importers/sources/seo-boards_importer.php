@@ -73,12 +73,8 @@ class SEO_Boards1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 	 */
 	public function codeSettings()
 	{
-		$request = $this->db->query("
-			SELECT variable, value
-			FROM {$this->config->from_prefix}settings;");
-
 		$rows = array(array(
-			'variable' => $row['shaprefix'],
+			'variable' => 'shaprefix',
 			'value' => $this->fetchSetting('shaprefix'),
 		));
 
