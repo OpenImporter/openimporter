@@ -294,7 +294,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 
 			// @todo this should not deal with $_REQUEST and alike
 			$_REQUEST['start'] += 200;
-			Utils::pastTime(6);
+			$this->config->progress->pastTime(6);
 		}
 	}
 
@@ -337,7 +337,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 
 			// @todo this should not deal with $_REQUEST and alike
 			$_REQUEST['start'] += 100;
-			Utils::pastTime(7);
+			$this->config->progress->pastTime(7);
 		}
 	}
 
@@ -566,7 +566,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			// More?
 			// We can't keep importing the same files over and over again!
 			$_REQUEST['start'] += 500;
-			Utils::pastTime(11);
+			$this->config->progress->pastTime(11);
 		}
 	}
 

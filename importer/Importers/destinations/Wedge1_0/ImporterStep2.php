@@ -42,7 +42,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 
@@ -60,7 +60,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -119,7 +119,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$this->db->alter_table("{$this->config->to_prefix}topics", $index_info);
 
 		$_REQUEST['start'] = 0;
-		Utils::pastTime(13);
+		$this->config->progress->pastTime(13);
 	}
 
 	public function substep13()
@@ -181,6 +181,6 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$this->db->alter_table("{$this->config->to_prefix}messages", $index_info);
 
 		$_REQUEST['start'] = 0;
-		Utils::pastTime(14);
+		$this->config->progress->pastTime(14);
 	}
 }

@@ -567,7 +567,7 @@ class Importer
 			}
 
 			$substep++;
-			Utils::pastTime($substep);
+			$this->config->progress->pastTime($substep);
 		}
 
 		return $key;

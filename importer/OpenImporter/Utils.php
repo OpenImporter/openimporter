@@ -17,43 +17,6 @@ namespace OpenImporter\Core;
 
 class Utils
 {
-	protected $time_start = 0;
-	protected $import = null;
-
-	public static function setStart($import)
-	{
-		self::$time_start = time();
-		self::$import = $import;
-	}
-
-	/**
-	 * Checks if we've passed a time limit..
-	 *
-	 * @param int|null $substep
-	 * @param int $stop_time
-	 * @return null
-	 */
-	public static function pastTime($substep = null, $stop_time = 5)
-	{
-		if (isset($_GET['substep']) && $_GET['substep'] < $substep)
-			$_GET['substep'] = $substep;
-
-		// some details for our progress bar
-		if (isset(self::$import->count->$substep) && self::$import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
-			$bar = round($_REQUEST['start'] / self::$import->count->$substep * 100, 0);
-		else
-			$bar = false;
-
-		@set_time_limit(300);
-		if (is_callable('apache_reset_timeout'))
-			apache_reset_timeout();
-
-		if (time() - self::$time_start < $stop_time)
-			return;
-
-		Throw new PasttimeException(self::$import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
-	}
-
 	/**
 	 * @todo apparently unused
 	 *

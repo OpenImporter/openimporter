@@ -101,8 +101,6 @@ class ImportManager
 	 */
 	public function __construct($config, Importer $importer, $template, $cookie, $response)
 	{
-		Utils::setStart($this);
-
 		$this->loadFromSession();
 
 		$this->config = $config;

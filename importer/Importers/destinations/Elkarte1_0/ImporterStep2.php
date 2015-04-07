@@ -38,7 +38,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 
@@ -56,7 +56,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -78,7 +78,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_topic = $row[id_topic]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -99,7 +99,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_poster]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 	}
@@ -120,7 +120,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 				WHERE id_member = $row[id_member]
 				LIMIT 1");
 
-			Utils::pastTime(0);
+			$this->config->progress->pastTime(0);
 		}
 		$this->db->free_result($request);
 	}

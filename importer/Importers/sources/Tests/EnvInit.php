@@ -16,7 +16,6 @@ require_once(BASEDIR . '/Importers/sources/Tests/DummyDb.php');
 require_once(BASEDIR . '/Importers/sources/Tests/DummyConfig.php');
 require_once(BASEDIR . '/Importers/sources/Tests/CustomDb.php');
 
-@set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exceptionHandler'));
 @set_error_handler(array('ImportException', 'errorHandlerCallback'), E_ALL);
 

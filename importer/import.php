@@ -19,6 +19,7 @@ use OpenImporter\Core\ResponseHeader;
 use OpenImporter\Core\ImportManager;
 use OpenImporter\Core\ImportException;
 use OpenImporter\Core\PasttimeException;
+use OpenImporter\Core\ProgressTracker;
 
 define('BASEDIR', __DIR__);
 // A shortcut
@@ -33,7 +34,6 @@ $loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');
 $loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers');
 $loader->register();
 
-@set_time_limit(600);
 @set_exception_handler(array('ImportException', 'exceptionHandler'));
 @set_error_handler(array('ImportException', 'errorHandlerCallback'), E_ALL);
 
@@ -58,6 +58,7 @@ if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 $OI_configurator = new Configurator();
 $OI_configurator->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
 $OI_configurator->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
+$OI_configurator->progress = new ProgressTracker();
 
 try
 {

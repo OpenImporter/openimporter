@@ -150,7 +150,7 @@ class XmlProcessor
 
 		while (true)
 		{
-			Utils::pastTime($substep);
+			$this->config->progress->pastTime($substep);
 
 			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
@@ -270,7 +270,7 @@ class XmlProcessor
 		$table_test = true;
 
 		// Increase the substep slightly...
-		Utils::pastTime(++$substep);
+		$this->config->progress->pastTime(++$substep);
 
 		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
 		if (!isset($_SESSION['import_steps'][$substep]['status']))
@@ -320,10 +320,8 @@ class XmlProcessor
 	 */
 	protected function doDetect($substep)
 	{
-		global $import;
-
-		if (isset($this->current_step->detect) && isset($import->count))
-			$import->count->$substep = $this->detect((string) $this->current_step->detect);
+		if (isset($this->current_step->detect))
+			$this->config->progress->count[$substep] = $this->detect((string) $this->current_step->detect);
 	}
 
 	protected function doCode()
