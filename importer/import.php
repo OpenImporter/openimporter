@@ -72,8 +72,6 @@ catch (\Exception $e)
 
 $template = new Template($lng);
 
-global $import;
-
 try
 {
 	$importer = new Importer($OI_configurator, $lng, $template);
@@ -82,6 +80,8 @@ try
 	$template->setResponse($response);
 
 	$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
+
+	ImportException::setImportManager($import);
 
 	$import->process();
 }
