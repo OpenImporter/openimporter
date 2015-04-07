@@ -67,6 +67,25 @@ class SEO_Boards1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 	}
 
 	/**
+	 * $shaprefix is necessary in order to perform the login.
+	 * Because passwords are stored in the db as:
+	 *   sha1($shaprefix . $pass)
+	 */
+	public function codeSettings()
+	{
+		$request = $this->db->query("
+			SELECT variable, value
+			FROM {$this->config->from_prefix}settings;");
+
+		$rows = array(array(
+			'variable' => $row['shaprefix'],
+			'value' => $this->fetchSetting('shaprefix'),
+		));
+
+		return $rows;
+	}
+
+	/**
 	 * From here on, all the methods are needed helper for the conversion
 	 */
 	public function preparseMembers($originalRows)

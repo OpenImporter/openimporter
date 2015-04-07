@@ -4,10 +4,10 @@
 		<name>SEO-Boards 1.1</name>
 		<className>SEO_Boards1_1</className>
 	</general>
-<!--	<step id="settings">
+	<step id="settings">
 		<title>Importing settings</title>
 		<detect>{$from_prefix}settings</detect>
-	</step>-->
+	</step>
 	<step id="members" type="mandatory">
 		<title>Importing members</title>
 		<detect>{$from_prefix}users</detect>
