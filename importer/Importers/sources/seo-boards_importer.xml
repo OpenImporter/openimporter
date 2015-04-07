@@ -96,6 +96,7 @@
 				forum_name AS name,
 				forum_desc AS description,
 				forum_order AS board_order,
+				'0,-1' AS member_groups,
 				forum_numreplies AS num_posts,
 				forum_numtopics AS num_topics,
 				forum_parent AS id_parent
