@@ -25,9 +25,7 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getDbPrefix()
 	{
-		global $db_prefix;
-
-		return '`' . $this->getDbName() . '`.' . $db_prefix;
+		return $this->fetchSetting('TABLE_PREFIX');
 	}
 
 	public function dbConnectionData()
