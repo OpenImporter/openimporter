@@ -70,7 +70,7 @@
 	</step>
 	<step id="messages">
 		<title>Importing Messages</title>
-		<detect> {$from_prefix}posts</detect>
+		<detect>{$from_prefix}posts</detect>
 		<options>
 			<limit>100</limit>
 		</options>
