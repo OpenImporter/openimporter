@@ -47,10 +47,17 @@ class PHPBoost3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		if (empty($GLOBALS['sql_host']))
-			include($this->path . $this->setting_file);
+		$content = $this->readSettingsFile();
 
-		return $GLOBALS[$name];
+		if ($name == 'PREFIX')
+			$pattern = '~define\(\'PREFIX\'\s*,\s*\'(.*?)\'\);~';
+		else
+			$pattern = '~\$' . $name . '\s*=\s*"(.*?)";~';
+
+		$match = array();
+		preg_match($pattern, $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getDbName()

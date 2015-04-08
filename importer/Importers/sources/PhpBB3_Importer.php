@@ -72,10 +72,12 @@ class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		if (empty($GLOBALS['dbms']))
-			include($this->path . $this->setting_file);
+		$content = $this->readSettingsFile();
 
-		return $GLOBALS[$name];
+		$match = array();
+		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getTableTest()
