@@ -255,7 +255,7 @@ class ImportManager
 
 		if (isset($_GET['path_to']))
 		{
-			$this->response->valid = $this->config->destination->checkSettingsPath($_GET['path_to']);
+			$this->response->valid = $this->config->destination->testPath($_GET['path_to']);
 		}
 		elseif (isset($_GET['path_from']))
 		{

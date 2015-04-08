@@ -29,9 +29,9 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 	
 	public $scriptname = null;
 
-	public function checkSettingsPath($path)
+	public function testPath($path)
 	{
-		$found = file_exists($path . '/Settings.php');
+		$found = file_exists($path . $this->setting_file);
 
 		if ($found && $this->path === null)
 			$this->path = $path;
@@ -42,7 +42,7 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 	public function getDestinationURL($path)
 	{
 		// Cannot find Settings.php?
-		if (!$this->checkSettingsPath($path))
+		if (!$this->testPath($path))
 			return false;
 
 		// Everything should be alright now... no cross server includes, we hope...
@@ -56,7 +56,7 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 			'label' => array('path_to', $scriptname),
 			'type' => 'text',
 			'default' => htmlspecialchars($path_to),
-			'correct' => $this->checkSettingsPath($path_to) ? 'right_path' : 'change_path',
+			'correct' => $this->testPath($path_to) ? 'right_path' : 'change_path',
 			'validate' => true,
 		);
 	}
@@ -105,10 +105,7 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 
 	protected function fetchSetting($name)
 	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . '/Settings.php');
+		$content = $this->readSettingsFile();
 
 		$match = array();
 		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);

@@ -28,5 +28,5 @@ interface DestinationImporterInterface
 
 	public function getDbPrefix();
 
-	public function checkSettingsPath($path);
+	public function testPath($path);
 }

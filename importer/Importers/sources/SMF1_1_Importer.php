@@ -11,6 +11,8 @@ namespace OpenImporter\Importers\sources;
 
 class SMF1_1_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
+	protected $setting_file = '/Settings.php';
+
 	protected $smf_attach_folders = null;
 
 	public function getName()
@@ -21,19 +23,6 @@ class SMF1_1_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 	public function getVersion()
 	{
 		return '1.0';
-	}
-
-	protected function fetchSetting($name)
-	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . '/Settings.php');
-
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
-
-		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getAttachmentDirs()

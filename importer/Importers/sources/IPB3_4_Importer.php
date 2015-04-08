@@ -69,10 +69,7 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . '/conf_global.php');
+		$content = $this->readSettingsFile();
 
 		$match = array();
 		preg_match('~\$INFO\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);

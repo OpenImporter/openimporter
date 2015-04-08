@@ -43,7 +43,7 @@ abstract class AbstractDestinationImporter implements DestinationImporterInterfa
 
 	abstract public function getDbPrefix();
 
-	public function checkSettingsPath($path)
+	public function testPath($path)
 	{
 		$found = file_exists($path . $this->setting_file);
 

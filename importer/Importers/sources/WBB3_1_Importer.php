@@ -79,7 +79,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$this->userOptions = array();
 		$request = $this->db->query("
 			SELECT optionName, optionID
-			FROM{$this->config->from_prefix}{$wcf_prefix}user_option");
+			FROM {$this->config->from_prefix}{$wcf_prefix}user_option");
 
 		while ($wbbOpt = $this->db->fetch_assoc($request))
 			$this->userOptions[$wbbOpt['optionName']]= $wbbOpt['optionID'];

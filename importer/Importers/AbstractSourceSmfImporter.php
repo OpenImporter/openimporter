@@ -61,10 +61,7 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 
 	protected function fetchSetting($name)
 	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . $this->setting_file);
+		$content = $this->readSettingsFile();
 
 		$match = array();
 		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);

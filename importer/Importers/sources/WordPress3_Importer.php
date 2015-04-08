@@ -44,10 +44,7 @@ class WordPress3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . $this->setting_file);
+		$content = $this->readSettingsFile();
 
 		if ($name == 'table_prefix')
 			$pattern = '\$table_prefix\s*=\*\'(.*?)\';';
