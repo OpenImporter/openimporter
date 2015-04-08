@@ -54,6 +54,7 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 		// @todo this should be detected from the XML?
 		$this->utils['importer'] = new MyBB1_6_Importer();
 		$this->utils['importer']->setUtils($this->utils['db'], new DummyConfig());
+		date_default_timezone_set('America/Los_Angeles');
 	}
 
 	protected function stepQueryTester($step)
@@ -91,6 +92,25 @@ class CustomDbValues extends CustomDb
 		$this->config = new DummyConfig();
 
 		$this->queries = array(
+			md5('
+			SELECT
+				uid AS id_member, SUBSTRING(username, 1, 255) AS member_name,
+				SUBSTRING(username, 1, 255) AS real_name, email AS email_address,
+				SUBSTRING(password, 1, 64) AS passwd, SUBSTRING(salt, 1, 8) AS password_salt,
+				postnum AS posts, SUBSTRING(usertitle, 1, 255) AS usertitle,
+				lastvisit AS last_login, IF(usergroup = 4, 1, 0) AS id_group,
+				regdate AS date_registered, SUBSTRING(website, 1, 255) AS website_url,
+				SUBSTRING(website, 1, 255) AS website_title, \'\' AS message_labels,
+				SUBSTRING(signature, 1, 65534) AS signature, hideemail AS hide_email,
+				SUBSTRING(buddylist, 1, 255) AS buddy_list, \'\' AS ignore_boards,
+				SUBSTRING(regip, 1, 255) AS member_ip, SUBSTRING(regip, 1, 255) AS member_ip2,
+				SUBSTRING(ignorelist, 1, 255) AS pm_ignore_list, avatar,
+				timeonline AS total_time_logged_in, birthday AS birthdate, avatartype
+			FROM {$from_prefix}users;
+		') => array(array(
+				'date_registered' => 12345678,
+				'birthdate' => '',
+			)),
 			md5("
 					SELECT value
 					FROM {$this->config->from_prefix}settings
