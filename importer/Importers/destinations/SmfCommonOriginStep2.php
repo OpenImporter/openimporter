@@ -476,7 +476,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 				INSERT INTO {$to_prefix}categories
 					(name)
 				VALUES ('General Category')");
-			$catch_cat = mysqli_insert_id($this->db->con);
+			$catch_cat = $this->db->insert_id();
 
 			$this->setBoardProperty(0, array('id_cat' => (int) $catch_cat), "id_cat IN (" . implode(', ', array_unique($fix_cats)) . ")");
 		}
