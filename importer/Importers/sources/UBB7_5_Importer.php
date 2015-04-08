@@ -46,17 +46,17 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		if (empty($GLOBALS['config']))
-			include($this->path . $this->setting_file);
+		$content = $this->readSettingsFile();
 
-		return $GLOBALS['config'][$name];
+		$match = array();
+		preg_match('~\s*\'' . $name . '\'\s*=>\s*\'(.*?)\',', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getDbName()
 	{
-		global $db_name;
-
-		return $db_name;
+		return $this->fetchSetting('DATABASE_NAME');
 	}
 
 	public function getTableTest()
