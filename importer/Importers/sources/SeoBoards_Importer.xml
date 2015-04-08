@@ -2,7 +2,7 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>SEO-Boards 1.1</name>
-		<className>SEO_Boards1_1</className>
+		<className>SeoBoards1_1</className>
 	</general>
 	<step id="settings">
 		<title>Importing settings</title>
