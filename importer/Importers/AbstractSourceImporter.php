@@ -68,7 +68,7 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 
 	protected function testPath($path)
 	{
-		$found = @file_exists($path . $this->setting_file);
+		$found = file_exists($path . $this->setting_file);
 
 		if ($found)
 			$this->path = $path;

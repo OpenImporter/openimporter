@@ -51,6 +51,6 @@ class ProgressTracker
 		if (time() - $this->start_time < $this->stop_time)
 			return;
 
-		Throw new PasttimeException(self::$import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
+		throw new PasttimeException(self::$import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
 	}
 }
