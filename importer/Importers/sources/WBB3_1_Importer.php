@@ -56,6 +56,15 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		return $this->fetchSetting('dbName');
 	}
 
+	public function getWcfPrefix()
+	{
+		// @todo I'm not sure this goes to global.
+		// in any case it should be converted in to a property of config->source
+		global $wcf_prefix;
+
+		return $wcf_prefix;
+	}
+
 	public function getTableTest()
 	{
 		return 'user';
@@ -63,13 +72,10 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchUserOptions()
 	{
-		// @todo I'm not sure this goes to global.
-		// in any case it should be converted in to a property of config->source
-		global $wcf_prefix;
-
 		if (!empty($this->userOptions))
 			return;
 
+		$wcf_prefix = $this->getWcfPrefix();
 		$this->userOptions = array();
 		$request = $this->db->query("
 			SELECT optionName, optionID
@@ -83,9 +89,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fixUserGroupId($id_group)
 	{
-		// @todo I'm not sure this goes to global.
-		// in any case it should be converted in to a property of config->source
-		global $wcf_prefix;
+		$wcf_prefix = $this->getWcfPrefix();
 
 		$request = $this->db->query("
 			SELECT groupID
@@ -110,9 +114,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	 */
 	public function preparseMembers($originalRows)
 	{
-		// @todo I'm not sure this goes to global.
-		// in any case it should be converted in to a property of config->source
-		global $wcf_prefix;
+		$wcf_prefix = $this->getWcfPrefix();
 
 		$this->fetchUserOptions();
 		$rows = array();
