@@ -15,15 +15,6 @@ namespace OpenImporter\Core;
 class Cookie
 {
 	/**
-	 * Constructor
-	 * @return boolean
-	 */
-	public function __construct()
-	{
-		return true;
-	}
-
-	/**
 	 * set a cookie
 	 * @param mixed[] $data
 	 * @param string $name

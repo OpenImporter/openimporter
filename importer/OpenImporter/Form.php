@@ -55,7 +55,6 @@ class Form
 		switch ($field['type'])
 		{
 			case 'text':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -65,9 +64,7 @@ class Form
 					'type' => 'text',
 				);
 				break;
-			}
 			case 'password':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -75,9 +72,7 @@ class Form
 					'type' => 'password',
 				);
 				break;
-			}
 			case 'steps':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -85,9 +80,7 @@ class Form
 					'type' => 'steps',
 				);
 				break;
-			}
 			default:
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -95,7 +88,6 @@ class Form
 					'attributes' => $field['checked'] == 'checked' ? ' checked="checked"' : '',
 					'type' => 'checkbox',
 				);
-			}
 		}
 	}
 

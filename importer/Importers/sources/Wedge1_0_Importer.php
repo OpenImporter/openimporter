@@ -7,76 +7,110 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Importers;
+namespace OpenImporter\Importers\sources;
 
 use OpenImporter\Core\Files;
 
-/**
- * This abstract class is the base for any php importer file.
- *
- * It provides some common necessary methods and some default properties
- * so that Importer can do its job without having to test for existinance
- * of methods every two/three lines of code.
- */
-abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\AbstractSourceImporter
+class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
 	protected $setting_file = '/Settings.php';
 
-	public function getDbPrefix()
+	protected $wedge_attach_folders = null;
+
+	public function getName()
 	{
-		return $this->fetchSetting('db_prefix');
+		return 'Wedge1_0';
+	}
+
+	public function getVersion()
+	{
+		return '1.0';
 	}
 
 	public function setDefines()
 	{
-		define('SMF', 1);
+		define('WEDGE', 1);
 	}
 
-	public function dbConnectionData()
-	{
-		if ($this->path === null)
-			return false;
-
-		return array(
-			'dbname' => $this->fetchSetting('db_name'),
-			'user' => $this->fetchSetting('db_user'),
-			'password' => $this->fetchSetting('db_passwd'),
-			'host' => $this->fetchSetting('db_server'),
-			'driver' => $this->fetchDriver(),
-		);
-	}
-
+	/**
+	 * @override Wedge supports only MySQL
+	 */
 	protected function fetchDriver()
 	{
-		$type = $this->fetchSetting('db_type');
-		$drivers = array(
-			'mysql' => 'pdo_mysql',
-			'mysqli' => 'pdo_mysql',
-			'postgresql' => 'pdo_pgsql',
-			'sqlite' => 'pdo_sqlite',
-		);
-
-		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
+		return 'pdo_mysql';
 	}
 
-	protected function fetchSetting($name)
+	public function getAttachmentDirs()
 	{
-		$content = $this->readSettingsFile();
+		if ($this->wedge_attach_folders === null)
+		{
+			$request = $this->db->query("
+				SELECT value
+				FROM {$this->config->from_prefix}settings
+				WHERE variable='attachmentUploadDir';");
+			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
+			$this->wedge_attach_folders = @unserialize($smf_attachments_dir);
 
-		return isset($match[1]) ? $match[1] : '';
+			if (!is_array($this->wedge_attach_folders))
+				$this->wedge_attach_folders = array(1 => $smf_attachments_dir);
+		}
+
+		return $this->wedge_attach_folders;
 	}
 
-	public function getDbName()
+	public function getAttachDir($row)
 	{
-		return $this->fetchSetting('db_name');
+		if ($this->wedge_attach_folders === null)
+			$this->getAttachmentDirs();
+
+		if (!empty($row['id_folder']) && !empty($this->wedge_attach_folders[$row['id_folder']]))
+			return $this->wedge_attach_folders[$row['id_folder']];
+		else
+			return $this->wedge_attach_folders[1];
 	}
 
-	public function getTableTest()
+	/**
+	 * From here on, all the methods are needed helper for the conversion
+	 */
+	public function preparseMembers($originalRows)
 	{
-		return 'members';
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$data = @unserialize($row['data']);
+			unset($row['data']);
+
+			$row['message_labels'] = !empty($data['pmlabs']) ? $data['pmlabs'] : '';
+			if (!empty($data['secret']))
+			{
+				$question = explode('|', $data['secret']);
+				$row['secret_question'] = $question[0];
+				$row['secret_answer'] = $question[1];
+			}
+			else
+			{
+				$row['secret_question'] = '';
+				$row['secret_answer'] = '';
+			}
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseAttachments($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['full_path'] = $this->getAttachDir($row);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 
 	protected function mapBoardsGroups($group)
@@ -94,7 +128,6 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 	public function preparseBoards($originalRows)
 	{
 		$rows = array();
-
 		foreach ($originalRows as $row)
 		{
 			$memberGroups = array_filter(explode(',', $row['member_groups']));
@@ -112,7 +145,7 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 
 	public function codeSettings()
 	{
-		// @todo this list looks broken (I don't remember any enablePinnedTopics in SMF 1.1)
+		// @todo this list comes from the SMF 1.1 importer, to review
 		$do_import = array(
 			'news',
 			'compactTopicPagesContiguous',

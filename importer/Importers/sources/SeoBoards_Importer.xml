@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+	<general>
+		<name>SEO-Boards 1.1</name>
+		<className>SeoBoards1_1</className>
+	</general>
+	<step id="settings">
+		<title>Importing settings</title>
+		<detect>{$from_prefix}settings</detect>
+	</step>
+	<step id="members" type="mandatory">
+		<title>Importing members</title>
+		<detect>{$from_prefix}users</detect>
+		<query>
+			SELECT
+				u.user_id AS id_member,
+				u.user_name AS member_name,
+				u.user_regdate AS date_registered,
+				u.user_numposts AS posts,
+				0 AS id_group,
+				'' AS language,
+				u.user_lastsession AS last_login,
+				u.user_name AS real_name,
+				0 AS unread_messages,
+				0 AS new_pm,
+				'' AS buddy_list,
+				'' AS pm_ignore_list,
+				'' AS pm_prefs,
+				'' AS mod_prefs,
+				'' AS message_labels,
+				u.user_pass AS passwd,
+				u.user_email AS email_address,
+				u.user_bio AS personal_text,
+				'' AS gender,
+				'0001-01-01' AS birthdate,
+				'' AS website_url,
+				'' AS website_title,
+				'' AS location,
+				u.user_email_public AS hide_email,
+				u.user_allowviewonline AS show_online,
+				'' AS time_format,
+				u.user_signature AS signature,
+				u.user_timezone AS time_offset,
+				u.user_avatar AS avatar,
+				1 AS pm_email_notify,
+				'' AS usertitle,
+				1 AS notify_announcements,
+				1 AS notify_regularity,
+				0 AS notify_send_body,
+				2 AS notify_types,
+				'127.0.0.1' AS member_ip,
+				'127.0.0.1' AS member_ip2,
+				'' AS secret_question,
+				'' AS secret_answer,
+				1 AS id_theme,
+				1 AS is_activated,
+				user_banned,
+				'' AS validation_code,
+				0 AS id_msg_last_visit,
+				'0' AS additional_groups,
+				'' AS smiley_set,
+				0 AS id_post_group,
+				0 AS total_time_logged_in,
+				'' AS password_salt,
+				'' AS ignore_boards,
+				0 AS warning,
+				0 AS passwd_flood,
+				'' AS pm_receive_from,
+				'' as avatartype
+			FROM {$from_prefix}users AS u;
+		</query>
+	</step>
+<!--	<step id="avatars">
+		<title>Importing avatars</title>
+	</step>-->
+	<step id="categories">
+		<title>Importing categories</title>
+		<detect>{$from_prefix}forums</detect>
+		<query>
+			SELECT
+				forum_id AS id_cat,
+				forum_name AS name,
+				forum_order AS cat_order,
+				0 AS can_collapse
+			FROM {$from_prefix}forums
+			WHERE forum_parent = 0;
+		</query>
+	</step>
+	<step id="boards">
+		<title>Importing boards</title>
+		<detect>{$from_prefix}forums</detect>
+		<query>
+			SELECT
+				forum_id AS id_board,
+				1 AS id_cat,
+				forum_name AS name,
+				forum_desc AS description,
+				forum_order AS board_order,
+				'0,-1' AS member_groups,
+				forum_numreplies AS num_posts,
+				forum_numtopics AS num_topics,
+				forum_parent AS id_parent
+			FROM {$from_prefix}forums
+			WHERE forum_parent != 0;
+		</query>
+	</step>
+	<step id="topics">
+		<title>Importing topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<query>
+			SELECT
+				t.topic_id AS id_topic,
+				t.topic_sticky AS is_sticky,
+				t.forum_id AS id_board,
+				MIN(p1.post_id) AS id_first_msg,
+				MAX(p2.post_id) AS id_last_msg,
+				t.topic_poster_id AS id_member_started,
+				t.topic_lastposter_id AS id_member_updated,
+				0 AS id_poll,
+				0 AS id_previous_board,
+				0 AS id_previous_topic,
+				t.topic_numreplies AS num_replies,
+				t.topic_numviews AS num_views,
+				t.topic_locked AS locked,
+				0 AS unapproved_posts,
+				1 AS approved
+			FROM ({$from_prefix}topics AS t,
+				{$from_prefix}posts AS p1,
+				{$from_prefix}posts AS p2)
+			WHERE p1.topic_id = t.topic_id AND p2.topic_id = t.topic_id
+			GROUP BY t.topic_id
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0
+		</query>
+	</step>
+	<step id="messages">
+		<title>Importing messages</title>
+		<detect>{$from_prefix}posts</detect>
+		<options>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				p.post_id AS id_msg,
+				p.topic_id AS id_topic,
+				t.forum_id AS id_board,
+				p.post_time AS poster_time,
+				p.post_author_id AS id_member,
+				p.post_id AS id_msg_modified,
+				p.post_text_status,
+				t.topic_title AS subject,
+				IFNULL(u.user_name, p.post_author) AS poster_name,
+				IFNULL(u.user_email, 'guest@localhost.com') AS poster_email,
+				p.post_author_ip AS poster_ip,
+				IFNULL(p.post_edited_time, 0) AS modified_time,
+				IFNULL(p.post_edited_by, '') AS modified_name,
+				p.post_text AS body,
+				'' AS icon,
+				1 AS approved
+			FROM {$from_prefix}posts AS p
+				LEFT JOIN {$from_prefix}topics AS t ON (p.topic_id = t.topic_id)
+				LEFT JOIN {$from_prefix}users AS u ON (p.post_author_id = u.user_id)
+		</query>
+	</step>
+</importer>

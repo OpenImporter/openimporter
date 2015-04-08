@@ -10,7 +10,6 @@
 namespace OpenImporter\Core;
 
 use OpenImporter\Core\Form;
-use OpenImporter\Core\StepException;
 
 /**
  * Object ImportManager loads the main importer.
@@ -100,10 +99,6 @@ class ImportManager
 	 */
 	public function __construct($config, Importer $importer, $template, $cookie, $response)
 	{
-		global $time_start;
-
-		$time_start = time();
-
 		$this->loadFromSession();
 
 		$this->config = $config;
@@ -114,7 +109,7 @@ class ImportManager
 		$this->lng = $importer->lng;
 		$this->response->lng = $importer->lng;
 
-		$this->_findScript();
+		$this->findScript();
 
 		// The current step - starts at 0.
 		$this->response->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
@@ -186,7 +181,7 @@ class ImportManager
 	/**
 	 * Finds the script either in the session or in request
 	 */
-	protected function _findScript()
+	protected function findScript()
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_POST['destination']) && isset($_POST['source']))
@@ -235,7 +230,7 @@ class ImportManager
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
 			call_user_func(array($this, 'doStep' . $_GET['step']));
 		else
-			call_user_func(array($this, 'doStep0'));
+			$this->doStep0();
 
 		$this->populateResponseDetails();
 
@@ -247,7 +242,7 @@ class ImportManager
 
 	protected function validateFields()
 	{
-		$this->_detect_scripts();
+		$this->detectScripts();
 
 		try
 		{
@@ -260,7 +255,7 @@ class ImportManager
 
 		if (isset($_GET['path_to']))
 		{
-			$this->response->valid = $this->config->destination->checkSettingsPath($_GET['path_to']);
+			$this->response->valid = $this->config->destination->testPath($_GET['path_to']);
 		}
 		elseif (isset($_GET['path_from']))
 		{
@@ -313,13 +308,22 @@ class ImportManager
 	protected function validateScript($scripts)
 	{
 		$return = array();
+
 		foreach ((array) $scripts as $key => $script)
 		{
 			$script = preg_replace('~[\.]+~', '.', $script);
 			$key = preg_replace('~[\.]+~', '.', $key);
 
-			if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_importer\.(xml|php)$~', $script) == 0)
-				return false;
+			if ($key === 'source')
+			{
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_Importer\.(xml|php)$~', $script) == 0)
+					return false;
+			}
+			else
+			{
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script . DS . 'Importer.php'))
+					return false;
+			}
 
 			$return[$key] = $script;
 		}
@@ -332,7 +336,7 @@ class ImportManager
 	 * - checks the file system for importer definition files
 	 * @return boolean
 	 */
-	private function _detect_scripts()
+	private function detectScripts()
 	{
 		if ($this->config->script !== null)
 		{
@@ -365,7 +369,7 @@ class ImportManager
 			return false;
 		}
 
-		$this->response->use_template = 'select_script';
+		$this->response->use_template = 'selectScript';
 		$this->response->params_template = array($scripts, $destination_names);
 
 		return true;
@@ -383,7 +387,7 @@ class ImportManager
 
 		// Silence simplexml errors
 		libxml_use_internal_errors(true);
-		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_importer.xml') as $entry)
+		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml') as $entry)
 		{
 			// If a script is broken simply skip it.
 			if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
@@ -414,13 +418,16 @@ class ImportManager
 	protected function findDestinations()
 	{
 		$destinations = array();
-		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*_importer.php') as $file)
+		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR) as $possible_dir)
 		{
-			require_once($file);
-			$file_name = basename($file);
-			$class_name = '\\OpenImporter\\Importers\\destinations\\' . strtr($file_name, array('.php' => '', '.' => '_'));
-			$obj = new $class_name();
-			$destinations[$file_name] = $obj->getName();
+			$namespace = basename($possible_dir);
+			$class_name = '\\OpenImporter\\Importers\\destinations\\' . $namespace . '\\Importer';
+
+			if (class_exists($class_name))
+			{
+				$obj = new $class_name();
+				$destinations[$namespace] = $obj->getName();
+			}
 		}
 
 		asort($destinations);
@@ -432,21 +439,15 @@ class ImportManager
 	 * collects all the important things, the importer can't do anything
 	 * without this information.
 	 *
-	 * @global object $import
-	 * @param string|null $error_message
-	 * @param object|null|false $object
 	 * @return boolean|null
 	 */
-	public function doStep0($error_message = null, $object = false)
+	public function doStep0()
 	{
-		global $import;
-
-		$import = isset($object) ? $object : false;
 		$this->cookie->destroy();
 		//previously imported? we need to clean some variables ..
 		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
 
-		if ($this->_detect_scripts())
+		if ($this->detectScripts())
 			return true;
 
 		try
@@ -460,20 +461,15 @@ class ImportManager
 		}
 
 		$form = new Form($this->lng);
-		$this->_prepareStep0Form($form);
+		$this->prepareStep0Form($form);
 
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
 
-		if ($error_message !== null)
-		{
-			throw new StepException($this->template);
-		}
-
 		return;
 	}
 
-	protected function _prepareStep0Form($form)
+	protected function prepareStep0Form($form)
 	{
 		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1';
 

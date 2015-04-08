@@ -17,12 +17,19 @@ use OpenImporter\Core\Template;
  */
 class ImportException extends \Exception
 {
+	protected static $import = null;
+
 	public function doExit($template = null)
 	{
-		self::exception_handler($this, $template);
+		self::exceptionHandler($this, $template);
 	}
 
-	public static function error_handler_callback($code, $string, $file, $line)
+	public static function setImportManager(ImportManager $import)
+	{
+		self::$import = $import;
+	}
+
+	public static function errorHandlerCallback($code, $string, $file, $line)
 	{
 		if (error_reporting() == 0)
 			return;
@@ -36,17 +43,15 @@ class ImportException extends \Exception
 	/**
 	 * @param \Exception $exception
 	 */
-	public static function exception_handler($exception, $template = null)
+	public static function exceptionHandler($exception, $template = null)
 	{
-		global $import;
-
 		if (error_reporting() == 0)
 			return;
 
 		if ($template === null)
 		{
-			if (!empty($import))
-				$template = $import->template;
+			if (!empty(self::$import))
+				$template = self::$import->template;
 			else
 				$template = new Template(null);
 		}

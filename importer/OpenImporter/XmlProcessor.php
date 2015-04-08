@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\Strings;
+
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
@@ -138,7 +140,7 @@ class XmlProcessor
 	 */
 	protected function doSql($substep, $special_table)
 	{
-		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
+		$current_data = rtrim(trim($this->fixParams((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
 
 		$this->doDetect($substep);
@@ -147,7 +149,7 @@ class XmlProcessor
 
 		while (true)
 		{
-			pastTime($substep);
+			$this->config->progress->pastTime($substep);
 
 			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
@@ -192,7 +194,7 @@ class XmlProcessor
 		foreach ($rows as $row)
 		{
 			if (empty($ignore_slashes))
-				$row = addslashes_recursive($row);
+				$row = Strings::addslashes_recursive($row);
 
 			$this->db->insert($special_table, $row, $insert_statement);
 		}
@@ -201,7 +203,7 @@ class XmlProcessor
 	protected function getPreparsecode()
 	{
 		if (!empty($this->current_step->preparsecode))
-			return $this->fix_params((string) $this->current_step->preparsecode);
+			return $this->fixParams((string) $this->current_step->preparsecode);
 		else
 			return null;
 	}
@@ -221,7 +223,7 @@ class XmlProcessor
 	 * @param string string in which parameters are replaced
 	 * @return string
 	 */
-	protected function fix_params($string)
+	protected function fixParams($string)
 	{
 		if (isset($_SESSION['import_parameters']))
 		{
@@ -244,7 +246,7 @@ class XmlProcessor
 	 */
 	public function getCurrent($table)
 	{
-		$count = $this->fix_params($table);
+		$count = $this->fixParams($table);
 		$request = $this->source_db->query("
 			SELECT COUNT(*)
 			FROM $count", true);
@@ -267,7 +269,7 @@ class XmlProcessor
 		$table_test = true;
 
 		// Increase the substep slightly...
-		pastTime(++$substep);
+		$this->config->progress->pastTime(++$substep);
 
 		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
 		if (!isset($_SESSION['import_steps'][$substep]['status']))
@@ -317,10 +319,8 @@ class XmlProcessor
 	 */
 	protected function doDetect($substep)
 	{
-		global $import;
-
-		if (isset($this->current_step->detect) && isset($import->count))
-			$import->count->$substep = $this->detect((string) $this->current_step->detect);
+		if (isset($this->current_step->detect))
+			$this->config->progress->count[$substep] = $this->detect((string) $this->current_step->detect);
 	}
 
 	protected function doCode()
@@ -367,8 +367,8 @@ class XmlProcessor
 
 	protected function detect($table)
 	{
-		$table = $this->fix_params($table);
-		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fix_params($table));
+		$table = $this->fixParams($table);
+		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fixParams($table));
 
 		$db_name_str = $this->config->source->getDbName();
 

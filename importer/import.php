@@ -13,11 +13,13 @@ use OpenImporter\Core\Lang;
 use OpenImporter\Core\Cookie;
 use OpenImporter\Core\Template;
 use OpenImporter\Core\Importer;
+use OpenImporter\Core\Strings;
 use OpenImporter\Core\HttpResponse;
 use OpenImporter\Core\ResponseHeader;
 use OpenImporter\Core\ImportManager;
 use OpenImporter\Core\ImportException;
 use OpenImporter\Core\PasttimeException;
+use OpenImporter\Core\ProgressTracker;
 
 define('BASEDIR', __DIR__);
 // A shortcut
@@ -32,9 +34,8 @@ $loader->addPrefix('OpenImporter\\Core\\', BASEDIR . '/OpenImporter');
 $loader->addPrefix('OpenImporter\\Importers\\', BASEDIR . '/Importers');
 $loader->register();
 
-@set_time_limit(600);
-@set_exception_handler(array('ImportException', 'exception_handler'));
-@set_error_handler(array('ImportException', 'error_handler_callback'), E_ALL);
+@set_exception_handler(array('ImportException', 'exceptionHandler'));
+@set_error_handler(array('ImportException', 'errorHandlerCallback'), E_ALL);
 
 error_reporting(E_ALL);
 ignore_user_abort(true);
@@ -52,11 +53,12 @@ if (@ini_get('session.save_handler') == 'user')
 
 // Add slashes, as long as they aren't already being added.
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
-	$_POST = stripslashes_recursive($_POST);
+	$_POST = Strings::stripslashes_recursive($_POST);
 
 $OI_configurator = new Configurator();
 $OI_configurator->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
 $OI_configurator->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
+$OI_configurator->progress = new ProgressTracker();
 
 try
 {
@@ -65,12 +67,10 @@ try
 }
 catch (\Exception $e)
 {
-	ImportException::exception_handler($e);
+	ImportException::exceptionHandler($e);
 }
 
 $template = new Template($lng);
-
-global $import;
 
 try
 {
@@ -80,6 +80,8 @@ try
 	$template->setResponse($response);
 
 	$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
+
+	ImportException::setImportManager($import);
 
 	$import->process();
 }

@@ -66,9 +66,19 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 			return false;
 	}
 
+	protected function readSettingsFile()
+	{
+		static $content = null;
+
+		if ($content === null)
+			$content = file_get_contents($this->path . $this->setting_file);
+
+		return $content;
+	}
+
 	protected function testPath($path)
 	{
-		$found = @file_exists($path . $this->setting_file);
+		$found = file_exists($path . $this->setting_file);
 
 		if ($found)
 			$this->path = $path;
