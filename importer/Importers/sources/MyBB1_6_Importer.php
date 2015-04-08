@@ -65,13 +65,12 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
+		$content = $this->readSettingsFile();
 
-		if (empty($config))
-			include($this->path . $this->setting_file);
+		$match = array();
+		preg_match('~\$config\[\'database\'\]\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);
 
-		return $config['database'][$name];
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getTableTest()
@@ -87,6 +86,7 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
+			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
 			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
 				$row['birthdate'] = '0001-01-01';
 

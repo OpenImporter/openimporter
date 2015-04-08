@@ -222,6 +222,16 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		return array();
 	}
 
+	public function preparseCategories($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['can_collapse'] = (int) $row['can_collapse'];
+		}
+		return $rows;
+	}
+
 	public function preparseMembers($originalRows)
 	{
 		$rows = array();
@@ -235,6 +245,10 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$row['receive_from'] = (int) $row['pm_receive_from'];
 			$row['pm_prefs'] = (int) $row['pm_prefs'];
 			$row['time_offset'] = (int) $row['time_offset'];
+			$row['notify_regularity'] = (int) $row['notify_regularity'];
+			$row['notify_send_body'] = (int) $row['notify_send_body'];
+			$row['notify_types'] = (int) $row['notify_types'];
+			$row['warning'] = (int) $row['warning'];
 
 			if (!isset($row['openid_uri']))
 				$row['openid_uri'] = '';
@@ -305,6 +319,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$row['override_theme'] = (int) $row['override_theme'];
 			$row['unapproved_posts'] = (int) $row['unapproved_posts'];
 			$row['unapproved_topics'] = (int) $row['unapproved_topics'];
+			$row['id_parent'] = (int) $row['id_parent'];
 
 			if (empty($row['id_profile']))
 				$row['id_profile'] = 1;

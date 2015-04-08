@@ -52,4 +52,14 @@ abstract class AbstractDestinationImporter implements DestinationImporterInterfa
 
 		return $found;
 	}
+
+	protected function readSettingsFile()
+	{
+		static $content = null;
+
+		if ($content === null)
+			$content = file_get_contents($this->path . $this->setting_file);
+
+		return $content;
+	}
 }

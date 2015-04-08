@@ -280,7 +280,7 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 			$row['additional_groups'] = $this->additionalGroups($row['additional_groups']);
 
-			$row['date_registered'] = date('Y-m-d', $row['date_registered']);
+			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
 
 			// @todo verify
 			if ($this->is_disabled == $row['id_group'])

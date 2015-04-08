@@ -29,6 +29,8 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 	
 	public $scriptname = null;
 
+	protected $setting_file = '/Settings.php';
+
 	public function testPath($path)
 	{
 		$found = file_exists($path . $this->setting_file);
