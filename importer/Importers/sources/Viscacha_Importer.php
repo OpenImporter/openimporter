@@ -57,13 +57,12 @@ class Viscacha_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected function fetchSetting($name)
 	{
-		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
+		$content = $this->readSettingsFile();
 
-		if (empty($config))
-			include($this->path . $this->setting_file);
+		$match = array();
+		preg_match('~\$config\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);
 
-		return $config[$name];
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getTableTest()
