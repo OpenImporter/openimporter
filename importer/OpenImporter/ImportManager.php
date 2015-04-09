@@ -244,14 +244,7 @@ class ImportManager
 	{
 		$this->detectScripts();
 
-		try
-		{
-			$this->importer->reloadImporter();
-		}
-		catch(\Exception $e)
-		{
-			// Do nothing, let the code die
-		}
+		$this->importer->reloadImporter();
 
 		if (isset($_GET['path_to']))
 		{
@@ -357,15 +350,9 @@ class ImportManager
 			$this->data['import_script'] = basename($scripts[0]['path']);
 			if (substr($this->data['import_script'], -4) == '.xml')
 			{
-				try
-				{
-					$this->importer->reloadImporter();
-				}
-				catch (Exception $e)
-				{
-					$this->data['import_script'] = null;
-				}
+				$this->importer->reloadImporter();
 			}
+
 			return false;
 		}
 

@@ -161,8 +161,16 @@ class Importer
 
 	public function reloadImporter()
 	{
-		if (!empty($this->config->script))
-			$this->loadImporter($this->config->script);
+		try
+		{
+			if (!empty($this->config->script))
+				$this->loadImporter($this->config->script);
+		}
+		catch(\Exception $e)
+		{
+			// @todo is that right?
+			// Do nothing, let the code continue
+		}
 	}
 
 	protected function loadImporter($files)
