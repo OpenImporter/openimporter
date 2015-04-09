@@ -536,8 +536,6 @@ class Importer
 	 */
 	public function doStep1($do_steps)
 	{
-		$step1_importer_class = $this->_importer_base_class_name . 'Step1';
-		$step1_importer = new $step1_importer_class($this->db, $this->config);
 
 		if ($this->xml->general->globals)
 			foreach (explode(',', $this->xml->general->globals) as $global)
@@ -549,7 +547,7 @@ class Importer
 		$this->skeleton = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
 		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
-		$xmlParser->setImporter($step1_importer);
+		$xmlParser->setImporter($this->stepInstance('Step1'));
 		$xmlParser->setSkeleton($this->skeleton);
 
 		foreach ($this->xml->step as $step)
@@ -574,6 +572,14 @@ class Importer
 
 			$_REQUEST['start'] = 0;
 		}
+	}
+
+	protected function stepInstance($step)
+	{
+		$step1_importer_class = $this->_importer_base_class_name . $step;
+		$step1_importer = new $step1_importer_class($this->db, $this->config);
+
+		return $step1_importer;
 	}
 
 	protected function advanceSubstep($substep)
@@ -621,8 +627,7 @@ class Importer
 	 */
 	public function doStep2()
 	{
-		$step2_importer_class = $this->_importer_base_class_name . 'Step2';
-		$instance = new $step2_importer_class($this->db, $this->config);
+		$instance = $this->stepInstance('Step2')
 
 		$methods = get_class_methods($instance);
 		$substeps = array();
@@ -657,8 +662,7 @@ class Importer
 	 */
 	public function doStep3()
 	{
-		$step3_importer_class = $this->_importer_base_class_name . 'Step3';
-		$instance = new $step3_importer_class($this->db, $this->config);
+		$instance = $this->stepInstance('Step3')
 
 		$instance->run($this->lng->get(array('imported_from', $this->xml->general->name)));
 	}
