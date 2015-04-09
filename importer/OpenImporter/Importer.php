@@ -377,7 +377,7 @@ class Importer
 		$this->config->from_prefix = $this->setupPrefix($DestConnectionParams['dbname'], $this->config->source->getDbPrefix());
 	}
 
-	protected setupDbConnection($connectionParams, $fallbackParams = null)
+	protected function setupDbConnection($connectionParams, $fallbackParams = null)
 	{
 		try
 		{
