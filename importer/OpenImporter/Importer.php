@@ -370,53 +370,65 @@ class Importer
 		$DestConnectionParams = $this->config->destination->dbConnectionData();
 		$db_prefix = $this->config->destination->getDbPrefix();
 
-		$this->db = new Database($DestConnectionParams);
-		//We want UTF8 only, let's set our mysql connetction to utf8
-		$this->db->query('SET NAMES \'utf8\'');
+		$this->db = $this->setupDbConnection($DestConnectionParams);
+		$this->config->to_prefix = $this->setupPrefix($DestConnectionParams['dbname'], $db_prefix);
+
+		$this->source_db = $this->setupDbConnection($this->config->source->dbConnectionData(), $DestConnectionParams);
+		$this->config->from_prefix = $this->setupPrefix($DestConnectionParams['dbname'], $this->config->source->getDbPrefix());
+	}
+
+	protected setupDbConnection($connectionParams, $fallbackParams = null)
+	{
+		try
+		{
+			$db = new Database($DestConnectionParams);
+			//We want UTF8 only, let's set our mysql connetction to utf8
+			$db->query('SET NAMES \'utf8\'');
+
+			// SQL_BIG_SELECTS: If set to 0, MySQL aborts SELECT statements that are
+			// likely to take a very long time to execute (that is, statements for
+			// which the optimizer estimates that the number of examined rows exceeds
+			// the value of max_join_size)
+			// Source:
+			// https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_sql_big_selects
+			$db->query("SET @@SQL_BIG_SELECTS = 1");
+			$db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
+		}
+		catch(\Exception $e)
+		{
+			if ($fallbackParams === null)
+			{
+				throw $e;
+			}
+			else
+			{
+				return $this->setupDbConnection($fallbackParams);
+			}
+		}
+
+		return $db;
+	}
+
+	protected function setupPrefix($db_name, $db_prefix)
+	{
+		$prefix = $db_prefix;
 
 		if (strpos($db_prefix, '.') === false)
 		{
 			// @todo ???
 			if (is_numeric(substr($db_prefix, 0, 1)))
-				$this->config->to_prefix = $DestConnectionParams['dbname'] . '.' . $db_prefix;
+				$prefix = $db_name . '.' . $db_prefix;
 			else
-				$this->config->to_prefix = '`' . $DestConnectionParams['dbname'] . '`.' . $db_prefix;
+				$prefix = '`' . $db_name . '`.' . $db_prefix;
 		}
-		else
+
+		// @todo again ???
+		if (preg_match('~^`[^`]+`.\d~', $prefix) != 0)
 		{
-			$this->config->to_prefix = $db_prefix;
+			$prefix = strtr($prefix, array('`' => ''));
 		}
 
-		try
-		{
-			$SourceConnectionParams = $this->config->source->dbConnectionData();
-			$this->config->from_prefix = $this->config->source->getDbPrefix();
-
-			$this->source_db = new Database($SourceConnectionParams);
-			//We want UTF8 only, let's set our mysql connetction to utf8
-			$this->source_db->query('SET NAMES \'utf8\'');
-		}
-		catch(Exception $e)
-		{
-			$SourceConnectionParams['user'] = $DestConnectionParams['user'];
-			$SourceConnectionParams['password'] = $DestConnectionParams['password'];
-
-			$this->source_db = new Database($SourceConnectionParams);
-		}
-
-		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
-		{
-			$this->config->from_prefix = strtr($this->config->from_prefix, array('`' => ''));
-		}
-
-		// SQL_BIG_SELECTS: If set to 0, MySQL aborts SELECT statements that are
-		// likely to take a very long time to execute (that is, statements for
-		// which the optimizer estimates that the number of examined rows exceeds
-		// the value of max_join_size)
-		// Source:
-		// https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_sql_big_selects
-		$this->db->query("SET @@SQL_BIG_SELECTS = 1");
-		$this->db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
+		return $prefix;
 	}
 
 	protected function initFormData()
