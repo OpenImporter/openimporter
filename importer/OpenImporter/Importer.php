@@ -203,10 +203,10 @@ class Importer
 	 */
 	protected function preparseXml($file)
 	{
-		if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
-			throw new ImportException('XML-Syntax error in file: ' . $file);
-
 		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
+
+		if (!$this->xml)
+			throw new ImportException('XML-Syntax error in file: ' . $file);
 	}
 
 	public function populateFormFields(Form $form)
