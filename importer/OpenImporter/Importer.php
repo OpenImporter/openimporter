@@ -381,7 +381,7 @@ class Importer
 	{
 		try
 		{
-			$db = new Database($DestConnectionParams);
+			$db = new Database($connectionParams);
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$db->query('SET NAMES \'utf8\'');
 
