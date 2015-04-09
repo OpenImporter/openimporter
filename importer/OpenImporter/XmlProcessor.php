@@ -110,7 +110,6 @@ class XmlProcessor
 		// pre sql queries first!!
 		$this->doPresqlStep($id, $substep);
 
-		$special_table = $this->getStepTable($id);
 		$from_code = $this->doCode();
 
 		// Codeblock? Then no query.
@@ -126,7 +125,7 @@ class XmlProcessor
 			// @todo $_GET
 			if ($substep >= $_GET['substep'] && isset($this->current_step->query))
 			{
-				return $this->doSql($substep, $special_table);
+				return $this->doSql();
 			}
 		}
 	}
@@ -136,12 +135,12 @@ class XmlProcessor
 		return strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
 	}
 
-	public function processDestination($id, &$substep, $rows)
+	public function processDestination($id, $rows)
 	{
 		return $this->step1_importer->callMethod('preparse' . $id, $rows);
 	}
 
-	protected function doSql($substep, $special_table)
+	protected function doSql()
 	{
 		$current_data = rtrim(trim($this->fixParams((string) $this->current_step->query)), ';');
 		$id = ucFirst($this->current_step['id']);
@@ -314,8 +313,10 @@ class XmlProcessor
 			return true;
 	}
 
-	public function insertRows($rows, $special_table)
+	public function insertRows($rows)
 	{
+		$special_table = $this->getStepTable($this->current_step['id']);
+
 		if (empty($rows) || empty($special_table))
 			return;
 

@@ -534,11 +534,8 @@ class Importer
 
 		foreach ($this->xml->step as $step)
 		{
-			$this->current_step = $step;
-			$special_table = $xmlParser->getStepTable($step['id']);
-
-			if (isset($this->current_step->detect))
-				$this->config->progress->count[$substep] = $xmlParser->detect((string) $this->current_step->detect);
+			if (isset($step->detect))
+				$this->config->progress->count[$substep] = $xmlParser->detect((string) $step->detect);
 
 			do
 			{
@@ -546,11 +543,11 @@ class Importer
 
 				$rows = $xmlParser->processSource($step, $substep, $do_steps);
 
-				$rows = $this->stepDefaults($rows, (string) $this->current_step['id']);
+				$rows = $this->stepDefaults($rows, (string) $step['id']);
 
-				$rows = $xmlParser->processDestination($step['id'], $substep, $rows);
+				$rows = $xmlParser->processDestination($step['id'], $rows);
 
-				$xmlParser->insertRows($rows, $special_table);
+				$xmlParser->insertRows($rows);
 
 				$this->advanceSubstep($substep);
 			} while ($xmlParser->stillRunning());
