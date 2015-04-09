@@ -59,3 +59,4 @@ build:
 filter:
     excluded_paths:
         - importer/OpenImporter/Tests/*
+        - importer/Importers/sources/Tests/*
