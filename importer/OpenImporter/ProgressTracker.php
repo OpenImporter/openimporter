@@ -19,12 +19,14 @@ class ProgressTracker
 {
 	protected $start_time = 0;
 	protected $stop_time = 5;
+	protected $template = null;
 	public $count = array();
 
-	public function __construct($stop_time = 5)
+	public function __construct($template, $stop_time = 5)
 	{
 		$this->start_time = time();
 		$this->stop_time = $stop_time;
+		$this->template = $template;
 	}
 
 	/**
@@ -51,6 +53,6 @@ class ProgressTracker
 		if (time() - $this->start_time < $this->stop_time)
 			return;
 
-		throw new PasttimeException(self::$import->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
+		throw new PasttimeException($this->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
 	}
 }

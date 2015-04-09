@@ -58,7 +58,6 @@ if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 $OI_configurator = new Configurator();
 $OI_configurator->lang_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Languages';
 $OI_configurator->importers_dir = BASEDIR . DIRECTORY_SEPARATOR . 'Importers';
-$OI_configurator->progress = new ProgressTracker();
 
 try
 {
@@ -71,6 +70,7 @@ catch (\Exception $e)
 }
 
 $template = new Template($lng);
+$OI_configurator->progress = new ProgressTracker($template);
 
 try
 {

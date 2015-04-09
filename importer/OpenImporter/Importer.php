@@ -526,14 +526,75 @@ class Importer
 		$substep = 0;
 
 		$skeleton = new Parser();
-		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
+		$this->skeleton = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
 		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
 		$xmlParser->setImporter($step1_importer);
-		$xmlParser->setSkeleton($skeleton_parsed);
+		$xmlParser->setSkeleton($this->skeleton);
 
 		foreach ($this->xml->step as $step)
-			$xmlParser->processSteps($step, $substep, $do_steps);
+		{
+			$this->current_step = $step;
+			$special_table = $xmlParser->getStepTable($step['id']);
+
+			if (isset($this->current_step->detect))
+				$this->config->progress->count[$substep] = $xmlParser->detect((string) $this->current_step->detect);
+
+			do
+			{
+				$this->config->progress->pastTime($substep);
+
+				$rows = $xmlParser->processSource($step, $substep, $do_steps);
+
+				$rows = $this->stepDefaults($rows, (string) $this->current_step['id']);
+
+				$rows = $xmlParser->processDestination($step['id'], $substep, $rows);
+
+				$xmlParser->insertRows($rows, $special_table);
+
+				$this->advanceSubstep($substep);
+			} while ($xmlParser->stillRunning());
+
+			$_REQUEST['start'] = 0;
+		}
+	}
+
+	protected function advanceSubstep($substep)
+	{
+		if ($_SESSION['import_steps'][$substep]['status'] == 0)
+			$this->template->status($substep, 1, false, true);
+
+		$_SESSION['import_steps'][$substep]['status'] = 1;
+		flush();
+	}
+
+	protected function stepDefaults($rows, $id)
+	{
+		if (empty($rows))
+			return array();
+
+		foreach ($this->skeleton[$id]['query'] as $index => $default)
+		{
+			// No default, use an empty string
+			if (is_array($default))
+			{
+				$index = key($default);
+				$default = $default[$index];
+			}
+			else
+			{
+				$index = $default;
+				$default = '';
+			}
+
+			foreach ($rows as $key => $row)
+			{
+				if (!isset($row[$index]))
+					$rows[$key][$index] = $default;
+			}
+		}
+
+		return $rows;
 	}
 
 	/**
