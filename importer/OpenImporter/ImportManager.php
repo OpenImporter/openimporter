@@ -336,7 +336,7 @@ class ImportManager
 	 * - checks the file system for importer definition files
 	 * @return boolean
 	 */
-	private function detectScripts()
+	protected function detectScripts()
 	{
 		if ($this->config->script !== null)
 		{

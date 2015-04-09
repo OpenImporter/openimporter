@@ -193,7 +193,7 @@ class Importer
 	 * @param string $file
 	 * @throws ImportException
 	 */
-	private function preparseXml($file)
+	protected function preparseXml($file)
 	{
 		if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
 			throw new ImportException('XML-Syntax error in file: ' . $file);
@@ -272,7 +272,7 @@ class Importer
 	 * @throws \Exception
 	 * @return boolean|null
 	 */
-	private function prepareSettings()
+	protected function prepareSettings()
 	{
 		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className . '_Importer';
 		$this->config->source = new $class();
