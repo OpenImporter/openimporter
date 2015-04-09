@@ -635,7 +635,7 @@ class Importer
 	 */
 	public function doStep2()
 	{
-		$instance = $this->stepInstance('Step2')
+		$instance = $this->stepInstance('Step2');
 
 		$methods = get_class_methods($instance);
 		$substeps = array();
@@ -670,7 +670,7 @@ class Importer
 	 */
 	public function doStep3()
 	{
-		$instance = $this->stepInstance('Step3')
+		$instance = $this->stepInstance('Step3');
 
 		$instance->run($this->lng->get(array('imported_from', $this->xml->general->name)));
 	}
