@@ -376,16 +376,20 @@ class Importer
 	protected function initDb()
 	{
 		$DestConnectionParams = $this->config->destination->dbConnectionData();
-		$db_prefix = $this->config->destination->getDbPrefix();
 
-		$this->db = $this->setupDbConnection($DestConnectionParams);
-		$this->config->to_prefix = $this->setupPrefix($DestConnectionParams['dbname'], $db_prefix);
+		list ($this->db, $this->config->to_prefix) = $this->setupDbConnection(
+			$DestConnectionParams,
+			$this->config->destination->getDbPrefix()
+		);
 
-		$this->source_db = $this->setupDbConnection($this->config->source->dbConnectionData(), $DestConnectionParams);
-		$this->config->from_prefix = $this->setupPrefix($DestConnectionParams['dbname'], $this->config->source->getDbPrefix());
+		list ($this->source_db, $this->config->from_prefix) = $this->setupDbConnection(
+			$this->config->source->dbConnectionData(),
+			$DestConnectionParams,
+			$this->config->source->getDbPrefix()
+		);
 	}
 
-	protected function setupDbConnection($connectionParams, $fallbackParams = null)
+	protected function setupDbConnection($connectionParams, $prefix, $fallbackParams = null)
 	{
 		try
 		{
@@ -401,6 +405,7 @@ class Importer
 			// https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_sql_big_selects
 			$db->query("SET @@SQL_BIG_SELECTS = 1");
 			$db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
+			$prefix = $this->setupPrefix($connectionParams['dbname'], $prefix);
 		}
 		catch(\Exception $e)
 		{
@@ -410,11 +415,14 @@ class Importer
 			}
 			else
 			{
-				return $this->setupDbConnection($fallbackParams);
+				$connectionParams['user'] = $fallbackParams['user'];
+				$connectionParams['password'] = $fallbackParams['password'];
+
+				return $this->setupDbConnection($connectionParams, $prefix);
 			}
 		}
 
-		return $db;
+		return array($db, $prefix);
 	}
 
 	protected function setupPrefix($db_name, $db_prefix)
