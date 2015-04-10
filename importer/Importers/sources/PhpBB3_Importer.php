@@ -44,7 +44,14 @@ class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('dbpasswd'),
 			'host' => $this->fetchSetting('dbhost'),
 			'driver' => $this->fetchDriver(),
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	public function getTableTest()
+	{
+		return '{db_prefix}users';
 	}
 
 	protected function fetchDriver()
@@ -78,11 +85,6 @@ class PhpBB3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
 
 		return isset($match[1]) ? $match[1] : '';
-	}
-
-	public function getTableTest()
-	{
-		return 'users';
 	}
 
 	protected function fixBbc($body, $bbc_replace)

@@ -108,7 +108,10 @@ class ImportManager
 		$this->response = $response;
 		$this->lng = $importer->lng;
 		$this->response->lng = $importer->lng;
+	}
 
+	public function setupScripts()
+	{
 		$this->findScript();
 
 		// The current step - starts at 0.
@@ -121,14 +124,7 @@ class ImportManager
 
 		if (!empty($this->config->script))
 		{
-			try
-			{
-				$this->importer->reloadImporter();
-			}
-			catch(\Exception $e)
-			{
-				// Do nothing, let the code die
-			}
+			$this->importer->reloadImporter();
 		}
 	}
 
@@ -260,7 +256,7 @@ class ImportManager
 		}
 	}
 
-	protected function populateResponseDetails()
+	public function populateResponseDetails()
 	{
 		if (isset($this->importer->xml->general->name) && isset($this->importer->config->destination->scriptname))
 			$this->response->page_title = $this->importer->xml->general->name . ' ' . $this->lng->to . ' ' . $this->importer->config->destination->scriptname;

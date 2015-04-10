@@ -39,7 +39,14 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('DATABASE_PASSWORD'),
 			'host' => $this->fetchSetting('DATABASE_SERVER'),
 			'driver' => 'pdo_mysql',
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	public function getTableTest()
+	{
+		return '{db_prefix}USERS';
 	}
 
 	protected function fetchSetting($name)
@@ -55,11 +62,6 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	public function getDbName()
 	{
 		return $this->fetchSetting('DATABASE_NAME');
-	}
-
-	public function getTableTest()
-	{
-		return 'USERS';
 	}
 
 	/**

@@ -161,16 +161,8 @@ class Importer
 
 	public function reloadImporter()
 	{
-		try
-		{
-			if (!empty($this->config->script))
-				$this->loadImporter($this->config->script);
-		}
-		catch(\Exception $e)
-		{
-			// @todo is that right?
-			// Do nothing, let the code continue
-		}
+		if (!empty($this->config->script))
+			$this->loadImporter($this->config->script);
 	}
 
 	protected function loadImporter($files)
@@ -328,8 +320,6 @@ class Importer
 		$this->initDb();
 		$this->config->source->setUtils($this->source_db, $this->config);
 		$this->config->destination->setUtils($this->db, $this->config);
-
-		$this->testTable();
 	}
 
 	/**
@@ -384,8 +374,8 @@ class Importer
 
 		list ($this->source_db, $this->config->from_prefix) = $this->setupDbConnection(
 			$this->config->source->dbConnectionData(),
-			$DestConnectionParams,
-			$this->config->source->getDbPrefix()
+			$this->config->source->getDbPrefix(),
+			$DestConnectionParams
 		);
 	}
 
@@ -394,6 +384,10 @@ class Importer
 		try
 		{
 			$db = new Database($connectionParams);
+
+			if (empty($db))
+				throw new \Exception($this->lng->get(array('permission_denied', $db->getLastError(), $connectionParams['system_name'])));
+
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$db->query('SET NAMES \'utf8\'');
 
@@ -406,6 +400,23 @@ class Importer
 			$db->query("SET @@SQL_BIG_SELECTS = 1");
 			$db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
 			$prefix = $this->setupPrefix($connectionParams['dbname'], $prefix);
+
+			// This should be set, but better safe than sorry as usual.
+			if (isset($connectionParams['test_table']))
+			{
+				$test_table = str_replace('{db_prefix}', $prefix, $connectionParams['test_table']);
+
+				// This should throw an exception
+				$result = $db->query("
+					SELECT COUNT(*)
+					FROM {$test_table}", true);
+
+				// This instead should not be necessary because Doctrine should take care of it (I think)
+				if ($result === false)
+				{
+					throw new \Exception($this->lng->get(array('permission_denied', $db->getLastError(), $connectionParams['system_name'])));
+				}
+			}
 		}
 		catch(\Exception $e)
 		{
@@ -415,6 +426,7 @@ class Importer
 			}
 			else
 			{
+			\OpenImporter\Core\Utils::print_dbg($fallbackParams);
 				$connectionParams['user'] = $fallbackParams['user'];
 				$connectionParams['password'] = $fallbackParams['password'];
 

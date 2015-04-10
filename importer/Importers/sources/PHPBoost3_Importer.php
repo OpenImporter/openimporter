@@ -42,7 +42,14 @@ class PHPBoost3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('sql_pass'),
 			'host' => $this->fetchSetting('sql_host'),
 			'driver' => 'pdo_mysql',
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	public function getTableTest()
+	{
+		return '{db_prefix}member';
 	}
 
 	protected function fetchSetting($name)
@@ -63,11 +70,6 @@ class PHPBoost3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	public function getDbName()
 	{
 		return $this->fetchSetting('sql_base');
-	}
-
-	public function getTableTest()
-	{
-		return 'member';
 	}
 
 	/**

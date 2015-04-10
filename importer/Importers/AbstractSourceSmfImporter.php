@@ -43,6 +43,8 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 			'password' => $this->fetchSetting('db_passwd'),
 			'host' => $this->fetchSetting('db_server'),
 			'driver' => $this->fetchDriver(),
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
 	}
 
@@ -59,6 +61,11 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
 	}
 
+	protected function getTableTest()
+	{
+		return '{db_prefix}members';
+	}
+
 	protected function fetchSetting($name)
 	{
 		$content = $this->readSettingsFile();
@@ -72,11 +79,6 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 	public function getDbName()
 	{
 		return $this->fetchSetting('db_name');
-	}
-
-	public function getTableTest()
-	{
-		return 'members';
 	}
 
 	protected function mapBoardsGroups($group)

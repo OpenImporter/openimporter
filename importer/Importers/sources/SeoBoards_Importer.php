@@ -35,6 +35,8 @@ class SeoBoards1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('dbpass'),
 			'host' => $this->fetchSetting('dbhost'),
 			'driver' => 'pdo_mysql',  // As far as I can tell IPB is MySQL only
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
 	}
 
@@ -48,9 +50,9 @@ class SeoBoards1_1 extends \OpenImporter\Importers\AbstractSourceImporter
 		return $this->fetchSetting('dbname');
 	}
 
-	public function getTableTest()
+	protected function getTableTest()
 	{
-		return 'users';
+		return '{dbPrefix}users';
 	}
 
 	protected function fetchSetting($name)

@@ -47,7 +47,14 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('sql_pass'),
 			'host' => $this->fetchSetting('sql_host'),
 			'driver' => 'pdo_mysql',  // As far as I can tell IPB is MySQL only
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	public function getTableTest()
+	{
+		return '{db_prefix}members';
 	}
 
 	public function getDbPrefix()
@@ -60,11 +67,6 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	public function getDbName()
 	{
 		return $this->fetchSetting('sql_database');
-	}
-
-	public function getTableTest()
-	{
-		return 'members';
 	}
 
 	protected function fetchSetting($name)

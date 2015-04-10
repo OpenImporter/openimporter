@@ -534,6 +534,10 @@ class Template
 			</div>';
 	}
 
+	public function emptyPage()
+	{
+	}
+
 	/**
 	 * Display notification with the given status
 	 *

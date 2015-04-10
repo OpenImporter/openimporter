@@ -40,7 +40,14 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('dbPassword'),
 			'host' => $this->fetchSetting('dbHost'),
 			'driver' => 'pdo_mysql',
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	protected function getTableTest()
+	{
+		return '{db_prefix}user';
 	}
 
 	protected function fetchSetting($name)
@@ -63,11 +70,6 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		global $wcf_prefix;
 
 		return $wcf_prefix;
-	}
-
-	public function getTableTest()
-	{
-		return 'user';
 	}
 
 	protected function fetchUserOptions()

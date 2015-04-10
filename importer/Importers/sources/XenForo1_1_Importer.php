@@ -33,11 +33,6 @@ class XenForo1_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		return $this->fetchSetting('dbname');
 	}
 
-	public function getTableTest()
-	{
-		return 'user';
-	}
-
 	public function dbConnectionData()
 	{
 		if ($this->path === null)
@@ -49,7 +44,14 @@ class XenForo1_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('password'),
 			'host' => $this->fetchSetting('host'),
 			'driver' => 'pdo_mysql',
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	protected function getTableTest()
+	{
+		return '{db_prefix}user';
 	}
 
 	protected function fetchSetting($name)

@@ -42,7 +42,14 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('password'),
 			'host' => $this->fetchSetting('hostname'),
 			'driver' => $this->fetchDriver(),
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	public function getTableTest()
+	{
+		return '{db_prefix}users';
 	}
 
 	protected function fetchDriver()
@@ -71,11 +78,6 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		preg_match('~\$config\[\'database\'\]\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);
 
 		return isset($match[1]) ? $match[1] : '';
-	}
-
-	public function getTableTest()
-	{
-		return 'users';
 	}
 
 	/**

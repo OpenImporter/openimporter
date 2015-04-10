@@ -52,7 +52,14 @@ class Viscacha_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('dbpw'),
 			'host' => $this->fetchSetting('host'),
 			'driver' => 'pdo_mysql',
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	protected function getTableTest()
+	{
+		return '{db_preifx}user';
 	}
 
 	protected function fetchSetting($name)
@@ -63,11 +70,6 @@ class Viscacha_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		preg_match('~\$config\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);
 
 		return isset($match[1]) ? $match[1] : '';
-	}
-
-	public function getTableTest()
-	{
-		return 'user';
 	}
 
 	/**

@@ -39,7 +39,14 @@ class WordPress3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			'password' => $this->fetchSetting('DB_PASSWORD'),
 			'host' => $this->fetchSetting('DB_HOST'),
 			'driver' => 'pdo_mysql',
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	protected function getTableTest()
+	{
+		return '{db_prefix}users';
 	}
 
 	protected function fetchSetting($name)
@@ -59,11 +66,6 @@ class WordPress3_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 	public function getDbName()
 	{
 		return $this->fetchSetting('DB_NAME');
-	}
-
-	public function getTableTest()
-	{
-		return 'users';
 	}
 
 	/**

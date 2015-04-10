@@ -84,7 +84,14 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 			'password' => $this->fetchSetting('db_passwd'),
 			'host' => $this->fetchSetting('db_server'),
 			'driver' => $this->fetchDriver(),
+			'test_table' => $this->getTableTest(),
+			'system_name' => $this->getname(),
 		);
+	}
+
+	protected function getTableTest()
+	{
+		return '{db_prefix}members';
 	}
 
 	public function getDbPrefix()
