@@ -150,8 +150,7 @@ class Importer
 		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
 		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
-		if (!empty($this->config->script))
-			$this->loadImporter($this->config->importers_dir . DS . $this->config->script);
+		$this->reloadImporter();
 	}
 
 	public function setData($data)
