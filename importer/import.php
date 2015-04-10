@@ -80,6 +80,7 @@ try
 	$template->setResponse($response);
 
 	$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
+	$import->setupScripts();
 
 	ImportException::setImportManager($import);
 
@@ -99,9 +100,12 @@ catch (StepException $e)
 }
 catch (\Exception $e)
 {
-	// Debug, remember to remove before PR
-	echo '<br>' . $e->getMessage() . '<br>';
-	echo $e->getFile() . '<br>';
-	echo $e->getLine() . '<br>';
-	// If an error is not catched, it means it's fatal and the script should die.
+	$response->template_error = true;
+	$response->is_page = true;
+	$response->use_template = 'emptyPage';
+	$response->params_template = array();
+	$import->populateResponseDetails();
+	$response->addErrorParam($e->getMessage());
+
+	$template->render();
 }
