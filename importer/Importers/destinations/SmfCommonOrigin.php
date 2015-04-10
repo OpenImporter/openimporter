@@ -89,7 +89,7 @@ abstract class SmfCommonOrigin extends AbstractDestinationImporter
 		);
 	}
 
-	protected function getTableTest()
+	public function getTableTest()
 	{
 		return '{db_prefix}members';
 	}

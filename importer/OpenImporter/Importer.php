@@ -331,7 +331,7 @@ class Importer
 
 		if ($found === false)
 		{
-			if (@ini_get('open_basedir') != '')
+			if (ini_get('open_basedir') != '')
 				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
 
 			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
