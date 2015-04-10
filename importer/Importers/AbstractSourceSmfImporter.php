@@ -61,7 +61,7 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 		return isset($drivers[$type]) ? $drivers[$type] : 'pdo_mysql';
 	}
 
-	public function getTableTest()
+	protected function getTableTest()
 	{
 		return '{db_prefix}members';
 	}

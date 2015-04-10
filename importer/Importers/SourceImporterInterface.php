@@ -24,8 +24,6 @@ interface SourceImporterInterface
 
 	public function getDbName();
 
-	public function getTableTest();
-
 	public function dbConnectionData();
 
 	public function loadSettings($path, $test = false);

@@ -39,7 +39,7 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 
 	abstract public function getDbName();
 
-	abstract public function getTableTest();
+	abstract protected function getTableTest();
 
 	abstract public function dbConnectionData();
 

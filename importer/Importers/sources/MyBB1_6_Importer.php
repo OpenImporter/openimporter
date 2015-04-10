@@ -47,7 +47,7 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		);
 	}
 
-	public function getTableTest()
+	protected function getTableTest()
 	{
 		return '{db_prefix}users';
 	}
