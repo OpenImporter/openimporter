@@ -322,31 +322,6 @@ class Importer
 		$this->config->destination->setUtils($this->db, $this->config);
 	}
 
-	/**
-	 * This method is supposed to run a spot-test on a single table to verify...
-	 * What?
-	 * Dunno exactly, maybe that the converter is not wrong, but in that case, one
-	 * table may not be enough...
-	 *
-	 * @todo make it useful or remove it?
-	 */
-	protected function testTable()
-	{
-		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
-		{
-			$test_table = $this->config->from_prefix . $this->config->source->getTableTest();
-
-			$result = $this->db->query("
-				SELECT COUNT(*)
-				FROM {$test_table}", true);
-
-			if ($result === false)
-				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
-
-			$this->db->free_result($result);
-		}
-	}
-
 	protected function loadSettings()
 	{
 		if (!empty($this->config->path_from))
