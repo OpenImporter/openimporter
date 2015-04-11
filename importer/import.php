@@ -47,8 +47,6 @@ ob_start();
 if (is_callable('apache_setenv'))
 	apache_setenv('no-gzip', '1');
 
-if (@ini_get('session.save_handler') == 'user')
-	@ini_set('session.save_handler', 'files');
 @session_start();
 
 // Add slashes, as long as they aren't already being added.
@@ -74,6 +72,11 @@ $OI_configurator->progress = new ProgressTracker($template);
 
 try
 {
+	if (ini_get('session.save_handler') == 'user')
+	{
+		throw new \Exception('Please set \'session.save_handler\' to \'files\' before continue');
+	}
+
 	$importer = new Importer($OI_configurator, $lng, $template);
 	$response = new HttpResponse(new ResponseHeader());
 
