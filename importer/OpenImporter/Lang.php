@@ -128,11 +128,15 @@ class Lang
 
 			if ($this->has($l_key))
 				return vsprintf($this->_lang[$l_key], $key);
+			else
+				return array_pop($key);
 		}
 		else
 		{
 			if ($this->has($key))
 				return $this->_lang[$key];
+			else
+				return $key;
 		}
 
 		return null;
