@@ -96,6 +96,9 @@ class Form
 		$this->data['options'][] = array();
 	}
 
+	/**
+	 * @param mixed[]|\SimpleXMLElement
+	 */
 	public function addField($field)
 	{
 		if (is_object($field))
@@ -112,18 +115,18 @@ class Form
 		if ($field->attributes()->{'type'} == 'text')
 		{
 			return array(
-				'id' => $field->attributes()->{'id'},
-				'label' => $field->attributes()->{'label'},
-				'default' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
+				'id' => (string) $field->attributes()->{'id'},
+				'label' => (string) $field->attributes()->{'label'},
+				'default' => isset($field->attributes()->{'default'}) ? (string) $field->attributes()->{'default'} : '',
 				'type' => 'text',
 			);
 		}
 		else
 		{
 			return array(
-				'id' => $field->attributes()->{'id'},
-				'label' => $field->attributes()->{'label'},
-				'checked' => $field->attributes()->{'checked'},
+				'id' => (string) $field->attributes()->{'id'},
+				'label' => (string) $field->attributes()->{'label'},
+				'checked' => (string) $field->attributes()->{'checked'},
 				'type' => 'checkbox',
 			);
 		}
