@@ -50,10 +50,10 @@ class Database
 	 * Execute an SQL query.
 	 *
 	 * @param string $string
-	 * @param bool $return_error
-	 * @return bool|null|\Doctrine\DBAL\Driver\Statement
+	 * @param bool $allow_second_try
+	 * @return \Doctrine\DBAL\Driver\Statement
 	 */
-	public function query($string, $return_error = false)
+	public function query($string, $allow_second_try = false)
 	{
 		if (substr($string, -1, 1) !== ';')
 			$string .= ';';
@@ -64,15 +64,7 @@ class Database
 		}
 		catch (\Exception $e)
 		{
-			if ($return_error)
-			{
-				$this->second_try = true;
-				return false;
-			}
-			else
-			{
-				return $this->sendError($e->getMessage());
-			}
+			return $this->sendError($e->getMessage(), $allow_second_try);
 		}
 
 		return $result;
@@ -118,10 +110,11 @@ class Database
 	 * Analyze and sends an error.
 	 *
 	 * @param string $string
+	 * @param bool $allow_second_try
 	 * @throws DatabaseException If a SQL fails
 	 * @return type
 	 */
-	protected function sendError($string)
+	protected function sendError($string, $allow_second_try)
 	{
 		$error = $this->con->errorInfo();
 		$errno = $this->con->errorCode();
@@ -129,10 +122,8 @@ class Database
 		// @todo MySQL specific errors, check Doctrine DBAL documentation
 		// 1016: Can't open file '....MYI'
 		// 2013: Lost connection to server during query.
-		if (in_array($errno, array(1016, 2013)) && $this->second_try)
+		if (in_array($errno, array(1016, 2013)) && $allow_second_try)
 		{
-			$this->second_try = false;
-
 			// Try to repair the table and run the query again.
 			if ($errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $error[2], $match) != 0 && !empty($match[1]))
 				$this->con->query("
