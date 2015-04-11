@@ -146,8 +146,6 @@ class ImporterSetup
 		$this->_importer_base_class_name = $this->i_namespace . 'destinations\\' . $file . '\\Importer';
 
 		$this->config->destination = new $this->_importer_base_class_name();
-
-		$this->config->destination->setUtils($this->db, $this->config);
 	}
 
 	/**
