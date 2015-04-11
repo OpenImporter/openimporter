@@ -17,19 +17,6 @@ namespace OpenImporter\Core;
 
 class Utils
 {
-	/**
-	 * @todo apparently unused
-	 *
-	 * helper function for storing vars that need to be global
-	 *
-	 * @param string $variable
-	 * @param string $value
-	 */
-	public static function store_global($variable, $value)
-	{
-		$_SESSION['store_globals'][$variable] = $value;
-	}
-
 	public static function print_dbg($val)
 	{
 		echo '<pre>';

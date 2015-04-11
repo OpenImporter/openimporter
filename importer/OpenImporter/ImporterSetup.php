@@ -168,19 +168,11 @@ class ImporterSetup
 
 		$this->config->source->setGlobals();
 
-		//Dirty hack
-		if (isset($_SESSION['store_globals']))
-		{
-			foreach ($_SESSION['store_globals'] as $varname => $value)
-			{
-				$GLOBALS[$varname] = $value;
-			}
-		}
-
 		$this->loadSettings();
 
 		if (empty($this->config->path_to))
 			return;
+
 		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 
 		if ($this->config->boardurl === false)
