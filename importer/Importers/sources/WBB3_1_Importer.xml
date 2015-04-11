@@ -13,7 +13,6 @@
 			<field id="1" type="text" size="20" default="wcf1_" label="WCF table prefix">wcf_prefix</field>
 			<field id="2" type="text" size="20" default="wbb1_1_" label="WBB table prefix">wbb_prefix</field>
 		</form>
-		<globals>userOptions</globals>
 	</general>
 	<step id="settings" type="mandatory">
 		<!-- @todo move to a method? -->

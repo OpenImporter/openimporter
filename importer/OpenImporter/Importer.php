@@ -290,11 +290,6 @@ class Importer
 	 */
 	public function doStep1($do_steps)
 	{
-
-		if ($this->xml->general->globals)
-			foreach (explode(',', $this->xml->general->globals) as $global)
-				global $$global;
-
 		$substep = 0;
 
 		$skeleton = new Parser();
