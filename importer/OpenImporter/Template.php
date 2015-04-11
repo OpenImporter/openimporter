@@ -20,7 +20,7 @@ class Template
 	protected $response = null;
 	protected $lng = null;
 
-	public function __construct($lng)
+	public function __construct(Lang $lng)
 	{
 		if ($lng === null)
 			$lng = new DummyLang();

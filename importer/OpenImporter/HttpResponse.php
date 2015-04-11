@@ -25,7 +25,7 @@ class HttpResponse
 
 	protected $error_params = array();
 
-	public function __construct($headers)
+	public function __construct(ResponseHeader $headers)
 	{
 		$this->headers = $headers;
 	}

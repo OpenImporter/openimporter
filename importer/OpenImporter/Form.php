@@ -29,7 +29,7 @@ class Form
 	 */
 	public $action_url = '';
 
-	public function __construct($lng)
+	public function __construct(Lang $lng)
 	{
 		$this->lng = $lng;
 	}

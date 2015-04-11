@@ -17,7 +17,7 @@ class StepException extends \Exception
 {
 	protected $template;
 
-	public function __construct($template)
+	public function __construct(Template $template)
 	{
 		$this->template = $template;
 	}

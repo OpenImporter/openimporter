@@ -97,7 +97,7 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($config, Importer $importer, $template, $cookie, $response)
+	public function __construct(Configurator $config, Importer $importer, Template $template, Cookie $cookie, HttpResponse $response)
 	{
 		$this->loadFromSession();
 

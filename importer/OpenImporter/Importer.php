@@ -91,7 +91,7 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($config, $lang, $template)
+	public function __construct(Configurator $config, Lang $lang, Template $template)
 	{
 		// initialize some objects
 		$this->config = $config;

@@ -22,7 +22,7 @@ class ProgressTracker
 	protected $template = null;
 	public $count = array();
 
-	public function __construct($template, $stop_time = 5)
+	public function __construct(Template $template, $stop_time = 5)
 	{
 		$this->start_time = time();
 		$this->stop_time = $stop_time;

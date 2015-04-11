@@ -15,9 +15,7 @@
 
 namespace OpenImporter\Core;
 
-use Symfony\Component\Yaml\Parser;
 use OpenImporter\Core\Database;
-use OpenImporter\Core\XmlProcessor;
 use OpenImporter\Core\ImportException;
 
 /**
@@ -79,7 +77,7 @@ class ImporterSetup
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($config, $lang, $data)
+	public function __construct(Configurator $config, Lang $lang, $data)
 	{
 		// initialize some objects
 		$this->config = $config;

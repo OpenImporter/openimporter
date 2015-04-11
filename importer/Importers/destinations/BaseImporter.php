@@ -9,6 +9,9 @@
 
 namespace OpenImporter\Importers\destinations;
 
+use \OpenImporter\Core\Configurator;
+use \OpenImporter\Core\Database;
+
 /**
  * The starting point for any step of any importer.
  */
@@ -19,7 +22,7 @@ abstract class BaseImporter
 	protected $setting_file = '';
 	protected $path = '';
 
-	public function __construct($db, $config)
+	public function __construct(Database $db, Configurator $config)
 	{
 		$this->db = $db;
 		$this->config = $config;

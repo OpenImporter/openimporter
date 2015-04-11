@@ -76,7 +76,7 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $source_db, $config, $template, $xml)
+	public function __construct(Database $db, Database $source_db, Configurator $config, Template $template, \SimpleXMLElement $xml)
 	{
 		$this->db = $db;
 		$this->source_db = $source_db;

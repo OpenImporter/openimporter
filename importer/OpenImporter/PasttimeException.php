@@ -20,7 +20,7 @@ class PasttimeException extends \Exception
 	protected $import_progress;
 	protected $import_overall;
 
-	public function __construct($template, $bar, $import_progress, $import_overall)
+	public function __construct(Template $template, $bar, $import_progress, $import_overall)
 	{
 		$this->template = $template;
 		$this->bar = $bar;
