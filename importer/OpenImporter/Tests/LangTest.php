@@ -163,12 +163,12 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$method->setAccessible(true);
 
 		$invoke_lang = new Lang();
-		$method->invoke($invoke_lang, 'testing', 'testing');
+		$method->invoke($invoke_lang, 'testing', 'an actual result');
 
 		// An existing string
-		$this->assertEquals('testing', $invoke_lang->get('testing'));
+		$this->assertEquals('an actual result', $invoke_lang->get('testing'));
 		// A non existing one
-		$this->assertNull($invoke_lang->get('random'));
+		$this->assertEquals('random', $invoke_lang->get('random'));
 
 		$method->invoke($invoke_lang, 'testing_array', 'testing %s');
 
@@ -188,12 +188,12 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$method->setAccessible(true);
 
 		$invoke_lang = new Lang();
-		$method->invoke($invoke_lang, 'testing', 'testing');
+		$method->invoke($invoke_lang, 'testing', 'an actual result');
 
 		// An existing string
-		$this->assertEquals('testing', $invoke_lang->testing);
+		$this->assertEquals('an actual result', $invoke_lang->testing);
 		// A non existing one
-		$this->assertNull($invoke_lang->random);
+		$this->assertEquals('random', $invoke_lang->random);
 	}
 }
 
