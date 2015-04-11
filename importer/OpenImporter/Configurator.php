@@ -16,8 +16,8 @@ namespace OpenImporter\Core;
  *
  * @property string $lang_dir
  * @property string $importers_dir
- * @property string $destination
- * @property string $source
+ * @property \OpenImporter\Importers\destinations\DestinationImporterInterface $destination
+ * @property \OpenImporter\Importers\SourceImporterInterface $source
  * @property string $to_prefix
  * @property string $from_prefix
  * @property OpenImporter\Core\Configurator $progress
