@@ -118,7 +118,9 @@ class Importer
 
 	protected function loadImporter($files)
 	{
-		$setup = new ImporterSetup($files, $this->config, $this->lng, $this->data);
+		$setup = new ImporterSetup($this->config, $this->lng, $this->data);
+		$setup->setNamespace('\\OpenImporter\\Importers\\');
+		$setup->loadImporter($files);
 		
 		$this->xml = $setup->getXml();
 		$this->db = $setup->getDb();

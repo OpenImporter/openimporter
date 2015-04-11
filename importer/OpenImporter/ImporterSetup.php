@@ -71,16 +71,25 @@ class ImporterSetup
 	protected $_importer_base_class_name = '';
 
 	/**
+	 * The namespace for the importers.
+	 * @var string
+	 */
+	protected $i_namespace = '';
+
+	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($files, $config, $lang, $data)
+	public function __construct($config, $lang, $data)
 	{
 		// initialize some objects
 		$this->config = $config;
 		$this->lng = $lang;
 		$this->data = $data;
+	}
 
-		$this->loadImporter($files);
+	public function setNamespace($namespace)
+	{
+		$this->i_namespace = $namespace;
 	}
 
 	public function getXml()
@@ -108,7 +117,7 @@ class ImporterSetup
 		$this->data = $data;
 	}
 
-	protected function loadImporter($files)
+	public function loadImporter($files)
 	{
 		$this->loadSource($files['source']);
 		$this->loadDestination($files['destination']);
@@ -124,7 +133,7 @@ class ImporterSetup
 
 	protected function loadDestination($file)
 	{
-		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . $file . '\\Importer';
+		$this->_importer_base_class_name = $this->i_namespace . 'destinations\\' . $file . '\\Importer';
 
 		$this->config->destination = new $this->_importer_base_class_name();
 
@@ -152,7 +161,7 @@ class ImporterSetup
 	 */
 	protected function prepareSettings()
 	{
-		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className . '_Importer';
+		$class = $this->i_namespace . 'sources\\' . (string) $this->xml->general->className . '_Importer';
 		$this->config->source = new $class();
 
 		$this->config->source->setDefines();
