@@ -129,6 +129,9 @@ class ImporterSetup
 	{
 		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
 		$this->preparseXml($full_path);
+
+		$class = $this->i_namespace . 'sources\\' . (string) $this->xml->general->className . '_Importer';
+		$this->config->source = new $class();
 	}
 
 	protected function loadDestination($file)
@@ -161,9 +164,6 @@ class ImporterSetup
 	 */
 	protected function prepareSettings()
 	{
-		$class = $this->i_namespace . 'sources\\' . (string) $this->xml->general->className . '_Importer';
-		$this->config->source = new $class();
-
 		$this->config->source->setDefines();
 
 		$this->config->source->setGlobals();
