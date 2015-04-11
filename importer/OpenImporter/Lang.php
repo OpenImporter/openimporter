@@ -138,8 +138,6 @@ class Lang
 			else
 				return $key;
 		}
-
-		return null;
 	}
 
 	/**
