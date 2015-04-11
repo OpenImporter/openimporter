@@ -16,6 +16,12 @@ interface SourceImporterInterface
 {
 	public function setUtils($db, $config);
 
+	public function setField($key, $val);
+
+	public function getAllFields();
+
+	public function getField($key);
+
 	public function getName();
 
 	public function getVersion();

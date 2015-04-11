@@ -121,12 +121,11 @@ class Importer
 		$setup = new ImporterSetup($this->config, $this->lng, $this->data);
 		$setup->setNamespace('\\OpenImporter\\Importers\\');
 		$setup->loadImporter($files);
-		
+
 		$this->xml = $setup->getXml();
 		$this->db = $setup->getDb();
 		$this->source_db = $setup->getSourceDb();
 		$this->_importer_base_class_name = $setup->getBaseClass();
-		$this->initFormData();
 	}
 
 	public function populateFormFields(Form $form)
@@ -192,47 +191,6 @@ class Importer
 		$path_from = $this->config->source->loadSettings($this->config->path_from, true);
 
 		return $path_from;
-	}
-
-	protected function initFormData()
-	{
-		if ($this->xml->general->form && !empty($_SESSION['import_parameters']))
-		{
-			foreach ($this->xml->general->form->children() as $param)
-			{
-				if (isset($_POST['field' . $param['id']]))
-				{
-					$var = (string) $param;
-					$_SESSION['import_parameters']['field' .$param['id']][$var] = $_POST['field' .$param['id']];
-				}
-			}
-
-			// Should already be global'd.
-			foreach ($_SESSION['import_parameters'] as $id)
-			{
-				foreach ($id as $k => $v)
-					$GLOBALS[$k] = $v;
-			}
-		}
-		elseif ($this->xml->general->form)
-		{
-			$_SESSION['import_parameters'] = array();
-			foreach ($this->xml->general->form->children() as $param)
-			{
-				$var = (string) $param;
-
-				if (isset($_POST['field' .$param['id']]))
-					$_SESSION['import_parameters']['field' .$param['id']][$var] = $_POST['field' .$param['id']];
-				else
-					$_SESSION['import_parameters']['field' .$param['id']][$var] = null;
-			}
-
-			foreach ($_SESSION['import_parameters'] as $id)
-			{
-				foreach ($id as $k => $v)
-					$GLOBALS[$k] = $v;
-			}
-		}
 	}
 
 	/**

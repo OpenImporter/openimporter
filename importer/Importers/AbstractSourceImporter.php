@@ -24,11 +24,30 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 
 	protected $db = null;
 	protected $config = null;
+	protected $fields = array();
 
 	public function setUtils($db, $config)
 	{
 		$this->db = $db;
 		$this->config = $config;
+	}
+
+	public function setField($key, $val)
+	{
+		$this->fields[$key] = $val;
+	}
+
+	public function getAllFields()
+	{
+		return $this->fields;
+	}
+
+	public function getField($key)
+	{
+		if (isset($this->fields[$key]))
+			return $this->fields[$key];
+		else
+			return null;
 	}
 
 	abstract public function getName();

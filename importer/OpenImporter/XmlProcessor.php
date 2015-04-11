@@ -192,14 +192,11 @@ class XmlProcessor
 	 */
 	protected function fixParams($string)
 	{
-		if (isset($_SESSION['import_parameters']))
+		foreach ($this->config->source->getAllFields() as $key => $value)
 		{
-			foreach ($_SESSION['import_parameters'] as $param)
-			{
-				foreach ($param as $key => $value)
-					$string = strtr($string, array('{$' . $key . '}' => $value));
-			}
+			$string = strtr($string, array('{$' . $key . '}' => $value));
 		}
+
 		$string = strtr($string, array('{$from_prefix}' => $this->config->from_prefix, '{$to_prefix}' => $this->config->to_prefix));
 
 		return $string;

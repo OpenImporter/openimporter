@@ -120,6 +120,7 @@ class ImporterSetup
 		$this->loadSource($files['source']);
 		$this->loadDestination($files['destination']);
 		$this->prepareSettings();
+		$this->loadFormFields();
 
 		// If the paths are unknown it's useless to proceed.
 		if (empty($this->config->path_to))
@@ -128,6 +129,25 @@ class ImporterSetup
 		$this->initDb();
 		$this->config->source->setUtils($this->source_db, $this->config);
 		$this->config->destination->setUtils($this->db, $this->config);
+	}
+
+	protected function loadFormFields()
+	{
+		if (!empty($_POST['field']))
+		{
+			foreach ($_POST['field'] as $key => $val)
+			{
+				$this->data['fields'][$key] = $val;
+			}
+		}
+
+		if (!empty($this->data['fields']))
+		{
+			foreach ($this->data['fields'] as $key => $val)
+			{
+				$this->config->source->setField($key, $val);
+			}
+		}
 	}
 
 	protected function loadSource($file)

@@ -65,11 +65,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function getWcfPrefix()
 	{
-		// @todo I'm not sure this goes to global.
-		// in any case it should be converted in to a property of config->source
-		global $wcf_prefix;
-
-		return $wcf_prefix;
+		return $this->getField('wcf_prefix');
 	}
 
 	protected function fetchUserOptions()
@@ -155,7 +151,7 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	public function preparseTopics($originalRows)
 	{
-		global $wbb_prefix;
+		$wbb_prefix = $this->getField('wbb_prefix');
 
 		$rows = array();
 		foreach ($originalRows as $row)

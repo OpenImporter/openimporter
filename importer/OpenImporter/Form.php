@@ -105,7 +105,7 @@ class Form
 			return $this->addField($this->makeFieldArray($field));
 		else
 		{
-			$field['id'] = 'field' . $field['id'];
+			$field['id'] = 'field[' . $field['id'] . ']';
 			return $this->addOption($field);
 		}
 	}
@@ -115,7 +115,7 @@ class Form
 		if ($field->attributes()->{'type'} == 'text')
 		{
 			return array(
-				'id' => (string) $field->attributes()->{'id'},
+				'id' => (string) $field,
 				'label' => (string) $field->attributes()->{'label'},
 				'default' => isset($field->attributes()->{'default'}) ? (string) $field->attributes()->{'default'} : '',
 				'type' => 'text',
@@ -124,7 +124,7 @@ class Form
 		else
 		{
 			return array(
-				'id' => (string) $field->attributes()->{'id'},
+				'id' => (string) $field,
 				'label' => (string) $field->attributes()->{'label'},
 				'checked' => (string) $field->attributes()->{'checked'},
 				'type' => 'checkbox',
