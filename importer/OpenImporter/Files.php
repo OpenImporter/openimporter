@@ -68,7 +68,7 @@ class Files
 		$base = rtrim($base, '\\/') . DIRECTORY_SEPARATOR;
 
 		if (!file_exists($base))
-			return false;
+			return $files;
 
 		$dir = opendir($base);
 
