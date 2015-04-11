@@ -123,6 +123,10 @@ class ImporterSetup
 		$this->loadDestination($files['destination']);
 
 		$this->prepareSettings();
+
+		$this->initDb();
+		$this->config->source->setUtils($this->source_db, $this->config);
+		$this->config->destination->setUtils($this->db, $this->config);
 	}
 
 	protected function loadSource($file)
@@ -192,10 +196,6 @@ class ImporterSetup
 			foreach ($_POST['do_steps'] as $key => $step)
 				$_SESSION['do_steps'][$key] = $step;
 		}
-
-		$this->initDb();
-		$this->config->source->setUtils($this->source_db, $this->config);
-		$this->config->destination->setUtils($this->db, $this->config);
 	}
 
 	protected function loadSettings()
