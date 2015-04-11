@@ -121,8 +121,11 @@ class ImporterSetup
 	{
 		$this->loadSource($files['source']);
 		$this->loadDestination($files['destination']);
-
 		$this->prepareSettings();
+
+		// If the paths are unknown it's useless to proceed.
+		if (empty($this->config->path_to))
+			return;
 
 		$this->initDb();
 		$this->config->source->setUtils($this->source_db, $this->config);
