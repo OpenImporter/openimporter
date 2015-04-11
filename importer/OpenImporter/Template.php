@@ -718,7 +718,7 @@ class Template
 						<dd>';
 						foreach ($option['value'] as $key => $step)
 							echo '
-							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', $step['label'], '</label><br />';
+							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? ' readonly="readonly" ' : ' ', $step['checked'], ' /> ', $step['label'], '</label><br />';
 
 					echo '
 						</dd>';
