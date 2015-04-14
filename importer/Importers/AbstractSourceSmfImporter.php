@@ -18,7 +18,7 @@ use OpenImporter\Core\Files;
  * so that Importer can do its job without having to test for existinance
  * of methods every two/three lines of code.
  */
-abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\AbstractSourceImporter
+abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 
@@ -29,7 +29,8 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 
 	public function setDefines()
 	{
-		define('SMF', 1);
+		if (!defined('SMF'))
+			define('SMF', 1);
 	}
 
 	public function dbConnectionData()
@@ -283,6 +284,19 @@ abstract class AbstractSourceSmfImporter extends \OpenImporter\Importers\Abstrac
 			}
 		}
 		$this->db->free_result($request);
+
+		return $rows;
+	}
+
+	public function preparseMembers($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
+
+			$rows[] = $row;
+		}
 
 		return $rows;
 	}
