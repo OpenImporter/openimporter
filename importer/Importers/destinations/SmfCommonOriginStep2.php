@@ -200,6 +200,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			$post_groups[] = $row;
 		$this->db->free_result($request);
 
+		if (empty($max))
+			return;
+
 		$case = "CASE WHEN posts > " . $max['min_posts'] . " THEN " . $max['id_group'];
 
 		$first = true;
