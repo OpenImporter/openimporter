@@ -396,9 +396,15 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
+			$row['approved'] = (int) $row['approved'];
 			// @todo deal with soft-deleted topics!
 			if ($row['approved'] > 1)
 				continue;
+
+			$row['id_previous_board'] = (int) $row['id_previous_board'];
+			$row['id_previous_topic'] = (int) $row['id_previous_topic'];
+			$row['unapproved_posts'] = (int) $row['unapproved_posts'];
+
 			$rows[] = $row;
 		}
 
@@ -410,6 +416,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
+			$row['approved'] = (int) $row['approved'];
 			// @todo deal with soft-deleted messages!
 			if ($row['approved'] > 1)
 				continue;
