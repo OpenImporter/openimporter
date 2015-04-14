@@ -96,10 +96,6 @@ class Importer
 		$this->lng = $lang;
 		$this->template = $template;
 
-		// The current step - starts at 0.
-		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
-		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
-
 		$this->reloadImporter();
 	}
 
@@ -217,7 +213,7 @@ class Importer
 	public function determineProgress()
 	{
 		$progress_counter = 0;
-		$counter_current_step = 0;
+		$counter_current_step = 1;
 		$import_steps = array();
 		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
 
@@ -255,16 +251,20 @@ class Importer
 		$xmlParser->setImporter($this->stepInstance('Step1'));
 		$xmlParser->setSkeleton($this->skeleton);
 
+		$count = 1;
 		foreach ($this->xml->step as $step)
 		{
 			if (isset($step->detect))
-				$this->config->progress->count[$substep] = $xmlParser->detect((string) $step->detect);
+				$this->config->progress->step[$substep] = $xmlParser->detect((string) $step->detect);
+
+			// pre sql queries first!!
+			$this->doPresqlStep($id, $substep);
 
 			do
 			{
 				$this->config->progress->pastTime($substep);
 
-				$rows = $xmlParser->processSource($step, $substep, $do_steps);
+				$rows = $xmlParser->processSource($step, $substep, $do_steps, $count);
 
 				$rows = $this->stepDefaults($rows, (string) $step['id']);
 
@@ -272,10 +272,11 @@ class Importer
 
 				$xmlParser->insertRows($rows);
 
-				$this->advanceSubstep($substep);
+				$this->advanceSubstep($count);
 			} while ($xmlParser->stillRunning());
 
-			$_REQUEST['start'] = 0;
+			$this->config->progress->start = 0;
+			$count++;
 		}
 	}
 

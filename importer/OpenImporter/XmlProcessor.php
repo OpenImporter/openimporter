@@ -95,20 +95,17 @@ class XmlProcessor
 		$this->skeleton = $skeleton;
 	}
 
-	public function processSource($step, &$substep, &$do_steps)
+	public function processSource($step, &$substep, &$do_steps, $key)
 	{
 		$this->current_step = $step;
 		$id = ucFirst($this->current_step['id']);
 
 		// @todo do detection on destination side (e.g. friendly urls)
-		$table_test = $this->updateStatus($substep, $do_steps);
+		$table_test = $this->updateStatus($substep, $do_steps, $key);
 
 		// do we need to skip this step?
 		if ($table_test === false || !in_array($substep, $do_steps))
 			return;
-
-		// pre sql queries first!!
-		$this->doPresqlStep($id, $substep);
 
 		$from_code = $this->doCode();
 
@@ -122,8 +119,7 @@ class XmlProcessor
 		else
 		{
 			// sql block?
-			// @todo $_GET
-			if ($substep >= $_GET['substep'] && isset($this->current_step->query))
+			if ($substep >= $this->config->progress->substep && isset($this->current_step->query))
 			{
 				return $this->doSql();
 			}
@@ -161,10 +157,9 @@ class XmlProcessor
 
 		$rows = $this->config->source->callMethod('preparse' . $id, $newrow);
 
-		// @todo $_REQUEST
-		$_REQUEST['start'] += $special_limit;
+		$this->config->progress->start += $special_limit;
 
-		$this->completed = $this->source_db->num_rows($special_result) > $special_limit;
+		$this->completed = $this->source_db->num_rows($special_result) < $special_limit;
 
 		$this->source_db->free_result($special_result);
 
@@ -173,7 +168,7 @@ class XmlProcessor
 
 	public function stillRunning()
 	{
-		return !empty($this->completed);
+		return empty($this->completed);
 	}
 
 	protected function getPreparsecode()
@@ -228,47 +223,47 @@ class XmlProcessor
 	/**
 	 * @todo extract the detection step
 	 */
-	protected function updateStatus(&$substep, &$do_steps)
+	protected function updateStatus(&$substep, &$do_steps, $key)
 	{
 		$table_test = true;
 
 		// Increase the substep slightly...
 		$this->config->progress->pastTime(++$substep);
 
-		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
-		if (!isset($_SESSION['import_steps'][$substep]['status']))
-			$_SESSION['import_steps'][$substep]['status'] = 0;
+		$_SESSION['import_steps'][$key]['title'] = (string) $this->current_step->title;
+		if (!isset($_SESSION['import_steps'][$key]['status']))
+			$_SESSION['import_steps'][$key]['status'] = 0;
 
-		if ($_SESSION['import_steps'][$substep]['status'] == 0)
+		if ($_SESSION['import_steps'][$key]['status'] == 0)
 		{
-			if (!in_array($substep, $do_steps))
+			if (!in_array($key, $do_steps))
 			{
-				$_SESSION['import_steps'][$substep]['status'] = 2;
-				$_SESSION['import_steps'][$substep]['presql'] = true;
+				$_SESSION['import_steps'][$key]['status'] = 2;
+				$_SESSION['import_steps'][$key]['presql'] = true;
 			}
 			// Detect the table, then count rows..
-			elseif ($this->current_step->detect)
+			if ($this->current_step->detect)
 			{
 				$table_test = $this->detect((string) $this->current_step->detect);
 
 				if ($table_test === false)
 				{
-					$_SESSION['import_steps'][$substep]['status'] = 3;
-					$_SESSION['import_steps'][$substep]['presql'] = true;
+					$_SESSION['import_steps'][$key]['status'] = 3;
+					$_SESSION['import_steps'][$key]['presql'] = true;
 				}
 			}
 		}
-		else
-			$table_test = false;
+		elseif ($this->current_step->detect)
+			$table_test = $this->detect((string) $this->current_step->detect);
 
-		$this->template->status($substep, $_SESSION['import_steps'][$substep]['status'], $_SESSION['import_steps'][$substep]['title']);
+// 		$this->template->status($key, $_SESSION['import_steps'][$key]['status'], $_SESSION['import_steps'][$key]['title']);
 
 		return $table_test;
 	}
 
 	protected function doPresqlStep($id, $substep)
 	{
-		if (isset($_SESSION['import_steps'][$substep]['presql']))
+		if (!empty($_SESSION['import_steps'][$substep]['presql']))
 			return;
 
 		$this->step1_importer->callMethod('before' . ucFirst($id));
@@ -364,11 +359,15 @@ class XmlProcessor
 
 	protected function prepareSpecialResult($current_data, $special_limit)
 	{
-		// @todo $_REQUEST
+		$start = $this->config->progress->start;
+		$stop = $this->config->progress->start + $special_limit - 1;
+
 		if (strpos($current_data, '%d') !== false)
-			return $this->source_db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+			return $this->source_db->query(sprintf($current_data, $start, $stop) . "\n" . 'LIMIT ' . $special_limit);
 		else
-			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+		{
+			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $start . ', ' . $special_limit);
+		}
 
 	}
 }

@@ -293,8 +293,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			if ($numRows < 200)
 				break;
 
-			// @todo this should not deal with $_REQUEST and alike
-			$_REQUEST['start'] += 200;
+			$this->config->progress->start += 200;
 			$this->config->progress->pastTime(6);
 		}
 	}
@@ -336,8 +335,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			if ($numRows < 200)
 				break;
 
-			// @todo this should not deal with $_REQUEST and alike
-			$_REQUEST['start'] += 100;
+			$this->config->progress->start += 100;
 			$this->config->progress->pastTime(7);
 		}
 	}
@@ -528,7 +526,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		list ($attachments) = $this->db->fetch_row($request);
 		$this->db->free_result($request);
 
-		while ($_REQUEST['start'] < $attachments)
+		while ($this->config->progress->start < $attachments)
 		{
 			$request = $this->db->query("
 				SELECT id_attach, filename, attachment_type, id_folder
@@ -566,7 +564,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 
 			// More?
 			// We can't keep importing the same files over and over again!
-			$_REQUEST['start'] += 500;
+			$this->config->progress->start += 500;
 			$this->config->progress->pastTime(11);
 		}
 	}

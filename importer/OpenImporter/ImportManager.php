@@ -114,9 +114,7 @@ class ImportManager
 	{
 		$this->findScript();
 
-		// The current step - starts at 0.
-		$this->response->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
-		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
+		$this->response->step = $this->config->progress->step;
 
 		$this->loadPass();
 
@@ -223,8 +221,8 @@ class ImportManager
 
 		if (isset($_GET['action']) && $_GET['action'] == 'validate')
 			$this->validateFields();
-		elseif (method_exists($this, 'doStep' . $_GET['step']))
-			call_user_func(array($this, 'doStep' . $_GET['step']));
+		elseif (method_exists($this, 'doStep' . $this->config->progress->step))
+			call_user_func(array($this, 'doStep' . $this->config->progress->step));
 		else
 			$this->doStep0();
 
@@ -487,17 +485,13 @@ class ImportManager
 			throw new \Exception($e->getMessage());
 		}
 
-		$_GET['substep'] = 0;
-		$_REQUEST['start'] = 0;
+		$this->config->progress->start = 0;
 
 		return $this->doStep2();
 	}
 
 	protected function step1Progress()
 	{
-
-		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
-
 		// Skipping steps?
 		if (isset($_SESSION['do_steps']))
 			$do_steps = $_SESSION['do_steps'];
@@ -522,13 +516,13 @@ class ImportManager
 	 */
 	public function doStep2()
 	{
-		$this->response->step = $_GET['step'] = '2';
+		$this->response->step = $this->config->progress->step = '2';
 
 		$this->template->step2();
 
 		try
 		{
-			$key = $this->importer->doStep2($_GET['substep']);
+			$key = $this->importer->doStep2($this->config->progress->substep);
 		}
 		catch (DatabaseException $e)
 		{

@@ -407,7 +407,7 @@ class Template
 		</div>
 		<div id="main">';
 
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && (bool) $inner === true)
+		if ($this->config->progress->step == 1 || $this->config->progress->step == 2) && (bool) $inner === true)
 			echo '
 			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
@@ -613,8 +613,11 @@ class Template
 	 * @param int $bar
 	 * @param int $value
 	 * @param int $max
+	 * @param int $step
+	 * @param int $substep
+	 * @param int $start
 	 */
-	public function timeLimit($bar, $value, $max)
+	public function timeLimit($bar, $value, $max, $step, $substep, $start)
 	{
 		if (!empty($bar))
 			echo '
@@ -629,7 +632,7 @@ class Template
 			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', $this->lng->get('overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
 			<p>', $this->lng->get('importer_paused'), '</p>
 
-			<form action="', $_SERVER['PHP_SELF'], '?step=', $_GET['step'], isset($_GET['substep']) ? '&amp;substep=' . $_GET['substep'] : '', '&amp;start=', $_REQUEST['start'], '" method="post" name="autoSubmit">
+			<form action="', $_SERVER['PHP_SELF'], '?step=', $step, '&amp;substep=', $substep, '&amp;start=', $start, '" method="post" name="autoSubmit">
 				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', $this->lng->get('continue'),'" /></div>
 			</form>
 

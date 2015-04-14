@@ -20,13 +20,42 @@ class ProgressTracker
 	protected $start_time = 0;
 	protected $stop_time = 5;
 	protected $template = null;
-	public $count = array();
+	protected $current_step = 0;
+	public $step = array();
+	public $start = 0;
+	public $substep = 0;
 
-	public function __construct(Template $template, $stop_time = 5)
+	public function __construct(Template $template, $start, $substep, $stop_time = 5)
 	{
 		$this->start_time = time();
 		$this->stop_time = $stop_time;
 		$this->template = $template;
+		$this->start = $start;
+		$this->substep = $substep;
+	}
+
+	public function setStep($step)
+	{
+		if (!isset($this->step[$step]))
+		{
+			$this->step[$step] = array(
+				'substep' => 0,
+				'presql' => true,
+				'status' => 0,
+			);
+			$this->current_step = $step;
+		}
+	}
+
+	protected function initBar($start = 0, $substep = 0)
+	{
+		// some details for our progress bar
+		if (isset($this->step[$substep]) && $this->step[$substep] > 0 && $start > 0 && isset($substep))
+			$bar = round($start / $this->step[$substep] * 100, 0);
+		else
+			$bar = false;
+
+		return $bar;
 	}
 
 	/**
@@ -37,14 +66,8 @@ class ProgressTracker
 	 */
 	public function pastTime($substep = null)
 	{
-		if (isset($_GET['substep']) && $_GET['substep'] < $substep)
-			$_GET['substep'] = $substep;
-
 		// some details for our progress bar
-		if (isset($this->count[$substep]) && $this->count[$substep] > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
-			$bar = round($_REQUEST['start'] / $this->count[$substep] * 100, 0);
-		else
-			$bar = false;
+		$bar = $this->initBar($start, $substep);
 
 		@set_time_limit(300);
 		if (is_callable('apache_reset_timeout'))
@@ -53,6 +76,6 @@ class ProgressTracker
 		if (time() - $this->start_time < $this->stop_time)
 			return;
 
-		throw new PasttimeException($this->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
+		throw new PasttimeException($this->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall'], $this->current_step, $this->substep, $this->start);
 	}
 }

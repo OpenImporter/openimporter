@@ -116,7 +116,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		foreach ($indexes as $index_info)
 			$this->db->alter_table("{$this->config->to_prefix}topics", $index_info);
 
-		$_REQUEST['start'] = 0;
+		$this->config->progress->start = 0;
 		$this->config->progress->pastTime(13);
 	}
 
@@ -178,7 +178,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		foreach ($indexes as $index_info)
 			$this->db->alter_table("{$this->config->to_prefix}messages", $index_info);
 
-		$_REQUEST['start'] = 0;
+		$this->config->progress->start = 0;
 		$this->config->progress->pastTime(14);
 	}
 }
