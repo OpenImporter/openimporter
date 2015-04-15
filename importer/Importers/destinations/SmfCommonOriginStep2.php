@@ -291,7 +291,10 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			$this->db->free_result($resultTopic);
 
 			if ($numRows < 200)
+			{
+				$this->config->progress->stepCompleted();
 				break;
+			}
 
 			$this->config->progress->start += 200;
 			$this->config->progress->pastTime(6);
@@ -333,7 +336,10 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			$this->db->free_result($resultTopic);
 
 			if ($numRows < 200)
+			{
+				$this->config->progress->stepCompleted();
 				break;
+			}
 
 			$this->config->progress->start += 100;
 			$this->config->progress->pastTime(7);
@@ -538,7 +544,10 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 				LIMIT $_REQUEST[start], 500");
 
 			if ($this->db->num_rows($request) == 0)
+			{
+				$this->config->progress->stepCompleted();
 				break;
+			}
 
 			while ($row = $this->db->fetch_assoc($request))
 			{

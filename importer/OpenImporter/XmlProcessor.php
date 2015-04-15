@@ -95,7 +95,7 @@ class XmlProcessor
 		$this->skeleton = $skeleton;
 	}
 
-	public function processSource($step, &$substep, $key)
+	public function processSource($step, $key)
 	{
 		$this->current_step = $step;
 		$id = ucFirst($this->current_step['id']);
@@ -109,14 +109,13 @@ class XmlProcessor
 			$this->completed = true;
 			return $from_code;
 		}
-		else
+		// sql block?
+		elseif (isset($this->current_step->query))
 		{
-			// sql block?
-			if ($substep >= $this->config->progress->substep && isset($this->current_step->query))
-			{
-				return $this->doSql();
-			}
+			return $this->doSql();
 		}
+
+		return array();
 	}
 
 	public function getStepTable($id)
@@ -140,8 +139,8 @@ class XmlProcessor
 
 		$newrow = array();
 
-		if (isset($this->current_step->detect))
-			$_SESSION['import_progress'] += $special_limit;
+		$_SESSION['import_progress'] += $special_limit;
+		$this->config->progress->start += $special_limit;
 
 		while ($row = $this->source_db->fetch_assoc($special_result))
 		{
@@ -149,8 +148,6 @@ class XmlProcessor
 		}
 
 		$rows = $this->config->source->callMethod('preparse' . $id, $newrow);
-
-		$this->config->progress->start += $special_limit;
 
 		$this->completed = $this->source_db->num_rows($special_result) < $special_limit;
 
@@ -194,11 +191,16 @@ class XmlProcessor
 	 * Counts the records in a table of the source database
 	 * @todo move to ProgressTracker
 	 *
-	 * @param string the table name
+	 * @param object $step
 	 * @return int the number of records in the table
 	 */
-	public function getCurrent($table)
+	public function getCurrent($step)
 	{
+		if (!isset($step->detect))
+			return false;
+
+		$table = $this->fixParams((string) $step->detect);
+
 		$count = $this->fixParams($table);
 		$request = $this->source_db->query("
 			SELECT COUNT(*)

@@ -236,6 +236,7 @@ class Importer
 			if (!$xmlParser->detect($step))
 				continue;
 
+			$this->config->progress->max = $xmlParser->getCurrent($step);
 			// @todo do detection on destination side (e.g. friendly urls)
 
 			// pre sql queries first!!
@@ -247,7 +248,7 @@ class Importer
 				$this->config->progress->pastTime($substep);
 
 				// Get the data
-				$rows = $xmlParser->processSource($step, $substep, $count);
+				$rows = $xmlParser->processSource($step, $count);
 
 				// This is done here because we count substeps based on the number of rows
 				// of the source database, though when processed the count may change for
@@ -264,9 +265,10 @@ class Importer
 				$xmlParser->insertRows($rows);
 
 				// Next round!
-				$this->advanceSubstep($substep_increment);
+				$this->progress->advanceSubstep($substep_increment);
 			} while ($xmlParser->stillRunning());
 
+			$substep++;
 			$this->config->progress->stepCompleted();
 		}
 	}
@@ -310,8 +312,6 @@ class Importer
 
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
-	 *
-	 * @return boolean
 	 */
 	public function doStep2()
 	{
@@ -319,7 +319,7 @@ class Importer
 
 		$methods = get_class_methods($instance);
 		$substeps = array();
-		$substep = 0;
+		$substep = -1;
 		foreach ($methods as $method)
 		{
 			if (substr($method, 0, 7) !== 'substep')
@@ -329,18 +329,20 @@ class Importer
 		}
 		ksort($substeps);
 
-		foreach ($substeps as $key => $method)
+		foreach ($substeps as $method)
 		{
-			if ($substep <= $key)
-			{
-				call_user_func(array($instance, $method));
-			}
-
 			$substep++;
-			$this->config->progress->pastTime($substep);
-		}
+			$this->config->progress->setStep($substep);
 
-		return $key;
+			$this->config->progress->pastTime($substep);
+
+			if ($this->progress->isStepCompleted())
+				continue;
+
+			call_user_func(array($instance, $method));
+
+			$this->config->progress->stepCompleted();
+		}
 	}
 
 	/**

@@ -114,8 +114,6 @@ class ImportManager
 	{
 		$this->findScript();
 
-		$this->response->step = $this->config->progress->current_step;
-
 		$this->loadPass();
 
 		$this->loadPaths();
@@ -428,7 +426,7 @@ class ImportManager
 	{
 		$this->cookie->destroy();
 		//previously imported? we need to clean some variables ..
-		unset($_SESSION['import_overall']);
+		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status']);
 
 		if ($this->detectScripts())
 			return true;
@@ -472,7 +470,7 @@ class ImportManager
 	{
 		$this->cookie->set(array($this->config->path_to, $this->config->path_from));
 
-// 		$do_steps = $this->step1Progress();
+		$this->response->step = 1;
 
 		try
 		{
@@ -500,13 +498,14 @@ class ImportManager
 	 */
 	public function doStep2()
 	{
-		$this->response->step = $this->config->progress->current_step = '2';
+		$this->response->step = '2';
+		$this->config->progress->resetStep();
 
 		$this->template->step2();
 
 		try
 		{
-			$key = $this->importer->doStep2($this->config->progress->substep);
+			$this->importer->doStep2($this->config->progress->substep);
 		}
 		catch (DatabaseException $e)
 		{
@@ -536,7 +535,8 @@ class ImportManager
 		$this->response->use_template = 'step3';
 		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
-		unset($_SESSION['import_progress'], $_SESSION['import_overall']);
+		unset($_SESSION['import_progress']);
+		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status']);
 		$this->data = array();
 
 		return true;

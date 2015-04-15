@@ -117,6 +117,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$this->db->alter_table("{$this->config->to_prefix}topics", $index_info);
 
 		$this->config->progress->start = 0;
+		$this->config->progress->stepCompleted();
 		$this->config->progress->pastTime(13);
 	}
 
@@ -179,6 +180,7 @@ class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$this->db->alter_table("{$this->config->to_prefix}messages", $index_info);
 
 		$this->config->progress->start = 0;
+		$this->config->progress->stepCompleted();
 		$this->config->progress->pastTime(14);
 	}
 }

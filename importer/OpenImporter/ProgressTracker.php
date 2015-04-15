@@ -25,7 +25,9 @@ class ProgressTracker
 	protected $do_not_stop = false;
 	public $step = array();
 	public $start = 0;
+	public $max = 0;
 	public $substep = 0;
+	public $do_steps = null;
 
 	public function __construct(Template $template, Configurator $config, $options)
 	{
@@ -92,6 +94,11 @@ class ProgressTracker
 		return $bar;
 	}
 
+	public function resetStep()
+	{
+		$this->step = array();
+	}
+
 	public function isStepCompleted()
 	{
 		return isset($this->step[$this->current_step]) && $this->step[$this->current_step]['completed'];
@@ -133,7 +140,7 @@ class ProgressTracker
 		if (time() - $this->start_time < $this->stop_time || $this->do_not_stop)
 			return;
 
-		throw new PasttimeException($this->template, $bar, $_SESSION['import_progress'], $_SESSION['import_overall'], $this->current_step, $this->substep, $this->start);
+		throw new PasttimeException($this->template, $bar, $_SESSION['import_progress'], $this->max, $this->current_step, $this->start);
 	}
 
 	protected function store()

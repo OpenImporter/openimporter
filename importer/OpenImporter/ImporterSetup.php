@@ -201,19 +201,21 @@ class ImporterSetup
 		if ($this->config->boardurl === false)
 			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
 
-		if (!$this->config->destination->verifyDbPass($this->data['db_pass']))
+		if ($this->config->destination->verifyDbPass($this->data['db_pass']) === false)
 			throw new \Exception($this->lng->get('password_incorrect'));
 
 		// Check the steps that we have decided to go through.
-		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
+		if (empty($_POST['do_steps']) && $this->config->progress->do_steps === null)
 		{
 			throw new \Exception($this->lng->get('select_step'));
 		}
 		elseif (isset($_POST['do_steps']))
 		{
-			$_SESSION['do_steps'] = array();
 			foreach ($_POST['do_steps'] as $key => $step)
-				$_SESSION['do_steps'][$key] = $step;
+			{
+				$this->config->progress->setStep($key);
+				$this->config->progress->stepCompleted();
+			}
 		}
 	}
 
