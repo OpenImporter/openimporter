@@ -541,12 +541,11 @@ class Template
 	/**
 	 * Display notification with the given status
 	 *
-	 * @param int $substep
 	 * @param int $status
 	 * @param string $title
 	 * @param bool $hide = false
 	 */
-	public function status($substep, $status, $title, $hide = false)
+	public function status($status, $title, $hide = false)
 	{
 		if (isset($title) && (bool) $hide === false)
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';

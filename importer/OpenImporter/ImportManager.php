@@ -535,7 +535,7 @@ class ImportManager
 			throw new \Exception($e->getMessage());
 		}
 
-		$this->template->status($key + 1, 1, false, true);
+		$this->template->status(1, false, true);
 
 		return $this->doStep3();
 	}

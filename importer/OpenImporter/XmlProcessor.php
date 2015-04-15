@@ -256,12 +256,12 @@ class XmlProcessor
 // 		elseif ($this->current_step->detect)
 // 			$table_test = $this->detect((string) $this->current_step->detect);
 // 
-// // 		$this->template->status($key, $_SESSION['import_steps'][$key]['status'], $_SESSION['import_steps'][$key]['title']);
+// // 		$this->template->status($_SESSION['import_steps'][$key]['status'], $_SESSION['import_steps'][$key]['title']);
 // 
 // 		return $table_test;
 // 	}
 
-	public function doPresqlStep($id, $substep)
+	public function doPreSqlStep($id)
 	{
 		if ($this->config->progress->isPreSqlDone())
 			return;

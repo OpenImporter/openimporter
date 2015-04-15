@@ -5,12 +5,6 @@
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
  * @version 2.0 Alpha
- *
- * This file contains code based on:
- *
- * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Core;
@@ -241,8 +235,6 @@ class Importer
 	 */
 	public function doStep1()
 	{
-		$substep = 0;
-
 		$skeleton = new Parser();
 		$this->skeleton = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
@@ -253,6 +245,8 @@ class Importer
 		$count = 0;
 		foreach ($this->xml->step as $step)
 		{
+			$substep = 0;
+
 			// Having the counter here ensures it is always increased no matter what.
 			$count++;
 
@@ -266,21 +260,32 @@ class Importer
 				continue;
 
 			// pre sql queries first!!
-			$xmlParser->doPresqlStep($id, $substep);
+			$xmlParser->doPreSqlStep($id);
 
 			do
 			{
+				// Time is up?
 				$this->config->progress->pastTime($substep);
 
+				// Get the data
 				$rows = $xmlParser->processSource($step, $substep, $count);
 
+				// This is done here because we count substeps based on the number of rows
+				// of the source database, though when processed the count may change for
+				// example because of a different database schema.
+				$substep_increment = count($rows);
+
+				// Adds the defaults
 				$rows = $this->stepDefaults($rows, (string) $step['id']);
 
+				// Prepares for insertion
 				$rows = $xmlParser->processDestination($step['id'], $rows);
 
+				// Dumps data into the database
 				$xmlParser->insertRows($rows);
 
-				$this->advanceSubstep($count);
+				// Next round!
+				$this->advanceSubstep($substep_increment);
 			} while ($xmlParser->stillRunning());
 
 			$this->config->progress->stepCompleted();
@@ -293,15 +298,6 @@ class Importer
 		$step1_importer = new $step1_importer_class($this->db, $this->config);
 
 		return $step1_importer;
-	}
-
-	protected function advanceSubstep($substep)
-	{
-		if ($_SESSION['import_steps'][$substep]['status'] == 0)
-			$this->template->status($substep, 1, false, true);
-
-		$_SESSION['import_steps'][$substep]['status'] = 1;
-		flush();
 	}
 
 	protected function stepDefaults($rows, $id)
