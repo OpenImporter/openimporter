@@ -1,2 +1,2 @@
-phpunit --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/
-phpunit --bootstrap importer/Importers/sources/Tests/EnvInit.php importer/Importers/sources/Tests/
+phpunit --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/ --process-isolation
+phpunit --bootstrap importer/Importers/sources/Tests/EnvInit.php importer/Importers/sources/Tests/ --process-isolation

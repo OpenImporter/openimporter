@@ -50,7 +50,7 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 
 	protected function setUp()
 	{
-		$this->utils['db'] = new DummyDb(new CustomDbValues());
+		$this->utils['db'] = new DummyDb(new CustomMybb16Values());
 		// @todo this should be detected from the XML?
 		$this->utils['importer'] = new MyBB1_6_Importer();
 		$this->utils['importer']->setUtils($this->utils['db'], new DummyConfig());
@@ -83,7 +83,7 @@ class mybb16Test extends \PHPUnit_Framework_TestCase
 	}
 }
 
-class CustomDbValues extends CustomDb
+class CustomMybb16Values extends CustomDb
 {
 	protected $queries = array();
 

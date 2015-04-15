@@ -2,7 +2,8 @@
 
 use Symfony\Component\ClassLoader\Psr4ClassLoader;
 
-define('BASEDIR', __DIR__ . '/../../..');
+if (!defined('BASEDIR'))
+	define('BASEDIR', __DIR__ . '/../../..');
 
 // Composer stuff
 require_once(BASEDIR . '/vendor/autoload.php');
@@ -26,3 +27,4 @@ if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, 
 error_reporting(E_ALL);
 ignore_user_abort(true);
 umask(0);
+@date_default_timezone_set("Europe/London");
