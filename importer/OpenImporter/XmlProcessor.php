@@ -95,18 +95,18 @@ class XmlProcessor
 		$this->skeleton = $skeleton;
 	}
 
-	public function processSource($step, &$substep, &$do_steps, $key)
+	public function processSource($step, &$substep, $key)
 	{
 		$this->current_step = $step;
 		$id = ucFirst($this->current_step['id']);
 
-		// @todo do detection on destination side (e.g. friendly urls)
-		$table_test = $this->updateStatus($substep, $do_steps, $key);
-
-		// do we need to skip this step?
-		if ($table_test === false || !in_array($substep, $do_steps))
-			return;
-
+// 		// @todo do detection on destination side (e.g. friendly urls)
+// 		$table_test = $this->updateStatus($substep, $do_steps, $key);
+// 
+// 		// do we need to skip this step?
+// 		if ($table_test === false || !in_array($substep, $do_steps))
+// 			return;
+// 
 		$from_code = $this->doCode();
 
 		// Codeblock? Then no query.
@@ -220,57 +220,57 @@ class XmlProcessor
 		return $current;
 	}
 
-	/**
-	 * @todo extract the detection step
-	 */
-	protected function updateStatus(&$substep, &$do_steps, $key)
+// 	/**
+// 	 * @todo extract the detection step
+// 	 */
+// 	protected function updateStatus(&$substep, &$do_steps, $key)
+// 	{
+// 		$table_test = true;
+// 
+// 		// Increase the substep slightly...
+// 		$this->config->progress->pastTime(++$substep);
+// 
+// 		$_SESSION['import_steps'][$key]['title'] = (string) $this->current_step->title;
+// 		if (!isset($_SESSION['import_steps'][$key]['status']))
+// 			$_SESSION['import_steps'][$key]['status'] = 0;
+// 
+// 		if ($_SESSION['import_steps'][$key]['status'] == 0)
+// 		{
+// 			if (!in_array($key, $do_steps))
+// 			{
+// 				$_SESSION['import_steps'][$key]['status'] = 2;
+// 				$_SESSION['import_steps'][$key]['presql'] = true;
+// 			}
+// 			// Detect the table, then count rows..
+// 			if ($this->current_step->detect)
+// 			{
+// 				$table_test = $this->detect((string) $this->current_step->detect);
+// 
+// 				if ($table_test === false)
+// 				{
+// 					$_SESSION['import_steps'][$key]['status'] = 3;
+// 					$_SESSION['import_steps'][$key]['presql'] = true;
+// 				}
+// 			}
+// 		}
+// 		elseif ($this->current_step->detect)
+// 			$table_test = $this->detect((string) $this->current_step->detect);
+// 
+// // 		$this->template->status($key, $_SESSION['import_steps'][$key]['status'], $_SESSION['import_steps'][$key]['title']);
+// 
+// 		return $table_test;
+// 	}
+
+	public function doPresqlStep($id, $substep)
 	{
-		$table_test = true;
-
-		// Increase the substep slightly...
-		$this->config->progress->pastTime(++$substep);
-
-		$_SESSION['import_steps'][$key]['title'] = (string) $this->current_step->title;
-		if (!isset($_SESSION['import_steps'][$key]['status']))
-			$_SESSION['import_steps'][$key]['status'] = 0;
-
-		if ($_SESSION['import_steps'][$key]['status'] == 0)
-		{
-			if (!in_array($key, $do_steps))
-			{
-				$_SESSION['import_steps'][$key]['status'] = 2;
-				$_SESSION['import_steps'][$key]['presql'] = true;
-			}
-			// Detect the table, then count rows..
-			if ($this->current_step->detect)
-			{
-				$table_test = $this->detect((string) $this->current_step->detect);
-
-				if ($table_test === false)
-				{
-					$_SESSION['import_steps'][$key]['status'] = 3;
-					$_SESSION['import_steps'][$key]['presql'] = true;
-				}
-			}
-		}
-		elseif ($this->current_step->detect)
-			$table_test = $this->detect((string) $this->current_step->detect);
-
-// 		$this->template->status($key, $_SESSION['import_steps'][$key]['status'], $_SESSION['import_steps'][$key]['title']);
-
-		return $table_test;
-	}
-
-	protected function doPresqlStep($id, $substep)
-	{
-		if (!empty($_SESSION['import_steps'][$substep]['presql']))
+		if ($this->config->progress->isPreSqlDone())
 			return;
 
 		$this->step1_importer->callMethod('before' . ucFirst($id));
 		$this->config->source->callMethod('before' . ucFirst($id));
 
 		// don't do this twice..
-		$_SESSION['import_steps'][$substep]['presql'] = true;
+		$this->config->progress->preSqlDone();
 	}
 
 	protected function doCode()
@@ -287,9 +287,12 @@ class XmlProcessor
 		return false;
 	}
 
-	public function detect($table)
+	public function detect($step)
 	{
-		$table = $this->fixParams($table);
+		if (!isset($step->detect))
+			return false;
+
+		$table = $this->fixParams((string) $step->detect);
 		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fixParams($table));
 
 		$db_name_str = $this->config->source->getDbName();

@@ -19,18 +19,24 @@ class PasttimeException extends \Exception
 	protected $bar;
 	protected $import_progress;
 	protected $import_overall;
+	protected $step;
+	protected $substep;
+	protected $start;
 
-	public function __construct(Template $template, $bar, $import_progress, $import_overall)
+	public function __construct(Template $template, $bar, $import_progress, $import_overall, $step, $substep, $start)
 	{
 		$this->template = $template;
 		$this->bar = $bar;
 		$this->import_progress = $import_progress;
 		$this->import_overall = $import_overall;
+		$this->step = $step;
+		$this->substep = $substep;
+		$this->start = $start;
 	}
 
 	public function doExit()
 	{
-		$this->template->timeLimit($this->bar, $this->import_progress, $this->import_overall);
+		$this->template->timeLimit($this->bar, $this->import_progress, $this->import_overall, $this->step, $this->substep, $this->start);
 		$this->template->footer();
 	}
 }

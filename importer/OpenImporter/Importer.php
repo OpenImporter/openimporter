@@ -237,10 +237,9 @@ class Importer
 	 * The important one, transfer the content from the source forum to our
 	 * destination system.
 	 *
-	 * @param int $do_steps
 	 * @return boolean
 	 */
-	public function doStep1($do_steps)
+	public function doStep1()
 	{
 		$substep = 0;
 
@@ -251,20 +250,29 @@ class Importer
 		$xmlParser->setImporter($this->stepInstance('Step1'));
 		$xmlParser->setSkeleton($this->skeleton);
 
-		$count = 1;
+		$count = 0;
 		foreach ($this->xml->step as $step)
 		{
-			if (isset($step->detect))
-				$this->config->progress->step[$substep] = $xmlParser->detect((string) $step->detect);
+			// Having the counter here ensures it is always increased no matter what.
+			$count++;
+
+			$this->progress->setStep($count);
+
+			if ($this->progress->isStepCompleted())
+				continue;
+
+			// If there is a table to detect, and it's not there... guess?
+			if (!$xmlParser->detect($step))
+				continue;
 
 			// pre sql queries first!!
-			$this->doPresqlStep($id, $substep);
+			$xmlParser->doPresqlStep($id, $substep);
 
 			do
 			{
 				$this->config->progress->pastTime($substep);
 
-				$rows = $xmlParser->processSource($step, $substep, $do_steps, $count);
+				$rows = $xmlParser->processSource($step, $substep, $count);
 
 				$rows = $this->stepDefaults($rows, (string) $step['id']);
 
@@ -275,8 +283,7 @@ class Importer
 				$this->advanceSubstep($count);
 			} while ($xmlParser->stillRunning());
 
-			$this->config->progress->start = 0;
-			$count++;
+			$this->config->progress->stepCompleted();
 		}
 	}
 

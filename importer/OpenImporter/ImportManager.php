@@ -114,7 +114,7 @@ class ImportManager
 	{
 		$this->findScript();
 
-		$this->response->step = $this->config->progress->step;
+		$this->response->step = $this->config->progress->current_step;
 
 		$this->loadPass();
 
@@ -161,15 +161,17 @@ class ImportManager
 
 	protected function loadFromSession()
 	{
-		if (empty($_SESSION['importer_data']))
-			return;
+		if (!empty($_SESSION['importer_data']))
+			$this->data = $_SESSION['importer_data'];
 
-		$this->data = $_SESSION['importer_data'];
+		if (!empty($_SESSION['importer_progress_status']))
+			$this->config->store['progress'] = $_SESSION['importer_progress_status'];
 	}
 
 	protected function saveInSession()
 	{
 		$_SESSION['importer_data'] = $this->data;
+		$_SESSION['importer_progress_status'] = $this->config->store['progress'];
 	}
 
 	/**
@@ -221,8 +223,8 @@ class ImportManager
 
 		if (isset($_GET['action']) && $_GET['action'] == 'validate')
 			$this->validateFields();
-		elseif (method_exists($this, 'doStep' . $this->config->progress->step))
-			call_user_func(array($this, 'doStep' . $this->config->progress->step));
+		elseif (method_exists($this, 'doStep' . $this->config->progress->current_step))
+			call_user_func(array($this, 'doStep' . $this->config->progress->current_step));
 		else
 			$this->doStep0();
 
@@ -470,11 +472,11 @@ class ImportManager
 	{
 		$this->cookie->set(array($this->config->path_to, $this->config->path_from));
 
-		$do_steps = $this->step1Progress();
+// 		$do_steps = $this->step1Progress();
 
 		try
 		{
-			$this->importer->doStep1($do_steps);
+			$this->importer->doStep1();
 		}
 		catch (DatabaseException $e)
 		{
@@ -490,23 +492,23 @@ class ImportManager
 		return $this->doStep2();
 	}
 
-	protected function step1Progress()
-	{
-		// Skipping steps?
-		if (isset($_SESSION['do_steps']))
-			$do_steps = $_SESSION['do_steps'];
-		else
-			$do_steps = array();
-
-		//calculate our overall time and create the progress bar
-		if(!isset($_SESSION['import_overall']))
-			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
-
-		if(!isset($_SESSION['import_progress']))
-			$_SESSION['import_progress'] = 0;
-
-		return $do_steps;
-	}
+// 	protected function step1Progress()
+// 	{
+// 		// Skipping steps?
+// 		if (isset($_SESSION['do_steps']))
+// 			$do_steps = $_SESSION['do_steps'];
+// 		else
+// 			$do_steps = array();
+// 
+// 		//calculate our overall time and create the progress bar
+// 		if(!isset($_SESSION['import_overall']))
+// 			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
+// 
+// 		if(!isset($_SESSION['import_progress']))
+// 			$_SESSION['import_progress'] = 0;
+// 
+// 		return $do_steps;
+// 	}
 
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
@@ -516,7 +518,7 @@ class ImportManager
 	 */
 	public function doStep2()
 	{
-		$this->response->step = $this->config->progress->step = '2';
+		$this->response->step = $this->config->progress->current_step = '2';
 
 		$this->template->step2();
 
