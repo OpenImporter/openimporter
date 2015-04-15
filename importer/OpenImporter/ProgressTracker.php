@@ -151,7 +151,7 @@ class ProgressTracker
 	public function advanceSubstep($substep)
 	{
 		if ($this->step[$this->current_step]['status'] == 0)
-			$this->template->status(1, false, true);
+			$this->template->status(1, '', true);
 
 		$this->step[$this->current_step]['status'] = 1;
 		$this->step[$this->current_step]['substep'] += $substep;

@@ -516,7 +516,7 @@ class ImportManager
 			throw new \Exception($e->getMessage());
 		}
 
-		$this->template->status(1, false, true);
+		$this->template->status(1, '', true);
 
 		return $this->doStep3();
 	}

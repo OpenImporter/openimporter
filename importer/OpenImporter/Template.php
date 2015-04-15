@@ -547,7 +547,7 @@ class Template
 	 */
 	public function status($status, $title, $hide = false)
 	{
-		if (isset($title) && (bool) $hide === false)
+		if (!empty($title) && (bool) $hide === false)
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
 
 		if ($status == 1)
