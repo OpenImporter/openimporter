@@ -27,14 +27,28 @@ class ProgressTracker
 	public $start = 0;
 	public $substep = 0;
 
-	public function __construct(Template $template, Configurator $config, $start, $substep, $stop_time = 5)
+	public function __construct(Template $template, Configurator $config, $options)
 	{
+		$defaults = array(
+			'start' => 0,
+			'substep' => 0,
+			'stop_time' => 5,
+		);
+
+		foreach ($defaults as $key => $val)
+		{
+			$real = isset($options[$key]) ? (int) $options[$key] : $val;
+
+			// This condition covers the vase of stop_time set externally to 0
+			if (empty($real))
+				$real = $val;
+
+			$this->{$key} = $real;
+		}
+
 		$this->start_time = time();
-		$this->stop_time = $stop_time;
 		$this->template = $template;
 		$this->config = $config;
-		$this->start = $start;
-		$this->substep = $substep;
 	}
 
 	public function doNotStop()

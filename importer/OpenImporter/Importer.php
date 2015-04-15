@@ -204,29 +204,6 @@ class Importer
 		return $steps;
 	}
 
-	public function determineProgress()
-	{
-		$progress_counter = 0;
-		$counter_current_step = 1;
-		$import_steps = array();
-		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
-
-		// loop through each step
-		foreach ($this->xml->step as $counts)
-		{
-			if ($counts->detect)
-			{
-				$current = $xmlParser->getCurrent((string) $counts->detect);
-
-				$progress_counter = $progress_counter + $current;
-
-				$import_steps[$counter_current_step]['counter'] = $current;
-			}
-			$counter_current_step++;
-		}
-		return array($progress_counter, $import_steps);
-	}
-
 	/**
 	 * The important one, transfer the content from the source forum to our
 	 * destination system.
@@ -258,6 +235,8 @@ class Importer
 			// If there is a table to detect, and it's not there... guess?
 			if (!$xmlParser->detect($step))
 				continue;
+
+			// @todo do detection on destination side (e.g. friendly urls)
 
 			// pre sql queries first!!
 			$xmlParser->doPreSqlStep($id);

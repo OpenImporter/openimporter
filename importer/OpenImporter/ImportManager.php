@@ -428,7 +428,7 @@ class ImportManager
 	{
 		$this->cookie->destroy();
 		//previously imported? we need to clean some variables ..
-		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
+		unset($_SESSION['import_overall']);
 
 		if ($this->detectScripts())
 			return true;
@@ -492,24 +492,6 @@ class ImportManager
 		return $this->doStep2();
 	}
 
-// 	protected function step1Progress()
-// 	{
-// 		// Skipping steps?
-// 		if (isset($_SESSION['do_steps']))
-// 			$do_steps = $_SESSION['do_steps'];
-// 		else
-// 			$do_steps = array();
-// 
-// 		//calculate our overall time and create the progress bar
-// 		if(!isset($_SESSION['import_overall']))
-// 			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
-// 
-// 		if(!isset($_SESSION['import_progress']))
-// 			$_SESSION['import_progress'] = 0;
-// 
-// 		return $do_steps;
-// 	}
-
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
@@ -554,7 +536,7 @@ class ImportManager
 		$this->response->use_template = 'step3';
 		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
 
-		unset($_SESSION['import_steps'], $_SESSION['import_progress'], $_SESSION['import_overall']);
+		unset($_SESSION['import_progress'], $_SESSION['import_overall']);
 		$this->data = array();
 
 		return true;

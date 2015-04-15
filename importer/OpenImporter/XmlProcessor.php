@@ -100,13 +100,6 @@ class XmlProcessor
 		$this->current_step = $step;
 		$id = ucFirst($this->current_step['id']);
 
-// 		// @todo do detection on destination side (e.g. friendly urls)
-// 		$table_test = $this->updateStatus($substep, $do_steps, $key);
-// 
-// 		// do we need to skip this step?
-// 		if ($table_test === false || !in_array($substep, $do_steps))
-// 			return;
-// 
 		$from_code = $this->doCode();
 
 		// Codeblock? Then no query.
@@ -199,6 +192,7 @@ class XmlProcessor
 
 	/**
 	 * Counts the records in a table of the source database
+	 * @todo move to ProgressTracker
 	 *
 	 * @param string the table name
 	 * @return int the number of records in the table
@@ -219,47 +213,6 @@ class XmlProcessor
 
 		return $current;
 	}
-
-// 	/**
-// 	 * @todo extract the detection step
-// 	 */
-// 	protected function updateStatus(&$substep, &$do_steps, $key)
-// 	{
-// 		$table_test = true;
-// 
-// 		// Increase the substep slightly...
-// 		$this->config->progress->pastTime(++$substep);
-// 
-// 		$_SESSION['import_steps'][$key]['title'] = (string) $this->current_step->title;
-// 		if (!isset($_SESSION['import_steps'][$key]['status']))
-// 			$_SESSION['import_steps'][$key]['status'] = 0;
-// 
-// 		if ($_SESSION['import_steps'][$key]['status'] == 0)
-// 		{
-// 			if (!in_array($key, $do_steps))
-// 			{
-// 				$_SESSION['import_steps'][$key]['status'] = 2;
-// 				$_SESSION['import_steps'][$key]['presql'] = true;
-// 			}
-// 			// Detect the table, then count rows..
-// 			if ($this->current_step->detect)
-// 			{
-// 				$table_test = $this->detect((string) $this->current_step->detect);
-// 
-// 				if ($table_test === false)
-// 				{
-// 					$_SESSION['import_steps'][$key]['status'] = 3;
-// 					$_SESSION['import_steps'][$key]['presql'] = true;
-// 				}
-// 			}
-// 		}
-// 		elseif ($this->current_step->detect)
-// 			$table_test = $this->detect((string) $this->current_step->detect);
-// 
-// // 		$this->template->status($_SESSION['import_steps'][$key]['status'], $_SESSION['import_steps'][$key]['title']);
-// 
-// 		return $table_test;
-// 	}
 
 	public function doPreSqlStep($id)
 	{

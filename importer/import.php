@@ -67,11 +67,8 @@ catch (\Exception $e)
 }
 
 $template = new Template($lng);
-$start = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
-$step = isset($_REQUEST['step']) ? (int) $_REQUEST['step'] : 0;
-$substep = isset($_REQUEST['substep']) ? (int) $_REQUEST['substep'] : 0;
 
-$OI_configurator->progress = new ProgressTracker($template, $OI_configurator, $start, $substep);
+$OI_configurator->progress = new ProgressTracker($template, $OI_configurator, $_REQUEST);
 
 try
 {
