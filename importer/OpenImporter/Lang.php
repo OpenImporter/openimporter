@@ -117,7 +117,7 @@ class Lang
 	/**
 	 * Returns the value of the specified $key in lang.
 	 *
-	 * @param string $key Name of the variable
+	 * @param string|string[] $key Name of the variable
 	 * @return string|null Value of the specified $key
 	 */
 	public function get($key)
