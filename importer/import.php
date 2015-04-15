@@ -66,7 +66,7 @@ catch (\Exception $e)
 	ImportException::exceptionHandler($e);
 }
 
-$template = new Template($lng);
+$template = new Template($lng, $OI_configurator);
 
 $OI_configurator->progress = new ProgressTracker($template, $OI_configurator, $_REQUEST);
 

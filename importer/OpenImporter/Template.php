@@ -9,8 +9,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\DummyLang;
-
 /**
  * this is our UI
  *
@@ -19,13 +17,12 @@ class Template
 {
 	protected $response = null;
 	protected $lng = null;
+	protected $config = null;
 
-	public function __construct(Lang $lng)
+	public function __construct(Lang $lng, Configurator $config)
 	{
-		if ($lng === null)
-			$lng = new DummyLang();
-
 		$this->lng = $lng;
+		$this->config = $config;
 	}
 
 	/**

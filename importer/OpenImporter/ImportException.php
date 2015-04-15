@@ -10,6 +10,8 @@
 namespace OpenImporter\Core;
 
 use OpenImporter\Core\Template;
+use OpenImporter\Core\DummyLang;
+use OpenImporter\Core\Configurator;
 
 /**
  * class ImportException extends the build-in Exception class and
@@ -53,7 +55,7 @@ class ImportException extends \Exception
 			if (!empty(self::$import))
 				$template = self::$import->template;
 			else
-				$template = new Template(null);
+				$template = new Template(new DummyLang(), new Configurator());
 		}
 		$message = $exception->getMessage();
 		$trace = $exception->getTrace();
