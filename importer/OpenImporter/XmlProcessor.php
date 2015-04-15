@@ -98,7 +98,6 @@ class XmlProcessor
 	public function processSource($step, $key)
 	{
 		$this->current_step = $step;
-		$id = ucFirst($this->current_step['id']);
 
 		$from_code = $this->doCode();
 

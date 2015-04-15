@@ -240,7 +240,7 @@ class Importer
 			// @todo do detection on destination side (e.g. friendly urls)
 
 			// pre sql queries first!!
-			$xmlParser->doPreSqlStep($step['id']);
+			$xmlParser->doPreSqlStep(Ucfirst($step['id']));
 
 			do
 			{
