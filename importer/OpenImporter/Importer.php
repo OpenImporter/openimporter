@@ -227,9 +227,9 @@ class Importer
 			// Having the counter here ensures it is always increased no matter what.
 			$count++;
 
-			$this->progress->setStep($count);
+			$this->config->progress->setStep($count);
 
-			if ($this->progress->isStepCompleted())
+			if ($this->config->progress->isStepCompleted())
 				continue;
 
 			// If there is a table to detect, and it's not there... guess?
@@ -265,7 +265,7 @@ class Importer
 				$xmlParser->insertRows($rows);
 
 				// Next round!
-				$this->progress->advanceSubstep($substep_increment);
+				$this->config->progress->advanceSubstep($substep_increment);
 			} while ($xmlParser->stillRunning());
 
 			$substep++;
@@ -336,7 +336,7 @@ class Importer
 
 			$this->config->progress->pastTime($substep);
 
-			if ($this->progress->isStepCompleted())
+			if ($this->config->progress->isStepCompleted())
 				continue;
 
 			call_user_func(array($instance, $method));
