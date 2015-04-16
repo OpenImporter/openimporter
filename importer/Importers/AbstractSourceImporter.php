@@ -75,10 +75,10 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 		if (empty($this->setting_file))
 			return true;
 
-		// Error silenced in case of odd server configurations (open_basedir mainly)
 		if ($this->testPath($path))
 		{
-			include($path . $this->setting_file);
+			// Error silenced in case the settings file defines constants and related "Constant already defined"
+			@include($path . $this->setting_file);
 			return true;
 		}
 		else
