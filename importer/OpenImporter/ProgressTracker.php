@@ -21,7 +21,7 @@ class ProgressTracker
 	protected $stop_time = 5;
 	protected $template = null;
 	protected $config = null;
-	protected $current_step = 0;
+	public $current_step = 0;
 	protected $do_not_stop = false;
 	public $step = array();
 	public $start = 0;
