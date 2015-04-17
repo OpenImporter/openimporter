@@ -13,7 +13,6 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use OpenImporter\Core\DatabaseException;
 
 /**
  * The database class.
@@ -24,7 +23,8 @@ use OpenImporter\Core\DatabaseException;
 class Database
 {
 	/**
-	 *
+	 * The database connection
+	 * @var Doctrine\DBAL\Connection
 	 */
 	protected $con;
 
@@ -80,6 +80,14 @@ class Database
 		return $this->con->errorCode();
 	}
 
+	/**
+	 * Inserts a set of data into a table using a certain method (type)
+	 *
+	 * @param string $table The table name
+	 * @param mixed[] $data The array of data
+	 * @param string $type The way the data are going to be inserted
+	 *                 update/replace/ignore/anything
+	 */
 	public function insert($table, $data, $type)
 	{
 		if ($type === 'update' || $type === 'replace')
@@ -90,6 +98,13 @@ class Database
 			$this->con->insert($table, $data);
 	}
 
+	/**
+	 * Execute and INSERT IGNORE
+	 *
+	 * @param string $table The table name
+	 * @param mixed[] $data The array of data
+	 * @throws \Exception in case something is wrong
+	 */
 	public function insertIgnore($table, $data)
 	{
 		try

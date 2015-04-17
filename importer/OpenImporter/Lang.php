@@ -17,8 +17,12 @@ namespace OpenImporter\Core;
  */
 class Lang
 {
+	/**
+	 * The array holding the strings
+	 *
+	 * @var string[]
+	 */
 	protected $_lang = array();
-	protected $_ns = array();
 
 	/**
 	 * Adds a new variable to lang.
@@ -48,7 +52,6 @@ class Lang
 	/**
 	 * Loads the language xml file.
 	 *
-	 * @return null
 	 * @throws \Exception if it cannot find the XML file.
 	 * @throws ImportException if the XML file has got a corrupted structure.
 	 */
@@ -69,10 +72,15 @@ class Lang
 
 		foreach ($langObj as $strings)
 			$this->set((string) $strings->attributes()->{'name'}, (string) $strings);
-
-		return null;
 	}
 
+	/**
+	 * Finds out if the language we are looking for exists or not.
+	 *
+	 * @param string $path The path to look for the language file
+	 * @param string $language The name of the language
+	 * @return bool
+	 */
 	protected function findLanguage($path, $language)
 	{
 		$lngfile = false;
@@ -107,6 +115,12 @@ class Lang
 		return isset($this->_lang[$key]);
 	}
 
+	/**
+	 * Getter
+	 *
+	 * @param string|int $key
+	 * @return string|int|bool|null|object
+	 */
 	public function __get($key)
 	{
 		return $this->get($key);

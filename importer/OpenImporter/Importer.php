@@ -92,17 +92,29 @@ class Importer
 		$this->reloadImporter();
 	}
 
+	/**
+	 * initialize the $data variable
+	 * @param mixed[] $data
+	 */
 	public function setData($data)
 	{
 		$this->data = $data;
 	}
 
+	/**
+	 * Runs this::loadImporter if there is a script to load.
+	 */
 	public function reloadImporter()
 	{
 		if (!empty($this->config->script))
 			$this->loadImporter($this->config->script);
 	}
 
+	/**
+	 * Starts up the importer using ImporterSetup and sets the variables needed.
+	 *
+	 * @param string[] $files
+	 */
 	protected function loadImporter($files)
 	{
 		$setup = new ImporterSetup($this->config, $this->lng, $this->data);
@@ -115,6 +127,12 @@ class Importer
 		$this->_importer_base_class_name = $setup->getBaseClass();
 	}
 
+	/**
+	 * Sets up the Form object with the standard fields and those required by
+	 * the configuration file.
+	 *
+	 * @param Form $form
+	 */
 	public function populateFormFields(Form $form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
@@ -272,6 +290,12 @@ class Importer
 		}
 	}
 
+	/**
+	 * Sets up an instance of a step object for the destination script.
+	 *
+	 * @param string $step
+	 * @return object
+	 */
 	protected function stepInstance($step)
 	{
 		$step1_importer_class = $this->_importer_base_class_name . $step;
@@ -280,6 +304,12 @@ class Importer
 		return $step1_importer;
 	}
 
+	/**
+	 * Adds default values for rows of data from a certain step
+	 *
+	 * @param mixed[] $rows
+	 * @param string $id
+	 */
 	protected function stepDefaults($rows, $id)
 	{
 		if (empty($rows))
