@@ -14,9 +14,6 @@ use OpenImporter\Core\Form;
 /**
  * Object ImportManager loads the main importer.
  * It handles all steps to completion.
- * @todo path_to should be source-specific (i.e. in /Importers/whatever/source_importer.php
- * @todo path_from should be destination-specific (i.e. in /Importers/whatever/whatever_importer.php
- *
  */
 class ImportManager
 {
@@ -65,36 +62,6 @@ class ImportManager
 	public $data = array();
 
 	/**
-	 * The path to the source forum.
-	 * @var string
-	 */
-	protected $path_from = null;
-
-	/**
-	 * The path to the destination forum.
-	 * @var string
-	 */
-	protected $path_to = null;
-
-	/**
-	 * The importer script which will be used for the import.
-	 * @var string
-	 */
-	protected $_script = null;
-
-	/**
-	 * This is the URL from our Installation.
-	 * @var string
-	 */
-	protected $_boardurl = '';
-
-	/**
-	 * The database password?
-	 * @var string
-	 */
-	protected $db_pass = '';
-
-	/**
 	 * initialize the main Importer object
 	 */
 	public function __construct(Configurator $config, Importer $importer, Template $template, Cookie $cookie, HttpResponse $response)
@@ -134,9 +101,6 @@ class ImportManager
 		// Check for the password...
 		if (isset($_POST['db_pass']))
 			$this->data['db_pass'] = $_POST['db_pass'];
-
-		if (isset($this->data['db_pass']))
-			$this->db_pass = $this->data['db_pass'];
 	}
 
 	protected function loadPaths()
@@ -536,7 +500,7 @@ class ImportManager
 		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 
 		$this->response->use_template = 'step3';
-		$this->response->params_template = array($this->importer->xml->general->name, $this->_boardurl, $writable);
+		$this->response->params_template = array($this->importer->xml->general->name, $this->config->boardurl, $writable);
 
 		unset($_SESSION['import_progress']);
 		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status']);
