@@ -78,7 +78,7 @@ class Lang
 	 * Finds out if the language we are looking for exists or not.
 	 *
 	 * @param string $path The path to look for the language file
-	 * @param string $language The name of the language
+	 * @param string[] $language The name of the language
 	 * @return bool
 	 */
 	protected function findLanguage($path, $language)
@@ -165,7 +165,7 @@ class Lang
 	/**
 	 * This is used to detect the Client's browser language.
 	 *
-	 * @return string the shortened string of the browser's language.
+	 * @return string[] the shortened string of the browser's language.
 	 */
 	protected function detectBrowserLanguage()
 	{

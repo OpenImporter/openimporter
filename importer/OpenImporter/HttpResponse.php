@@ -86,7 +86,7 @@ class HttpResponse
 	 * Wrapper for ResponseHeader::set
 	 *
 	 * @param string $key
-	 * @param mixed[] $val
+	 * @param string $val
 	 */
 	public function addHeader($key, $val)
 	{
@@ -96,7 +96,7 @@ class HttpResponse
 	/**
 	 * Errors happen, this function adds a new one to the list.
 	 *
-	 * @param mixed[] $error_message
+	 * @param mixed|mixed[] $error_message
 	 */
 	public function addErrorParam($error_message)
 	{
