@@ -205,13 +205,14 @@ class ImporterSetup
 			throw new \Exception($this->lng->get('password_incorrect'));
 
 		// Check the steps that we have decided to go through.
-		if (empty($_POST['do_steps']) && !$this->config->progress->doStepsDefined())
-		{
-			throw new \Exception($this->lng->get('select_step'));
-		}
-		elseif (isset($_POST['do_steps']))
+		if (!empty($_POST['do_steps']))
 		{
 			$this->config->progress->doSteps($_POST['do_steps']);
+		}
+
+		if (!$this->config->progress->doStepsDefined())
+		{
+			throw new \Exception($this->lng->get('select_step'));
 		}
 	}
 
