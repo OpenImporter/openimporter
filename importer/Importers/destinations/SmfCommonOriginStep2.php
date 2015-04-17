@@ -271,7 +271,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 					LEFT JOIN {$to_prefix}messages AS m ON (m.id_topic = t.id_topic)
 				GROUP BY t.id_topic
 				HAVING num_msg = 0
-				LIMIT $_REQUEST[start], 200");
+				LIMIT {$this->config->progress->start}, 200");
 
 			$numRows = $this->db->num_rows($resultTopic);
 
@@ -316,7 +316,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 					LEFT JOIN {$to_prefix}messages AS m ON (m.id_topic = t.id_topic)
 				GROUP BY t.id_topic
 				HAVING id_first_msg != myid_first_msg OR id_last_msg != myid_last_msg OR num_replies != my_num_replies
-				LIMIT $_REQUEST[start], 200");
+				LIMIT {$this->config->progress->start}, 200");
 
 			$numRows = $this->db->num_rows($resultTopic);
 
@@ -541,7 +541,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 					AND (RIGHT(filename, 4) IN ('.gif', '.jpg', '.png', '.bmp') OR RIGHT(filename, 5) = '.jpeg')
 					AND width = 0
 					AND height = 0
-				LIMIT $_REQUEST[start], 500");
+				LIMIT {$this->config->progress->start}, 500");
 
 			if ($this->db->num_rows($request) == 0)
 			{
