@@ -267,6 +267,19 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		return $rows;
 	}
 
+	public function preparsePools($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['guest_vote'] = (int) $row['guest_vote'];
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
 	protected function translateGender($gender)
 	{
 		if ($gender === 'Male')
