@@ -474,7 +474,7 @@ class Template
 			echo '
 				<p>', $this->lng->get('not_found'), '</p>
 				<p>', $this->lng->get('not_found_download'), '</p>
-				<a href="', $this->response->scripturl, '?import_script=">', $this->lng->get('try_again'), '</a>';
+				<a href="', $this->response->scripturl, '?reset">', $this->lng->get('try_again'), '</a>';
 
 		echo '
 			</div>

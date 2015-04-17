@@ -265,7 +265,7 @@ class Importer
 				$xmlParser->insertRows($rows);
 
 				// Next round!
-				$this->config->progress->advanceSubstep($substep_increment);
+				$this->config->progress->advanceSubstep($substep_increment, (string) $step->title);
 			} while ($xmlParser->stillRunning());
 
 			$substep++;

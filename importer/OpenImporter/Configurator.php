@@ -25,6 +25,7 @@ namespace OpenImporter\Core;
 class Configurator
 {
 	protected $data = array();
+	public $store = array();
 
 	public function __set($key, $val)
 	{

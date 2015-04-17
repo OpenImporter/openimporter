@@ -99,8 +99,6 @@ class ImportManager
 	 */
 	public function __construct(Configurator $config, Importer $importer, Template $template, Cookie $cookie, HttpResponse $response)
 	{
-		$this->loadFromSession();
-
 		$this->config = $config;
 		$this->importer = $importer;
 		$this->cookie = $cookie;
@@ -108,6 +106,8 @@ class ImportManager
 		$this->response = $response;
 		$this->lng = $importer->lng;
 		$this->response->lng = $importer->lng;
+
+		$this->loadFromSession();
 	}
 
 	public function setupScripts()
@@ -159,17 +159,20 @@ class ImportManager
 
 	protected function loadFromSession()
 	{
+		if (!isset($_SESSION['import_progress']))
+			$_SESSION['import_progress'] = 0;
+
 		if (!empty($_SESSION['importer_data']))
 			$this->data = $_SESSION['importer_data'];
 
 		if (!empty($_SESSION['importer_progress_status']))
-			$this->config->store['progress'] = $_SESSION['importer_progress_status'];
+			$this->config->store = $_SESSION['importer_progress_status'];
 	}
 
 	protected function saveInSession()
 	{
 		$_SESSION['importer_data'] = $this->data;
-		$_SESSION['importer_progress_status'] = $this->config->store['progress'];
+		$_SESSION['importer_progress_status'] = $this->config->store;
 	}
 
 	/**
@@ -221,8 +224,8 @@ class ImportManager
 
 		if (isset($_GET['action']) && $_GET['action'] == 'validate')
 			$this->validateFields();
-		elseif (method_exists($this, 'doStep' . $this->config->progress->current_step))
-			call_user_func(array($this, 'doStep' . $this->config->progress->current_step));
+		elseif (method_exists($this, 'doStep' . $this->config->progress->step))
+			call_user_func(array($this, 'doStep' . $this->config->progress->step));
 		else
 			$this->doStep0();
 

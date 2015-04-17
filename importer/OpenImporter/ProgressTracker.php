@@ -23,15 +23,17 @@ class ProgressTracker
 	protected $config = null;
 	public $current_step = 0;
 	protected $do_not_stop = false;
-	public $step = array();
+	protected $do_steps = null;
+	protected $steps_collection = array();
 	public $start = 0;
 	public $max = 0;
 	public $substep = 0;
-	public $do_steps = null;
+	public $store = array();
 
 	public function __construct(Template $template, Configurator $config, $options)
 	{
 		$defaults = array(
+			'step' => 0,
 			'start' => 0,
 			'substep' => 0,
 			'stop_time' => 5,
@@ -58,15 +60,23 @@ class ProgressTracker
 		$this->do_not_stop = true;
 	}
 
+	public function doStepsDefined()
+	{
+		if (empty($this->do_steps) && !empty($this->config->store['do_steps']))
+			$this->do_steps = $this->config->store['do_steps'];
+
+		return $this->do_steps !== null;
+	}
+
 	public function setStep($step)
 	{
 		// Obvious comment is obvious: if the step is not yet set, let's initialize it
-		if (!isset($this->step[$step]))
+		if (!isset($this->steps_collection[$step]))
 		{
 			// If have never encountered that step some good default is fine
 			if (empty($this->config->store['progress'][$step]))
 			{
-				$this->step[$step] = array(
+				$this->steps_collection[$step] = array(
 					'substep' => 0,
 					'presql' => false,
 					'status' => 0,
@@ -76,18 +86,28 @@ class ProgressTracker
 			// If we know already that step from the past, let's restore it
 			else
 			{
-				$this->step[$step] = $this->config->store['progress'][$step];
+				$this->steps_collection[$step] = $this->config->store['progress'][$step];
 			}
 
 			$this->current_step = $step;
 		}
+
+		if ($this->skipStep($step))
+		{
+			$this->stepCompleted();
+		}
+	}
+
+	protected function skipStep($step)
+	{
+		return !empty($this->do_steps) && !in_array($step, $this->do_steps);
 	}
 
 	protected function initBar($start = 0, $substep = 0)
 	{
 		// some details for our progress bar
-		if (isset($this->step[$substep]) && $this->step[$substep] > 0 && $start > 0 && isset($substep))
-			$bar = round($start / $this->step[$substep] * 100, 0);
+		if (isset($this->steps_collection[$substep]) && $this->steps_collection[$substep] > 0 && $start > 0 && isset($substep))
+			$bar = round($start / $this->steps_collection[$substep] * 100, 0);
 		else
 			$bar = false;
 
@@ -96,28 +116,28 @@ class ProgressTracker
 
 	public function resetStep()
 	{
-		$this->step = array();
+		$this->steps_collection = array();
 	}
 
 	public function isStepCompleted()
 	{
-		return isset($this->step[$this->current_step]) && $this->step[$this->current_step]['completed'];
+		return isset($this->steps_collection[$this->current_step]) && $this->steps_collection[$this->current_step]['completed'];
 	}
 
 	public function stepCompleted()
 	{
 		$this->start = 0;
-		$this->step[$this->current_step]['completed'] = true;
+		$this->steps_collection[$this->current_step]['completed'] = true;
 	}
 
 	public function isPreSqlDone()
 	{
-		return !empty($this->step[$this->current_step]['presql']);
+		return !empty($this->steps_collection[$this->current_step]['presql']);
 	}
 
 	public function preSqlDone()
 	{
-		$this->step[$this->current_step]['presql'] = true;
+		$this->steps_collection[$this->current_step]['presql'] = true;
 	}
 
 	/**
@@ -129,7 +149,7 @@ class ProgressTracker
 	public function pastTime($substep = null)
 	{
 		// some details for our progress bar
-		$bar = $this->initBar($start, $substep);
+		$bar = $this->initBar($this->start, $substep);
 
 		$this->store();
 
@@ -145,16 +165,22 @@ class ProgressTracker
 
 	protected function store()
 	{
-		$this->config->store['progress'] = $this->step;
+		$this->config->store['progress'] = $this->steps_collection;
 	}
 
-	public function advanceSubstep($substep)
+	public function advanceSubstep($substep, $title)
 	{
-		if ($this->step[$this->current_step]['status'] == 0)
-			$this->template->status(1, '', true);
+		if ($this->steps_collection[$this->current_step]['status'] == 0)
+			$this->template->status(1, $title);
 
-		$this->step[$this->current_step]['status'] = 1;
-		$this->step[$this->current_step]['substep'] += $substep;
+		$this->steps_collection[$this->current_step]['status'] = 1;
+		$this->steps_collection[$this->current_step]['substep'] += $substep;
 		flush();
+	}
+
+	public function doSteps($steps)
+	{
+		$this->do_steps = (array) $steps;
+		$this->config->store['do_steps'] = $this->do_steps;
 	}
 }
