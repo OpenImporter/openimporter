@@ -15,9 +15,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\Database;
-use OpenImporter\Core\ImportException;
-
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.

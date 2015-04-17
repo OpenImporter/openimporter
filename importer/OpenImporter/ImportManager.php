@@ -9,8 +9,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\Form;
-
 /**
  * Object ImportManager loads the main importer.
  * It handles all steps to completion.

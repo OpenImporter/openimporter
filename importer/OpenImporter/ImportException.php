@@ -9,10 +9,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\Template;
-use OpenImporter\Core\DummyLang;
-use OpenImporter\Core\Configurator;
-
 /**
  * class ImportException extends the build-in Exception class and
  * catches potential errors

@@ -9,8 +9,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\ImportException;
-
 /**
  * Class Lang loads the appropriate language file(s) if they exist.
  *

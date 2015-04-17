@@ -10,7 +10,6 @@
 namespace OpenImporter\Core;
 
 use Symfony\Component\Yaml\Parser;
-use OpenImporter\Core\XmlProcessor;
 
 /**
  * Object Importer creates the main XML object.
