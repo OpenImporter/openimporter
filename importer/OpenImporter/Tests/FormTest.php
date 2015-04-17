@@ -59,7 +59,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers OpenImporter\Core\Configurator::addSeparator
+	 * @covers OpenImporter\Core\Form::addSeparator
 	 */
 	public function testAddSeparator()
 	{
