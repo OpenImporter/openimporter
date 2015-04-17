@@ -195,6 +195,23 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		// A non existing one
 		$this->assertEquals('random', $invoke_lang->random);
 	}
+
+	public function testHas()
+	{
+		$method = new \ReflectionMethod(
+			'OpenImporter\\Core\\Lang', 'set'
+		);
+
+		$method->setAccessible(true);
+
+		$invoke_lang = new Lang();
+		$method->invoke($invoke_lang, 'testing', 'an actual result');
+
+		// An existing string
+		$this->assertTrue($invoke_lang->has('testing'));
+		// A non existing one
+		$this->assertFalse($invoke_lang->has('random'));
+	}
 }
 
 /**
