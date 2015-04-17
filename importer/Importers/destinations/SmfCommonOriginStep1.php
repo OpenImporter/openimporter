@@ -72,10 +72,6 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		}
 
 		$this->db->free_result($result);
-
-		// This is valid for some of the sources (e.g. Elk/SMF/Wedge), but not for others
-		if (method_exists($this->config->source, 'getAttachmentDirs'))
-			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
 	}
 
 	/**
