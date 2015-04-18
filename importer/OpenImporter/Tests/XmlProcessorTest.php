@@ -13,4 +13,7 @@ use OpenImporter\Core\XmlProcessor;
 
 class XmlProcessorTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

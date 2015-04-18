@@ -13,4 +13,7 @@ use OpenImporter\Core\PasttimeException;
 
 class PasttimeExceptionTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

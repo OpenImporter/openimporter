@@ -13,4 +13,7 @@ use OpenImporter\Core\ImportException;
 
 class ImportExceptionTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

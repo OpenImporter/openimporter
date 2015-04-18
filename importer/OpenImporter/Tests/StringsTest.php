@@ -13,4 +13,7 @@ use OpenImporter\Core\Strings;
 
 class StringsTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

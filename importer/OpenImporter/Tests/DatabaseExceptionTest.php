@@ -6,4 +6,7 @@ use OpenImporter\Core\DatabaseException;
 
 class DatabaseExceptionTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

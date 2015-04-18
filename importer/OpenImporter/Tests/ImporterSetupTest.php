@@ -13,4 +13,7 @@ use OpenImporter\Core\ImporterSetup;
 
 class ImporterSetupTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

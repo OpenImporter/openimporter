@@ -13,4 +13,7 @@ use OpenImporter\Core\HttpResponse;
 
 class HttpResponseTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

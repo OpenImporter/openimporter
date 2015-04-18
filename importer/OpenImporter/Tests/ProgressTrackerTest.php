@@ -13,4 +13,7 @@ use OpenImporter\Core\ProgressTracker;
 
 class ProgressTrackerTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }

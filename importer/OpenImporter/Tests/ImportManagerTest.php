@@ -13,4 +13,7 @@ use OpenImporter\Core\ImportManager;
 
 class ImportManagerTest extends \PHPUnit_Framework_TestCase
 {
+	public function testNothing()
+	{
+	}
 }
