@@ -98,7 +98,7 @@ class Database
 	}
 
 	/**
-	 * Execute and INSERT IGNORE
+	 * Executes an INSERT IGNORE
 	 *
 	 * @param string $table The table name
 	 * @param mixed[] $data The array of data
