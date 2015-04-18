@@ -15,13 +15,17 @@
 
 namespace OpenImporter\Core;
 
+/**
+ * Class with a bunch of static methods to deal with copying files and all that.
+ * @todo consider using:
+ *    http://symfony.com/components/Filesystem
+ *    http://symfony.com/components/Finder
+ */
 class Files
 {
 	/**
-	 * helper function, simple file copy at all
-	 * @todo consider using:
-	 *    http://symfony.com/components/Filesystem
-	 *    http://symfony.com/components/Finder
+	 * Helper function, simple copies a file from a source to a destination.
+	 * If necessary creates the whole destination directory structure.
 	 *
 	 * @param string $source
 	 * @param string $destination
@@ -33,35 +37,17 @@ class Files
 
 		if (is_file($source))
 		{
-			copy($source, $destination);
-			return false;
+			return copy($source, $destination);
 		}
-		return true;
+		return false;
 	}
 
 	/**
-	 * @todo Apparently unused
+	 * Reads all the files in a directory recursively.
+	 *
+	 * @param string $base The directory to start from
+	 * @return string[] Full path of all the files.
 	 */
-	public static function copy_dir_recursive($source, $destination)
-	{
-		$source = rtrim($source, '\\/') . DIRECTORY_SEPARATOR;
-		$destination = rtrim($destination, '\\/') . DIRECTORY_SEPARATOR;
-		if (!file_exists($source))
-			return;
-		$dir = opendir($source);
-		Files::create_folders_recursive($destination);
-		while ($file = readdir($dir))
-		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-			if (is_dir($source . $file))
-				Files::copy_dir_recursive($source . $file, $destination . $file);
-			else
-				copy($source . $file, $destination . $file);
-		}
-	}
-
 	public static function get_files_recursive($base)
 	{
 		$files = array();
@@ -86,6 +72,11 @@ class Files
 		return $files;
 	}
 
+	/**
+	 * Creates a directory. If parents do not exist try to create them as well.
+	 *
+	 * @param string $path The full directory path
+	 */
 	public static function create_folders_recursive($path)
 	{
 		$parent = dirname($path);
@@ -95,40 +86,5 @@ class Files
 
 		if (!file_exists($path))
 			@mkdir($path, 0755);
-	}
-
-	/**
-	 * @todo Apparently unused
-	 *
-	 * function copy_dir copies a directory
-	 * @param string $source
-	 * @param string $dest
-	 * @return type
-	 */
-	public static function copy_dir($source, $dest)
-	{
-		if (!is_dir($source) || !($dir = opendir($source)))
-			return;
-
-		while ($file = readdir($dir))
-		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-				// If we have a directory create it on the destination and copy contents into it!
-			if (is_dir($source . DIRECTORY_SEPARATOR. $file))
-			{
-				if (!is_dir($dest))
-					@mkdir($dest, 0755);
-				Files::copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-			}
-			else
-			{
-				if (!is_dir($dest))
-					@mkdir($dest, 0755);
-				copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
-			}
-		}
-		closedir($dir);
 	}
 }
