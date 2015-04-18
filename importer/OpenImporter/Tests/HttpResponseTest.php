@@ -10,6 +10,7 @@
 namespace OpenImporter\Importers\sources\Tests;
 
 use OpenImporter\Core\HttpResponse;
+use OpenImporter\Core\ResponseHeader;
 
 class HttpResponseTest extends \PHPUnit_Framework_TestCase
 {
@@ -19,12 +20,12 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 	public function testSet()
 	{
 		$object = new \ReflectionClass('OpenImporter\\Core\\HttpResponse');
+		$instance = $object->newInstanceArgs(array(new ResponseHeader()));
 		$property = $object->getProperty('data');
 		$property->setAccessible(true);
 
 		//We need to create an empty object to pass to
 		//ReflectionProperty's getValue method
-		$instance = new HttpResponse();
 		$instance->test = 123;
 
 		$this->assertEquals(array('test' => 123), $property->getValue($instance));
@@ -35,7 +36,7 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGet()
 	{
-		$instance = new HttpResponse();
+		$instance = new HttpResponse(new ResponseHeader());
 		$instance->test = 123;
 
 		$this->assertEquals(123, $instance->test);
