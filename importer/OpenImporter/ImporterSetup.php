@@ -249,7 +249,9 @@ class ImporterSetup
 	{
 		try
 		{
-			$db = new Database($connectionParams);
+			$config = new Configuration();
+			$con = DriverManager::getConnection($connectionParams, $config);
+			$db = new Database($con);
 
 			if (empty($db))
 				throw new \Exception($this->lng->get(array('permission_denied', $db->getLastError(), $connectionParams['system_name'])));

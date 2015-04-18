@@ -38,12 +38,11 @@ class Database
 	/**
 	 * Constructor, connects to the database.
 	 *
-	 * @param string[] $connectionParams
+	 * @param object $con
 	 */
-	public function __construct($connectionParams)
+	public function __construct($con)
 	{
-		$config = new Configuration();
-		$this->con = DriverManager::getConnection($connectionParams, $config);
+		$this->con = $con;
 	}
 
 	/**
