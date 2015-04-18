@@ -13,7 +13,32 @@ use OpenImporter\Core\HttpResponse;
 
 class HttpResponseTest extends \PHPUnit_Framework_TestCase
 {
-	public function testNothing()
+	/**
+	 * @covers OpenImporter\Core\HttpResponse::__set
+	 */
+	public function testSet()
 	{
+		$object = new \ReflectionClass('OpenImporter\\Core\\HttpResponse');
+		$property = $object->getProperty('data');
+		$property->setAccessible(true);
+
+		//We need to create an empty object to pass to
+		//ReflectionProperty's getValue method
+		$instance = new HttpResponse();
+		$instance->test = 123;
+
+		$this->assertEquals(array('test' => 123), $property->getValue($instance));
+	}
+
+	/**
+	 * @covers OpenImporter\Core\HttpResponse::__get
+	 */
+	public function testGet()
+	{
+		$instance = new HttpResponse();
+		$instance->test = 123;
+
+		$this->assertEquals(123, $instance->test);
+		$this->assertNull($instance->nontest);
 	}
 }
