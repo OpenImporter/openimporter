@@ -24,11 +24,30 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 
 	protected $db = null;
 	protected $config = null;
+	protected $fields = array();
 
 	public function setUtils($db, $config)
 	{
 		$this->db = $db;
 		$this->config = $config;
+	}
+
+	public function setField($key, $val)
+	{
+		$this->fields[$key] = $val;
+	}
+
+	public function getAllFields()
+	{
+		return $this->fields;
+	}
+
+	public function getField($key)
+	{
+		if (isset($this->fields[$key]))
+			return $this->fields[$key];
+		else
+			return null;
 	}
 
 	abstract public function getName();
@@ -39,7 +58,7 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 
 	abstract public function getDbName();
 
-	abstract public function getTableTest();
+	abstract protected function getTableTest();
 
 	abstract public function dbConnectionData();
 
@@ -56,19 +75,29 @@ abstract class AbstractSourceImporter implements SourceImporterInterface
 		if (empty($this->setting_file))
 			return true;
 
-		// Error silenced in case of odd server configurations (open_basedir mainly)
 		if ($this->testPath($path))
 		{
-			include($path . $this->setting_file);
+			// Error silenced in case the settings file defines constants and related "Constant already defined"
+			@include($path . $this->setting_file);
 			return true;
 		}
 		else
 			return false;
 	}
 
+	protected function readSettingsFile()
+	{
+		static $content = null;
+
+		if ($content === null)
+			$content = file_get_contents($this->path . $this->setting_file);
+
+		return $content;
+	}
+
 	protected function testPath($path)
 	{
-		$found = @file_exists($path . $this->setting_file);
+		$found = file_exists($path . $this->setting_file);
 
 		if ($found)
 			$this->path = $path;

@@ -15,6 +15,8 @@
 
 namespace OpenImporter\Core;
 
+use OpenImporter\Core\Strings;
+
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
@@ -74,7 +76,7 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($db, $source_db, $config, $template, $xml)
+	public function __construct(Database $db, Database $source_db, Configurator $config, Template $template, \SimpleXMLElement $xml)
 	{
 		$this->db = $db;
 		$this->source_db = $source_db;
@@ -93,126 +95,77 @@ class XmlProcessor
 		$this->skeleton = $skeleton;
 	}
 
-	public function processSteps($step, &$substep, &$do_steps)
+	public function processSource($step, $key)
 	{
 		$this->current_step = $step;
-		$id = ucFirst($this->current_step['id']);
 
-		// @todo do detection on destination side (e.g. friendly urls)
-		$table_test = $this->updateStatus($substep, $do_steps);
-
-		// do we need to skip this step?
-		if ($table_test === false || !in_array($substep, $do_steps))
-			return;
-
-		// pre sql queries first!!
-		$this->doPresqlStep($id, $substep);
-
-		$special_table = strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
 		$from_code = $this->doCode();
 
 		// Codeblock? Then no query.
 		if (!empty($from_code))
 		{
-			$rows = $this->step1_importer->callMethod('preparse' . $id, $from_code);
-
-			$this->insertRows($rows, $special_table);
+			// @todo consider delegate the complete definition to some code in the source importer
+			$this->completed = true;
+			return $from_code;
 		}
-		else
+		// sql block?
+		elseif (isset($this->current_step->query))
 		{
-			// sql block?
-			// @todo $_GET
-			if ($substep >= $_GET['substep'] && isset($this->current_step->query))
-			{
-				$this->doSql($substep, $special_table);
-
-				$_REQUEST['start'] = 0;
-			}
+			return $this->doSql();
 		}
 
-		$this->advanceSubstep($substep);
+		return array();
 	}
 
-	/**
-	 * @todo one day, doSql will just take care of the current inner loop, while the outer will be somewhere else
-	 */
-	protected function doSql($substep, $special_table)
+	public function getStepTable($id)
 	{
-		$current_data = rtrim(trim($this->fix_params((string) $this->current_step->query)), ';');
-		$id = ucFirst($this->current_step['id']);
+		return strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
+	}
 
-		$this->doDetect($substep);
+	public function processDestination($id, $rows)
+	{
+		return $this->step1_importer->callMethod('preparse' . $id, $rows);
+	}
+
+	protected function doSql()
+	{
+		$current_data = rtrim(trim($this->fixParams((string) $this->current_step->query)), ';');
+		$id = ucFirst($this->current_step['id']);
 
 		$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
-		while (true)
+		$special_result = $this->prepareSpecialResult($current_data, $special_limit);
+
+		$newrow = array();
+
+		$_SESSION['import_progress'] += $special_limit;
+		$this->config->progress->start += $special_limit;
+
+		while ($row = $this->source_db->fetch_assoc($special_result))
 		{
-			pastTime($substep);
-
-			$special_result = $this->prepareSpecialResult($current_data, $special_limit);
-
-			$rows = array();
-
-			if (isset($this->current_step->detect))
-				$_SESSION['import_progress'] += $special_limit;
-
-			while ($row = $this->source_db->fetch_assoc($special_result))
-			{
-				$newrow = array($row);
-				$newrow = $this->config->source->callMethod('preparse' . $id, $newrow);
-				$newrow = $this->stepDefaults($newrow, (string) $this->current_step['id']);
-				$newrow = $this->step1_importer->callMethod('preparse' . $id, $newrow);
-
-				if (!empty($newrow))
-				{
-					$rows = array_merge($rows, $newrow);
-				}
-			}
-
-			$this->insertRows($rows, $special_table);
-
-			// @todo $_REQUEST
-			$_REQUEST['start'] += $special_limit;
-
-			if ($this->source_db->num_rows($special_result) < $special_limit)
-				break;
-
-			$this->source_db->free_result($special_result);
+			$newrow[] = $row;
 		}
+
+		$rows = $this->config->source->callMethod('preparse' . $id, $newrow);
+
+		$this->completed = $this->source_db->num_rows($special_result) < $special_limit;
+
+		$this->source_db->free_result($special_result);
+
+		return $rows;
 	}
 
-	protected function insertRows($rows, $special_table)
+	public function stillRunning()
 	{
-		if (empty($rows) || empty($special_table))
-			return;
-
-		$insert_statement = $this->insertStatement($this->current_step->options);
-		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
-
-		foreach ($rows as $row)
-		{
-			if (empty($ignore_slashes))
-				$row = addslashes_recursive($row);
-
-			$this->db->insert($special_table, $row, $insert_statement);
-		}
+		return empty($this->completed);
 	}
 
 	protected function getPreparsecode()
 	{
 		if (!empty($this->current_step->preparsecode))
-			return $this->fix_params((string) $this->current_step->preparsecode);
+			return $this->fixParams((string) $this->current_step->preparsecode);
 		else
 			return null;
-	}
-
-	protected function advanceSubstep($substep)
-	{
-		if ($_SESSION['import_steps'][$substep]['status'] == 0)
-			$this->template->status($substep, 1, false, true);
-
-		$_SESSION['import_steps'][$substep]['status'] = 1;
-		flush();
 	}
 
 	/**
@@ -221,16 +174,13 @@ class XmlProcessor
 	 * @param string string in which parameters are replaced
 	 * @return string
 	 */
-	protected function fix_params($string)
+	protected function fixParams($string)
 	{
-		if (isset($_SESSION['import_parameters']))
+		foreach ($this->config->source->getAllFields() as $key => $value)
 		{
-			foreach ($_SESSION['import_parameters'] as $param)
-			{
-				foreach ($param as $key => $value)
-					$string = strtr($string, array('{$' . $key . '}' => $value));
-			}
+			$string = strtr($string, array('{$' . $key . '}' => $value));
 		}
+
 		$string = strtr($string, array('{$from_prefix}' => $this->config->from_prefix, '{$to_prefix}' => $this->config->to_prefix));
 
 		return $string;
@@ -238,13 +188,19 @@ class XmlProcessor
 
 	/**
 	 * Counts the records in a table of the source database
+	 * @todo move to ProgressTracker
 	 *
-	 * @param string the table name
+	 * @param object $step
 	 * @return int the number of records in the table
 	 */
-	public function getCurrent($table)
+	public function getCurrent($step)
 	{
-		$count = $this->fix_params($table);
+		if (!isset($step->detect))
+			return false;
+
+		$table = $this->fixParams((string) $step->detect);
+
+		$count = $this->fixParams($table);
 		$request = $this->source_db->query("
 			SELECT COUNT(*)
 			FROM $count", true);
@@ -259,68 +215,16 @@ class XmlProcessor
 		return $current;
 	}
 
-	/**
-	 * @todo extract the detection step
-	 */
-	protected function updateStatus(&$substep, &$do_steps)
+	public function doPreSqlStep($id)
 	{
-		$table_test = true;
-
-		// Increase the substep slightly...
-		pastTime(++$substep);
-
-		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
-		if (!isset($_SESSION['import_steps'][$substep]['status']))
-			$_SESSION['import_steps'][$substep]['status'] = 0;
-
-		if ($_SESSION['import_steps'][$substep]['status'] == 0)
-		{
-			if (!in_array($substep, $do_steps))
-			{
-				$_SESSION['import_steps'][$substep]['status'] = 2;
-				$_SESSION['import_steps'][$substep]['presql'] = true;
-			}
-			// Detect the table, then count rows..
-			elseif ($this->current_step->detect)
-			{
-				$table_test = $this->detect((string) $this->current_step->detect);
-
-				if ($table_test === false)
-				{
-					$_SESSION['import_steps'][$substep]['status'] = 3;
-					$_SESSION['import_steps'][$substep]['presql'] = true;
-				}
-			}
-		}
-		else
-			$table_test = false;
-
-		$this->template->status($substep, $_SESSION['import_steps'][$substep]['status'], $_SESSION['import_steps'][$substep]['title']);
-
-		return $table_test;
-	}
-
-	protected function doPresqlStep($id, $substep)
-	{
-		if (isset($_SESSION['import_steps'][$substep]['presql']))
+		if ($this->config->progress->isPreSqlDone())
 			return;
 
 		$this->step1_importer->callMethod('before' . ucFirst($id));
 		$this->config->source->callMethod('before' . ucFirst($id));
 
 		// don't do this twice..
-		$_SESSION['import_steps'][$substep]['presql'] = true;
-	}
-
-	/**
-	 * @todo this should probably be merged with the detect done in updateStatus
-	 */
-	protected function doDetect($substep)
-	{
-		global $import;
-
-		if (isset($this->current_step->detect) && isset($import->count))
-			$import->count->$substep = $this->detect((string) $this->current_step->detect);
+		$this->config->progress->preSqlDone();
 	}
 
 	protected function doCode()
@@ -331,44 +235,19 @@ class XmlProcessor
 
 		if (!empty($rows))
 		{
-			// I'm not sure his symmetry is really, really necessary.
-			$rows = $this->stepDefaults($rows, (string) $this->current_step['id']);
-			return $this->step1_importer->callMethod('code' . $id, $rows);
+			return $rows;
 		}
 
 		return false;
 	}
 
-	protected function stepDefaults($rows, $id)
+	public function detect($step)
 	{
-		foreach ($this->skeleton[$id]['query'] as $index => $default)
-		{
-			// No default, use an empty string
-			if (is_array($default))
-			{
-				$index = key($default);
-				$default = $default[$index];
-			}
-			else
-			{
-				$index = $default;
-				$default = '';
-			}
+		if (!isset($step->detect))
+			return false;
 
-			foreach ($rows as $key => $row)
-			{
-				if (!isset($row[$index]))
-					$rows[$key][$index] = $default;
-			}
-		}
-
-		return $rows;
-	}
-
-	protected function detect($table)
-	{
-		$table = $this->fix_params($table);
-		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fix_params($table));
+		$table = $this->fixParams((string) $step->detect);
+		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fixParams($table));
 
 		$db_name_str = $this->config->source->getDbName();
 
@@ -381,6 +260,25 @@ class XmlProcessor
 			return false;
 		else
 			return true;
+	}
+
+	public function insertRows($rows)
+	{
+		$special_table = $this->getStepTable($this->current_step['id']);
+
+		if (empty($rows) || empty($special_table))
+			return;
+
+		$insert_statement = $this->insertStatement($this->current_step->options);
+		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
+
+		foreach ($rows as $row)
+		{
+			if (empty($ignore_slashes))
+				$row = Strings::addslashes_recursive($row);
+
+			$this->db->insert($special_table, $row, $insert_statement);
+		}
 	}
 
 	protected function shouldIgnore($options)
@@ -418,11 +316,15 @@ class XmlProcessor
 
 	protected function prepareSpecialResult($current_data, $special_limit)
 	{
-		// @todo $_REQUEST
+		$start = $this->config->progress->start;
+		$stop = $this->config->progress->start + $special_limit - 1;
+
 		if (strpos($current_data, '%d') !== false)
-			return $this->source_db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+			return $this->source_db->query(sprintf($current_data, $start, $stop) . "\n" . 'LIMIT ' . $special_limit);
 		else
-			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+		{
+			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $start . ', ' . $special_limit);
+		}
 
 	}
 }

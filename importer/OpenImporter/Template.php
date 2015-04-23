@@ -9,8 +9,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\DummyLang;
-
 /**
  * this is our UI
  *
@@ -19,13 +17,12 @@ class Template
 {
 	protected $response = null;
 	protected $lng = null;
+	protected $config = null;
 
-	public function __construct($lng)
+	public function __construct(Lang $lng, Configurator $config)
 	{
-		if ($lng === null)
-			$lng = new DummyLang();
-
 		$this->lng = $lng;
+		$this->config = $config;
 	}
 
 	/**
@@ -407,7 +404,7 @@ class Template
 		</div>
 		<div id="main">';
 
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && (bool) $inner === true)
+		if (($this->config->progress->current_step == 1 || $this->config->progress->current_step == 2) && (bool) $inner === true)
 			echo '
 			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
@@ -418,7 +415,7 @@ class Template
 	 *
 	 * @param array $scripts
 	 */
-	public function select_script($scripts, $destination_names)
+	public function selectScript($scripts, $destination_names)
 	{
 		echo '
 			<h2>', $this->lng->get('to_what'), '</h2>
@@ -477,7 +474,7 @@ class Template
 			echo '
 				<p>', $this->lng->get('not_found'), '</p>
 				<p>', $this->lng->get('not_found_download'), '</p>
-				<a href="', $this->response->scripturl, '?import_script=">', $this->lng->get('try_again'), '</a>';
+				<a href="', $this->response->scripturl, '?reset">', $this->lng->get('try_again'), '</a>';
 
 		echo '
 			</div>
@@ -534,17 +531,20 @@ class Template
 			</div>';
 	}
 
+	public function emptyPage()
+	{
+	}
+
 	/**
 	 * Display notification with the given status
 	 *
-	 * @param int $substep
 	 * @param int $status
 	 * @param string $title
 	 * @param bool $hide = false
 	 */
-	public function status($substep, $status, $title, $hide = false)
+	public function status($status, $title, $hide = false)
 	{
-		if (isset($title) && (bool) $hide === false)
+		if (!empty($title) && (bool) $hide === false)
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
 
 		if ($status == 1)
@@ -609,8 +609,10 @@ class Template
 	 * @param int $bar
 	 * @param int $value
 	 * @param int $max
+	 * @param int $substep
+	 * @param int $start
 	 */
-	public function time_limit($bar, $value, $max)
+	public function timeLimit($bar, $value, $max, $substep, $start)
 	{
 		if (!empty($bar))
 			echo '
@@ -625,7 +627,7 @@ class Template
 			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', $this->lng->get('overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
 			<p>', $this->lng->get('importer_paused'), '</p>
 
-			<form action="', $_SERVER['PHP_SELF'], '?step=', $_GET['step'], isset($_GET['substep']) ? '&amp;substep=' . $_GET['substep'] : '', '&amp;start=', $_REQUEST['start'], '" method="post" name="autoSubmit">
+			<form action="', $_SERVER['PHP_SELF'], '?step=', $this->response->step, '&amp;substep=', $substep, '&amp;start=', $start, '" method="post" name="autoSubmit">
 				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', $this->lng->get('continue'),'" /></div>
 			</form>
 
@@ -684,7 +686,6 @@ class Template
 			switch ($option['type'])
 			{
 				case 'text':
-				{
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
@@ -692,9 +693,7 @@ class Template
 							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
 						</dd>';
 					break;
-				}
 				case 'checkbox':
-				{
 					echo '
 						<dt></dt>
 						<dd>
@@ -703,9 +702,7 @@ class Template
 							</label>
 						</dd>';
 					break;
-				}
 				case 'password':
-				{
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
@@ -713,20 +710,17 @@ class Template
 							<div style="font-style: italic; font-size: smaller">', $option['correct'], '</div>
 						</dd>';
 					break;
-				}
 				case 'steps':
-				{
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>';
 						foreach ($option['value'] as $key => $step)
 							echo '
-							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? 'readonly="readonly" ' : ' ', $step['checked'], '" /> ', $step['label'], '</label><br />';
+							<label><input type="checkbox" name="do_steps[', $key, ']" id="do_steps[', $key, ']" value="', $step['count'], '"', $step['mandatory'] ? ' readonly="readonly" ' : ' ', $step['checked'], ' /> ', $step['label'], '</label><br />';
 
 					echo '
 						</dd>';
 					break;
-				}
 			}
 		}
 

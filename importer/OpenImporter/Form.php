@@ -21,7 +21,17 @@ use OpenImporter\Core\FormException;
  */
 class Form
 {
+	/**
+	 * The array that holds all the structure of the form.
+	 *
+	 * @var mixed[]
+	 */
 	protected $data = array();
+
+	/**
+	 * The "translator" (i.e. the Lang object)
+	 * @var object
+	 */
 	protected $lng = null;
 
 	/**
@@ -29,11 +39,21 @@ class Form
 	 */
 	public $action_url = '';
 
-	public function __construct($lng)
+	/**
+	 * The constructor, not much to say.
+	 * @param Lang $lng The translator object.
+	 */
+	public function __construct(Lang $lng)
 	{
 		$this->lng = $lng;
 	}
 
+	/**
+	 * Setter
+	 *
+	 * @param string|int $key
+	 * @param mixed[] $val
+	 */
 	public function __set($key, $val)
 	{
 		if ($key === 'options')
@@ -42,6 +62,12 @@ class Form
 		$this->data[$key] = $val;
 	}
 
+	/**
+	 * Getter
+	 *
+	 * @param string|int $key
+	 * @return mixed[]|null
+	 */
 	public function __get($key)
 	{
 		if (isset($this->data[$key]))
@@ -50,12 +76,16 @@ class Form
 			return null;
 	}
 
+	/**
+	 * Adds a new entry to the form.
+	 *
+	 * @param mixed[] $field
+	 */
 	public function addOption($field)
 	{
 		switch ($field['type'])
 		{
 			case 'text':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -65,9 +95,7 @@ class Form
 					'type' => 'text',
 				);
 				break;
-			}
 			case 'password':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -75,9 +103,7 @@ class Form
 					'type' => 'password',
 				);
 				break;
-			}
 			case 'steps':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -85,9 +111,7 @@ class Form
 					'type' => 'steps',
 				);
 				break;
-			}
 			default:
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -95,43 +119,53 @@ class Form
 					'attributes' => $field['checked'] == 'checked' ? ' checked="checked"' : '',
 					'type' => 'checkbox',
 				);
-			}
 		}
 	}
 
+	/**
+	 * Adds space between entries
+	 */
 	public function addSeparator()
 	{
 		$this->data['options'][] = array();
 	}
 
+	/**
+	 * @param mixed[]|\SimpleXMLElement $field
+	 */
 	public function addField($field)
 	{
 		if (is_object($field))
 			return $this->addField($this->makeFieldArray($field));
 		else
 		{
-			$field['id'] = 'field' . $field['id'];
+			$field['id'] = 'field[' . $field['id'] . ']';
 			return $this->addOption($field);
 		}
 	}
 
+	/**
+	 * Converts a \SimpleXMLElement object into an array to feed addField
+	 *
+	 * @param \SimpleXMLElement $field
+	 */
 	public function makeFieldArray($field)
 	{
 		if ($field->attributes()->{'type'} == 'text')
 		{
 			return array(
-				'id' => $field->attributes()->{'id'},
-				'label' => $field->attributes()->{'label'},
-				'default' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
+				'id' => (string) $field,
+				'label' => (string) $field->attributes()->{'label'},
+				'default' => isset($field->attributes()->{'default'}) ? (string) $field->attributes()->{'default'} : '',
 				'type' => 'text',
 			);
 		}
 		else
 		{
 			return array(
-				'id' => $field->attributes()->{'id'},
-				'label' => $field->attributes()->{'label'},
-				'checked' => $field->attributes()->{'checked'},
+				'id' => (string) $field,
+				'label' => (string) $field->attributes()->{'label'},
+				'checked' => (string) $field->attributes()->{'checked'},
 				'type' => 'checkbox',
 			);
 		}

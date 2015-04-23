@@ -14,7 +14,7 @@ namespace OpenImporter\Core;
  * for example if the XML file is not properly formatted or if the directory
  * is wrong
  */
-class DummyLang
+class DummyLang extends Lang
 {
 	/**
 	 * Intercepts loading of xml file.

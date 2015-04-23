@@ -5,20 +5,11 @@
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
  * @version 2.0 Alpha
- *
- * This file contains code based on:
- *
- * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Core;
 
 use Symfony\Component\Yaml\Parser;
-use OpenImporter\Core\Database;
-use OpenImporter\Core\XmlProcessor;
-use OpenImporter\Core\ImportException;
 
 /**
  * Object Importer creates the main XML object.
@@ -52,12 +43,6 @@ class Importer
 	public $config;
 
 	/**
-	 * The destination object.
-	 * @var object
-	 */
-	public $destination;
-
-	/**
 	 * The template, basically our UI.
 	 * @var object
 	 */
@@ -89,126 +74,65 @@ class Importer
 	public $data = array();
 
 	/**
-	 * Used to decide if the database query is INSERT or INSERT IGNORE
-	 * @var boolean
-	 */
-	protected $ignore = true;
-
-	/**
-	 * Used to switch between INSERT and REPLACE
-	 * @var boolean
-	 */
-	protected $replace = false;
-
-	/**
-	 * The path to the source forum.
-	 * @var string
-	 */
-	protected $path_from = null;
-
-	/**
-	 * The path to the destination forum.
-	 * @var string
-	 */
-	protected $path_to = null;
-
-	/**
-	 * The importer script which will be used for the import.
-	 * @var string
-	 */
-	protected $_script = '';
-
-	/**
-	 * This is the URL from our Installation.
-	 * @var string
-	 */
-	protected $_boardurl = '';
-
-	/**
 	 * The "base" class name of the destination system.
 	 * @var string
 	 */
 	protected $_importer_base_class_name = '';
 
 	/**
-	 * Holds the object that contains the settings of the source system
-	 * @var object
-	 */
-	public $settings  = null;
-
-	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct($config, $lang, $template)
+	public function __construct(Configurator $config, Lang $lang, Template $template)
 	{
 		// initialize some objects
 		$this->config = $config;
 		$this->lng = $lang;
 		$this->template = $template;
 
-		// The current step - starts at 0.
-		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
-		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
-
-		if (!empty($this->config->script))
-			$this->_loadImporter($this->config->importers_dir . DS . $this->config->script);
+		$this->reloadImporter();
 	}
 
+	/**
+	 * initialize the $data variable
+	 * @param mixed[] $data
+	 */
 	public function setData($data)
 	{
 		$this->data = $data;
 	}
 
+	/**
+	 * Runs this::loadImporter if there is a script to load.
+	 */
 	public function reloadImporter()
 	{
 		if (!empty($this->config->script))
-			$this->_loadImporter($this->config->script);
-	}
-
-	protected function _loadImporter($files)
-	{
-		$this->_loadSource($files['source']);
-		$this->_loadDestination($files['destination']);
-	}
-
-	protected function _loadSource($file)
-	{
-		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
-		$this->_preparse_xml($full_path);
-
-		// This is the helper class
-		$source_helper = str_replace('.xml', '.php', $full_path);
-		require_once($source_helper);
-	}
-
-	protected function _loadDestination($file)
-	{
-		$full_path = $this->config->importers_dir . DS . 'destinations' . DS . $file;
-
-		require_once($full_path);
-
-		$this->_importer_base_class_name = '\\OpenImporter\\Importers\\destinations\\' . str_replace('.', '_', basename($file, '.php'));
-
-		$this->config->destination = new $this->_importer_base_class_name();
-
-		$this->_loadSettings();
-
-		$this->config->destination->setUtils($this->db, $this->config);
+			$this->loadImporter($this->config->script);
 	}
 
 	/**
-	 * loads the _importer.xml files
-	 * @param string $file
-	 * @throws ImportException
+	 * Starts up the importer using ImporterSetup and sets the variables needed.
+	 *
+	 * @param string[] $files
 	 */
-	private function _preparse_xml($file)
+	protected function loadImporter($files)
 	{
-		if (!$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA))
-			throw new ImportException('XML-Syntax error in file: ' . $file);
+		$setup = new ImporterSetup($this->config, $this->lng, $this->data);
+		$setup->setNamespace('\\OpenImporter\\Importers\\');
+		$setup->loadImporter($files);
 
-		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
+		$this->xml = $setup->getXml();
+		$this->db = $setup->getDb();
+		$this->source_db = $setup->getSourceDb();
+		$this->_importer_base_class_name = $setup->getBaseClass();
 	}
 
+	/**
+	 * Sets up the Form object with the standard fields and those required by
+	 * the configuration file.
+	 *
+	 * @param Form $form
+	 */
 	public function populateFormFields(Form $form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
@@ -243,7 +167,7 @@ class Importer
 
 		$form->addSeparator();
 
-		$steps = $this->_find_steps();
+		$steps = $this->findSteps();
 
 		if (!empty($steps))
 		{
@@ -275,204 +199,10 @@ class Importer
 	}
 
 	/**
-	 * Prepare the importer with custom settings of the source
-	 *
-	 * @throws \Exception
-	 * @return boolean|null
-	 */
-	private function _loadSettings()
-	{
-		$class = '\\OpenImporter\\Importers\\sources\\' . (string) $this->xml->general->className;
-		$this->config->source = new $class();
-
-		$this->config->source->setDefines();
-
-		$this->config->source->setGlobals();
-
-		//Dirty hack
-		if (isset($_SESSION['store_globals']))
-		{
-			foreach ($_SESSION['store_globals'] as $varname => $value)
-			{
-				$GLOBALS[$varname] = $value;
-			}
-		}
-
-		$this->loadSettings();
-
-		// Any custom form elements to speak of?
-		$this->init_form_data();
-
-		if (empty($this->config->path_to))
-			return;
-		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
-
-		if ($this->config->boardurl === false)
-			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
-
-		if (!$this->config->destination->verifyDbPass($this->data['db_pass']))
-			throw new \Exception($this->lng->get('password_incorrect'));
-
-		// Check the steps that we have decided to go through.
-		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
-		{
-			throw new \Exception($this->lng->get('select_step'));
-		}
-		elseif (isset($_POST['do_steps']))
-		{
-			$_SESSION['do_steps'] = array();
-			foreach ($_POST['do_steps'] as $key => $step)
-				$_SESSION['do_steps'][$key] = $step;
-		}
-
-		$this->init_db();
-		$this->config->source->setUtils($this->source_db, $this->config);
-		$this->config->destination->setUtils($this->db, $this->config);
-
-		$this->testTable();
-	}
-
-	/**
-	 * This method is supposed to run a spot-test on a single table to verify...
-	 * What?
-	 * Dunno exactly, maybe that the converter is not wrong, but in that case, one
-	 * table may not be enough...
-	 *
-	 * @todo make it useful or remove it?
-	 */
-	protected function testTable()
-	{
-		if ($_REQUEST['start'] == 0 && empty($_GET['substep']) && ($_GET['step'] == 1 || $_GET['step'] == 2))
-		{
-			$test_table = $this->config->from_prefix . $this->config->source->getTableTest();
-
-			$result = $this->db->query("
-				SELECT COUNT(*)
-				FROM {$test_table}", true);
-
-			if ($result === false)
-				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
-
-			$this->db->free_result($result);
-		}
-	}
-
-	protected function loadSettings()
-	{
-		if (!empty($this->config->path_from))
-			$found = $this->config->source->loadSettings($this->config->path_from);
-		else
-			$found = true;
-
-		if ($found === false)
-		{
-			if (@ini_get('open_basedir') != '')
-				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
-
-			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
-		}
-	}
-
-	protected function init_db()
-	{
-		$DestConnectionParams = $this->config->destination->dbConnectionData();
-		$db_prefix = $this->config->destination->getDbPrefix();
-
-		$this->db = new Database($DestConnectionParams);
-		//We want UTF8 only, let's set our mysql connetction to utf8
-		$this->db->query('SET NAMES \'utf8\'');
-
-		if (strpos($db_prefix, '.') === false)
-		{
-			// @todo ???
-			if (is_numeric(substr($db_prefix, 0, 1)))
-				$this->config->to_prefix = $DestConnectionParams['dbname'] . '.' . $db_prefix;
-			else
-				$this->config->to_prefix = '`' . $DestConnectionParams['dbname'] . '`.' . $db_prefix;
-		}
-		else
-		{
-			$this->config->to_prefix = $db_prefix;
-		}
-
-		try
-		{
-			$SourceConnectionParams = $this->config->source->dbConnectionData();
-			$this->config->from_prefix = $this->config->source->getDbPrefix();
-
-			$this->source_db = new Database($SourceConnectionParams);
-			//We want UTF8 only, let's set our mysql connetction to utf8
-			$this->source_db->query('SET NAMES \'utf8\'');
-		}
-		catch(Exception $e)
-		{
-			$SourceConnectionParams['user'] = $DestConnectionParams['user'];
-			$SourceConnectionParams['password'] = $DestConnectionParams['password'];
-
-			$this->source_db = new Database($SourceConnectionParams);
-		}
-
-		if (preg_match('~^`[^`]+`.\d~', $this->config->from_prefix) != 0)
-		{
-			$this->config->from_prefix = strtr($this->config->from_prefix, array('`' => ''));
-		}
-
-		// SQL_BIG_SELECTS: If set to 0, MySQL aborts SELECT statements that are
-		// likely to take a very long time to execute (that is, statements for
-		// which the optimizer estimates that the number of examined rows exceeds
-		// the value of max_join_size)
-		// Source:
-		// https://dev.mysql.com/doc/refman/5.5/en/server-system-variables.html#sysvar_sql_big_selects
-		$this->db->query("SET @@SQL_BIG_SELECTS = 1");
-		$this->db->query("SET @@MAX_JOIN_SIZE = 18446744073709551615");
-	}
-
-	protected function init_form_data()
-	{
-		if ($this->xml->general->form && !empty($_SESSION['import_parameters']))
-		{
-			foreach ($this->xml->general->form->children() as $param)
-			{
-				if (isset($_POST['field' . $param['id']]))
-				{
-					$var = (string) $param;
-					$_SESSION['import_parameters']['field' .$param['id']][$var] = $_POST['field' .$param['id']];
-				}
-			}
-
-			// Should already be global'd.
-			foreach ($_SESSION['import_parameters'] as $id)
-			{
-				foreach ($id as $k => $v)
-					$GLOBALS[$k] = $v;
-			}
-		}
-		elseif ($this->xml->general->form)
-		{
-			$_SESSION['import_parameters'] = array();
-			foreach ($this->xml->general->form->children() as $param)
-			{
-				$var = (string) $param;
-
-				if (isset($_POST['field' .$param['id']]))
-					$_SESSION['import_parameters']['field' .$param['id']][$var] = $_POST['field' .$param['id']];
-				else
-					$_SESSION['import_parameters']['field' .$param['id']][$var] = null;
-			}
-
-			foreach ($_SESSION['import_parameters'] as $id)
-			{
-				foreach ($id as $k => $v)
-					$GLOBALS[$k] = $v;
-			}
-		}
-	}
-
-	/**
 	 * Looks at the importer and returns the steps that it's able to make.
 	 * @return mixed[]
 	 */
-	protected function _find_steps()
+	protected function findSteps()
 	{
 		$steps = array();
 		$steps_count = 0;
@@ -491,72 +221,134 @@ class Importer
 		return $steps;
 	}
 
-	public function determineProgress()
-	{
-		$progress_counter = 0;
-		$counter_current_step = 0;
-		$import_steps = array();
-
-		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
-
-		// loop through each step
-		foreach ($this->xml->step as $counts)
-		{
-			if ($counts->detect)
-			{
-				$current = $xmlParser->getCurrent((string) $counts->detect);
-
-				$progress_counter = $progress_counter + $current;
-
-				$import_steps[$counter_current_step]['counter'] = $current;
-			}
-			$counter_current_step++;
-		}
-		return array($progress_counter, $import_steps);
-	}
-
 	/**
 	 * The important one, transfer the content from the source forum to our
 	 * destination system.
 	 *
-	 * @param int $do_steps
 	 * @return boolean
 	 */
-	public function doStep1($do_steps)
+	public function doStep1()
 	{
-		$step1_importer_class = $this->_importer_base_class_name . '_step1';
-		$step1_importer = new $step1_importer_class($this->db, $this->config);
-
-		if ($this->xml->general->globals)
-			foreach (explode(',', $this->xml->general->globals) as $global)
-				global $$global;
-
-		$substep = 0;
-
 		$skeleton = new Parser();
-		$skeleton_parsed = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
+		$this->skeleton = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
 		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
-		$xmlParser->setImporter($step1_importer);
-		$xmlParser->setSkeleton($skeleton_parsed);
+		$xmlParser->setImporter($this->stepInstance('Step1'));
+		$xmlParser->setSkeleton($this->skeleton);
 
+		$count = 0;
 		foreach ($this->xml->step as $step)
-			$xmlParser->processSteps($step, $substep, $do_steps);
+		{
+			$substep = 0;
+
+			// Having the counter here ensures it is always increased no matter what.
+			$count++;
+
+			$this->config->progress->setStep($count);
+
+			if ($this->config->progress->isStepCompleted())
+				continue;
+
+			// If there is a table to detect, and it's not there... guess?
+			if (!$xmlParser->detect($step))
+				continue;
+
+			$this->config->progress->max = $xmlParser->getCurrent($step);
+			// @todo do detection on destination side (e.g. friendly urls)
+
+			// pre sql queries first!!
+			$xmlParser->doPreSqlStep(Ucfirst($step['id']));
+
+			do
+			{
+				// Time is up?
+				$this->config->progress->pastTime($substep);
+
+				// Get the data
+				$rows = $xmlParser->processSource($step, $count);
+
+				// This is done here because we count substeps based on the number of rows
+				// of the source database, though when processed the count may change for
+				// example because of a different database schema.
+				$substep_increment = count($rows);
+
+				// Adds the defaults
+				$rows = $this->stepDefaults($rows, (string) $step['id']);
+
+				// Prepares for insertion
+				$rows = $xmlParser->processDestination($step['id'], $rows);
+
+				// Dumps data into the database
+				$xmlParser->insertRows($rows);
+
+				// Next round!
+				$this->config->progress->advanceSubstep($substep_increment, (string) $step->title);
+			} while ($xmlParser->stillRunning());
+
+			$substep++;
+			$this->config->progress->stepCompleted();
+		}
+	}
+
+	/**
+	 * Sets up an instance of a step object for the destination script.
+	 *
+	 * @param string $step
+	 * @return object
+	 */
+	protected function stepInstance($step)
+	{
+		$step1_importer_class = $this->_importer_base_class_name . $step;
+		$step1_importer = new $step1_importer_class($this->db, $this->config);
+
+		return $step1_importer;
+	}
+
+	/**
+	 * Adds default values for rows of data from a certain step
+	 *
+	 * @param mixed[] $rows
+	 * @param string $id
+	 */
+	protected function stepDefaults($rows, $id)
+	{
+		if (empty($rows))
+			return array();
+
+		foreach ($this->skeleton[$id]['query'] as $index => $default)
+		{
+			// No default, use an empty string
+			if (is_array($default))
+			{
+				$index = key($default);
+				$default = $default[$index];
+			}
+			else
+			{
+				$index = $default;
+				$default = '';
+			}
+
+			foreach ($rows as $key => $row)
+			{
+				if (!isset($row[$index]))
+					$rows[$key][$index] = $default;
+			}
+		}
+
+		return $rows;
 	}
 
 	/**
 	 * we have imported the old database, let's recalculate the forum statistics.
-	 *
-	 * @return boolean
 	 */
 	public function doStep2()
 	{
-		$step2_importer_class = $this->_importer_base_class_name . '_step2';
-		$instance = new $step2_importer_class($this->db, $this->config);
+		$instance = $this->stepInstance('Step2');
 
 		$methods = get_class_methods($instance);
 		$substeps = array();
-		$substep = 0;
+		$substep = -1;
 		foreach ($methods as $method)
 		{
 			if (substr($method, 0, 7) !== 'substep')
@@ -566,18 +358,20 @@ class Importer
 		}
 		ksort($substeps);
 
-		foreach ($substeps as $key => $method)
+		foreach ($substeps as $method)
 		{
-			if ($substep <= $key)
-			{
-				call_user_func(array($instance, $method));
-			}
-
 			$substep++;
-			pastTime($substep);
-		}
+			$this->config->progress->setStep($substep);
 
-		return $key;
+			$this->config->progress->pastTime($substep);
+
+			if ($this->config->progress->isStepCompleted())
+				continue;
+
+			call_user_func(array($instance, $method));
+
+			$this->config->progress->stepCompleted();
+		}
 	}
 
 	/**
@@ -587,8 +381,7 @@ class Importer
 	 */
 	public function doStep3()
 	{
-		$step3_importer_class = $this->_importer_base_class_name . '_step3';
-		$instance = new $step3_importer_class($this->db, $this->config);
+		$instance = $this->stepInstance('Step3');
 
 		$instance->run($this->lng->get(array('imported_from', $this->xml->general->name)));
 	}

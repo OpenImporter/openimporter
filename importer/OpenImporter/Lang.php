@@ -9,8 +9,6 @@
 
 namespace OpenImporter\Core;
 
-use OpenImporter\Core\ImportException;
-
 /**
  * Class Lang loads the appropriate language file(s) if they exist.
  *
@@ -19,8 +17,12 @@ use OpenImporter\Core\ImportException;
  */
 class Lang
 {
+	/**
+	 * The array holding the strings
+	 *
+	 * @var string[]
+	 */
 	protected $_lang = array();
-	protected $_ns = array();
 
 	/**
 	 * Adds a new variable to lang.
@@ -43,21 +45,20 @@ class Lang
 		catch(Exception $e)
 		{
 			// @todo this should not be a fatal error
-			ImportException::exception_handler($e);
+			ImportException::exceptionHandler($e);
 		}
 	}
 
 	/**
 	 * Loads the language xml file.
 	 *
-	 * @return null
 	 * @throws \Exception if it cannot find the XML file.
 	 * @throws ImportException if the XML file has got a corrupted structure.
 	 */
 	public function loadLang($path)
 	{
 		// detect the browser language
-		$language = $this->detect_browser_language();
+		$language = $this->detectBrowserLanguage();
 		$lngfile = $this->findLanguage($path, $language);
 
 		// ouch, we really should never arrive here..
@@ -71,10 +72,15 @@ class Lang
 
 		foreach ($langObj as $strings)
 			$this->set((string) $strings->attributes()->{'name'}, (string) $strings);
-
-		return null;
 	}
 
+	/**
+	 * Finds out if the language we are looking for exists or not.
+	 *
+	 * @param string $path The path to look for the language file
+	 * @param string[] $language The name of the language
+	 * @return bool
+	 */
 	protected function findLanguage($path, $language)
 	{
 		$lngfile = false;
@@ -109,6 +115,12 @@ class Lang
 		return isset($this->_lang[$key]);
 	}
 
+	/**
+	 * Getter
+	 *
+	 * @param string|int $key
+	 * @return string|int|bool|null|object
+	 */
 	public function __get($key)
 	{
 		return $this->get($key);
@@ -117,7 +129,7 @@ class Lang
 	/**
 	 * Returns the value of the specified $key in lang.
 	 *
-	 * @param string $key Name of the variable
+	 * @param string|string[] $key Name of the variable
 	 * @return string|null Value of the specified $key
 	 */
 	public function get($key)
@@ -128,14 +140,16 @@ class Lang
 
 			if ($this->has($l_key))
 				return vsprintf($this->_lang[$l_key], $key);
+			else
+				return array_pop($key);
 		}
 		else
 		{
 			if ($this->has($key))
 				return $this->_lang[$key];
+			else
+				return $key;
 		}
-
-		return null;
 	}
 
 	/**
@@ -151,10 +165,12 @@ class Lang
 	/**
 	 * This is used to detect the Client's browser language.
 	 *
-	 * @return string the shortened string of the browser's language.
+	 * @return string[] the shortened string of the browser's language.
 	 */
-	protected function detect_browser_language()
+	protected function detectBrowserLanguage()
 	{
+		$preferred = array();
+
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 		{
 			// break up string into pieces (languages and q factors)
@@ -177,8 +193,6 @@ class Lang
 				arsort($preferred, SORT_NUMERIC);
 			}
 		}
-		else
-			$preferred = array();
 
 		return array_keys($preferred);
 	}
