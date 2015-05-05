@@ -121,13 +121,14 @@ class ImportManager
 
 	protected function loadFromSession()
 	{
-		if (!isset($_SESSION['import_progress']))
+		// If reset is on the URL, do not load anything from SESSION
+		if (!isset($_SESSION['import_progress']) || isset($_REQUEST['reset']))
 			$_SESSION['import_progress'] = 0;
 
-		if (!empty($_SESSION['importer_data']))
+		if (!empty($_SESSION['importer_data']) && !isset($_REQUEST['reset']))
 			$this->data = $_SESSION['importer_data'];
 
-		if (!empty($_SESSION['importer_progress_status']))
+		if (!empty($_SESSION['importer_progress_status']) && !isset($_REQUEST['reset']))
 			$this->config->store = $_SESSION['importer_progress_status'];
 	}
 

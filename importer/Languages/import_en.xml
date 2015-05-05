@@ -38,7 +38,7 @@
 	<string name="not_this">Not this software?</string>
 	<string name="skipped">skipped</string>
 	<string name="not_found_skipped">not found, skipped</string>
-	<string name="pick_different"><![CDATA[If this is the wrong software, you can go back and <a href="%s?import_script=">pick a different data file</a>.]]></string>
+	<string name="pick_different"><![CDATA[If this is the wrong software, you can go back and <a href="%s?reset">pick a different data file</a>.]]></string>
 	<string name="recalculate">Recalculating statistics</string>
 	<string name="importing">Importing</string>
 	<string name="complete">Import complete!</string>
