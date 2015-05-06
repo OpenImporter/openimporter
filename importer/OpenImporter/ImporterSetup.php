@@ -15,6 +15,9 @@
 
 namespace OpenImporter\Core;
 
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\DriverManager;
+
 /**
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
