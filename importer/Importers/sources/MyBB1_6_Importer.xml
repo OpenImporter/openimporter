@@ -41,7 +41,8 @@
 				fid AS id_board, SUBSTRING(name, 1, 255) AS name,
 				SUBSTRING(description, 1, 65534) AS description, disporder AS board_order,
 				posts AS num_posts, threads AS num_topics, pid AS id_cat,
-				usepostcounts != 'yes' AS count_posts, '1' AS member_groups
+				usepostcounts != 'yes' AS count_posts, '1' AS member_groups,
+				unapprovedthreads AS unapproved_topics, unapprovedposts AS unapproved_posts
 			FROM {$from_prefix}forums
 			WHERE type = 'f';
 		</query>
@@ -51,7 +52,7 @@
 		<detect>{$from_prefix}threads</detect>
 		<query>
 			SELECT
-				t.tid AS id_topic, t.fid AS id_board, t.sticky AS is_sticky,
+				t.tid AS id_topic, t.fid AS id_board, t.sticky AS is_sticky, t.visible AS approved,
 				t.poll AS id_poll, t.views AS num_views, IFNULL(t.uid, 0) AS id_member_started,
 				IFNULL(ul.uid, 0) AS id_member_updated, t.replies AS num_replies,
 				CASE
@@ -78,7 +79,7 @@
 			SELECT
 				p.pid AS id_msg, p.tid AS id_topic, t.fid AS id_board, p.uid AS id_member,
 				SUBSTRING(p.username, 1, 255) AS poster_name, p.dateline AS poster_time,
-				SUBSTRING(p.ipaddress, 1, 255) AS poster_ip,
+				SUBSTRING(p.ipaddress, 1, 255) AS poster_ip, p.visible AS approved,
 				SUBSTRING(IF(p.subject = '', t.subject, p.subject), 1, 255) AS subject,
 				SUBSTRING(IF(p.uid > 0, u.email, ''), 1, 255) AS poster_email,
 				p.smilieoff = 'no' AS smileys_enabled,
