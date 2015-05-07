@@ -392,7 +392,7 @@ class ImportManager
 	{
 		$this->cookie->destroy();
 		//previously imported? we need to clean some variables ..
-		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status']);
+		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status'], $_SESSION['import_progress']);
 
 		if ($this->detectScripts())
 			return true;
@@ -504,6 +504,7 @@ class ImportManager
 		unset($_SESSION['import_progress']);
 		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status']);
 		$this->data = array();
+		$this->config->store = array();
 
 		return true;
 	}

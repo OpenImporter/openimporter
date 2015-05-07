@@ -226,8 +226,8 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			$return = array(
 				'id_attach' => $id_attach,
 				'size' => filesize($source),
-				'filename' => '\'' . $row['filename'] . '\'',
-				'file_hash' => '\'' . $file_hash . '\'',
+				'filename' => $row['filename'],
+				'file_hash' => $file_hash,
 				'id_member' => $row['id_member'],
 				'id_folder' => $avatar_attach_folder,
 			);
