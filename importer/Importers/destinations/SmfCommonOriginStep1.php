@@ -263,9 +263,9 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 	public function beforeAttachments()
 	{
+		$this->removeAttachments();
 		$this->db->query("
 			TRUNCATE {$this->config->to_prefix}attachments");
-		$this->removeAttachments();
 
 		$this->config->destination->specialAttachments();
 	}
