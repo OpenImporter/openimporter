@@ -4,14 +4,20 @@ OpenImporter was inspired by SMF's forum converter engine and is supposed to "co
 
 Supported Source systems:
 ===
-* MyBB
-* phpBB3
-* SMF 1.1
-* SMF 2.0
+* IPB 3.4.x
+* MyBB 1.6.x
+* phpBB3 3.0.x
+* PHPBoost 3.x
+* SeoBoards 1.x
+* SMF 1.1.x
+* SMF 2.0.x
+* UBB Threads 7.5.x
 * vBulletin 4
-* Woltlab Burning Board
-* Wordpress
-* Wedge
+* Viscacha 0.8
+* Woltlab Burning Board 3.1
+* Wordpress 3.x
+* Wedge 1.0
+* XenForo 1.1.x
 
 Supported destination systems:
 ===
