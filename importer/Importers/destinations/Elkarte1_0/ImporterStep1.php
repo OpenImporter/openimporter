@@ -382,20 +382,21 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 	public function preparseAttachments($originalRows)
 	{
 		$rows = array();
+
 		foreach ($originalRows as $row)
 		{
 			$file_hash = $this->createAttachmentFileHash($row['filename']);
-			$id_attach = $this->newIdAttach();
-			// @todo the name should come from step1_importer
-			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
-			$source = $row['full_path'] . '/' . $row['filename'];
 
 			// Ensure the id_attach is the one we want... I think.
 			if (empty($row['id_attach']))
-				$row['id_attach'] = $id_attach;
+				$row['id_attach'] = $this->newIdAttach();
+
+			// @todo the name should come from step1_importer
+			$destination = $this->getAttachDir($row) . '/' . $row['id_attach'] . '_' . $file_hash . '.elk';
+			$source = $row['full_path'] . '/' . $row['system_filename'];
 
 			Files::copy_file($source, $destination);
-			unset($row['full_path']);
+			unset($row['full_path'], $row['system_filename']);
 			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}

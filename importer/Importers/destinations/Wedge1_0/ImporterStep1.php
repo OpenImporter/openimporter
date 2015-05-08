@@ -321,9 +321,10 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 			$id_attach = $this->newIdAttach();
 			// @todo the name should come from step1_importer
 			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.ext';
-			$source = $row['full_path'] . '/' . $row['filename'];
+			$source = $row['full_path'] . '/' . $row['system_filename'];
 
 			Files::copy_file($source, $destination);
+			unset($row['full_path'], $row['system_filename']);
 			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}

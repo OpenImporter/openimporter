@@ -110,6 +110,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		foreach ($originalRows as $row)
 		{
 			$row['full_path'] = $this->getAttachDir($row);
+			$row['system_filename'] = $row['id_attach'] . '_' . $row['file_hash'] . '.ext';
 
 			$rows[] = $row;
 		}

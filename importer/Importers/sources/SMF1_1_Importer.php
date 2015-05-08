@@ -62,6 +62,7 @@ class SMF1_1_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 			$row['mime_type'] = '';
 			$row['id_folder'] = 0;
 			$row['full_path'] = $this->getAttachDir();
+			$row['system_filename'] = $row['id_attach'] . '_' . $row['file_hash'];
 
 			$rows[] = $row;
 		}

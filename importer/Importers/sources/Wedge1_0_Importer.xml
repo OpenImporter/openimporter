@@ -34,7 +34,8 @@
 			SELECT
 				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash,
 				size, downloads, width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments;
+			FROM {$from_prefix}attachments
+				WHERE id_member = 0;
 		</query>
 	</step>
 	<step id="avatars">

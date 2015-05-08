@@ -190,6 +190,7 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				'mime_type' => '',
 				'id_folder' => 0,
 				'full_path' => $mybb_attachment_dir,
+				'system_filename' => $row['attachname'];
 			);
 		}
 
