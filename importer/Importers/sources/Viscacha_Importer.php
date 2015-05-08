@@ -205,7 +205,7 @@ class Viscacha_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				'file_hash' => '',
 				'id_msg' => $row['id_msg'],
 				'downloads' => $row['downloads'],
-				'system_filename' => $row['filename'];
+				'system_filename' => $row['filename'],
 			);
 		}
 
