@@ -78,6 +78,7 @@ attachments:
     - fileext
     - mime_type
     - id_folder
+    - system_filename
     - full_path
 avatars:
   #<!-- @doc: this step is here to move avatars from directory to directory -->
