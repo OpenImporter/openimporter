@@ -13,9 +13,9 @@
 		<detect>{$from_prefix}members</detect>
 		<query>
 			SELECT
-				id_member, member_name, date_registered, posts, id_group, lngfile as language, last_login,
-				real_name, unread_messages, hey_pm AS new_pm, buddy_list, pm_ignore_list,
-				pm_prefs, mod_prefs, data, passwd, email_address, personal_text,
+				id_member, member_name, date_registered, posts, id_group, lngfile as language,
+				last_login, real_name, unread_messages, hey_pm AS new_pm, buddy_list,
+				pm_ignore_list, pm_prefs, data, passwd, email_address, personal_text,
 				gender, birthdate, website_url, website_title, location, hide_email, show_online,
 				time_format, signature, time_offset, avatar, pm_email_notify,
 				usertitle, notify_announcements, notify_regularity, notify_send_body,
@@ -32,8 +32,8 @@
 		<detect>{$from_prefix}attachments</detect>
 		<query>
 			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder
+				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash,
+				size, downloads, width, height, fileext, mime_type, id_folder
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>

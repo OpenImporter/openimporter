@@ -29,7 +29,8 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 
 	public function setDefines()
 	{
-		define('WEDGE', 1);
+		if (!defined('WEDGE'))
+			define('WEDGE', 1);
 	}
 
 	/**
