@@ -16,6 +16,7 @@
 namespace OpenImporter\Importers\destinations\ElkArte1_0;
 
 use OpenImporter\Core\Files;
+use OpenImporter\Core\Strings;
 
 class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep1
 {
@@ -49,6 +50,41 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 	public function tableLikes()
 	{
 		return '{$to_prefix}message_likes';
+	}
+
+	/**
+	 * Overriders the default TRUNCATE since Elk doesn't have that table.
+	 */
+	public function beforeLikes()
+	{
+		$this->db->query("
+			DELETE FROM {$this->config->to_prefix}log_mentions WHERE mention_type = 'like'");
+
+		parent::beforeLikes();
+	}
+
+	/**
+	 * Overriders the default TRUNCATE since Elk doesn't have that table.
+	 */
+	public function beforeFriendlyurls()
+	{
+	}
+
+	/**
+	 * Overriders the default TRUNCATE since Elk doesn't have that table.
+	 */
+	public function beforeFriendlyurlcache()
+	{
+	}
+
+	public function tableFriendlyurls()
+	{
+		return '';
+	}
+
+	public function tableFriendlyurlcache()
+	{
+		return '';
 	}
 
 	/**
@@ -449,6 +485,8 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		foreach ($originalRows as $row)
 		{
 			$row['col_name'] = preg_replace('~[^a-zA-Z0-9\-_]~', '', $row['col_name']);
+			$row['vieworder'] = $row['position'];
+			unset($row['position']);
 
 			if (!empty($row['field_options']))
 				$row['field_options'] = implode(',', array_values($row['field_options']));
@@ -467,5 +505,24 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		}
 
 		return $rows;
+	}
+
+	public function preparseLikes($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			Strings::addslashes_recursive($row);
+			$this->db->insert($this->config->to_prefix . 'log_mentions', array(
+				'id_member' => $row['id_poster'],
+				'id_msg' => $row['id_msg'],
+				'status' => 1,
+				'id_member_from' => $row['id_member'],
+				'log_time' => $row['like_timestamp'],
+				'mention_type' => 'like',
+			), 'ignore');
+		}
+
+		return $originalRows;
 	}
 }
