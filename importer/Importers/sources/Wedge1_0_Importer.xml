@@ -365,8 +365,8 @@
 		<query>
 			SELECT
 				id_field, col_name, field_name, field_desc, field_type, field_length,
-				field_options, mask, show_reg, show_display, show_profile, private,
-				active, bbc, can_search, default_value, enclose, placement
+				field_options, mask, show_reg, show_display, show_profile, can_see AS private,
+				active, bbc, can_search, default_value, enclose, placement, position
 			FROM {$from_prefix}custom_fields;
 		</query>
 	</step>
@@ -381,25 +381,13 @@
 		</query>
 	</step>
 	<step id="likes">
-		<title>Importing likes from Thank you mod</title>
-		<detect>{$from_prefix}thank_you_post</detect>
-		<query>
-			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
-			FROM {$from_prefix}thank_you_post AS th
-				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
-				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
-		</query>
-	</step>
-	<step id="likes">
-		<title>Importing likes from Joker's Like Posts mod</title>
-		<detect>{$from_prefix}like_post</detect>
-		<query>
-			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
-			FROM {$from_prefix}like_post AS lp;
-		</query>
-	</step>
-	<step id="likes">
-		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
+		<title>Importing likes</title>
 		<detect>{$from_prefix}likes</detect>
+		<query>
+			SELECT l.id_content AS id_msg, l.id_member, m.id_member AS id_poster, l.like_time AS like_timestamp
+			FROM {$from_prefix}likes AS l
+				LEFT JOIN {$from_prefix}messages AS m ON (m.id_msg = l.id_content)
+			WHERE l.content_type = 'post';
+		</query>
 	</step>
 </importer>

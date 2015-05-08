@@ -83,6 +83,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 			unset($row['data']);
 
 			$row['message_labels'] = !empty($data['pmlabs']) ? $data['pmlabs'] : '';
+			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
 			if (!empty($data['secret']))
 			{
 				$question = explode('|', $data['secret']);
@@ -94,6 +95,8 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 				$row['secret_question'] = '';
 				$row['secret_answer'] = '';
 			}
+			$row['member_ip'] = $this->ipmasktoipv6($row['member_ip']);
+			$row['member_ip2'] = $this->ipmasktoipv6($row['member_ip2']);
 
 			$rows[] = $row;
 		}
@@ -124,6 +127,14 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		);
 
 		return isset($known[$group]) ? $known[$group] : $group + 10;
+	}
+
+	protected function ipmasktoipv6($ip)
+	{
+		if (strpos($ip, '.') === false)
+			return implode(':', explode("\n", chunk_split($ip, 4, "\n")));
+		else
+			return $this->ipmasktoipv6('00000000000000000000ffff' . bin2hex(inet_pton($ip)));
 	}
 
 	public function preparseBoards($originalRows)
