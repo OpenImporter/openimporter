@@ -409,6 +409,7 @@ customfields:
     - default_value
     - enclose
     - placement
+    - position
 customfieldsdata:
   title: Importing custom fields data
   query:
