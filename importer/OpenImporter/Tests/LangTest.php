@@ -133,7 +133,6 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers OpenImporter\Core\Lang::set
 	 * @expectedException Exception
 	 * @expectedExceptionMessage Unable to set language string for <em>testing</em>. It was already set.
 	 */
@@ -174,6 +173,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		// An existing string
 		$this->assertEquals('testing sprintf\'ed', $invoke_lang->get(array('testing_array', 'sprintf\'ed')));
+		// A non existing one
+		$this->assertEquals('sprintf\'ed', $invoke_lang->get(array('random', 'sprintf\'ed')));
 	}
 
 	/**
@@ -211,17 +212,5 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue($invoke_lang->has('testing'));
 		// A non existing one
 		$this->assertFalse($invoke_lang->has('random'));
-	}
-}
-
-/**
- * Temporary class to forward the currently static exception handler to a
- * default exception
- */
-class ImportException extends \Exception
-{
-	public static function exceptionHandler($e)
-	{
-		throw new \Exception($e->getMessage(), $e->getCode(), $e);
 	}
 }
