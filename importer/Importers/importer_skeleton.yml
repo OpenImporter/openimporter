@@ -250,6 +250,19 @@ notifications:
     - id_topic
     - id_board
     - sent
+alerts:
+  title: Importing alerts
+  query:
+    - id_alert
+    - id_member
+    - id_member_from
+    - type            # like/mention/move/like_thought/etc. a somehow flexible vocabulary should be defined
+    - id_target       # the id of the target of the alert (e.g. id of the message liked or id of the member mentioned, etc.)
+    - alert_time      # Unix timestamp of the alert
+    - status          # allowed values: read/unread/new/deleted anything else?
+    - accessibility   # true/false
+    - visibility      # true/false
+    - data            # any other data that may be relevant in the form of arry key=>value... that's a tricky field.
 membergroups:
   title: Importing membergroups
   query:
