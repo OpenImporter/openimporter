@@ -44,4 +44,35 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals(array('test_error', 'test test_error'), $instance->getErrors());
 	}
+
+	public function testAddHeader()
+	{
+		$headers = new DummyResponseHeaderForHttpResponseTest();
+		$instance = new HttpResponse($headers);
+
+		$instance->addHeader('key', 'val');
+
+		$this->assertEquals(array('key' => 'val'), $headers->get());
+	}
+
+	/**
+	 * @runInSeparateProcess
+	 */
+	public function testSendHeader()
+	{
+		$headers = new ResponseHeader();
+		$instance = new HttpResponse($headers);
+
+		$instance->addHeader('key', 'val');
+		$instance->sendHeaders();
+		$this->assertEquals( array( 'key: val' ), xdebug_get_headers() );
+	}
+}
+
+class DummyResponseHeaderForHttpResponseTest extends ResponseHeader
+{
+	public function get()
+	{
+		return $this->headers;
+	}
 }
