@@ -46,19 +46,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers OpenImporter\Core\Form::__get
-	 */
-	public function testGet()
-	{
-		$object = new \ReflectionClass('OpenImporter\\Core\\Form');
-		$instance = $object->newInstanceArgs(array(new DummyLang()));
-		$instance->test = 123;
-
-		$this->assertEquals(123, $instance->test);
-		$this->assertNull($instance->nontest);
-	}
-
-	/**
 	 * @covers OpenImporter\Core\Form::addOption
 	 */
 	public function testAddOption()
