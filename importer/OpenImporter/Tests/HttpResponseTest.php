@@ -35,9 +35,7 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals(array(array('test', 'test_error')), $property->getValue($instance));
 	}
-	/**
-	 * @covers OpenImporter\Core\HttpResponse::addErrorParam
-	 */
+
 	public function testGetErrors()
 	{
 		$instance = new HttpResponse(new ResponseHeader());
