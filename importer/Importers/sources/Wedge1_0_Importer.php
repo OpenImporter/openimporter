@@ -420,4 +420,41 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		else
 			return false;
 	}
+
+	public function preparseAlerts($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['data'] = @unserialize($row['data']);
+
+			if (empty($row['unread']))
+				$row['status'] = 'read';
+			else
+				$row['status'] = 'unread';
+			$row['accessibility'] = 1;
+			$row['visibility'] = 1;
+
+			$row['type'] = $this->convertAlertsTypes($row['type']);
+
+			unset($row['unread']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	protected function convertAlertsTypes($type)
+	{
+		switch ($type)
+		{
+			case 'likes':
+				return 'like';
+			case 'mentions':
+				return 'mention';
+			default:
+				return $type;
+		}
+	}
 }

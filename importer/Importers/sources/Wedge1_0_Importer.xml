@@ -198,6 +198,22 @@
 			FROM {$from_prefix}log_notify;
 		</query>
 	</step>
+	<step id="alerts">
+		<title>Importing alerts</title>
+		<detect>{$from_prefix}notifications</detect>
+		<query>
+			SELECT
+				id_notification AS id_alert,
+				id_member,
+				id_member_from,
+				notifier AS type,
+				id_object AS id_target,
+				time AS alert_time,
+				unread,
+				data
+			FROM {$from_prefix}notifications;
+		</query>
+	</step>
 	<step id="membergroups">
 		<title>Importing membergroups</title>
 		<detect>{$from_prefix}membergroups</detect>

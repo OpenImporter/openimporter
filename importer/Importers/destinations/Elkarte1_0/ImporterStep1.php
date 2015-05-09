@@ -52,15 +52,15 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		return '{$to_prefix}message_likes';
 	}
 
-	/**
-	 * Overriders the default TRUNCATE since Elk doesn't have that table.
-	 */
-	public function beforeLikes()
+	public function tableAlerts()
+	{
+		return '{$to_prefix}log_mentions';
+	}
+
+	public function beforeAlerts()
 	{
 		$this->db->query("
-			DELETE FROM {$this->config->to_prefix}log_mentions WHERE mention_type = 'like'");
-
-		parent::beforeLikes();
+			TRUNCATE {$this->config->to_prefix}log_mentions");
 	}
 
 	/**
@@ -508,22 +508,69 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		return $rows;
 	}
 
-	public function preparseLikes($originalRows)
+	public function preparseAlerts($originalRows)
 	{
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			Strings::addslashes_recursive($row);
-			$this->db->insert($this->config->to_prefix . 'log_mentions', array(
-				'id_member' => $row['id_poster'],
-				'id_msg' => $row['id_msg'],
-				'status' => 1,
-				'id_member_from' => $row['id_member'],
-				'log_time' => $row['like_timestamp'],
-				'mention_type' => 'like',
-			), 'ignore');
+			$alert_type = $this->convertAlertsTypes($row['type']);
+
+			// If we don't know (yet?) the alert, better skip it
+			if (empty($alert_type))
+				continue;
+
+			$rows[] = array(
+				'id_mention' => $row['id_alert'],
+				'id_member' => $row['id_member'],
+				'id_msg' => $row['id_target'],
+				'status' => $this->convertAlertsStatus($row['id_alert'], $row['accessibility'], $row['visibility']),
+				'id_member_from' => $row['id_member_from'],
+				'log_time' => $row['alert_time'],
+				'mention_type' => $alert_type,
+			);
 		}
 
-		return $originalRows;
+		return $rows;
+	}
+
+	protected function convertAlertsTypes($type)
+	{
+		switch ($type)
+		{
+			case 'like':
+				return $type;
+			case 'mention':
+				return 'men';
+			default:
+				return false;
+		}
+	}
+
+	protected function convertAlertsStatus($status, $accessibility, $visibility)
+	{
+		switch ($status)
+		{
+			case 'read':
+				$final_status = 1;
+				break;
+			case 'unread':
+			case 'new':
+				$final_status = 0;
+				break;
+			case 'deleted':
+				$final_status = 2;
+				break;
+			default:
+				$final_status = 0;
+				break;
+		}
+
+		if (!$visibility)
+			$final_status += 10;
+
+		if (!$accessibility)
+			$final_status = -1 * ($final_status + 1);
+
+		return $final_status;
 	}
 }
