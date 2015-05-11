@@ -29,7 +29,8 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 
 	public function setDefines()
 	{
-		define('WEDGE', 1);
+		if (!defined('WEDGE'))
+			define('WEDGE', 1);
 	}
 
 	/**
@@ -82,6 +83,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 			unset($row['data']);
 
 			$row['message_labels'] = !empty($data['pmlabs']) ? $data['pmlabs'] : '';
+			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
 			if (!empty($data['secret']))
 			{
 				$question = explode('|', $data['secret']);
@@ -93,6 +95,8 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 				$row['secret_question'] = '';
 				$row['secret_answer'] = '';
 			}
+			$row['member_ip'] = $this->ipmasktoipv6($row['member_ip']);
+			$row['member_ip2'] = $this->ipmasktoipv6($row['member_ip2']);
 
 			$rows[] = $row;
 		}
@@ -106,6 +110,7 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		foreach ($originalRows as $row)
 		{
 			$row['full_path'] = $this->getAttachDir($row);
+			$row['system_filename'] = $row['id_attach'] . '_' . $row['file_hash'] . '.ext';
 
 			$rows[] = $row;
 		}
@@ -123,6 +128,14 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		);
 
 		return isset($known[$group]) ? $known[$group] : $group + 10;
+	}
+
+	protected function ipmasktoipv6($ip)
+	{
+		if (strpos($ip, '.') === false)
+			return implode(':', explode("\n", chunk_split($ip, 4, "\n")));
+		else
+			return $this->ipmasktoipv6('00000000000000000000ffff' . bin2hex(inet_pton($ip)));
 	}
 
 	public function preparseBoards($originalRows)
@@ -406,5 +419,42 @@ class Wedge1_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporte
 		}
 		else
 			return false;
+	}
+
+	public function preparseAlerts($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$row['data'] = @unserialize($row['data']);
+
+			if (empty($row['unread']))
+				$row['status'] = 'read';
+			else
+				$row['status'] = 'unread';
+			$row['accessibility'] = 1;
+			$row['visibility'] = 1;
+
+			$row['type'] = $this->convertAlertsTypes($row['type']);
+
+			unset($row['unread']);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	protected function convertAlertsTypes($type)
+	{
+		switch ($type)
+		{
+			case 'likes':
+				return 'like';
+			case 'mentions':
+				return 'mention';
+			default:
+				return $type;
+		}
 	}
 }

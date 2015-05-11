@@ -110,7 +110,7 @@ class Database
 		{
 			$this->con->insert($table, $data);
 		}
-		catch (UniqueConstraintViolationException $e)
+		catch (ConstraintViolationException $e)
 		{
 			return;
 		}

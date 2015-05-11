@@ -19,15 +19,8 @@ use OpenImporter\Core\FormException;
  * @property string $submit
  * @property mixed[] $options
  */
-class Form
+class Form extends ValuesBag
 {
-	/**
-	 * The array that holds all the structure of the form.
-	 *
-	 * @var mixed[]
-	 */
-	protected $data = array();
-
 	/**
 	 * The "translator" (i.e. the Lang object)
 	 * @var object
@@ -60,20 +53,6 @@ class Form
 			throw new FormException('Use Form::addOptions or Form::addField to set new fields');
 
 		$this->data[$key] = $val;
-	}
-
-	/**
-	 * Getter
-	 *
-	 * @param string|int $key
-	 * @return mixed[]|null
-	 */
-	public function __get($key)
-	{
-		if (isset($this->data[$key]))
-			return $this->data[$key];
-		else
-			return null;
 	}
 
 	/**

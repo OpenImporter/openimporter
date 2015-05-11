@@ -324,7 +324,8 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 		foreach ($originalRows as $row)
 		{
-			$row['full_path'] = $attach_dir . '/' . $row['attach_location'];
+			$row['full_path'] = $attach_dir . '/' . dirname($row['attach_location']);
+			$row['system_filename'] = basename($row['attach_location']);
 			unset($row['attach_location']);
 
 			$rows[] = $row;

@@ -16,6 +16,7 @@
 namespace OpenImporter\Importers\destinations\ElkArte1_0;
 
 use OpenImporter\Core\Files;
+use OpenImporter\Core\Strings;
 
 class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep1
 {
@@ -49,6 +50,41 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 	public function tableLikes()
 	{
 		return '{$to_prefix}message_likes';
+	}
+
+	public function tableAlerts()
+	{
+		return '{$to_prefix}log_mentions';
+	}
+
+	public function beforeAlerts()
+	{
+		$this->db->query("
+			TRUNCATE {$this->config->to_prefix}log_mentions");
+	}
+
+	/**
+	 * Overriders the default TRUNCATE since Elk doesn't have that table.
+	 */
+	public function beforeFriendlyurls()
+	{
+	}
+
+	/**
+	 * Overriders the default TRUNCATE since Elk doesn't have that table.
+	 */
+	public function beforeFriendlyurlcache()
+	{
+	}
+
+	public function tableFriendlyurls()
+	{
+		return '';
+	}
+
+	public function tableFriendlyurlcache()
+	{
+		return '';
 	}
 
 	/**
@@ -346,20 +382,21 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 	public function preparseAttachments($originalRows)
 	{
 		$rows = array();
+
 		foreach ($originalRows as $row)
 		{
 			$file_hash = $this->createAttachmentFileHash($row['filename']);
-			$id_attach = $this->newIdAttach();
-			// @todo the name should come from step1_importer
-			$destination = $this->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
-			$source = $row['full_path'] . '/' . $row['filename'];
 
 			// Ensure the id_attach is the one we want... I think.
 			if (empty($row['id_attach']))
-				$row['id_attach'] = $id_attach;
+				$row['id_attach'] = $this->newIdAttach();
+
+			// @todo the name should come from step1_importer
+			$destination = $this->getAttachDir($row) . '/' . $row['id_attach'] . '_' . $file_hash . '.elk';
+			$source = $row['full_path'] . '/' . $row['system_filename'];
 
 			Files::copy_file($source, $destination);
-			unset($row['full_path']);
+			unset($row['full_path'], $row['system_filename']);
 			$row['file_hash'] = $file_hash;
 			$rows[] = $row;
 		}
@@ -449,6 +486,8 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		foreach ($originalRows as $row)
 		{
 			$row['col_name'] = preg_replace('~[^a-zA-Z0-9\-_]~', '', $row['col_name']);
+			$row['vieworder'] = $row['position'];
+			unset($row['position']);
 
 			if (!empty($row['field_options']))
 				$row['field_options'] = implode(',', array_values($row['field_options']));
@@ -467,5 +506,71 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		}
 
 		return $rows;
+	}
+
+	public function preparseAlerts($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			$alert_type = $this->convertAlertsTypes($row['type']);
+
+			// If we don't know (yet?) the alert, better skip it
+			if (empty($alert_type))
+				continue;
+
+			$rows[] = array(
+				'id_mention' => $row['id_alert'],
+				'id_member' => $row['id_member'],
+				'id_msg' => $row['id_target'],
+				'status' => $this->convertAlertsStatus($row['id_alert'], $row['accessibility'], $row['visibility']),
+				'id_member_from' => $row['id_member_from'],
+				'log_time' => $row['alert_time'],
+				'mention_type' => $alert_type,
+			);
+		}
+
+		return $rows;
+	}
+
+	protected function convertAlertsTypes($type)
+	{
+		switch ($type)
+		{
+			case 'like':
+				return $type;
+			case 'mention':
+				return 'men';
+			default:
+				return false;
+		}
+	}
+
+	protected function convertAlertsStatus($status, $accessibility, $visibility)
+	{
+		switch ($status)
+		{
+			case 'read':
+				$final_status = 1;
+				break;
+			case 'unread':
+			case 'new':
+				$final_status = 0;
+				break;
+			case 'deleted':
+				$final_status = 2;
+				break;
+			default:
+				$final_status = 0;
+				break;
+		}
+
+		if (!$visibility)
+			$final_status += 10;
+
+		if (!$accessibility)
+			$final_status = -1 * ($final_status + 1);
+
+		return $final_status;
 	}
 }

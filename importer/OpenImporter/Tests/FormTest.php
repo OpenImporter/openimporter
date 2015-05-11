@@ -46,19 +46,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers OpenImporter\Core\Form::__get
-	 */
-	public function testGet()
-	{
-		$object = new \ReflectionClass('OpenImporter\\Core\\Form');
-		$instance = $object->newInstanceArgs(array(new DummyLang()));
-		$instance->test = 123;
-
-		$this->assertEquals(123, $instance->test);
-		$this->assertNull($instance->nontest);
-	}
-
-	/**
 	 * @covers OpenImporter\Core\Form::addOption
 	 */
 	public function testAddOption()
@@ -195,9 +182,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals(array('options' => array(array())), $property->getValue($instance));
 	}
 
-	/**
-	 * @covers OpenImporter\Core\Form::addField
-	 */
 	public function testAddField()
 	{
 		$object = new MockFormAddField(new DummyLang());
@@ -208,9 +192,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('field[makeFieldArray]', $object->addField($xml->firstLevel));
 	}
 
-	/**
-	 * @covers OpenImporter\Core\Form::makeFieldArray
-	 */
 	public function testMakeFieldArray()
 	{
 		$object = new Form(new DummyLang());

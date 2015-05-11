@@ -15,31 +15,64 @@ use OpenImporter\Core\ResponseHeader;
 class HttpResponseTest extends \PHPUnit_Framework_TestCase
 {
 	/**
-	 * @covers OpenImporter\Core\HttpResponse::__set
+	 * @covers OpenImporter\Core\HttpResponse::addErrorParam
 	 */
-	public function testSet()
+	public function testAddErrorParam()
 	{
 		$object = new \ReflectionClass('OpenImporter\\Core\\HttpResponse');
 		$instance = $object->newInstanceArgs(array(new ResponseHeader()));
-		$property = $object->getProperty('data');
+		$property = $object->getProperty('error_params');
 		$property->setAccessible(true);
 
-		//We need to create an empty object to pass to
-		//ReflectionProperty's getValue method
-		$instance->test = 123;
+		$instance->addErrorParam('test_error');
 
-		$this->assertEquals(array('test' => 123), $property->getValue($instance));
+		$this->assertEquals(array('test_error'), $property->getValue($instance));
+
+		// Reset
+		$instance = $object->newInstanceArgs(array(new ResponseHeader()));
+
+		$instance->addErrorParam(array('test', 'test_error'));
+
+		$this->assertEquals(array(array('test', 'test_error')), $property->getValue($instance));
+	}
+
+	public function testGetErrors()
+	{
+		$instance = new HttpResponse(new ResponseHeader());
+		$instance->addErrorParam('test_error');
+		$instance->addErrorParam(array('test %1$s', 'test_error'));
+
+		$this->assertEquals(array('test_error', 'test test_error'), $instance->getErrors());
+	}
+
+	public function testAddHeader()
+	{
+		$headers = new DummyResponseHeaderForHttpResponseTest();
+		$instance = new HttpResponse($headers);
+
+		$instance->addHeader('key', 'val');
+
+		$this->assertEquals(array('key' => 'val'), $headers->get());
 	}
 
 	/**
-	 * @covers OpenImporter\Core\HttpResponse::__get
+	 * @runInSeparateProcess
 	 */
-	public function testGet()
+	public function testSendHeader()
 	{
-		$instance = new HttpResponse(new ResponseHeader());
-		$instance->test = 123;
+		$headers = new ResponseHeader();
+		$instance = new HttpResponse($headers);
 
-		$this->assertEquals(123, $instance->test);
-		$this->assertNull($instance->nontest);
+		$instance->addHeader('key', 'val');
+		$instance->sendHeaders();
+		$this->assertEquals( array( 'key: val' ), xdebug_get_headers() );
+	}
+}
+
+class DummyResponseHeaderForHttpResponseTest extends ResponseHeader
+{
+	public function get()
+	{
+		return $this->headers;
 	}
 }

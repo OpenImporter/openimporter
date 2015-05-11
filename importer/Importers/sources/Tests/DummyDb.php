@@ -13,12 +13,11 @@ class DummyDb
 
 	public function query($string)
 	{
+		$array = $this->parseSql($string);
 		if ($this->customValues !== null && $this->customValues->hasRes($string))
-			$array = $this->customValues->getRes($string);
-		else
-			$array = array($this->parseSql($string));
+			$array = array_merge($array, $this->customValues->getRes($string));
 
-		return new DummyDbResults($array);
+		return new DummyDbResults(array($array));
 	}
 
 	public function fetch_assoc($res)

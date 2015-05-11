@@ -12,14 +12,8 @@ namespace OpenImporter\Core;
 /**
  * This should contain the data used by the template.
  */
-class HttpResponse
+class HttpResponse extends ValuesBag
 {
-	/**
-	 * Any kind of data the templates may need.
-	 * @var mixed[]
-	 */
-	protected $data = array();
-
 	/**
 	 * The HTTP response header object.
 	 * @var ResponseHeader
@@ -46,31 +40,6 @@ class HttpResponse
 	public function __construct(ResponseHeader $headers)
 	{
 		$this->headers = $headers;
-	}
-
-	/**
-	 * Setter
-	 *
-	 * @param string|int $key
-	 * @param string|int|bool|null|object $val
-	 */
-	public function __set($key, $val)
-	{
-		$this->data[$key] = $val;
-	}
-
-	/**
-	 * Getter
-	 *
-	 * @param string|int $key
-	 * @return string|int|bool|null|object
-	 */
-	public function __get($key)
-	{
-		if (isset($this->data[$key]))
-			return $this->data[$key];
-		else
-			return null;
 	}
 
 	/**

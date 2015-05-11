@@ -12,53 +12,21 @@ namespace OpenImporter\Importers\sources\Tests;
 use OpenImporter\Core\Configurator;
 
 /**
- * The configurator is just a class holding the common configuration
- * info such as the paths (to/from), prefixes, etc.
- * Basically a getter/setter
- *
- * @property string $lang_dir
- * @property string $importers_dir
+ * The configurator is just a ValuesBag, the only difference is the $store
+ * public property. Let's check if it exists, it's public, it is empty on
+ * initialization and accepts a value.
  */
 class ConfiguratorTest extends \PHPUnit_Framework_TestCase
 {
-	/**
-	 * @covers OpenImporter\Core\Configurator::__set
-	 */
-	public function testSet()
+	public function testStore()
 	{
-		$object = new \ReflectionClass('OpenImporter\\Core\\Configurator');
-		$property = $object->getProperty('data');
-		$property->setAccessible(true);
+		$object = new Configurator();
 
-		//We need to create an empty object to pass to
-		//ReflectionProperty's getValue method
-		$config = new Configurator();
-		$config->test = 123;
+		$this->assertTrue(isset($object->store));
 
-		$this->assertEquals(array('test' => 123), $property->getValue($config));
-	}
+		$this->assertEquals(array(), $object->store);
 
-	/**
-	 * @covers OpenImporter\Core\Configurator::__isset
-	 */
-	public function testIsset()
-	{
-		$config = new Configurator();
-		$config->test = 123;
-
-		$this->assertTrue(isset($config->test));
-		$this->assertFalse(isset($config->nontest));
-	}
-
-	/**
-	 * @covers OpenImporter\Core\Configurator::__get
-	 */
-	public function testGet()
-	{
-		$config = new Configurator();
-		$config->test = 123;
-
-		$this->assertEquals(123, $config->test);
-		$this->assertNull($config->nontest);
+		$object->store = array(1);
+		$this->assertEquals(array(1), $object->store);
 	}
 }

@@ -105,27 +105,27 @@ class CustomSmf20Values extends CustomDb
 				IFNULL(warning, 0) AS warning, passwd_flood,
 				pm_receive_from, \'\' as avatartype
 			FROM {$from_prefix}members;
-		') => array(array(
+		') => array(
 				'date_registered' => 12345678,
 				'birthdate' => '',
-			)),
+			),
 			md5("
 					SELECT value
 					FROM {$this->config->from_prefix}settings
 					WHERE name = 'uploadspath'
-					LIMIT 1") => array(array(
+					LIMIT 1") => array(
 				'value' => BASEDIR . '/Importers/sources'
-			)),
+			),
 			md5('
 			SELECT pid AS id_msg, downloads, filename, filesize, attachname
 			FROM {$from_prefix}attachments;
-		') => array(array(
+		') => array(
 				'id_msg' => 1,
 				'downloads' => 0,
 				'filename' => 'MyBB1_6_Importer.php',
 				'filesize' => 0,
 				'attachname' => 'MyBB1_6_Importer.php'
-			))
+			),
 		);
 	}
 }

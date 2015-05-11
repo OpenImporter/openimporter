@@ -13,9 +13,9 @@
 		<detect>{$from_prefix}members</detect>
 		<query>
 			SELECT
-				id_member, member_name, date_registered, posts, id_group, lngfile as language, last_login,
-				real_name, unread_messages, hey_pm AS new_pm, buddy_list, pm_ignore_list,
-				pm_prefs, mod_prefs, data, passwd, email_address, personal_text,
+				id_member, member_name, date_registered, posts, id_group, lngfile as language,
+				last_login, real_name, unread_messages, hey_pm AS new_pm, buddy_list,
+				pm_ignore_list, pm_prefs, data, passwd, email_address, personal_text,
 				gender, birthdate, website_url, website_title, location, hide_email, show_online,
 				time_format, signature, time_offset, avatar, pm_email_notify,
 				usertitle, notify_announcements, notify_regularity, notify_send_body,
@@ -32,9 +32,10 @@
 		<detect>{$from_prefix}attachments</detect>
 		<query>
 			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments;
+				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash,
+				size, downloads, width, height, fileext, mime_type, id_folder
+			FROM {$from_prefix}attachments
+				WHERE id_member = 0;
 		</query>
 	</step>
 	<step id="avatars">
@@ -195,6 +196,22 @@
 			SELECT
 				id_member, id_topic, id_board, sent
 			FROM {$from_prefix}log_notify;
+		</query>
+	</step>
+	<step id="alerts">
+		<title>Importing alerts</title>
+		<detect>{$from_prefix}notifications</detect>
+		<query>
+			SELECT
+				id_notification AS id_alert,
+				id_member,
+				id_member_from,
+				notifier AS type,
+				id_object AS id_target,
+				time AS alert_time,
+				unread,
+				data
+			FROM {$from_prefix}notifications;
 		</query>
 	</step>
 	<step id="membergroups">
@@ -365,8 +382,8 @@
 		<query>
 			SELECT
 				id_field, col_name, field_name, field_desc, field_type, field_length,
-				field_options, mask, show_reg, show_display, show_profile, private,
-				active, bbc, can_search, default_value, enclose, placement
+				field_options, mask, show_reg, show_display, show_profile, can_see AS private,
+				active, bbc, can_search, default_value, enclose, placement, position
 			FROM {$from_prefix}custom_fields;
 		</query>
 	</step>
@@ -381,25 +398,13 @@
 		</query>
 	</step>
 	<step id="likes">
-		<title>Importing likes from Thank you mod</title>
-		<detect>{$from_prefix}thank_you_post</detect>
-		<query>
-			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
-			FROM {$from_prefix}thank_you_post AS th
-				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
-				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
-		</query>
-	</step>
-	<step id="likes">
-		<title>Importing likes from Joker's Like Posts mod</title>
-		<detect>{$from_prefix}like_post</detect>
-		<query>
-			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
-			FROM {$from_prefix}like_post AS lp;
-		</query>
-	</step>
-	<step id="likes">
-		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
+		<title>Importing likes</title>
 		<detect>{$from_prefix}likes</detect>
+		<query>
+			SELECT l.id_content AS id_msg, l.id_member, m.id_member AS id_poster, l.like_time AS like_timestamp
+			FROM {$from_prefix}likes AS l
+				LEFT JOIN {$from_prefix}messages AS m ON (m.id_msg = l.id_content)
+			WHERE l.content_type = 'post';
+		</query>
 	</step>
 </importer>

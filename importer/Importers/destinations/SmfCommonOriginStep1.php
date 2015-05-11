@@ -19,8 +19,6 @@ use OpenImporter\Core\Files;
 
 abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 {
-	protected $beforeOnce = array();
-
 	public function fixTexts($row)
 	{
 		// If we have a message here, we'll want to convert <br /> to <br>.
@@ -367,11 +365,6 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 	public function beforeNotifications()
 	{
-		// This should be done only once.
-		if (!empty($this->beforeOnce['Notifications']))
-			return;
-
-		$this->beforeOnce['Notifications'] = true;
 		$this->db->query("
 			TRUNCATE {$this->config->to_prefix}log_notify;");
 	}
@@ -479,10 +472,6 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 	public function beforeLikes()
 	{
-		if (!empty($this->beforeOnce['Likes']))
-			return;
-
-		$this->beforeOnce['Likes'] = true;
 		$this->db->query("
 			TRUNCATE {$this->config->to_prefix}message_likes");
 	}

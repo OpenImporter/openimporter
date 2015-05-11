@@ -10,10 +10,33 @@
 namespace OpenImporter\Importers\sources\Tests;
 
 use OpenImporter\Core\Importer;
+use OpenImporter\Core\Configurator;
+use OpenImporter\Core\Lang;
+use OpenImporter\Core\Template;
 
 class ImporterTest extends \PHPUnit_Framework_TestCase
 {
-	public function testNothing()
+	public function testReloadImporter()
 	{
+		$config = new Configurator();
+		$lang = new Lang();
+		$template = new Template($lang, $config);
+		$instance = new DummyTestReloadImporter($config, $lang, $template);
+
+		$this->assertFalse($instance->called);
+
+		$config->script = 'something';
+		$instance->reloadImporter();
+		$this->assertEquals('something', $instance->called);
+	}
+}
+
+class DummyTestReloadImporter extends Importer
+{
+	public $called = false;
+
+	public function loadImporter($files)
+	{
+		$this->called = 'something';
 	}
 }

@@ -107,27 +107,27 @@ class CustomMybb16Values extends CustomDb
 				SUBSTRING(ignorelist, 1, 255) AS pm_ignore_list, avatar,
 				timeonline AS total_time_logged_in, birthday AS birthdate, avatartype
 			FROM {$from_prefix}users;
-		') => array(array(
+		') => array(
 				'date_registered' => 12345678,
 				'birthdate' => '',
-			)),
+			),
 			md5("
 					SELECT value
 					FROM {$this->config->from_prefix}settings
 					WHERE name = 'uploadspath'
-					LIMIT 1") => array(array(
+					LIMIT 1") => array(
 				'value' => BASEDIR . '/Importers/sources'
-			)),
+			),
 			md5('
 			SELECT pid AS id_msg, downloads, filename, filesize, attachname
 			FROM {$from_prefix}attachments;
-		') => array(array(
+		') => array(
 				'id_msg' => 1,
 				'downloads' => 0,
 				'filename' => 'MyBB1_6_Importer.php',
 				'filesize' => 0,
 				'attachname' => 'MyBB1_6_Importer.php'
-			))
+			),
 		);
 	}
 }
