@@ -43,12 +43,6 @@ class Importer
 	public $config;
 
 	/**
-	 * The template, basically our UI.
-	 * @var object
-	 */
-	public $template;
-
-	/**
 	 * The table prefix for our destination database
 	 * @var string
 	 */
@@ -82,12 +76,11 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Lang $lang, Template $template)
+	public function __construct(Configurator $config, Lang $lang)
 	{
 		// initialize some objects
 		$this->config = $config;
 		$this->lng = $lang;
-		$this->template = $template;
 
 		$this->reloadImporter();
 	}
@@ -232,7 +225,7 @@ class Importer
 		$skeleton = new Parser();
 		$this->skeleton = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
-		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
+		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->xml);
 		$xmlParser->setImporter($this->stepInstance('Step1'));
 		$xmlParser->setSkeleton($this->skeleton);
 

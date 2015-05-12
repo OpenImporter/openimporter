@@ -43,12 +43,6 @@ class XmlProcessor
 	public $config;
 
 	/**
-	 * The template
-	 * @var object
-	 */
-	public $template;
-
-	/**
 	 * The xml object containing the settings.
 	 * Required (for now) to convert IPs (v4/6)
 	 * @var object
@@ -76,12 +70,11 @@ class XmlProcessor
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Database $db, Database $source_db, Configurator $config, Template $template, \SimpleXMLElement $xml)
+	public function __construct(Database $db, Database $source_db, Configurator $config, \SimpleXMLElement $xml)
 	{
 		$this->db = $db;
 		$this->source_db = $source_db;
 		$this->config = $config;
-		$this->template = $template;
 		$this->xml = $xml;
 	}
 

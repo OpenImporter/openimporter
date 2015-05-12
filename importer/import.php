@@ -77,7 +77,7 @@ try
 		throw new \Exception('Please set \'session.save_handler\' to \'files\' before continue');
 	}
 
-	$importer = new Importer($OI_configurator, $lng, $template);
+	$importer = new Importer($OI_configurator, $lng);
 	$response = new HttpResponse(new ResponseHeader());
 
 	$template->setResponse($response);
