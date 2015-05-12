@@ -67,9 +67,12 @@ class HttpResponse extends ValuesBag
 	 *
 	 * @param mixed|mixed[] $error_message
 	 */
-	public function addErrorParam($error_message)
+	public function addErrorParam($error_message, $trace = false, $line = false, $file = false)
 	{
-		$this->error_params[] = $error_message;
+		if ($trace === false)
+			$this->error_params[] = $error_message;
+		else
+			$this->error_params[] = array($error_message, $trace, $line, $file);
 	}
 
 	/**
@@ -80,7 +83,7 @@ class HttpResponse extends ValuesBag
 		$return = array();
 		foreach ($this->error_params as $msg)
 		{
-			if (is_array($msg))
+			if (is_array($msg) && count($msg) == 2)
 				$return[] = sprintf($msg[0], $msg[1]);
 			else
 				$return[] = $msg;

@@ -198,6 +198,8 @@ class ImportManager
 
 		if (!isset($_GET['xml']))
 			$this->template->footer();
+
+		return $this->response;
 	}
 
 	protected function validateFields()
@@ -447,10 +449,10 @@ class ImportManager
 		catch (DatabaseException $e)
 		{
 			$trace = $e->getTrace();
-			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->response->addErrorParam($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new \Exception($e->getMessage());
+			throw new StepException($e->getMessage());
 		}
 
 		$this->config->progress->start = 0;
@@ -478,10 +480,10 @@ class ImportManager
 		catch (DatabaseException $e)
 		{
 			$trace = $e->getTrace();
-			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->response->addErrorParam($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new \Exception($e->getMessage());
+			throw new StepException($e->getMessage());
 		}
 
 		$this->template->status(1, '', true);

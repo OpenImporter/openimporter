@@ -80,7 +80,12 @@ class Template
 			if ($this->response->template_error)
 			{
 				foreach ($this->response->getErrors() as $msg)
-					$this->error($msg);
+				{
+					if (is_array($msg))
+						call_user_func_array(array($this, 'error'), $msg);
+					else
+						$this->error($msg);
+				}
 			}
 
 			call_user_func_array(array($this, $this->response->use_template), $this->response->params_template);
