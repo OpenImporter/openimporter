@@ -334,14 +334,15 @@ class ImportManager
 
 		// Silence simplexml errors
 		libxml_use_internal_errors(true);
-		foreach (glob($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml') as $entry)
+		$iterator = new GlobIterator($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml');
+		foreach ($iterator as $entry)
 		{
 			// If a script is broken simply skip it.
-			if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
+			if (!$xmlObj = simplexml_load_file($entry->getPathname(), 'SimpleXMLElement', LIBXML_NOCDATA))
 			{
 				continue;
 			}
-			$file_name = basename($entry);
+			$file_name = $entry->getBasename();
 
 			$scripts[$file_name] = array(
 				'path' => $file_name,
@@ -365,9 +366,10 @@ class ImportManager
 	protected function findDestinations()
 	{
 		$destinations = array();
-		foreach (glob($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR) as $possible_dir)
+		$iterator = new GlobIterator($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR);
+		foreach ($iterator as $possible_dir)
 		{
-			$namespace = basename($possible_dir);
+			$namespace = $possible_dir->getBasename();
 			$class_name = '\\OpenImporter\\Importers\\destinations\\' . $namespace . '\\Importer';
 
 			if (class_exists($class_name))

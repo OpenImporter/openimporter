@@ -43,7 +43,7 @@ class ProgressTracker
 		{
 			$real = isset($options[$key]) ? (int) $options[$key] : $val;
 
-			// This condition covers the vase of stop_time set externally to 0
+			// This condition covers the case of stop_time set externally to 0
 			if (empty($real))
 				$real = $val;
 
