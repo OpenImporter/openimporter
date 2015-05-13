@@ -311,15 +311,6 @@ class Template
 	}
 
 	/**
-	 * Display information related to step2
-	 */
-	public function step2()
-	{
-		echo '
-				<span style="width: 250px; display: inline-block">', $this->lng->get('recalculate'), '...</span> ';
-	}
-
-	/**
 	 * Display last step UI, completion status and allow eventually
 	 * to delete the scripts
 	 *
