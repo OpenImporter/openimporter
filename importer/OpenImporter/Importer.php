@@ -43,6 +43,18 @@ class Importer
 	public $config;
 
 	/**
+	 * The data sent to the template.
+	 * @var object
+	 */
+	public $response;
+
+	/**
+	 * The intermediate data structure.
+	 * @var object
+	 */
+	public $skeleton;
+
+	/**
 	 * The table prefix for our destination database
 	 * @var string
 	 */
