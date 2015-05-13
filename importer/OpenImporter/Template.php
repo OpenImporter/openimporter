@@ -118,12 +118,10 @@ class Template
 
 	/**
 	 * Show the footer.
-	 *
-	 * @param bool $inner
 	 */
-	public function footer($inner = true)
+	public function footer()
 	{
-		if (($this->response->step == 1 || $this->response->step == 2) && (bool) $inner === true)
+		if ($this->response->step == 1 || $this->response->step == 2)
 			echo '
 				</p>
 			</div>';
@@ -135,10 +133,8 @@ class Template
 
 	/**
 	 * Show the header.
-	 *
-	 * @param bool $inner
 	 */
-	public function header($inner = true)
+	public function header()
 	{
 		echo '<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $this->lng->get('locale'), '" lang="', $this->lng->get('locale'), '">
@@ -221,7 +217,7 @@ class Template
 		</div>
 		<div id="main">';
 
-		if (($this->config->progress->current_step == 1 || $this->config->progress->current_step == 2) && (bool) $inner === true)
+		if ($this->config->progress->current_step == 1 || $this->config->progress->current_step == 2)
 			echo '
 			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
