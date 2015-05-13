@@ -63,6 +63,11 @@ class HttpResponse extends ValuesBag
 			header($val);
 	}
 
+	public function getAll()
+	{
+		return $this->data;
+	}
+
 	/**
 	 * Wrapper for ResponseHeader::set
 	 *

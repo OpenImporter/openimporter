@@ -62,12 +62,34 @@ class Template
 	{
 		$this->response = $response;
 		$this->response->styles = $this->fetchStyles();
+		$this->response->scripts = $this->fetchScripts();
 	}
 
 	protected function fetchStyles()
 	{
 		if (file_exists(BASEDIR . '/Assets/index.css'))
 			return file_get_contents(BASEDIR . '/Assets/index.css');
+		else
+			return '';
+	}
+
+	protected function fetchScripts()
+	{
+		if (file_exists(BASEDIR . '/Assets/scripts.js'))
+		{
+			$file = file_get_contents(BASEDIR . '/Assets/scripts.js');
+			$replaces = array();
+			foreach($this->response->getAll() as $key => $val)
+			{
+				$replaces['{{response->' . $key . '}}'] = $val;
+			}
+			foreach($this->lng->getAll() as $key => $val)
+			{
+				$replaces['{{language->' . $key . '}}'] = $val;
+			}
+
+			return strtr($file, $replaces);
+		}
 		else
 			return '';
 	}
@@ -143,70 +165,9 @@ class Template
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>', $this->response->page_title, '</title>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-		<script type="text/javascript">
-			function AJAXCall(url, callback, string)
-			{
-				var req = init();
-				var string = string;
-				req.onreadystatechange = processRequest;
-
-				function init()
-				{
-					if (window.XMLHttpRequest)
-						return new XMLHttpRequest();
-					else if (window.ActiveXObject)
-						return new ActiveXObject("Microsoft.XMLHTTP");
-				}
-
-				function processRequest()
-				{
-					// readyState of 4 signifies request is complete
-					if (req.readyState == 4)
-					{
-						// status of 200 signifies sucessful HTTP call
-						if (req.status == 200)
-							if (callback) callback(req.responseXML, string);
-					}
-				}
-
-				// make a HTTP GET request to the URL asynchronously
-				this.doGet = function () {
-					req.open("GET", url, true);
-					req.send(null);
-				};
-			}
-			function validateField(string)
-			{
-				var target = document.getElementById(string);
-				var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&source=', $this->response->source, '&destination=', $this->response->destination, '";
-				var ajax = new AJAXCall(url, validateCallback, string);
-				ajax.doGet();
-			}
-
-			function validateCallback(responseXML, string)
-			{
-				var msg = responseXML.getElementsByTagName("valid")[0].firstChild.nodeValue;
-				if (msg == "false")
-				{
-					var field = document.getElementById(string);
-					var validate = document.getElementById(\'validate_\' + string);
-					field.className = "invalid_field";
-					validate.innerHTML = "', $this->lng->get('invalid') , '";
-					// set the style on the div to invalid
-					var submitBtn = document.getElementById("submit_button");
-					submitBtn.disabled = true;
-				}
-				else
-				{
-					var field = document.getElementById(string);
-					var validate = document.getElementById(\'validate_\' + string);
-					field.className = "valid_field";
-					validate.innerHTML = "', $this->lng->get('validated') , '";
-					var submitBtn = document.getElementById("submit_button");
-					submitBtn.disabled = false;
-				}
-			}
-		</script>
+		<script type="text/javascript"><!-- // --><![CDATA[
+', $this->response->scripts, '
+		// ]]></script>
 		<style type="text/css">
 ', $this->response->styles, '
 		</style>
@@ -232,7 +193,7 @@ class Template
 	{
 		echo '
 			<h2>', $this->lng->get('to_what'), '</h2>
-			<form class="conversion" action="', $this->response->scripturl, '" method="post">
+			<form id="conversion" class="conversion" action="', $this->response->scripturl, '" method="post">
 				<div class="content">
 					<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
 					<ul id="source">';
@@ -290,36 +251,7 @@ class Template
 				<a href="', $this->response->scripturl, '?action=reset">', $this->lng->get('try_again'), '</a>';
 
 		echo '
-			</div>
-			<script>
-				$(document).ready(function() {
-					$(".input_select").each(function() {
-						var $input = $(this),
-							$button = $input.next();
-
-						$button.click(function() {
-							var $elem = $(this),
-								type = $input.data("type");
-
-							$(".input_select").each(function() {
-								if ($(this).data("type") == type)
-								{
-									if ($(this).val() == $input.val())
-										return true;
-
-									$input.prop("checked", false);
-									$(this).closest("li").removeClass("active");
-								}
-							});
-							$input.prop("checked", !$input.prop("checked"));
-							$(this).closest("li").toggleClass("active");
-						});
-
-						$input.hide();
-						$input.after($button);
-					});
-				});
-			</script>';
+			</div>';
 	}
 
 	public function step0(Form $form)
@@ -407,14 +339,7 @@ class Template
 			echo '
 				<div style="margin: 1ex; font-weight: bold">
 					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', $this->lng->get('check_box'), '</label>
-				</div>
-				<script type="text/javascript"><!-- // --><![CDATA[
-					function doTheDelete()
-					{
-						new Image().src = "', $this->response->scripturl, '?action=delete&" + (+Date());
-						(document.getElementById ? document.getElementById("delete_self") : document.all.delete_self).disabled = true;
-					}
-				// ]]></script>';
+				</div>';
 
 		echo '
 				<p>', sprintf($this->lng->get('all_imported'), $name), '</p>
@@ -454,19 +379,6 @@ class Template
 			<script type="text/javascript"><!-- // --><![CDATA[
 				var countdown = 3;
 				window.onload = doAutoSubmit;
-
-				function doAutoSubmit()
-				{
-					if (countdown == 0)
-						document.autoSubmit.submit();
-					else if (countdown == -1)
-						return;
-
-					document.autoSubmit.b.value = "', $this->lng->get('continue'),' (" + countdown + ")";
-					countdown--;
-
-					setTimeout("doAutoSubmit();", 1000);
-				}
 			// ]]></script>';
 	}
 
@@ -482,8 +394,6 @@ class Template
 
 	public function renderForm(Form $form)
 	{
-		$toggle = false;
-
 		echo '
 			<h2>', $form->title, '</h2>
 			<div class="content">
@@ -495,7 +405,6 @@ class Template
 		{
 			if (empty($option))
 			{
-				$toggle = true;
 				echo '
 					</dl>
 					<div id="toggle_button">', $this->lng->get('advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
@@ -549,33 +458,5 @@ class Template
 					<div class="button"><input id="submit_button" name="', $form->submit['name'], '" type="submit" value="', $form->submit['value'],'" class="submit" /></div>
 				</form>
 			</div>';
-
-		if ($toggle)
-			echo '
-			<script type="text/javascript">
-				document.getElementById(\'toggle_button\').onclick = function ()
-				{
-					var elem = document.getElementById(\'advanced_options\');
-					var arrow_up = document.getElementById(\'arrow_up\');
-					var arrow_down = document.getElementById(\'arrow_down\');
-					if (!elem)
-						return true;
-
-					if (elem.style.display == \'none\')
-					{
-						elem.style.display = \'block\';
-						arrow_down.style.display = \'none\';
-						arrow_up.style.display = \'inline\';
-					}
-					else
-					{
-						elem.style.display = \'none\';
-						arrow_down.style.display = \'inline\';
-						arrow_up.style.display = \'none\';
-					}
-
-					return true;
-				}
-			</script>';
 	}
 }
