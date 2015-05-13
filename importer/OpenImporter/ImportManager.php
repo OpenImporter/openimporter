@@ -408,7 +408,7 @@ class ImportManager
 
 		$this->response->source_name = (string) $this->importer->xml->general->name;
 		$this->response->destination_name = (string) $this->config->destination->scriptname;
-		if (($this->response->template_error && $this->response->noTemplates()) || $this->response->template_error === false)
+		if (($this->response->template_error && $this->response->noTemplates()) || empty($this->response->template_error))
 			$this->response->addTemplate('step0', array($this->getFormStructure()));
 
 		return;
