@@ -17,7 +17,16 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 
 	protected $smf_attach_folders = null;
 
+	/**
+	 * The id of the disabled (?) members group.
+	 * @var int|bool
+	 */
 	protected $is_disabled = false;
+
+	/**
+	 * The id of the banned members group.
+	 * @var int|bool
+	 */
 	protected $is_banned = false;
 	protected $groupsTranslation = null;
 	protected $permissionGroupsTranslation = null;
@@ -204,8 +213,8 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			$this->fetchSetting('member_group') => 0,
 // 			$this->fetchSetting('auth_group') => 1,
 		);
-		$this->is_banned = $this->fetchSetting('banned_group');
-		$this->is_disabled = $this->fetchSetting('auth_group');
+		$this->is_banned = (int) $this->fetchSetting('banned_group');
+		$this->is_disabled = (int) $this->fetchSetting('auth_group');
 	}
 
 	protected function mapPermissionGroups($group_id)
@@ -285,10 +294,10 @@ class IPB3_4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
 
 			// @todo verify
-			if ($this->is_disabled == $row['id_group'])
+			if ($this->is_disabled === (int) $row['id_group'])
 				$row['is_activated'] = 0;
 
-			if ($this->is_banned == $row['id_group'])
+			if ($this->is_banned === (int) $row['id_group'])
 				$row['is_activated'] = $row['is_activated'] + 10;
 
 			$row['id_group'] = $this->mapGroups($row['id_group']);
