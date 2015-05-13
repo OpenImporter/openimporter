@@ -18,6 +18,7 @@ class Template
 	protected $response = null;
 	protected $lng = null;
 	protected $config = null;
+	protected $header_rendered = false;
 
 	public function __construct(Lang $lng, Configurator $config)
 	{
@@ -62,38 +63,48 @@ class Template
 		$this->response = $response;
 	}
 
-	public function render()
+	public function render($response = null)
 	{
+		if ($response !== null)
+			$this->setResponse($response);
+
 		// No text? ... so sad. :(
 		if ($this->response->no_template)
 			return;
 
-		$this->response->sendHeaders();
-
-		// XML ajax feedback? We can just skip everything else
-		if ($this->response->is_xml)
-			$this->xml();
-		elseif ($this->response->is_page)
+		if ($this->header_rendered === false)
 		{
-			$this->header(!$this->response->template_error);
+			$this->response->sendHeaders();
 
-			if ($this->response->template_error)
-			{
-				foreach ($this->response->getErrors() as $msg)
-				{
-					if (is_array($msg))
-						call_user_func_array(array($this, 'error'), $msg);
-					else
-						$this->error($msg);
-				}
-			}
+			if ($this->response->is_page)
+				$this->header();
 
-			call_user_func_array(array($this, $this->response->use_template), $this->response->params_template);
-
-			$this->footer(!$this->response->template_error);
+			$this->header_rendered = true;
 		}
-		else
-			call_user_func_array(array($this, $this->response->use_template), $this->response->params_template);
+
+		if ($this->response->is_page)
+			$this->renderErrors();
+
+		$templates = $this->response->getTemplates();
+		foreach ($templates as $template)
+			call_user_func_array(array($this, $template['name']), $template['params']);
+
+		if ($this->response->is_page)
+			$this->footer();
+	}
+
+	protected function renderErrors()
+	{
+		if ($this->response->template_error)
+		{
+			foreach ($this->response->getErrors() as $msg)
+			{
+				if (is_array($msg))
+					call_user_func_array(array($this, 'error'), $msg);
+				else
+					$this->error($msg);
+			}
+		}
 	}
 
 	/**
@@ -192,215 +203,7 @@ class Template
 			}
 		</script>
 		<style type="text/css">
-			body
-			{
-				background-color: #cbd9e7;
-				margin: 0px;
-				padding: 0px;
-			}
-			body, td
-			{
-				color: #000;
-				font-size: small;
-				font-family: arial;
-			}
-			a
-			{
-				color: #2a4259;
-				text-decoration: none;
-				border-bottom: 1px dashed #789;
-			}
-			#header
-			{
-				background-color: #809ab3;
-				padding: 22px 4% 12px 4%;
-				color: #fff;
-				text-shadow: 0 0 8px #333;
-				font-size: xx-large;
-				border-bottom: 1px solid #fff;
-				height: 40px;
-			}
-			#main
-			{
-				padding: 20px 30px;
-				background-color: #fff;
-				border-radius: 5px;
-				margin: 7px;
-				border: 1px solid #abadb3;
-			}
-			#path_from, #path_to
-			{
-				width: 480px;
-			}
-			.error_message, blockquote, .error
-			{
-				border: 1px dashed red;
-				border-radius: 5px;
-				background-color: #fee;
-				padding: 1.5ex;
-			}
-			.error_text
-			{
-				color: red;
-			}
-			.content
-			{
-				border-radius: 3px;
-				background-color: #eee;
-				color: #444;
-				margin: 1ex 0;
-				padding: 1.2ex;
-				border: 1px solid #abadb3;
-			}
-			.button
-			{
-				margin: 0 0.8em 0.8em 0.8em;
-			}
-			#submit_button
-			{
-				cursor: pointer;
-			}
-			h1
-			{
-				margin: 0;
-				padding: 0;
-				font-size: 24pt;
-			}
-			h2
-			{
-				font-size: 15pt;
-				color: #809ab3;
-				font-weight: bold;
-			}
-			form
-			{
-				margin: 0;
-			}
-			.textbox
-			{
-				padding-top: 2px;
-				white-space: nowrap;
-				padding-right: 1ex;
-			}
-			.bp_invalid
-			{
-				color:red;
-				font-weight: bold;
-			}
-			.bp_valid
-			{
-				color:green;
-			}
-			.validate
-			{
-				font-style: italic;
-				font-size: smaller;
-			}
-			.valid_field
-			{
-				background-color: #DEFEDD;
-				border: 1px solid green;
-			}
-			.invalid_field
-			{
-				background-color: #fee;;
-				border: 1px solid red;
-			}
-			#progressbar
-			{
-				position: relative;
-				top: -28px;
-				left: 255px;
-			}
-			progress
-			{
-				width: 300px;
-			}
-			dl
-			{
-				clear: right;
-				overflow: auto;
-				margin: 0 0 0 0;
-				padding: 0;
-			}
-			dt
-			{
-				width: 20%;
-				float: left;
-				margin: 6px 5px 10px 0;
-				padding: 0;
-				clear: both;
-			}
-			dd
-			{
-				width: 78%;
-				float: right;
-				margin: 6px 0 3px 0;
-				padding: 0;
-			}
-			#arrow_up
-			{
-				display: none;
-			}
-			#toggle_button
-			{
-				display: block;
-				color: #2a4259;
-				margin-bottom: 4px;
-				cursor: pointer;
-			}
-			.arrow
-			{
-				font-size: 8pt;
-			}
-			#destinations, #source
-			{
-				padding: 0 1em;
-			}
-			#destinations li label, #source li label
-			{
-				display: block;
-				padding: 0.5em;
-				cursor: pointer;
-			}
-			#destinations li, #source li
-			{
-				cursor: pointer;
-				float: left;
-				list-style: none;
-				margin: 0 0.5em;
-				border: 1px solid #abadb3;
-				border-radius: 3px;
-			}
-			#destinations li, #source li
-			{
-				width: 12em;
-				float: none;
-				display: inline-block;
-				cursor: default;
-				vertical-align: middle;
-				margin-top: 1em;
-			}
-			#destinations li.active, #source li.active
-			{
-				background-color: #fff;
-			}
-			#destinations ul:after, #source:after
-			{
-				content: "";
-				display: block;
-				clear: both;
-			}
-			.start_conversion
-			{
-				float: right;
-			}
-			.conversion:after
-			{
-				content: "";
-				display: block;
-				clear: both;
-			}
+', $this->response->styles, '
 		</style>
 	</head>
 	<body>
@@ -479,7 +282,7 @@ class Template
 			echo '
 				<p>', $this->lng->get('not_found'), '</p>
 				<p>', $this->lng->get('not_found_download'), '</p>
-				<a href="', $this->response->scripturl, '?reset">', $this->lng->get('try_again'), '</a>';
+				<a href="', $this->response->scripturl, '?action=reset">', $this->lng->get('try_again'), '</a>';
 
 		echo '
 			</div>
@@ -514,12 +317,12 @@ class Template
 			</script>';
 	}
 
-	public function step0(ImportManager $object, Form $form)
+	public function step0(Form $form)
 	{
 		echo '
 			<h2>', $this->lng->get('before_continue'), '</h2>
 			<div class="content">
-				<p>', sprintf($this->lng->get('before_details'), (string) $object->importer->xml->general->name, (string) $object->config->destination->scriptname ), '</p>
+				<p>', sprintf($this->lng->get('before_details'), $this->response->source_name, $this->response->destination_name), '</p>
 			</div>';
 		$form->title = $this->lng->get('where');
 		$form->description = $this->lng->get('locate_destination');
@@ -532,7 +335,7 @@ class Template
 		echo '
 			<div class="content">
 				<h3>', $this->lng->get('not_this'),'</h3>
-				<p>', sprintf($this->lng->get('pick_different'), $_SERVER['PHP_SELF']), '</p>
+				<p>', $this->lng->get(array('pick_different', $this->response->scripturl . '?action=reset')), '</p>
 			</div>';
 	}
 
@@ -540,16 +343,21 @@ class Template
 	{
 	}
 
+	protected function renderStatuses()
+	{
+		foreach ($this->response->getStatuses() as $status)
+			$this->status($status[0], $status[1]);
+	}
+
 	/**
 	 * Display notification with the given status
 	 *
 	 * @param int $status
 	 * @param string $title
-	 * @param bool $hide = false
 	 */
-	public function status($status, $title, $hide = false)
+	public function status($status, $title)
 	{
-		if (!empty($title) && (bool) $hide === false)
+		if (!empty($title))
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
 
 		if ($status == 1)
@@ -598,10 +406,11 @@ class Template
 				<script type="text/javascript"><!-- // --><![CDATA[
 					function doTheDelete()
 					{
-						new Image().src = "', $_SERVER['PHP_SELF'], '?delete=1&" + (+Date());
+						new Image().src = "', $_SERVER['PHP_SELF'], '?action=delete&" + (+Date());
 						(document.getElementById ? document.getElementById("delete_self") : document.all.delete_self).disabled = true;
 					}
 				// ]]></script>';
+
 		echo '
 				<p>', sprintf($this->lng->get('all_imported'), $name), '</p>
 				<p>', $this->lng->get('smooth_transition'), '</p>';
@@ -659,7 +468,7 @@ class Template
 	 * ajax response, whether the paths to the source and destination
 	 * software are correctly set.
 	 */
-	public function xml()
+	public function validate()
 	{
 		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	<valid>', $this->response->valid ? 'true' : 'false' ,'</valid>';

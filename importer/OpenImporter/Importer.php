@@ -76,11 +76,12 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Lang $lang)
+	public function __construct(Configurator $config, Lang $lang, HttpResponse $response)
 	{
 		// initialize some objects
 		$this->config = $config;
 		$this->lng = $lang;
+		$this->response = $response;
 
 		$this->reloadImporter();
 	}
@@ -110,9 +111,17 @@ class Importer
 	 */
 	protected function loadImporter($files)
 	{
-		$setup = new ImporterSetup($this->config, $this->lng, $this->data);
-		$setup->setNamespace('\\OpenImporter\\Importers\\');
-		$setup->loadImporter($files);
+		try
+		{
+			$setup = new ImporterSetup($this->config, $this->lng, $this->data);
+			$setup->setNamespace('\\OpenImporter\\Importers\\');
+			$setup->loadImporter($files);
+		}
+		catch (\Exception $e)
+		{
+			$this->response->template_error = true;
+			$this->response->addErrorParam($e->getMessage());
+		}
 
 		$this->xml = $setup->getXml();
 		$this->db = $setup->getDb();

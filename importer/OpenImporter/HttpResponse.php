@@ -33,6 +33,18 @@ class HttpResponse extends ValuesBag
 	protected $error_params = array();
 
 	/**
+	 * A bunch of data to set the status of each step.
+	 * @var array
+	 */
+	protected $statuses = array();
+
+	/**
+	 * It may be necessary to use more than one template at a time.
+	 * @var string[]
+	 */
+	protected $use_templates = array();
+
+	/**
 	 * Constructor
 	 *
 	 * @param ResponseHeader $headers
@@ -69,10 +81,36 @@ class HttpResponse extends ValuesBag
 	 */
 	public function addErrorParam($error_message, $trace = false, $line = false, $file = false)
 	{
+		if ($this->errorExists($error_message, $trace !== false))
+			return;
+
 		if ($trace === false)
 			$this->error_params[] = $error_message;
 		else
 			$this->error_params[] = array($error_message, $trace, $line, $file);
+	}
+
+	protected function errorExists($error_message, $is_array)
+	{
+		foreach ($this->error_params as $error_param)
+		{
+			// Of course if the structure is different no need to test further
+			if ((is_array($error_param) && !$is_array) || (!is_array($error_param) && $is_array))
+				continue;
+
+			if (is_array($error_param))
+			{
+				if ($error_param[0] === $error_message)
+					return true;
+			}
+			else
+			{
+				if ($error_param === $error_message)
+					return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -90,5 +128,41 @@ class HttpResponse extends ValuesBag
 		}
 
 		return $return;
+	}
+
+	public function status($status, $title)
+	{
+		$this->addTemplate('renderStatuses');
+
+		$this->statuses[] = array($status, $title);
+	}
+
+	public function getStatuses()
+	{
+		return $this->statuses;
+	}
+
+	public function addTemplate($template, $params = array())
+	{
+		if ($this->hasTemplate($template))
+			return;
+
+		$this->use_templates[] = array('name' => $template, 'params' => $params);
+	}
+
+	protected function hasTemplate($name)
+	{
+		foreach ($this->use_templates as $val)
+		{
+			if ($val['name'] === $name)
+				return true;
+		}
+
+		return false;
+	}
+
+	public function getTemplates()
+	{
+		return $this->use_templates;
 	}
 }

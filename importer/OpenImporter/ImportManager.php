@@ -35,12 +35,6 @@ class ImportManager
 	public $config;
 
 	/**
-	 * The template, basically our UI.
-	 * @var object
-	 */
-	public $template;
-
-	/**
 	 * The response object.
 	 * @var object
 	 */
@@ -62,17 +56,21 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Importer $importer, Template $template, Cookie $cookie, HttpResponse $response)
+	public function __construct(Configurator $config, Importer $importer, Cookie $cookie, HttpResponse $response)
 	{
 		$this->config = $config;
 		$this->importer = $importer;
 		$this->cookie = $cookie;
-		$this->template = $template;
 		$this->response = $response;
 		$this->lng = $importer->lng;
 		$this->response->lng = $importer->lng;
 
 		$this->loadFromSession();
+		if (isset($_GET['action']) && $_GET['action'] == 'reset')
+		{
+			$this->resetImporter();
+			$this->data = array('import_script' => '');
+		}
 	}
 
 	public function setupScripts()
@@ -121,14 +119,13 @@ class ImportManager
 
 	protected function loadFromSession()
 	{
-		// If reset is on the URL, do not load anything from SESSION
-		if (!isset($_SESSION['import_progress']) || isset($_REQUEST['reset']))
+		if (!isset($_SESSION['import_progress']))
 			$_SESSION['import_progress'] = 0;
 
-		if (!empty($_SESSION['importer_data']) && !isset($_REQUEST['reset']))
+		if (!empty($_SESSION['importer_data']))
 			$this->data = $_SESSION['importer_data'];
 
-		if (!empty($_SESSION['importer_progress_status']) && !isset($_REQUEST['reset']))
+		if (!empty($_SESSION['importer_progress_status']))
 			$this->config->store = $_SESSION['importer_progress_status'];
 	}
 
@@ -168,7 +165,7 @@ class ImportManager
 	public function process()
 	{
 		// This is really quite simple; if ?delete is on the URL, delete the importer...
-		if (isset($_GET['delete']))
+		if (isset($_GET['action']) && $_GET['action'] == 'delete')
 		{
 			$this->uninstall();
 
@@ -177,29 +174,34 @@ class ImportManager
 
 		$this->populateResponseDetails();
 
-		if (isset($_GET['xml']))
+		if (isset($_GET['action']) && $_GET['action'] == 'validate')
 		{
+			$this->validateFields();
 			$this->response->addHeader('Content-Type', 'text/xml');
 			$this->response->is_xml = true;
+			$this->response->addTemplate('validate');
 		}
 		else
-			$this->template->header();
-
-		if (isset($_GET['action']) && $_GET['action'] == 'validate')
-			$this->validateFields();
-		elseif (method_exists($this, 'doStep' . $this->config->progress->step))
-			call_user_func(array($this, 'doStep' . $this->config->progress->step));
-		else
-			$this->doStep0();
+		{
+			$this->response->is_page = true;
+			if (method_exists($this, 'doStep' . $this->config->progress->step))
+				call_user_func(array($this, 'doStep' . $this->config->progress->step));
+			else
+				$this->doStep0();
+		}
 
 		$this->populateResponseDetails();
-
-		$this->template->render();
-
-		if (!isset($_GET['xml']))
-			$this->template->footer();
+		$this->response->styles = $this->fetchStyles();
 
 		return $this->response;
+	}
+
+	protected function fetchStyles()
+	{
+		if (file_exists(BASEDIR . '/Assets/index.css'))
+			return file_get_contents(BASEDIR . '/Assets/index.css');
+		else
+			return '';
 	}
 
 	protected function validateFields()
@@ -321,8 +323,7 @@ class ImportManager
 			return false;
 		}
 
-		$this->response->use_template = 'selectScript';
-		$this->response->params_template = array($scripts, $destination_names);
+		$this->response->addTemplate('selectScript', array($scripts, $destination_names));
 
 		return true;
 	}
@@ -415,13 +416,19 @@ class ImportManager
 			$this->response->addErrorParam($e->getMessage());
 		}
 
+		$this->response->source_name = (string) $this->importer->xml->general->name;
+		$this->response->destination_name = (string) $this->config->destination->scriptname;
+		$this->response->addTemplate('step0', array($this->getFormStructure()));
+
+		return;
+	}
+
+	public function getFormStructure()
+	{
 		$form = new Form($this->lng);
 		$this->prepareStep0Form($form);
 
-		$this->response->use_template = 'step0';
-		$this->response->params_template = array($this, $form);
-
-		return;
+		return $form;
 	}
 
 	protected function prepareStep0Form($form)
@@ -475,8 +482,6 @@ class ImportManager
 		$this->response->step = '2';
 		$this->config->progress->resetStep();
 
-		$this->template->step2();
-
 		try
 		{
 			$this->importer->doStep2($this->config->progress->substep);
@@ -490,7 +495,7 @@ class ImportManager
 			throw new StepException($e->getMessage());
 		}
 
-		$this->template->status(1, '', true);
+		$this->response->status(1, $this->lng->get('recalculate'));
 
 		return $this->doStep3();
 	}
@@ -513,8 +518,7 @@ class ImportManager
 
 		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 
-		$this->response->use_template = 'step3';
-		$this->response->params_template = array($this->importer->xml->general->name, $this->config->boardurl, $writable);
+		$this->response->addTemplate('step3', array($this->importer->xml->general->name, $this->config->boardurl, $writable));
 
 		$this->resetImporter();
 		$this->data = array();

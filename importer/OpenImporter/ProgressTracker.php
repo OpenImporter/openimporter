@@ -20,6 +20,7 @@ class ProgressTracker
 	protected $start_time = 0;
 	protected $stop_time = 5;
 	protected $template = null;
+	protected $response = null;
 	protected $config = null;
 	public $current_step = 0;
 	protected $do_not_stop = false;
@@ -30,7 +31,7 @@ class ProgressTracker
 	public $substep = 0;
 	public $store = array();
 
-	public function __construct(Template $template, Configurator $config, $options)
+	public function __construct(HttpResponse $response, Template $template, Configurator $config, $options)
 	{
 		$defaults = array(
 			'step' => 0,
@@ -52,6 +53,7 @@ class ProgressTracker
 
 		$this->start_time = time();
 		$this->template = $template;
+		$this->response = $response;
 		$this->config = $config;
 	}
 
@@ -171,7 +173,7 @@ class ProgressTracker
 	public function advanceSubstep($substep, $title)
 	{
 		if ($this->steps_collection[$this->current_step]['status'] == 0)
-			$this->template->status(1, $title);
+			$this->response->status(1, $title);
 
 		$this->steps_collection[$this->current_step]['status'] = 1;
 		$this->steps_collection[$this->current_step]['substep'] += $substep;
