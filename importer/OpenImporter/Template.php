@@ -317,10 +317,9 @@ class Template
 	 * to delete the scripts
 	 *
 	 * @param string $name
-	 * @param string $boardurl
 	 * @param bool $writable if the files are writable, the UI will allow deletion
 	 */
-	public function step3($name, $boardurl, $writable)
+	public function step3($name, $writable)
 	{
 		echo '
 			</div>
