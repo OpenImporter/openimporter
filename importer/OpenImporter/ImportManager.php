@@ -245,6 +245,9 @@ class ImportManager
 	 */
 	protected function uninstall()
 	{
+		// Just in case
+		$this->resetImporter();
+
 		@unlink(__FILE__);
 		if (preg_match('~_importer\.xml$~', $this->data['import_script']) != 0)
 			@unlink(BASEDIR . DS . $this->data['import_script']);
@@ -395,8 +398,9 @@ class ImportManager
 	public function doStep0()
 	{
 		$this->cookie->destroy();
+
 		//previously imported? we need to clean some variables ..
-		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status'], $_SESSION['import_progress']);
+		$this->resetImporter();
 
 		if ($this->detectScripts())
 			return true;
@@ -491,6 +495,13 @@ class ImportManager
 		return $this->doStep3();
 	}
 
+	protected function resetImporter()
+	{
+		unset($this->config->store['importer_data']);
+		unset($this->config->store['importer_progress_status']);
+		unset($this->config->store['import_progress']);
+	}
+
 	/**
 	 * we are done :)
 	 *
@@ -505,8 +516,7 @@ class ImportManager
 		$this->response->use_template = 'step3';
 		$this->response->params_template = array($this->importer->xml->general->name, $this->config->boardurl, $writable);
 
-		unset($_SESSION['import_progress']);
-		unset($_SESSION['importer_data'], $_SESSION['importer_progress_status']);
+		$this->resetImporter();
 		$this->data = array();
 		$this->config->store = array();
 
