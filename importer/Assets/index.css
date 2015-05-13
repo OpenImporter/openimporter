@@ -242,7 +242,7 @@ dd
 {
 	background-color: #fff;
 }
-#destinations ul:after, #source:after
+#destinations ul:after, #source:after, .conversion:after
 {
 	content: "";
 	display: block;
@@ -251,10 +251,4 @@ dd
 .start_conversion
 {
 	float: right;
-}
-.conversion:after
-{
-	content: "";
-	display: block;
-	clear: both;
 }
