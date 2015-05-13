@@ -9,7 +9,7 @@
 
 namespace OpenImporter\Importers\sources;
 
-class SeoBoards1_1 extends \OpenImporter\Importers\AbstractSourceImporter
+class SeoBoards1_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/seo-board_options.php';
 	protected $child_level = 0;
