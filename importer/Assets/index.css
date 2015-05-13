@@ -34,6 +34,32 @@ a
 	margin: 7px;
 	border: 1px solid #abadb3;
 }
+#main h2
+{
+	margin-top: 2ex;
+}
+#main .notice
+{
+	margin: 1ex;
+	font-weight: bold;
+}
+.statuses .text
+{
+	width: 250px;
+	display: inline-block;
+}
+.statuses .success
+{
+	color: green;
+}
+.statuses .disabled
+{
+	color: grey;
+}
+.statuses .failure
+{
+	color: red;
+}
 #path_from, #path_to
 {
 	width: 480px;
@@ -57,6 +83,31 @@ a
 	margin: 1ex 0;
 	padding: 1.2ex;
 	border: 1px solid #abadb3;
+}
+.content .progress
+{
+	margin-bottom: 15px;
+	margin-top: 10px;
+}
+.content .progress span
+{
+	width: 250px;
+	display: inline-block;
+}
+.content .continue
+{
+	text-align: right;
+	margin: 1ex;
+}
+#advanced_options
+{
+	display: none;
+	margin-top: 5px;
+}
+#advanced_options .passwdcheck
+{
+	font-style: italic;
+	font-size: smaller;
 }
 .button
 {

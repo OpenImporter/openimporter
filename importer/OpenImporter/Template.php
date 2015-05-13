@@ -180,7 +180,7 @@ class Template
 
 		if ($this->config->progress->current_step == 1 || $this->config->progress->current_step == 2)
 			echo '
-			<h2 style="margin-top: 2ex">', $this->lng->get('importing'), '...</h2>
+			<h2>', $this->lng->get('importing'), '...</h2>
 			<div class="content"><p>';
 	}
 
@@ -282,8 +282,14 @@ class Template
 
 	protected function renderStatuses()
 	{
+		echo '
+		<span class="statuses">';
+
 		foreach ($this->response->getStatuses() as $status)
 			$this->status($status[0], $status[1]);
+
+		echo '
+		</span>';
 	}
 
 	/**
@@ -295,16 +301,16 @@ class Template
 	public function status($status, $title)
 	{
 		if (!empty($title))
-			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
+			echo '<span class="text">' . $title . '...</span> ';
 
 		if ($status == 1)
-			echo '<span style="color: green">&#x2714</span>';
+			echo '<span class="success">&#x2714</span>';
 
 		if ($status == 2)
-			echo '<span style="color: grey">&#x2714</span> (', $this->lng->get('skipped'),')';
+			echo '<span class="disabled">&#x2714</span> (', $this->lng->get('skipped'),')';
 
 		if ($status == 3)
-			echo '<span style="color: red">&#x2718</span> (', $this->lng->get('not_found_skipped'),')';
+			echo '<span class="failure">&#x2718</span> (', $this->lng->get('not_found_skipped'),')';
 
 		if ($status != 0)
 			echo '<br />';
@@ -322,13 +328,13 @@ class Template
 	{
 		echo '
 			</div>
-			<h2 style="margin-top: 2ex">', $this->lng->get('complete'), '</h2>
+			<h2>', $this->lng->get('complete'), '</h2>
 			<div class="content">
 			<p>', $this->lng->get('congrats'),'</p>';
 
 		if ($writable)
 			echo '
-				<div style="margin: 1ex; font-weight: bold">
+				<div class="notice">
 					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', $this->lng->get('check_box'), '</label>
 				</div>';
 
@@ -358,13 +364,13 @@ class Template
 
 		echo '
 		</div>
-		<h2 style="margin-top: 2ex">', $this->lng->get('not_done'),'</h2>
+		<h2>', $this->lng->get('not_done'),'</h2>
 		<div class="content">
-			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', $this->lng->get('overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
+			<div class="progress"><span>', $this->lng->get('overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
 			<p>', $this->lng->get('importer_paused'), '</p>
 
 			<form action="', $this->response->scripturl, '?step=', $this->response->step, '&amp;substep=', $substep, '&amp;start=', $start, '" method="post" name="autoSubmit">
-				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', $this->lng->get('continue'),'" /></div>
+				<div class="continue"><input name="b" type="submit" value="', $this->lng->get('continue'),'" /></div>
 			</form>
 
 			<script type="text/javascript"><!-- // --><![CDATA[
@@ -399,7 +405,7 @@ class Template
 				echo '
 					</dl>
 					<div id="toggle_button">', $this->lng->get('advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
-					<dl id="advanced_options" style="display: none; margin-top: 5px">';
+					<dl id="advanced_options">';
 				continue;
 			}
 
@@ -427,7 +433,7 @@ class Template
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
 							<input type="password" name="', $option['id'], '" id="', $option['id'], '" class="text" />
-							<div style="font-style: italic; font-size: smaller">', $option['correct'], '</div>
+							<div class="passwdcheck">', $option['correct'], '</div>
 						</dd>';
 					break;
 				case 'steps':
