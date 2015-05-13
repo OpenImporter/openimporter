@@ -236,7 +236,7 @@ class Template
 	{
 		echo '
 			<h2>', $this->lng->get('to_what'), '</h2>
-			<form class="conversion" action="', $_SERVER['PHP_SELF'], '" method="post">
+			<form class="conversion" action="', $this->response->scripturl, '" method="post">
 				<div class="content">
 					<p><label for="source">', $this->lng->get('locate_source'), '</label></p>
 					<ul id="source">';
@@ -415,7 +415,7 @@ class Template
 				<script type="text/javascript"><!-- // --><![CDATA[
 					function doTheDelete()
 					{
-						new Image().src = "', $_SERVER['PHP_SELF'], '?action=delete&" + (+Date());
+						new Image().src = "', $this->response->scripturl, '?action=delete&" + (+Date());
 						(document.getElementById ? document.getElementById("delete_self") : document.all.delete_self).disabled = true;
 					}
 				// ]]></script>';
@@ -428,6 +428,7 @@ class Template
 	/**
 	 * Display the progress bar,
 	 * and inform the user about when the script is paused and re-run.
+	 * @todo the url should be built in the PasttimeException, not here
 	 *
 	 * @param int $bar
 	 * @param int $value
@@ -450,7 +451,7 @@ class Template
 			<div style="margin-bottom: 15px; margin-top: 10px;"><span style="width: 250px; display: inline-block">', $this->lng->get('overall_progress'),'</span><progress value="', $value, '" max="', $max, '"></progress></div>
 			<p>', $this->lng->get('importer_paused'), '</p>
 
-			<form action="', $_SERVER['PHP_SELF'], '?step=', $this->response->step, '&amp;substep=', $substep, '&amp;start=', $start, '" method="post" name="autoSubmit">
+			<form action="', $this->response->scripturl, '?step=', $this->response->step, '&amp;substep=', $substep, '&amp;start=', $start, '" method="post" name="autoSubmit">
 				<div align="right" style="margin: 1ex"><input name="b" type="submit" value="', $this->lng->get('continue'),'" /></div>
 			</form>
 

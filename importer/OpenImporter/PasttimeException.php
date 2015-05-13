@@ -10,7 +10,7 @@
 namespace OpenImporter\Core;
 
 /**
- * class DatabaseException extends the build-in Exception class and
+ * class PasttimeException extends the build-in Exception class and
  * catches potential errors
  */
 class PasttimeException extends \Exception

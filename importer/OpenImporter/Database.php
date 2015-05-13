@@ -179,7 +179,7 @@ class Database
 		if (strlen($query_string) != 0)
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
 
-		return $_SERVER['PHP_SELF'] . $query_string;
+		return '{script_url}' . $query_string;
 	}
 
 	/**

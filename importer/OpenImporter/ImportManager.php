@@ -226,7 +226,6 @@ class ImportManager
 		$this->response->destination = !empty($this->response->script['destination']) ? addslashes($this->response->script['destination']) : '\'\'';
 // 		$this->response->from = $this->importer->settings : null
 		$this->response->script = $this->config->script;
-		$this->response->scripturl = $_SERVER['PHP_SELF'];
 // 		$this->response->
 // 		$this->response->
 // 		$this->response->
@@ -415,7 +414,7 @@ class ImportManager
 		return;
 	}
 
-	public function getFormStructure()
+	protected function getFormStructure()
 	{
 		$form = new Form($this->lng);
 		$this->prepareStep0Form($form);
@@ -425,7 +424,7 @@ class ImportManager
 
 	protected function prepareStep0Form($form)
 	{
-		$form->action_url = $_SERVER['PHP_SELF'] . '?step=1';
+		$form->action_url = $this->response->scripturl . '?step=1';
 
 		$this->importer->populateFormFields($form);
 
@@ -452,7 +451,7 @@ class ImportManager
 		catch (DatabaseException $e)
 		{
 			$trace = $e->getTrace();
-			$this->response->addErrorParam($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->response->addErrorParam(str_repeat('{script_url}', $this->response->scripturl, $e->getMessage()), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 			$this->response->is_page = true;
 			$this->response->template_error = true;
 

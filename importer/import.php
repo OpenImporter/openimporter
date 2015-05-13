@@ -68,6 +68,7 @@ catch (\Exception $e)
 
 $template = new Template($lng, $OI_configurator);
 $response = new HttpResponse(new ResponseHeader());
+$response->scripturl = $_SERVER['PHP_SELF'];
 
 $OI_configurator->progress = new ProgressTracker($response, $OI_configurator, $_REQUEST);
 
@@ -106,6 +107,7 @@ catch (StepException $e)
 }
 catch (\Exception $e)
 {
+	$import->populateResponseDetails();
 	$import->doStep0();
 	$response->addErrorParam($e->getMessage());
 
