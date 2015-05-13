@@ -276,10 +276,6 @@ class Template
 			</div>';
 	}
 
-	public function emptyPage()
-	{
-	}
-
 	protected function renderStatuses()
 	{
 		echo '
