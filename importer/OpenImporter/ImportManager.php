@@ -339,7 +339,7 @@ class ImportManager
 
 		// Silence simplexml errors
 		libxml_use_internal_errors(true);
-		$iterator = new GlobIterator($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml');
+		$iterator = new \GlobIterator($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml');
 		foreach ($iterator as $entry)
 		{
 			// If a script is broken simply skip it.
@@ -371,7 +371,7 @@ class ImportManager
 	protected function findDestinations()
 	{
 		$destinations = array();
-		$iterator = new GlobIterator($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR);
+		$iterator = new \GlobIterator($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR);
 		foreach ($iterator as $possible_dir)
 		{
 			$namespace = $possible_dir->getBasename();
