@@ -15,16 +15,16 @@ namespace OpenImporter\Core;
  */
 class ImportException extends \Exception
 {
-	protected static $import = null;
+	protected static $template = null;
 
 	public function doExit($template = null)
 	{
 		self::exceptionHandler($this, $template);
 	}
 
-	public static function setImportManager(ImportManager $import)
+	public static function setImportManager(Template $template)
 	{
-		self::$import = $import;
+		self::$template = $template;
 	}
 
 	public static function errorHandlerCallback($code, $string, $file, $line)
@@ -48,8 +48,8 @@ class ImportException extends \Exception
 
 		if ($template === null)
 		{
-			if (!empty(self::$import))
-				$template = self::$import->template;
+			if (!empty(self::$template))
+				$template = self::$template;
 			else
 				$template = new Template(new DummyLang(), new Configurator());
 		}

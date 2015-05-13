@@ -85,7 +85,7 @@ try
 	$import = new ImportManager($OI_configurator, $importer, new Cookie(), $response);
 	$import->setupScripts();
 
-	ImportException::setImportManager($import);
+	ImportException::setImportManager($template);
 
 	$import->process();
 	$template->render();
