@@ -190,7 +190,7 @@ class XmlProcessor
 	 * @todo move to ProgressTracker
 	 *
 	 * @param object $step
-	 * @return int the number of records in the table
+	 * @return bool|int the number of records in the table
 	 */
 	public function getCurrent($step)
 	{
