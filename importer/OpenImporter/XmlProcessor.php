@@ -68,6 +68,12 @@ class XmlProcessor
 	public $skeleton;
 
 	/**
+	 * If the step is completed of not.
+	 * @var bool
+	 */
+	public $completed;
+
+	/**
 	 * initialize the main Importer object
 	 */
 	public function __construct(Database $db, Database $source_db, Configurator $config, \SimpleXMLElement $xml)
