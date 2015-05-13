@@ -18,32 +18,8 @@ class PasttimeExceptionTest extends \PHPUnit_Framework_TestCase
 {
 	public function testDoExit()
 	{
-		$template = new DummyTemplatePasttimeExceptionTest();
+		$instance = new PasttimeException('bar', 'import_progress', 'max', 'step', 'start');
 
-		$instance = new PasttimeException($template, 'bar', 'import_progress', 'max', 'step', 'start');
-		$instance->doExit();
-
-		$this->assertEquals(array('bar', 'import_progress', 'max', 'step', 'start'), $template->called_timeLimit);
-		$this->assertTrue($template->called_footer);
-	}
-}
-
-class DummyTemplatePasttimeExceptionTest extends Template
-{
-	public $called_timeLimit = false;
-	public $called_footer = false;
-
-	public function __construct()
-	{
-	}
-
-	public function timeLimit($bar, $import_progress, $max, $step, $start)
-	{
-		$this->called_timeLimit = array($bar, $import_progress, $max, $step, $start);
-	}
-
-	public function footer($inner = true)
-	{
-		$this->called_footer = true;
+		$this->assertEquals(array('bar', 'import_progress', 'max', 'step', 'start'), $instance->getParams());
 	}
 }

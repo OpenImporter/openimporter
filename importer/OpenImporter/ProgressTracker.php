@@ -19,7 +19,6 @@ class ProgressTracker
 {
 	protected $start_time = 0;
 	protected $stop_time = 5;
-	protected $template = null;
 	protected $response = null;
 	protected $config = null;
 	public $current_step = 0;
@@ -31,7 +30,7 @@ class ProgressTracker
 	public $substep = 0;
 	public $store = array();
 
-	public function __construct(HttpResponse $response, Template $template, Configurator $config, $options)
+	public function __construct(HttpResponse $response, Configurator $config, $options)
 	{
 		$defaults = array(
 			'step' => 0,
@@ -52,7 +51,6 @@ class ProgressTracker
 		}
 
 		$this->start_time = time();
-		$this->template = $template;
 		$this->response = $response;
 		$this->config = $config;
 	}
@@ -162,7 +160,7 @@ class ProgressTracker
 		if (time() - $this->start_time < $this->stop_time || $this->do_not_stop)
 			return;
 
-		throw new PasttimeException($this->template, $bar, $_SESSION['import_progress'], $this->max, $this->current_step, $this->start);
+		throw new PasttimeException($bar, $_SESSION['import_progress'], $this->max, $this->current_step, $this->start);
 	}
 
 	protected function store()

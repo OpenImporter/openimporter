@@ -69,7 +69,7 @@ catch (\Exception $e)
 $template = new Template($lng, $OI_configurator);
 $response = new HttpResponse(new ResponseHeader());
 
-$OI_configurator->progress = new ProgressTracker($response, $template, $OI_configurator, $_REQUEST);
+$OI_configurator->progress = new ProgressTracker($response, $OI_configurator, $_REQUEST);
 
 try
 {
@@ -96,7 +96,9 @@ catch (ImportException $e)
 }
 catch (PasttimeException $e)
 {
-	$e->doExit();
+	list ($bar, $value, $max, $substep, $start) = $e->getParams();
+	$template->timeLimit($bar, $value, $max, $substep, $start);
+	$template->footer();
 }
 catch (StepException $e)
 {
