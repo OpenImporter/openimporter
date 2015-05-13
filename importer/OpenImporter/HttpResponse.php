@@ -130,6 +130,11 @@ class HttpResponse extends ValuesBag
 		return $return;
 	}
 
+	public function noTemplates()
+	{
+		return empty($this->use_templates);
+	}
+
 	public function status($status, $title)
 	{
 		$this->addTemplate('renderStatuses');

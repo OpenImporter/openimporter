@@ -61,6 +61,15 @@ class Template
 	public function setResponse($response)
 	{
 		$this->response = $response;
+		$this->response->styles = $this->fetchStyles();
+	}
+
+	protected function fetchStyles()
+	{
+		if (file_exists(BASEDIR . '/Assets/index.css'))
+			return file_get_contents(BASEDIR . '/Assets/index.css');
+		else
+			return '';
 	}
 
 	public function render($response = null)

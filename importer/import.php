@@ -97,12 +97,12 @@ catch (ImportException $e)
 catch (PasttimeException $e)
 {
 	list ($bar, $value, $max, $substep, $start) = $e->getParams();
-	$template->timeLimit($bar, $value, $max, $substep, $start);
-	$template->footer();
+	$template->addTemplate('timeLimit', array($bar, $value, $max, $substep, $start));
+	$template->render();
 }
 catch (StepException $e)
 {
-	$e->doExit();
+	$template->render();
 }
 catch (\Exception $e)
 {

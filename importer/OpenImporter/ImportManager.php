@@ -191,17 +191,8 @@ class ImportManager
 		}
 
 		$this->populateResponseDetails();
-		$this->response->styles = $this->fetchStyles();
 
 		return $this->response;
-	}
-
-	protected function fetchStyles()
-	{
-		if (file_exists(BASEDIR . '/Assets/index.css'))
-			return file_get_contents(BASEDIR . '/Assets/index.css');
-		else
-			return '';
 	}
 
 	protected function validateFields()
@@ -418,7 +409,8 @@ class ImportManager
 
 		$this->response->source_name = (string) $this->importer->xml->general->name;
 		$this->response->destination_name = (string) $this->config->destination->scriptname;
-		$this->response->addTemplate('step0', array($this->getFormStructure()));
+		if (($this->response->template_error && $this->response->noTemplates()) || $this->response->template_error === false)
+			$this->response->addTemplate('step0', array($this->getFormStructure()));
 
 		return;
 	}
@@ -461,6 +453,8 @@ class ImportManager
 		{
 			$trace = $e->getTrace();
 			$this->response->addErrorParam($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->response->is_page = true;
+			$this->response->template_error = true;
 
 			// Forward back to the original caller to terminate the script
 			throw new StepException($e->getMessage());
@@ -490,6 +484,8 @@ class ImportManager
 		{
 			$trace = $e->getTrace();
 			$this->response->addErrorParam($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->response->is_page = true;
+			$this->response->template_error = true;
 
 			// Forward back to the original caller to terminate the script
 			throw new StepException($e->getMessage());
