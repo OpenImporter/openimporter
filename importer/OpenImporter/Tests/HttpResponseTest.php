@@ -26,14 +26,24 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 
 		$instance->addErrorParam('test_error');
 
-		$this->assertEquals(array('test_error'), $property->getValue($instance));
+		$this->assertEquals(array(array(
+			'message' => 'test_error',
+			'trace' => false,
+			'line' => false,
+			'file' => false
+		)), $property->getValue($instance));
 
 		// Reset
 		$instance = $object->newInstanceArgs(array(new ResponseHeader()));
 
 		$instance->addErrorParam(array('test', 'test_error'));
 
-		$this->assertEquals(array(array('test', 'test_error')), $property->getValue($instance));
+		$this->assertEquals(array(array(
+			'message' => array('test', 'test_error'),
+			'trace' => false,
+			'line' => false,
+			'file' => false
+		)), $property->getValue($instance));
 	}
 
 	public function testGetErrors()
@@ -42,7 +52,17 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 		$instance->addErrorParam('test_error');
 		$instance->addErrorParam(array('test %1$s', 'test_error'));
 
-		$this->assertEquals(array('test_error', 'test test_error'), $instance->getErrors());
+		$this->assertEquals(array(array(
+			'message' => 'test_error',
+			'trace' => false,
+			'line' => false,
+			'file' => false
+		),array(
+			'message' => 'test test_error',
+			'trace' => false,
+			'line' => false,
+			'file' => false
+		)), $instance->getErrors());
 	}
 
 	public function testAddHeader()

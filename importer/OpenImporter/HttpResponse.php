@@ -128,10 +128,12 @@ class HttpResponse extends ValuesBag
 		$return = array();
 		foreach ($this->error_params as $msg)
 		{
-			if (is_array($msg) && count($msg) == 2)
-				$return[] = sprintf($msg[0], $msg[1]);
-			else
-				$return[] = $msg;
+			if (is_array($msg['message']))
+			{
+				$msg['message'] = sprintf($msg['message'][0], $msg['message'][1]);
+			}
+
+			$return[] = $msg;
 		}
 
 		return $return;
