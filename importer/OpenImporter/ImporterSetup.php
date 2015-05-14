@@ -110,11 +110,6 @@ class ImporterSetup
 		return $this->_importer_base_class_name;
 	}
 
-	public function setData($data)
-	{
-		$this->data = $data;
-	}
-
 	public function loadImporter($files)
 	{
 		$this->loadSource($files['source']);

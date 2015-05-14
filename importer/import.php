@@ -73,6 +73,7 @@ $response->assets_dir = BASEDIR . '/Assets';
 $response->lng = $lng;
 
 $OI_configurator->progress = new ProgressTracker($response, $OI_configurator, $_REQUEST);
+$OI_configurator->action = isset($_GET['action']) ? $_GET['action'] : null;
 
 try
 {
@@ -86,11 +87,11 @@ try
 	$template->setResponse($response);
 
 	$import = new ImportManager($OI_configurator, $importer, new Cookie(), $response);
-	$import->setupScripts();
+	$import->setupScripts($_REQUEST);
 
 	ImportException::setImportManager($template);
 
-	$import->process();
+	$import->process($_REQUEST);
 	$template->render();
 }
 catch (ImportException $e)

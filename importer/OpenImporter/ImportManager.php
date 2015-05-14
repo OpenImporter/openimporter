@@ -64,20 +64,20 @@ class ImportManager
 		$this->response = $response;
 
 		$this->loadFromSession();
-		if (isset($_GET['action']) && $_GET['action'] == 'reset')
+		if ($this->config->action == 'reset')
 		{
 			$this->resetImporter();
 			$this->data = array('import_script' => '');
 		}
 	}
 
-	public function setupScripts()
+	public function setupScripts($data)
 	{
-		$this->findScript();
+		$this->findScript($data);
 
-		$this->loadPass();
+		$this->loadPass($data);
 
-		$this->loadPaths();
+		$this->loadPaths($data);
 
 		if (!empty($this->config->script))
 		{
@@ -90,21 +90,21 @@ class ImportManager
 		$this->saveInSession();
 	}
 
-	protected function loadPass()
+	protected function loadPass($data)
 	{
 		// Check for the password...
-		if (isset($_POST['db_pass']))
-			$this->data['db_pass'] = $_POST['db_pass'];
+		if (isset($data['db_pass']))
+			$this->data['db_pass'] = $data['db_pass'];
 	}
 
-	protected function loadPaths()
+	protected function loadPaths($data)
 	{
-		if (isset($_POST['path_from']) || isset($_POST['path_to']))
+		if (isset($data['path_from']) || isset($data['path_to']))
 		{
-			if (isset($_POST['path_from']))
-				$this->config->path_from = rtrim($_POST['path_from'], '\\/');
-			if (isset($_POST['path_to']))
-				$this->config->path_to = rtrim($_POST['path_to'], '\\/');
+			if (isset($data['path_from']))
+				$this->config->path_from = rtrim($data['path_from'], '\\/');
+			if (isset($data['path_to']))
+				$this->config->path_to = rtrim($data['path_to'], '\\/');
 
 			$this->data['import_paths'] = array($this->config->path_from, $this->config->path_to);
 		}
@@ -136,14 +136,14 @@ class ImportManager
 	/**
 	 * Finds the script either in the session or in request
 	 */
-	protected function findScript()
+	protected function findScript($data)
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
-		if (isset($_POST['destination']) && isset($_POST['source']))
+		if (isset($data['destination']) && isset($data['source']))
 		{
 			$this->data['import_script'] = $this->config->script = array(
-				'destination' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $_REQUEST['destination'])),
-				'source' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $_REQUEST['source'])),
+				'destination' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $data['destination'])),
+				'source' => str_replace('..', '', preg_replace('~[^a-zA-Z0-9\-_\.]~', '', $data['source'])),
 			);
 		}
 		elseif (isset($this->data['import_script']))
@@ -160,10 +160,10 @@ class ImportManager
 	/**
 	 * Prepares the response to send to the template system
 	 */
-	public function process()
+	public function process($data)
 	{
 		// This is really quite simple; if ?delete is on the URL, delete the importer...
-		if (isset($_GET['action']) && $_GET['action'] == 'delete')
+		if ($this->config->action == 'delete')
 		{
 			$this->uninstall();
 
@@ -172,9 +172,9 @@ class ImportManager
 
 		$this->populateResponseDetails();
 
-		if (isset($_GET['action']) && $_GET['action'] == 'validate')
+		if ($this->config->action == 'validate')
 		{
-			$this->validateFields();
+			$this->validateFields($data);
 			$this->response->addHeader('Content-Type', 'text/xml');
 			$this->response->is_xml = true;
 			$this->response->addTemplate('validate');
@@ -193,19 +193,19 @@ class ImportManager
 		return $this->response;
 	}
 
-	protected function validateFields()
+	protected function validateFields($data)
 	{
 		$this->detectScripts();
 
 		$this->importer->reloadImporter();
 
-		if (isset($_GET['path_to']))
+		if (isset($data['path_to']))
 		{
-			$this->response->valid = $this->config->destination->testPath($_GET['path_to']);
+			$this->response->valid = $this->config->destination->testPath($data['path_to']);
 		}
-		elseif (isset($_GET['path_from']))
+		elseif (isset($data['path_from']))
 		{
-			$this->response->valid = $this->config->source->loadSettings($_GET['path_from'], true);
+			$this->response->valid = $this->config->source->loadSettings($data['path_from'], true);
 		}
 		else
 		{

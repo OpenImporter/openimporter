@@ -83,7 +83,7 @@ class HttpResponse extends ValuesBag
 	 */
 	public function addErrorParam($error_message, $trace = false, $line = false, $file = false)
 	{
-		if ($this->errorExists($error_message)
+		if ($this->errorExists($error_message))
 			return;
 
 		$this->error_params[] = array(
