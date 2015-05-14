@@ -69,17 +69,17 @@ class Template
 
 	protected function fetchStyles()
 	{
-		if (file_exists(BASEDIR . '/Assets/index.css'))
-			return file_get_contents(BASEDIR . '/Assets/index.css');
+		if (file_exists($this->response->assets_dir . '/index.css'))
+			return file_get_contents($this->response->assets_dir . '/index.css');
 		else
 			return '';
 	}
 
 	protected function fetchScripts()
 	{
-		if (file_exists(BASEDIR . '/Assets/scripts.js'))
+		if (file_exists($this->response->assets_dir . '/scripts.js'))
 		{
-			$file = file_get_contents(BASEDIR . '/Assets/scripts.js');
+			$file = file_get_contents($this->response->assets_dir . '/scripts.js');
 
 			return strtr($file, $this->replaces);
 		}
