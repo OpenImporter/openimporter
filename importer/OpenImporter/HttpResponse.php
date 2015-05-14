@@ -11,6 +11,9 @@ namespace OpenImporter\Core;
 
 /**
  * This should contain the data used by the template.
+ *
+ * @property assets_dir
+ * @property lng
  */
 class HttpResponse extends ValuesBag
 {
@@ -19,12 +22,6 @@ class HttpResponse extends ValuesBag
 	 * @var ResponseHeader
 	 */
 	protected $headers = null;
-
-	/**
-	 * The "translator" (i.e. the Lang object)
-	 * @var object
-	 */
-	public $lng = null;
 
 	/**
 	 * Error messages occurred during the import process.
