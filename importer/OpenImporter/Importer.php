@@ -31,12 +31,6 @@ class Importer
 	protected $source_db;
 
 	/**
-	 * The "translator" (i.e. the Lang object)
-	 * @var object
-	 */
-	public $lng;
-
-	/**
 	 * Contains any kind of configuration.
 	 * @var object
 	 */
@@ -88,11 +82,10 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Lang $lang, HttpResponse $response)
+	public function __construct(Configurator $config, HttpResponse $response)
 	{
 		// initialize some objects
 		$this->config = $config;
-		$this->lng = $lang;
 		$this->response = $response;
 
 		$this->reloadImporter();
@@ -125,7 +118,7 @@ class Importer
 	{
 		try
 		{
-			$setup = new ImporterSetup($this->config, $this->lng, $this->data);
+			$setup = new ImporterSetup($this->config, $this->response->lng, $this->data);
 			$setup->setNamespace('\\OpenImporter\\Importers\\');
 			$setup->loadImporter($files);
 		}
@@ -397,6 +390,6 @@ class Importer
 	{
 		$instance = $this->stepInstance('Step3');
 
-		$instance->run($this->lng->get(array('imported_from', $this->xml->general->name)));
+		$instance->run($this->response->lng->get(array('imported_from', $this->xml->general->name)));
 	}
 }

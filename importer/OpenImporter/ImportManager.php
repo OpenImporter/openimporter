@@ -62,8 +62,6 @@ class ImportManager
 		$this->importer = $importer;
 		$this->cookie = $cookie;
 		$this->response = $response;
-		$this->lng = $importer->lng;
-		$this->response->lng = $importer->lng;
 
 		$this->loadFromSession();
 		if (isset($_GET['action']) && $_GET['action'] == 'reset')
@@ -218,7 +216,7 @@ class ImportManager
 	public function populateResponseDetails()
 	{
 		if (isset($this->importer->xml->general->name) && isset($this->importer->config->destination->scriptname))
-			$this->response->page_title = $this->importer->xml->general->name . ' ' . $this->lng->to . ' ' . $this->importer->config->destination->scriptname;
+			$this->response->page_title = $this->importer->xml->general->name . ' ' . $this->response->lng->to . ' ' . $this->importer->config->destination->scriptname;
 		else
 			$this->response->page_title = 'OpenImporter';
 
@@ -416,7 +414,7 @@ class ImportManager
 
 	protected function getFormStructure()
 	{
-		$form = new Form($this->lng);
+		$form = new Form($this->response->lng);
 		$this->prepareStep0Form($form);
 
 		return $form;
@@ -490,7 +488,7 @@ class ImportManager
 			throw new StepException($e->getMessage());
 		}
 
-		$this->response->status(1, $this->lng->get('recalculate'));
+		$this->response->status(1, $this->response->lng->get('recalculate'));
 
 		return $this->doStep3();
 	}

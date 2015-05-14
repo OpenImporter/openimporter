@@ -70,6 +70,7 @@ $template = new Template($lng, $OI_configurator);
 $response = new HttpResponse(new ResponseHeader());
 $response->scripturl = $_SERVER['PHP_SELF'];
 $response->assets_dir = BASEDIR . '/Assets';
+$response->lng = $lng;
 
 $OI_configurator->progress = new ProgressTracker($response, $OI_configurator, $_REQUEST);
 
@@ -80,7 +81,7 @@ try
 		throw new \Exception('Please set \'session.save_handler\' to \'files\' before continue');
 	}
 
-	$importer = new Importer($OI_configurator, $lng, $response);
+	$importer = new Importer($OI_configurator, $response);
 
 	$template->setResponse($response);
 
