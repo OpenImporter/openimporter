@@ -109,6 +109,15 @@ class Template
 		if ($this->response->no_template)
 			return;
 
+		$this->sendHead();
+
+		$this->sendBody();
+
+		$this->sendFooter();
+	}
+
+	protected function sendHead()
+	{
 		if ($this->header_rendered === false)
 		{
 			$this->response->sendHeaders();
@@ -118,16 +127,24 @@ class Template
 
 			$this->header_rendered = true;
 		}
+	}
 
-		if ($this->response->is_page)
+	protected function sendBody()
+	{
+		if ($this->response->is_page && $this->response->template_error)
+		{
 			$this->renderErrors();
+		}
 
 		$templates = $this->response->getTemplates();
 		foreach ($templates as $template)
 		{
 			call_user_func_array(array($this, $template['name']), $template['params']);
 		}
+	}
 
+	protected function sendFooter()
+	{
 		if ($this->response->is_page)
 			$this->footer();
 	}
