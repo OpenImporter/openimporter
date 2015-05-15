@@ -98,7 +98,7 @@ catch (ImportException $e)
 catch (PasttimeException $e)
 {
 	list ($bar, $value, $max, $substep, $start) = $e->getParams();
-	$response->addTemplate('timeLimit', array($bar, $value, $max, $substep, $start));
+	$response->addTemplate('timeLimit', array('bar' => $bar, 'value' => $value, 'max' => $max, 'substep' => $substep, 'start' => $start));
 	$template->render();
 }
 catch (StepException $e)

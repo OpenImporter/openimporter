@@ -409,7 +409,7 @@ class ImportManager
 		$this->response->source_name = (string) $this->importer->xml->general->name;
 		$this->response->destination_name = (string) $this->config->destination->scriptname;
 		if (($this->response->template_error && $this->response->noTemplates()) || empty($this->response->template_error))
-			$this->response->addTemplate('step0', array($this->getFormStructure()));
+			$this->response->addTemplate('step0', array('form' => $this->getFormStructure()));
 
 		return;
 	}
@@ -513,7 +513,7 @@ class ImportManager
 
 		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 
-		$this->response->addTemplate('step3', array($this->importer->xml->general->name, $writable));
+		$this->response->addTemplate('step3', array('name' => $this->importer->xml->general->name, 'writable' => $writable));
 
 		$this->resetImporter();
 		$this->data = array();

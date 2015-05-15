@@ -407,7 +407,7 @@ class Template
 			{
 				echo '
 					</dl>
-					<div id="toggle_button">', $this->lng->get('advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
+					<div id="toggle_button" class="open">', $this->lng->get('advanced_options'), '</div>
 					<dl id="advanced_options">';
 				continue;
 			}

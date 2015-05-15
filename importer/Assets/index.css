@@ -195,20 +195,22 @@ dd
 	margin: 6px 0 3px 0;
 	padding: 0;
 }
-#arrow_up
-{
-	display: none;
-}
 #toggle_button
 {
-	display: block;
+	display: inline-block;
 	color: #2a4259;
 	margin-bottom: 4px;
 	cursor: pointer;
 }
-.arrow
+#toggle_button.open:after
 {
-	font-size: 8pt;
+	content: "\25BC";
+	padding-left: 0.2em;
+}
+#toggle_button.close:after
+{
+	content: "\25B2";
+	padding-left: 0.2em;
 }
 #destinations, #source
 {

@@ -90,23 +90,17 @@ function doTheDelete()
 
 $(document).ready(function() {
 	$('#toggle_button').click(function () {
-		var elem = document.getElementById('advanced_options');
-		var arrow_up = document.getElementById('arrow_up');
-		var arrow_down = document.getElementById('arrow_down');
-		if (!elem)
-			return true;
+		var $elem = $('#advanced_options');
 
-		if (elem.style.display == 'none')
+		if ($elem.is(':visible'))
 		{
-			elem.style.display = 'block';
-			arrow_down.style.display = 'none';
-			arrow_up.style.display = 'inline';
+			$elem.slideUp('fast');
+			$(this).removeClass('close').addClass('open');
 		}
 		else
 		{
-			elem.style.display = 'none';
-			arrow_down.style.display = 'inline';
-			arrow_up.style.display = 'none';
+			$elem.slideDown('fast');
+			$(this).removeClass('open').addClass('close');
 		}
 
 		return true;
