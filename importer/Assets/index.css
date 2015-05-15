@@ -1,0 +1,254 @@
+body
+{
+	background-color: #cbd9e7;
+	margin: 0px;
+	padding: 0px;
+}
+body, td
+{
+	color: #000;
+	font-size: small;
+	font-family: arial;
+}
+a
+{
+	color: #2a4259;
+	text-decoration: none;
+	border-bottom: 1px dashed #789;
+}
+#header
+{
+	background-color: #809ab3;
+	padding: 22px 4% 12px 4%;
+	color: #fff;
+	text-shadow: 0 0 8px #333;
+	font-size: xx-large;
+	border-bottom: 1px solid #fff;
+	height: 40px;
+}
+#main
+{
+	padding: 20px 30px;
+	background-color: #fff;
+	border-radius: 5px;
+	margin: 7px;
+	border: 1px solid #abadb3;
+}
+#main h2
+{
+	margin-top: 2ex;
+}
+#main .notice
+{
+	margin: 1ex;
+	font-weight: bold;
+}
+.statuses .text
+{
+	width: 250px;
+	display: inline-block;
+}
+.statuses .success
+{
+	color: green;
+}
+.statuses .disabled
+{
+	color: grey;
+}
+.statuses .failure
+{
+	color: red;
+}
+#path_from, #path_to
+{
+	width: 480px;
+}
+.error_message, blockquote, .error
+{
+	border: 1px dashed red;
+	border-radius: 5px;
+	background-color: #fee;
+	padding: 1.5ex;
+}
+.error_text
+{
+	color: red;
+}
+.content
+{
+	border-radius: 3px;
+	background-color: #eee;
+	color: #444;
+	margin: 1ex 0;
+	padding: 1.2ex;
+	border: 1px solid #abadb3;
+}
+.content .progress
+{
+	margin-bottom: 15px;
+	margin-top: 10px;
+}
+.content .progress span
+{
+	width: 250px;
+	display: inline-block;
+}
+.content .continue
+{
+	text-align: right;
+	margin: 1ex;
+}
+#advanced_options
+{
+	display: none;
+	margin-top: 5px;
+}
+#advanced_options .passwdcheck
+{
+	font-style: italic;
+	font-size: smaller;
+}
+.button
+{
+	margin: 0 0.8em 0.8em 0.8em;
+}
+#submit_button
+{
+	cursor: pointer;
+}
+h1
+{
+	margin: 0;
+	padding: 0;
+	font-size: 24pt;
+}
+h2
+{
+	font-size: 15pt;
+	color: #809ab3;
+	font-weight: bold;
+}
+form
+{
+	margin: 0;
+}
+.textbox
+{
+	padding-top: 2px;
+	white-space: nowrap;
+	padding-right: 1ex;
+}
+.bp_invalid
+{
+	color:red;
+	font-weight: bold;
+}
+.bp_valid
+{
+	color:green;
+}
+.validate
+{
+	font-style: italic;
+	font-size: smaller;
+}
+.valid_field
+{
+	background-color: #DEFEDD;
+	border: 1px solid green;
+}
+.invalid_field
+{
+	background-color: #fee;;
+	border: 1px solid red;
+}
+#progressbar
+{
+	position: relative;
+	top: -28px;
+	left: 255px;
+}
+progress
+{
+	width: 300px;
+}
+dl
+{
+	clear: right;
+	overflow: auto;
+	margin: 0 0 0 0;
+	padding: 0;
+}
+dt
+{
+	width: 20%;
+	float: left;
+	margin: 6px 5px 10px 0;
+	padding: 0;
+	clear: both;
+}
+dd
+{
+	width: 78%;
+	float: right;
+	margin: 6px 0 3px 0;
+	padding: 0;
+}
+#arrow_up
+{
+	display: none;
+}
+#toggle_button
+{
+	display: block;
+	color: #2a4259;
+	margin-bottom: 4px;
+	cursor: pointer;
+}
+.arrow
+{
+	font-size: 8pt;
+}
+#destinations, #source
+{
+	padding: 0 1em;
+}
+#destinations li label, #source li label
+{
+	display: block;
+	padding: 0.5em;
+	cursor: pointer;
+}
+#destinations li, #source li
+{
+	cursor: pointer;
+	float: left;
+	list-style: none;
+	margin: 0 0.5em;
+	border: 1px solid #abadb3;
+	border-radius: 3px;
+}
+#destinations li, #source li
+{
+	width: 12em;
+	float: none;
+	display: inline-block;
+	cursor: default;
+	vertical-align: middle;
+	margin-top: 1em;
+}
+#destinations li.active, #source li.active
+{
+	background-color: #fff;
+}
+#destinations ul:after, #source:after, .conversion:after
+{
+	content: "";
+	display: block;
+	clear: both;
+}
+.start_conversion
+{
+	float: right;
+}

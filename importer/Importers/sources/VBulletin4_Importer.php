@@ -176,12 +176,17 @@ class VBulletin4_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 			), strtr($content, array('"' => '&quot;')));
 
 		// fixing Code tags
-		$replace = array();
-
 		preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
-		foreach ($matches as $temp)
-			$replace[$temp] = htmlspecialchars($temp);
-		$content = substr(strtr($content, $replace), 0, 65534);
+		if (!empty($matches))
+		{
+			$replace = array();
+
+			foreach ($matches as $temp)
+				$replace[$temp] = htmlspecialchars($temp);
+
+			$content = strtr($content, $replace);
+		}
+
 
 		return $content;
 	}

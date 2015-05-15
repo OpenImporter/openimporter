@@ -12,7 +12,8 @@ namespace OpenImporter\Importers\sources\Tests;
 use OpenImporter\Core\Importer;
 use OpenImporter\Core\Configurator;
 use OpenImporter\Core\Lang;
-use OpenImporter\Core\Template;
+use OpenImporter\Core\HttpResponse;
+use OpenImporter\Core\ResponseHeader;
 
 class ImporterTest extends \PHPUnit_Framework_TestCase
 {
@@ -20,8 +21,9 @@ class ImporterTest extends \PHPUnit_Framework_TestCase
 	{
 		$config = new Configurator();
 		$lang = new Lang();
-		$template = new Template($lang, $config);
-		$instance = new DummyTestReloadImporter($config, $lang, $template);
+		$header = new ResponseHeader();
+		$response = new HttpResponse($header);
+		$instance = new DummyTestReloadImporter($config, $lang, $response);
 
 		$this->assertFalse($instance->called);
 

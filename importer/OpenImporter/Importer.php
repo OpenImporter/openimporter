@@ -43,10 +43,16 @@ class Importer
 	public $config;
 
 	/**
-	 * The template, basically our UI.
+	 * The data sent to the template.
 	 * @var object
 	 */
-	public $template;
+	public $response;
+
+	/**
+	 * The intermediate data structure.
+	 * @var object
+	 */
+	public $skeleton;
 
 	/**
 	 * The table prefix for our destination database
@@ -82,12 +88,12 @@ class Importer
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Lang $lang, Template $template)
+	public function __construct(Configurator $config, Lang $lang, HttpResponse $response)
 	{
 		// initialize some objects
 		$this->config = $config;
 		$this->lng = $lang;
-		$this->template = $template;
+		$this->response = $response;
 
 		$this->reloadImporter();
 	}
@@ -117,9 +123,17 @@ class Importer
 	 */
 	protected function loadImporter($files)
 	{
-		$setup = new ImporterSetup($this->config, $this->lng, $this->data);
-		$setup->setNamespace('\\OpenImporter\\Importers\\');
-		$setup->loadImporter($files);
+		try
+		{
+			$setup = new ImporterSetup($this->config, $this->lng, $this->data);
+			$setup->setNamespace('\\OpenImporter\\Importers\\');
+			$setup->loadImporter($files);
+		}
+		catch (\Exception $e)
+		{
+			$this->response->template_error = true;
+			$this->response->addErrorParam($e->getMessage());
+		}
 
 		$this->xml = $setup->getXml();
 		$this->db = $setup->getDb();
@@ -232,7 +246,7 @@ class Importer
 		$skeleton = new Parser();
 		$this->skeleton = $skeleton->parse(file_get_contents($this->config->importers_dir . '/importer_skeleton.yml'));
 
-		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->template, $this->xml);
+		$xmlParser = new XmlProcessor($this->db, $this->source_db, $this->config, $this->xml);
 		$xmlParser->setImporter($this->stepInstance('Step1'));
 		$xmlParser->setSkeleton($this->skeleton);
 

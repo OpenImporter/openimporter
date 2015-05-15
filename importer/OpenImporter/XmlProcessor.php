@@ -43,12 +43,6 @@ class XmlProcessor
 	public $config;
 
 	/**
-	 * The template
-	 * @var object
-	 */
-	public $template;
-
-	/**
 	 * The xml object containing the settings.
 	 * Required (for now) to convert IPs (v4/6)
 	 * @var object
@@ -74,14 +68,19 @@ class XmlProcessor
 	public $skeleton;
 
 	/**
+	 * If the step is completed of not.
+	 * @var bool
+	 */
+	public $completed;
+
+	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Database $db, Database $source_db, Configurator $config, Template $template, \SimpleXMLElement $xml)
+	public function __construct(Database $db, Database $source_db, Configurator $config, \SimpleXMLElement $xml)
 	{
 		$this->db = $db;
 		$this->source_db = $source_db;
 		$this->config = $config;
-		$this->template = $template;
 		$this->xml = $xml;
 	}
 
@@ -191,7 +190,7 @@ class XmlProcessor
 	 * @todo move to ProgressTracker
 	 *
 	 * @param object $step
-	 * @return int the number of records in the table
+	 * @return bool|int the number of records in the table
 	 */
 	public function getCurrent($step)
 	{

@@ -67,8 +67,10 @@ catch (\Exception $e)
 }
 
 $template = new Template($lng, $OI_configurator);
+$response = new HttpResponse(new ResponseHeader());
+$response->scripturl = $_SERVER['PHP_SELF'];
 
-$OI_configurator->progress = new ProgressTracker($template, $OI_configurator, $_REQUEST);
+$OI_configurator->progress = new ProgressTracker($response, $OI_configurator, $_REQUEST);
 
 try
 {
@@ -77,17 +79,17 @@ try
 		throw new \Exception('Please set \'session.save_handler\' to \'files\' before continue');
 	}
 
-	$importer = new Importer($OI_configurator, $lng, $template);
-	$response = new HttpResponse(new ResponseHeader());
+	$importer = new Importer($OI_configurator, $lng, $response);
 
 	$template->setResponse($response);
 
-	$import = new ImportManager($OI_configurator, $importer, $template, new Cookie(), $response);
+	$import = new ImportManager($OI_configurator, $importer, new Cookie(), $response);
 	$import->setupScripts();
 
-	ImportException::setImportManager($import);
+	ImportException::setImportManager($template);
 
 	$import->process();
+	$template->render();
 }
 catch (ImportException $e)
 {
@@ -95,19 +97,18 @@ catch (ImportException $e)
 }
 catch (PasttimeException $e)
 {
-	$e->doExit();
+	list ($bar, $value, $max, $substep, $start) = $e->getParams();
+	$response->addTemplate('timeLimit', array($bar, $value, $max, $substep, $start));
+	$template->render();
 }
 catch (StepException $e)
 {
-	$e->doExit();
+	$template->render();
 }
 catch (\Exception $e)
 {
-	$response->template_error = true;
-	$response->is_page = true;
-	$response->use_template = 'emptyPage';
-	$response->params_template = array();
 	$import->populateResponseDetails();
+	$import->doStep0();
 	$response->addErrorParam($e->getMessage());
 
 	$template->render();

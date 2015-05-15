@@ -10,21 +10,19 @@
 namespace OpenImporter\Core;
 
 /**
- * class DatabaseException extends the build-in Exception class and
+ * class PasttimeException extends the build-in Exception class and
  * catches potential errors
  */
 class PasttimeException extends \Exception
 {
-	protected $template;
 	protected $bar;
 	protected $import_progress;
 	protected $max;
 	protected $step;
 	protected $start;
 
-	public function __construct(Template $template, $bar, $import_progress, $max, $step, $start)
+	public function __construct($bar, $import_progress, $max, $step, $start)
 	{
-		$this->template = $template;
 		$this->bar = $bar;
 		$this->import_progress = $import_progress;
 		$this->max = $max;
@@ -32,9 +30,8 @@ class PasttimeException extends \Exception
 		$this->start = $start;
 	}
 
-	public function doExit()
+	public function getParams()
 	{
-		$this->template->timeLimit($this->bar, $this->import_progress, $this->max, $this->step, $this->start);
-		$this->template->footer();
+		return array($this->bar, $this->import_progress, $this->max, $this->step, $this->start);
 	}
 }
