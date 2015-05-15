@@ -89,10 +89,12 @@ class HttpResponse extends ValuesBag
 		if ($this->errorExists($error_message, $trace !== false))
 			return;
 
-		if ($trace === false)
-			$this->error_params[] = $error_message;
-		else
-			$this->error_params[] = array($error_message, $trace, $line, $file);
+		$this->error_params[] = array(
+			'message' => $error_message,
+			'trace' => $trace,
+			'line' => $line,
+			'file' => $file
+		);
 	}
 
 	protected function errorExists($error_message, $is_array)
