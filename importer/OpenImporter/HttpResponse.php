@@ -144,7 +144,7 @@ class HttpResponse extends ValuesBag
 	{
 		$this->addTemplate('renderStatuses');
 
-		$this->statuses[] = array($status, $title);
+		$this->statuses[] = array('status' => $status, 'title' => $title);
 	}
 
 	public function getStatuses()
