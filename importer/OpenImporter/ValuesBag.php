@@ -54,6 +54,6 @@ class ValuesBag
 	 */
 	public function __isset($key)
 	{
-		return isset($this->data[$key]);
+		return array_key_exists($key, $this->data);
 	}
 }

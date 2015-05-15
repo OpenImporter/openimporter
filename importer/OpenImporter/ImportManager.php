@@ -313,7 +313,7 @@ class ImportManager
 			return false;
 		}
 
-		$this->response->addTemplate('selectScript', array($scripts, $destination_names));
+		$this->response->addTemplate('selectScript', array('scripts' => $scripts, 'destination_names' => $destination_names));
 
 		return true;
 	}

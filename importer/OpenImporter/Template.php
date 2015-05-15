@@ -16,6 +16,7 @@ namespace OpenImporter\Core;
 class Template
 {
 	protected $response = null;
+	protected $replaces = array();
 	protected $lng = null;
 	protected $config = null;
 	protected $header_rendered = false;
@@ -61,6 +62,7 @@ class Template
 	public function setResponse($response)
 	{
 		$this->response = $response;
+		$this->initReplaces();
 		$this->response->styles = $this->fetchStyles();
 		$this->response->scripts = $this->fetchScripts();
 	}
@@ -78,20 +80,24 @@ class Template
 		if (file_exists(BASEDIR . '/Assets/scripts.js'))
 		{
 			$file = file_get_contents(BASEDIR . '/Assets/scripts.js');
-			$replaces = array();
-			foreach($this->response->getAll() as $key => $val)
-			{
-				$replaces['{{response->' . $key . '}}'] = $val;
-			}
-			foreach($this->lng->getAll() as $key => $val)
-			{
-				$replaces['{{language->' . $key . '}}'] = $val;
-			}
 
-			return strtr($file, $replaces);
+			return strtr($file, $this->replaces);
 		}
 		else
 			return '';
+	}
+
+	protected function initReplaces()
+	{
+		$this->replaces = array();
+		foreach($this->response->getAll() as $key => $val)
+		{
+			$this->replaces['{{response->' . $key . '}}'] = $val;
+		}
+		foreach($this->lng->getAll() as $key => $val)
+		{
+			$this->replaces['{{language->' . $key . '}}'] = $val;
+		}
 	}
 
 	public function render($response = null)
@@ -118,7 +124,9 @@ class Template
 
 		$templates = $this->response->getTemplates();
 		foreach ($templates as $template)
+		{
 			call_user_func_array(array($this, $template['name']), $template['params']);
+		}
 
 		if ($this->response->is_page)
 			$this->footer();
