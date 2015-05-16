@@ -192,12 +192,12 @@ class WBB3_1_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			if (!isset($_SESSION['convert_last_poll']) || $_SESSION['convert_last_poll'] != $row['id_poll'])
+			if ($this->config->store['convert_last_poll'] != $row['id_poll'])
 			{
-				$_SESSION['convert_last_poll'] = $row['id_poll'];
-				$_SESSION['convert_last_choice'] = 0;
+				$this->config->store['convert_last_poll'] = $row['id_poll'];
+				$this->config->store['convert_last_choice'] = 0;
 			}
-			$row['id_choice'] = ++$_SESSION['convert_last_choice'];
+			$row['id_choice'] = ++$this->config->store['convert_last_choice'];
 
 			$rows[] = $row;
 		}
