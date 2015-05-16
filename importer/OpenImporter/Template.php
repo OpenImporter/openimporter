@@ -358,7 +358,7 @@ class Template
 		if ($writable)
 			echo '
 				<div class="notice">
-					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', $this->lng->get('check_box'), '</label>
+					<label for="delete_self"><input type="checkbox" id="delete_self" />', $this->lng->get('check_box'), '</label>
 				</div>';
 
 		echo '

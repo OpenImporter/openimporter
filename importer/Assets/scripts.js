@@ -19,13 +19,26 @@ function doAutoSubmit()
 	setTimeout("doAutoSubmit();", 1000);
 }
 
-function doTheDelete()
-{
-	new Image().src = "{{response->scripturl}}?action=delete&" + (+Date());
-	(document.getElementById ? document.getElementById("delete_self") : document.all.delete_self).disabled = true;
-}
-
 $(document).ready(function() {
+	$('#delete_self').click(function () {
+		var $base = $(this);
+		$.ajax({
+			type: 'GET',
+			url: "{{response->scripturl}}?action=delete&" + (+Date())
+		})
+		.done(function (request) {
+			var $elem = $base.closest('.notice'),
+				text = '';
+
+			if ($(request).find('valid').text() == "false")
+				text = '<span class="error">{{language->delete_not_successful}}</span>';
+			else
+				text = '{{language->delete_successful}}';
+
+			$elem.html(text);
+		});
+	});
+
 	$('.dovalidation').change(function() {
 		var data = {
 			xml: 'xml',
