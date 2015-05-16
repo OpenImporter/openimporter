@@ -159,14 +159,6 @@ class XmlProcessor
 		return empty($this->completed);
 	}
 
-	protected function getPreparsecode()
-	{
-		if (!empty($this->current_step->preparsecode))
-			return $this->fixParams((string) $this->current_step->preparsecode);
-		else
-			return null;
-	}
-
 	/**
 	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
