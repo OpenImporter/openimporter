@@ -310,7 +310,7 @@ class Template
 		<span class="statuses">';
 
 		foreach ($this->response->getStatuses() as $status)
-			$this->status($status[0], $status[1]);
+			$this->status($status['status'], $status['title']);
 
 		echo '
 		</span>';
