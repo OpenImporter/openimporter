@@ -162,30 +162,31 @@ class ImportManager
 	 */
 	public function process($data)
 	{
-		// This is really quite simple; if ?delete is on the URL, delete the importer...
-		if ($this->config->action == 'delete')
-		{
-			$this->uninstall();
-
-			$this->response->no_template = true;
-		}
-
 		$this->populateResponseDetails();
 
-		if ($this->config->action == 'validate')
+		// This is really quite simple; if ?delete is on the URL, delete the importer...
+		switch ($this->config->action)
 		{
-			$this->validateFields($data);
-			$this->response->addHeader('Content-Type', 'text/xml');
-			$this->response->is_xml = true;
-			$this->response->addTemplate('validate');
-		}
-		else
-		{
-			$this->response->is_page = true;
-			if (method_exists($this, 'doStep' . $this->config->progress->step))
-				call_user_func(array($this, 'doStep' . $this->config->progress->step));
-			else
-				$this->doStep0();
+			case 'delete':
+				$this->response->is_xml = true;
+				$this->response->addHeader('Content-Type', 'text/xml');
+				$this->response->addTemplate('validate');
+				$this->response->valid = $this->uninstall();
+				break;
+
+			case 'validate':
+				$this->validateFields($data);
+				$this->response->addHeader('Content-Type', 'text/xml');
+				$this->response->is_xml = true;
+				$this->response->addTemplate('validate');
+				break;
+
+			default:
+				$this->response->is_page = true;
+				if (method_exists($this, 'doStep' . $this->config->progress->step))
+					call_user_func(array($this, 'doStep' . $this->config->progress->step));
+				else
+					$this->doStep0();
 		}
 
 		$this->populateResponseDetails();
@@ -509,7 +510,7 @@ class ImportManager
 	{
 		$this->importer->doStep3();
 
-		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
+		$writable = true || (is_writable(BASEDIR) && is_writable(__FILE__));
 
 		$this->response->addTemplate('step3', array('name' => $this->importer->xml->general->name, 'writable' => $writable));
 
