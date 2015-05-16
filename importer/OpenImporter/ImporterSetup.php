@@ -118,7 +118,7 @@ class ImporterSetup
 		$this->loadFormFields();
 
 		// If the paths are unknown it's useless to proceed.
-		if (empty($this->config->path_to))
+		if (empty($this->config->path_to) || empty($this->config->path_from))
 			return;
 
 		$this->initDb();
@@ -195,6 +195,9 @@ class ImporterSetup
 
 		if ($this->config->boardurl === false)
 			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
+
+		if (empty($this->data['db_pass']))
+			return;
 
 		if ($this->config->destination->verifyDbPass($this->data['db_pass']) === false)
 			throw new \Exception($this->lng->get('password_incorrect'));

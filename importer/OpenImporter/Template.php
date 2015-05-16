@@ -438,7 +438,7 @@ class Template
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
-							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', !empty($option['validate']) ? 'onblur="validateField(\'' . $option['id'] . '\')"' : '', ' class="text" />
+							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" class="text', !empty($option['validate']) ? ' dovalidation' : '', '" />
 							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
 						</dd>';
 					break;
