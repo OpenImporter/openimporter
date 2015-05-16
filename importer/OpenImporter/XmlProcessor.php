@@ -137,7 +137,6 @@ class XmlProcessor
 
 		$newrow = array();
 
-		$_SESSION['import_progress'] += $special_limit;
 		$this->config->progress->start += $special_limit;
 
 		while ($row = $this->source_db->fetch_assoc($special_result))

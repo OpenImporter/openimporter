@@ -118,7 +118,9 @@ class ImportManager
 	protected function loadFromSession()
 	{
 		if (!isset($_SESSION['import_progress']))
-			$_SESSION['import_progress'] = 0;
+			$this->config->progress->start = 0;
+		else
+			$this->config->progress->start = (int) $_SESSION['import_progress'];
 
 		if (!empty($_SESSION['importer_data']))
 			$this->data = $_SESSION['importer_data'];

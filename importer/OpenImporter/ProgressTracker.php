@@ -160,7 +160,7 @@ class ProgressTracker
 		if (time() - $this->start_time < $this->stop_time || $this->do_not_stop)
 			return;
 
-		throw new PasttimeException($bar, $_SESSION['import_progress'], $this->max, $this->current_step, $this->start);
+		throw new PasttimeException($bar, $this->start, $this->max, $this->current_step, $this->start);
 	}
 
 	protected function store()
