@@ -285,11 +285,6 @@ class XmlProcessor
 		return isset($options->replace) && (bool) $options->replace === true;
 	}
 
-	protected function shoudNotAdd($options)
-	{
-		return isset($options->no_add) && (bool) $options->no_add === true;
-	}
-
 	protected function ignoreSlashes($options)
 	{
 		return isset($options->ignore_slashes) && (bool) $options->ignore_slashes === true;
