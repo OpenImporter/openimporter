@@ -126,7 +126,7 @@ class ImportManager
 			$this->data = $_SESSION['importer_data'];
 
 		if (!empty($_SESSION['importer_progress_status']))
-			$this->config->store = $_SESSION['importer_progress_status'];
+			$this->config->store = new ValuesBag($_SESSION['importer_progress_status']);
 	}
 
 	protected function saveInSession()
@@ -518,7 +518,7 @@ class ImportManager
 
 		$this->resetImporter();
 		$this->data = array();
-		$this->config->store = array();
+		$this->config->store = new ValuesBag();
 
 		return true;
 	}

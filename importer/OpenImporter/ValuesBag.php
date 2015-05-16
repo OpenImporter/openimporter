@@ -22,6 +22,17 @@ class ValuesBag implements \ArrayAccess
 	protected $data = array();
 
 	/**
+	 * Constructor.
+	 *
+	 * @param null|array $defaults
+	 */
+	public function __construct($defaults = null)
+	{
+		if ($defaults !== null)
+			$this->data = $defaults;
+	}
+
+	/**
 	 * Setter
 	 *
 	 * @param string|int $key
