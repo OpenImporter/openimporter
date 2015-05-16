@@ -62,9 +62,6 @@ class Template
 	public function setResponse($response)
 	{
 		$this->response = $response;
-		$this->initReplaces();
-		$this->response->styles = $this->fetchStyles();
-		$this->response->scripts = $this->fetchScripts();
 	}
 
 	protected function fetchStyles()
@@ -92,11 +89,13 @@ class Template
 		$this->replaces = array();
 		foreach($this->response->getAll() as $key => $val)
 		{
-			$this->replaces['{{response->' . $key . '}}'] = $val;
+			if (!is_object($val) && !is_array($val))
+				$this->replaces['{{response->' . $key . '}}'] = (string) $val;
 		}
 		foreach($this->lng->getAll() as $key => $val)
 		{
-			$this->replaces['{{language->' . $key . '}}'] = $val;
+			if (!is_object($val) && !is_array($val))
+				$this->replaces['{{language->' . $key . '}}'] = $val;
 		}
 	}
 
@@ -108,6 +107,10 @@ class Template
 		// No text? ... so sad. :(
 		if ($this->response->no_template)
 			return;
+
+		$this->initReplaces();
+		$this->response->styles = $this->fetchStyles();
+		$this->response->scripts = $this->fetchScripts();
 
 		$this->sendHead();
 
