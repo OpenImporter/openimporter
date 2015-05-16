@@ -512,7 +512,7 @@ class ImportManager
 	{
 		$this->importer->doStep3();
 
-		$writable = true || (is_writable(BASEDIR) && is_writable(__FILE__));
+		$writable = (is_writable(BASEDIR) && is_writable(__FILE__));
 
 		$this->response->addTemplate('step3', array('name' => $this->importer->xml->general->name, 'writable' => $writable));
 
