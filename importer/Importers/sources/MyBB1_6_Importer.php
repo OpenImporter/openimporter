@@ -112,7 +112,7 @@ class MyBB1_6_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 				$rows[] = array(
 					'id_poll' => $id_poll,
 					'id_choice' => ($i + 1),
-					'label' => '"'. addslashes($options[$i]). '"',
+					'label' => $options[$i],
 					'votes' => @$votes[$i],
 				);
 			}
