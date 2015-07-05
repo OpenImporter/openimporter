@@ -405,7 +405,6 @@ friendlyurlcache:
 customfields:
   title: Importing custom fields
   query:
-    - id_field
     - col_name
     - field_name
     - field_desc

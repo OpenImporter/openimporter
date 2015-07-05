@@ -468,7 +468,6 @@
 	<step id="customfields">
 		<title>Importing custom fields</title>
 		<query>
-			id_field,
 			col_name,
 			field_name,
 			field_desc,

@@ -204,6 +204,31 @@ class UBB7_5_Importer extends \OpenImporter\Importers\AbstractSourceImporter
 		return $rows;
 	}
 
+	public function codeCustomfields()
+	{
+		return array(
+			array(
+				'col_name' => 'ICQ',
+				'field_name' => 'xxx',
+				'field_desc' => 'xxx',
+				'field_type' => 'xxx',
+				'field_length' => 'xxx',
+				'field_options' => 'xxx',
+				'mask' => 'xxx',
+				'show_reg' => 'xxx',
+				'show_display' => 'xxx',
+				'show_profile' => 'xxx',
+				'private' => 'xxx',
+				'active' => 'xxx',
+				'bbc' => 'xxx',
+				'can_search' => 'xxx',
+				'default_value' => 'xxx',
+				'enclose' => 'xxx',
+				'placement' => 'xxx',
+				'position' => 'xxx',
+			),
+	}
+
 	/**
 	 * Utility functions
 	 */
