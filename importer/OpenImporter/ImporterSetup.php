@@ -110,11 +110,11 @@ class ImporterSetup
 		return $this->_importer_base_class_name;
 	}
 
-	public function loadImporter($files)
+	public function loadImporter($files, $do_steps)
 	{
 		$this->loadSource($files['source']);
 		$this->loadDestination($files['destination']);
-		$this->prepareSettings();
+		$this->prepareSettings($do_steps);
 		$this->loadFormFields();
 
 		// If the paths are unknown it's useless to proceed.
@@ -177,10 +177,11 @@ class ImporterSetup
 	/**
 	 * Prepare the importer with custom settings of the source
 	 *
+	 * @param int[] $do_steps
 	 * @throws \Exception
 	 * @return boolean|null
 	 */
-	protected function prepareSettings()
+	protected function prepareSettings($do_steps)
 	{
 		$this->config->source->setDefines();
 
@@ -203,9 +204,9 @@ class ImporterSetup
 			throw new \Exception($this->lng->get('password_incorrect'));
 
 		// Check the steps that we have decided to go through.
-		if (!empty($_POST['do_steps']))
+		if (!empty($do_steps))
 		{
-			$this->config->progress->doSteps($_POST['do_steps']);
+			$this->config->progress->doSteps($do_steps);
 		}
 
 		if (!$this->config->progress->doStepsDefined())

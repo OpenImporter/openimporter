@@ -120,7 +120,7 @@ class Importer
 		{
 			$setup = new ImporterSetup($this->config, $this->response->lng, $this->data);
 			$setup->setNamespace('\\OpenImporter\\Importers\\');
-			$setup->loadImporter($files);
+			$setup->loadImporter($files, $this->data['do_steps']);
 		}
 		catch (\Exception $e)
 		{

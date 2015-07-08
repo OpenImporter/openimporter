@@ -64,6 +64,12 @@ class ImportManager
 		$this->response = $response;
 
 		$this->loadFromSession();
+
+		if (!empty($_POST['do_steps']))
+			$this->data['do_steps'] = $_POST['do_steps'];
+		else
+			$this->data['do_steps'] = array();
+
 		if ($this->config->action == 'reset')
 		{
 			$this->resetImporter();
@@ -117,7 +123,9 @@ class ImportManager
 
 	protected function loadFromSession()
 	{
-		if (!isset($_SESSION['import_progress']))
+		if (isset($_REQUEST['start']))
+			$this->config->progress->start = (int) $_REQUEST['start'];
+		elseif (!isset($_SESSION['import_progress']))
 			$this->config->progress->start = 0;
 		else
 			$this->config->progress->start = (int) $_SESSION['import_progress'];
