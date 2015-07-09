@@ -125,10 +125,8 @@ class ImportManager
 	{
 		if (isset($_REQUEST['start']))
 			$this->config->progress->start = (int) $_REQUEST['start'];
-		elseif (!isset($_SESSION['import_progress']))
-			$this->config->progress->start = 0;
 		else
-			$this->config->progress->start = (int) $_SESSION['import_progress'];
+			$this->config->progress->start = 0;
 
 		if (!empty($_SESSION['importer_data']))
 			$this->data = $_SESSION['importer_data'];
