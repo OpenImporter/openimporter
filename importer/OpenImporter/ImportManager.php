@@ -23,12 +23,6 @@ class ImportManager
 	public $importer;
 
 	/**
-	 * Our cookie settings
-	 * @var object
-	 */
-	protected $cookie;
-
-	/**
 	 * The configurator that holds all the settings
 	 * @var object
 	 */
@@ -56,11 +50,10 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Importer $importer, Cookie $cookie, HttpResponse $response)
+	public function __construct(Configurator $config, Importer $importer, HttpResponse $response)
 	{
 		$this->config = $config;
 		$this->importer = $importer;
-		$this->cookie = $cookie;
 		$this->response = $response;
 
 		$this->loadFromSession();
@@ -395,8 +388,6 @@ class ImportManager
 	 */
 	public function doStep0()
 	{
-		$this->cookie->destroy();
-
 		//previously imported? we need to clean some variables ..
 		$this->resetImporter();
 
@@ -447,8 +438,6 @@ class ImportManager
 	 */
 	public function doStep1()
 	{
-		$this->cookie->set(array($this->config->path_to, $this->config->path_from));
-
 		$this->response->step = 1;
 
 		try
