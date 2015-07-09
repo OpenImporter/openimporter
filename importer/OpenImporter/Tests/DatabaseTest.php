@@ -25,7 +25,6 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @covers OpenImporter\Core\Database::query
 	 * @expectedException OpenImporter\Core\DatabaseException
-	 * @expectedExceptionMessageRegExp /^.*Unsuccessful.*This query.*Caused the error.*$/s
 	 */
 	public function testQueryError()
 	{

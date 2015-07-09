@@ -30,7 +30,8 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 			'message' => 'test_error',
 			'trace' => false,
 			'line' => false,
-			'file' => false
+			'file' => false,
+			'query' => false,
 		)), $property->getValue($instance));
 
 		// Reset
@@ -42,7 +43,8 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 			'message' => array('test', 'test_error'),
 			'trace' => false,
 			'line' => false,
-			'file' => false
+			'file' => false,
+			'query' => false,
 		)), $property->getValue($instance));
 	}
 
@@ -56,12 +58,14 @@ class HttpResponseTest extends \PHPUnit_Framework_TestCase
 			'message' => 'test_error',
 			'trace' => false,
 			'line' => false,
-			'file' => false
+			'file' => false,
+			'query' => false,
 		),array(
 			'message' => 'test test_error',
 			'trace' => false,
 			'line' => false,
-			'file' => false
+			'file' => false,
+			'query' => false,
 		)), $instance->getErrors());
 	}
 
