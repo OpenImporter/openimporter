@@ -35,12 +35,28 @@ class Template
 	 * @param int|bool $line
 	 * @param string|bool $file
 	 */
-	public function error($error_message, $trace = false, $line = false, $file = false)
+	public function error($error_message, $trace = false, $line = false, $file = false, $query = false)
 	{
 		echo '
 			<div class="error_message">
-				<div class="error_text">
-					', !empty($trace) ? $this->lng->get(array('error_message', $error_message)) : $error_message, '
+				<div class="error_text">';
+		if ($query)
+		{
+			echo '
+				<b>', $this->lng->get('db_unsuccessful'), '</b><br />
+				', $this->lng->get(array('db_query_failed', '<blockquote>' . $query['query'] . '</blockquote>')), '
+				', $this->lng->get(array('db_error_caused', '<br />
+				<blockquote>' . $query['error'] . '</blockquote>')), '
+				<form action="' . $query['action_url'] . '" method="post">
+					<input type="submit" value="', $this->lng->get('try_again'), '" />
+				</form>';
+		}
+		else
+		{
+			echo '
+					', !empty($trace) ? $this->lng->get(array('error_message', $error_message)) : $error_message;
+		}
+		echo '
 				</div>';
 
 		if (!empty($trace))
@@ -154,15 +170,12 @@ class Template
 
 	protected function renderErrors()
 	{
-		if ($this->response->template_error)
+		foreach ($this->response->getErrors() as $msg)
 		{
-			foreach ($this->response->getErrors() as $msg)
-			{
-				if (is_array($msg))
-					call_user_func_array(array($this, 'error'), $msg);
-				else
-					$this->error($msg);
-			}
+			if (is_array($msg))
+				call_user_func_array(array($this, 'error'), $msg);
+			else
+				$this->error($msg);
 		}
 	}
 

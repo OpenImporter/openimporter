@@ -146,40 +146,7 @@ class Database
 			return $this->query($string, false);
 		}
 
-		$action_url = $this->buildActionUrl();
-
-		throw new DatabaseException('
-				<b>Unsuccessful!</b><br />
-				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
-				Caused the error:<br />
-				<blockquote>' . nl2br(htmlspecialchars($error[2])) . '</blockquote>
-				<form action="' . $action_url . '" method="post">
-					<input type="submit" value="Try again" />
-				</form>
-			</div>');
-	}
-
-	/**
-	 * Puts together the url used in the DatabaseException of sendError to go
-	 * back to the last step.
-	 *
-	 * @return string
-	 */
-	protected function buildActionUrl()
-	{
-		// @todo $_GET and $_REQUEST
-		// Get the query string so we pass everything.
-		if (isset($_REQUEST['start']))
-			$_GET['start'] = $_REQUEST['start'];
-
-		$query_string = '';
-		foreach ($_GET as $k => $v)
-			$query_string .= '&' . $k . '=' . $v;
-
-		if (strlen($query_string) != 0)
-			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
-
-		return '{script_url}' . $query_string;
+		throw new DatabaseException(nl2br(htmlspecialchars(trim($string))), nl2br(htmlspecialchars($error[2])));
 	}
 
 	/**
