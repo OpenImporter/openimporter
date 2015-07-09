@@ -12,21 +12,19 @@ I should also have written down *what* is broken...
 		<detect>{$from_prefix}USERS</detect>
 		<query>
 			SELECT
-				m.USER_ID AS id_member, SUBSTRING(m.USER_LOGIN_NAME, 1, 80) AS member_name,
+				m.USER_ID AS id_member, m.USER_LOGIN_NAME AS member_name,
 				IFNULL(m.USER_REGISTERED_ON, 0) AS date_registered, up.USER_TOTAL_POSTS as posts,
 				CASE
 					WHEN m.USER_MEMBERSHIP_LEVEL = 'Administrator' THEN 1
 					WHEN m.USER_MEMBERSHIP_LEVEL = 'Moderator' THEN 3
 					ELSE 0
 				END as id_group,
-				IFNULL(ud.USER_LAST_VISIT_TIME, 0) as last_login, SUBSTRING(m.USER_DISPLAY_NAME, 1, 255) AS real_name,
+				IFNULL(ud.USER_LAST_VISIT_TIME, 0) as last_login, m.USER_DISPLAY_NAME AS real_name,
 				IFNULL(up.USER_TOTAL_PM, 0) as instant_messages, m.USER_REGISTRATION_EMAIL AS email_address,
 
 				USER_BIRTHDAY as birthdate,
 
-				SUBSTRING(up.USER_HOMEPAGE, 1, 255) AS website_url, up.USER_LOCATION as location,
-				SUBSTRING(up.USER_ICQ, 1, 255) AS icq, SUBSTRING(up.USER_AIM, 1, 16) AS aim,
-				SUBSTRING(up.USER_YAHOO, 1, 32) AS yim, SUBSTRING(up.USER_MSN, 1, 255) AS msn, m.USER_PASSWORD as passwd,
+				up.USER_HOMEPAGE AS website_url, up.USER_LOCATION as location, m.USER_PASSWORD as passwd,
 
 				CASE
 					WHEN up.USER_VISIBLE_ONLINE_STATUS = 'no' THEN 0
@@ -182,5 +180,16 @@ I should also have written down *what* is broken...
 			FROM {$from_prefix}GRAEMLINS;
 		</query>
 	</step>
+	<step id="customfieldsdata">
+		<title>Importing custom fields data</title>
+		<detect>{$from_prefix}MODERATORS</detect>
+		<query>
+			SELECT up.USER_ID,
+				up.USER_ICQ AS icq, up.USER_AIM AS aim,
+				up.USER_YAHOO AS yim, up.USER_MSN AS msn
+			FROM {$from_prefix}USER_PROFILE AS up ON (m.USER_ID = up.USER_ID)
+		</query>
+	</step>
+	
 	<!-- @todo missing bans and censored words conversion -->
 </importer>

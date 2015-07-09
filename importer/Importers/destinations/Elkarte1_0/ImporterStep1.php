@@ -446,9 +446,15 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['approved'] = (int) $row['approved'];
+			if (!isset($row['approved']))
+				$row['approved'] = 0;
+
+			if ($row['approved'] == 0)
+				$row['approved'] = 1;
+			elseif ($row['approved'] == 1)
+				$row['approved'] = 0;
 			// @todo deal with soft-deleted topics!
-			if ($row['approved'] > 1)
+			elseif ($row['approved'] > 1)
 				continue;
 
 			$row['id_previous_board'] = (int) $row['id_previous_board'];
@@ -466,9 +472,15 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 		$rows = array();
 		foreach ($originalRows as $row)
 		{
-			$row['approved'] = (int) $row['approved'];
-			// @todo deal with soft-deleted messages!
-			if ($row['approved'] > 1)
+			if (!isset($row['approved']))
+				$row['approved'] = 0;
+
+			if ($row['approved'] == 0)
+				$row['approved'] = 1;
+			elseif ($row['approved'] == 1)
+				$row['approved'] = 0;
+			// @todo deal with soft-deleted topics!
+			elseif ($row['approved'] > 1)
 				continue;
 
 			if (empty($row['icon']))

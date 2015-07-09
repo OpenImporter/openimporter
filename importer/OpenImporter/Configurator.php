@@ -16,6 +16,7 @@ namespace OpenImporter\Core;
  *
  * @property string $lang_dir
  * @property string $importers_dir
+ * @property string $action
  * @property \OpenImporter\Importers\destinations\DestinationImporterInterface $destination
  * @property \OpenImporter\Importers\SourceImporterInterface $source
  * @property string $to_prefix

@@ -69,8 +69,11 @@ catch (\Exception $e)
 $template = new Template($lng, $OI_configurator);
 $response = new HttpResponse(new ResponseHeader());
 $response->scripturl = $_SERVER['PHP_SELF'];
+$response->assets_dir = BASEDIR . '/Assets';
+$response->lng = $lng;
 
 $OI_configurator->progress = new ProgressTracker($response, $OI_configurator, $_REQUEST);
+$OI_configurator->action = isset($_GET['action']) ? $_GET['action'] : null;
 
 try
 {
@@ -79,16 +82,16 @@ try
 		throw new \Exception('Please set \'session.save_handler\' to \'files\' before continue');
 	}
 
-	$importer = new Importer($OI_configurator, $lng, $response);
+	$importer = new Importer($OI_configurator, $response);
 
 	$template->setResponse($response);
 
 	$import = new ImportManager($OI_configurator, $importer, new Cookie(), $response);
-	$import->setupScripts();
+	$import->setupScripts($_REQUEST);
 
 	ImportException::setImportManager($template);
 
-	$import->process();
+	$import->process($_REQUEST);
 	$template->render();
 }
 catch (ImportException $e)
@@ -98,7 +101,7 @@ catch (ImportException $e)
 catch (PasttimeException $e)
 {
 	list ($bar, $value, $max, $substep, $start) = $e->getParams();
-	$response->addTemplate('timeLimit', array($bar, $value, $max, $substep, $start));
+	$response->addTemplate('timeLimit', array('bar' => $bar, 'value' => $value, 'max' => $max, 'substep' => $substep, 'start' => $start));
 	$template->render();
 }
 catch (StepException $e)

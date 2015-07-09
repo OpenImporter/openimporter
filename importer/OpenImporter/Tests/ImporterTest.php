@@ -20,10 +20,9 @@ class ImporterTest extends \PHPUnit_Framework_TestCase
 	public function testReloadImporter()
 	{
 		$config = new Configurator();
-		$lang = new Lang();
 		$header = new ResponseHeader();
 		$response = new HttpResponse($header);
-		$instance = new DummyTestReloadImporter($config, $lang, $response);
+		$instance = new DummyTestReloadImporter($config, $response);
 
 		$this->assertFalse($instance->called);
 

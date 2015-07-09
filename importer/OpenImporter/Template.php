@@ -16,6 +16,7 @@ namespace OpenImporter\Core;
 class Template
 {
 	protected $response = null;
+	protected $replaces = array();
 	protected $lng = null;
 	protected $config = null;
 	protected $header_rendered = false;
@@ -61,37 +62,41 @@ class Template
 	public function setResponse($response)
 	{
 		$this->response = $response;
-		$this->response->styles = $this->fetchStyles();
-		$this->response->scripts = $this->fetchScripts();
 	}
 
 	protected function fetchStyles()
 	{
-		if (file_exists(BASEDIR . '/Assets/index.css'))
-			return file_get_contents(BASEDIR . '/Assets/index.css');
+		if (file_exists($this->response->assets_dir . '/index.css'))
+			return file_get_contents($this->response->assets_dir . '/index.css');
 		else
 			return '';
 	}
 
 	protected function fetchScripts()
 	{
-		if (file_exists(BASEDIR . '/Assets/scripts.js'))
+		if (file_exists($this->response->assets_dir . '/scripts.js'))
 		{
-			$file = file_get_contents(BASEDIR . '/Assets/scripts.js');
-			$replaces = array();
-			foreach($this->response->getAll() as $key => $val)
-			{
-				$replaces['{{response->' . $key . '}}'] = $val;
-			}
-			foreach($this->lng->getAll() as $key => $val)
-			{
-				$replaces['{{language->' . $key . '}}'] = $val;
-			}
+			$file = file_get_contents($this->response->assets_dir . '/scripts.js');
 
-			return strtr($file, $replaces);
+			return strtr($file, $this->replaces);
 		}
 		else
 			return '';
+	}
+
+	protected function initReplaces()
+	{
+		$this->replaces = array();
+		foreach($this->response->getAll() as $key => $val)
+		{
+			if (!is_object($val) && !is_array($val))
+				$this->replaces['{{response->' . $key . '}}'] = (string) $val;
+		}
+		foreach($this->lng->getAll() as $key => $val)
+		{
+			if (!is_object($val) && !is_array($val))
+				$this->replaces['{{language->' . $key . '}}'] = $val;
+		}
 	}
 
 	public function render($response = null)
@@ -103,6 +108,19 @@ class Template
 		if ($this->response->no_template)
 			return;
 
+		$this->initReplaces();
+		$this->response->styles = $this->fetchStyles();
+		$this->response->scripts = $this->fetchScripts();
+
+		$this->sendHead();
+
+		$this->sendBody();
+
+		$this->sendFooter();
+	}
+
+	protected function sendHead()
+	{
 		if ($this->header_rendered === false)
 		{
 			$this->response->sendHeaders();
@@ -112,14 +130,24 @@ class Template
 
 			$this->header_rendered = true;
 		}
+	}
 
-		if ($this->response->is_page)
+	protected function sendBody()
+	{
+		if ($this->response->is_page && $this->response->template_error)
+		{
 			$this->renderErrors();
+		}
 
 		$templates = $this->response->getTemplates();
 		foreach ($templates as $template)
+		{
 			call_user_func_array(array($this, $template['name']), $template['params']);
+		}
+	}
 
+	protected function sendFooter()
+	{
 		if ($this->response->is_page)
 			$this->footer();
 	}
@@ -282,7 +310,7 @@ class Template
 		<span class="statuses">';
 
 		foreach ($this->response->getStatuses() as $status)
-			$this->status($status[0], $status[1]);
+			$this->status($status['status'], $status['title']);
 
 		echo '
 		</span>';
@@ -330,7 +358,7 @@ class Template
 		if ($writable)
 			echo '
 				<div class="notice">
-					<label for="delete_self"><input type="checkbox" id="delete_self" onclick="doTheDelete()" />', $this->lng->get('check_box'), '</label>
+					<label for="delete_self"><input type="checkbox" id="delete_self" />', $this->lng->get('check_box'), '</label>
 				</div>';
 
 		echo '
@@ -399,7 +427,7 @@ class Template
 			{
 				echo '
 					</dl>
-					<div id="toggle_button">', $this->lng->get('advanced_options'), ' <span id="arrow_down" class="arrow">&#9660</span><span id="arrow_up" class="arrow">&#9650</span></div>
+					<div id="toggle_button" class="open">', $this->lng->get('advanced_options'), '</div>
 					<dl id="advanced_options">';
 				continue;
 			}
@@ -410,7 +438,7 @@ class Template
 					echo '
 						<dt><label for="', $option['id'], '">', $option['label'], ':</label></dt>
 						<dd>
-							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" ', !empty($option['validate']) ? 'onblur="validateField(\'' . $option['id'] . '\')"' : '', ' class="text" />
+							<input type="text" name="', $option['id'], '" id="', $option['id'], '" value="', $option['value'], '" class="text', !empty($option['validate']) ? ' dovalidation' : '', '" />
 							<div id="validate_', $option['id'], '" class="validate">', $option['correct'], '</div>
 						</dd>';
 					break;

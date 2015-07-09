@@ -12,7 +12,7 @@ namespace OpenImporter\Core;
 /**
  * A generic class that define simple setter and getter
  */
-class ValuesBag
+class ValuesBag implements \ArrayAccess
 {
 	/**
 	 * The array that holds all the data collected by the object.
@@ -20,6 +20,17 @@ class ValuesBag
 	 * @var mixed[]
 	 */
 	protected $data = array();
+
+	/**
+	 * Constructor.
+	 *
+	 * @param null|array $defaults
+	 */
+	public function __construct($defaults = null)
+	{
+		if ($defaults !== null)
+			$this->data = $defaults;
+	}
 
 	/**
 	 * Setter
@@ -54,6 +65,33 @@ class ValuesBag
 	 */
 	public function __isset($key)
 	{
-		return isset($this->data[$key]);
+		return array_key_exists($key, $this->data);
+	}
+
+	public function offsetSet($offset, $value)
+	{
+		if (is_null($offset))
+		{
+			$this->data[] = $value;
+		}
+		else
+		{
+			$this->data[$offset] = $value;
+		}
+	}
+
+	public function offsetExists($offset)
+	{
+		return isset($this->data[$offset]);
+	}
+
+	public function offsetUnset($offset)
+	{
+		unset($this->data[$offset]);
+	}
+
+	public function offsetGet($offset)
+	{
+		return isset($this->data[$offset]) ? $this->data[$offset] : null;
 	}
 }

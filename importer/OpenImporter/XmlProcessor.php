@@ -137,7 +137,6 @@ class XmlProcessor
 
 		$newrow = array();
 
-		$_SESSION['import_progress'] += $special_limit;
 		$this->config->progress->start += $special_limit;
 
 		while ($row = $this->source_db->fetch_assoc($special_result))
@@ -157,14 +156,6 @@ class XmlProcessor
 	public function stillRunning()
 	{
 		return empty($this->completed);
-	}
-
-	protected function getPreparsecode()
-	{
-		if (!empty($this->current_step->preparsecode))
-			return $this->fixParams((string) $this->current_step->preparsecode);
-		else
-			return null;
 	}
 
 	/**
@@ -291,11 +282,6 @@ class XmlProcessor
 	protected function shouldReplace($options)
 	{
 		return isset($options->replace) && (bool) $options->replace === true;
-	}
-
-	protected function shoudNotAdd($options)
-	{
-		return isset($options->no_add) && (bool) $options->no_add === true;
 	}
 
 	protected function ignoreSlashes($options)

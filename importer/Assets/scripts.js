@@ -6,45 +6,6 @@
  * @version 2.0 Alpha
  */
 
-function AJAXCall(url, callback, string)
-{
-	var req = init();
-	var string = string;
-	req.onreadystatechange = processRequest;
-
-	function init()
-	{
-		if (window.XMLHttpRequest)
-			return new XMLHttpRequest();
-		else if (window.ActiveXObject)
-			return new ActiveXObject("Microsoft.XMLHTTP");
-	}
-
-	function processRequest()
-	{
-		// readyState of 4 signifies request is complete
-		if (req.readyState == 4)
-		{
-			// status of 200 signifies sucessful HTTP call
-			if (req.status == 200)
-				if (callback) callback(req.responseXML, string);
-		}
-	}
-
-	// make a HTTP GET request to the URL asynchronously
-	this.doGet = function () {
-		req.open("GET", url, true);
-		req.send(null);
-	};
-}
-function validateField(string)
-{
-	var target = document.getElementById(string);
-	var url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&source={{response->source}}&destination={{response->destination}}";
-	var ajax = new AJAXCall(url, validateCallback, string);
-	ajax.doGet();
-}
-
 function doAutoSubmit()
 {
 	if (countdown == 0)
@@ -58,55 +19,73 @@ function doAutoSubmit()
 	setTimeout("doAutoSubmit();", 1000);
 }
 
-function validateCallback(responseXML, string)
-{
-	var msg = responseXML.getElementsByTagName("valid")[0].firstChild.nodeValue;
-	if (msg == "false")
-	{
-		var field = document.getElementById(string);
-		var validate = document.getElementById('validate_' + string);
-		field.className = "invalid_field";
-		validate.innerHTML = "{{language->invalid}}";
-		// set the style on the div to invalid
-		var submitBtn = document.getElementById("submit_button");
-		submitBtn.disabled = true;
-	}
-	else
-	{
-		var field = document.getElementById(string);
-		var validate = document.getElementById('validate_' + string);
-		field.className = "valid_field";
-		validate.innerHTML = "{{language->validated}}";
-		var submitBtn = document.getElementById("submit_button");
-		submitBtn.disabled = false;
-	}
-}
-
-function doTheDelete()
-{
-	new Image().src = "{{response->scripturl}}?action=delete&" + (+Date());
-	(document.getElementById ? document.getElementById("delete_self") : document.all.delete_self).disabled = true;
-}
-
 $(document).ready(function() {
-	$('#toggle_button').click(function () {
-		var elem = document.getElementById('advanced_options');
-		var arrow_up = document.getElementById('arrow_up');
-		var arrow_down = document.getElementById('arrow_down');
-		if (!elem)
-			return true;
+	$('#delete_self').click(function () {
+		var $base = $(this);
+		$.ajax({
+			type: 'GET',
+			url: "{{response->scripturl}}?action=delete&" + (+Date())
+		})
+		.done(function (request) {
+			var $elem = $base.closest('.notice'),
+				text = '';
 
-		if (elem.style.display == 'none')
+			if ($(request).find('valid').text() == "false")
+				text = '<span class="error">{{language->delete_not_successful}}</span>';
+			else
+				text = '{{language->delete_successful}}';
+
+			$elem.html(text);
+		});
+	});
+
+	$('.dovalidation').change(function() {
+		var data = {
+			xml: 'xml',
+			source: '{{response->source}}',
+			destination: '{{response->destination}}'
+		},
+		$elem = $(this),
+		string = $(this).attr('id');
+
+		data[string] = $(this).val().replace(/\/+$/g, "");
+
+		$.ajax({
+			type: 'POST',
+			url: 'import.php?action=validate',
+			data: data
+		})
+		.done(function (request) {
+			var validate = document.getElementById('validate_' + string),
+				submitBtn = document.getElementById("submit_button");
+
+			if ($(request).find('valid').text() == "false")
+			{
+				$elem.addClass("invalid_field").removeClass("valid_field");
+				validate.innerHTML = "{{language->invalid}}";
+				submitBtn.disabled = true;
+			}
+			else
+			{
+				$elem.addClass("valid_field").removeClass("invalid_field");
+				validate.innerHTML = "{{language->validated}}";
+				submitBtn.disabled = false;
+			}
+		});
+	});
+
+	$('#toggle_button').click(function () {
+		var $elem = $('#advanced_options');
+
+		if ($elem.is(':visible'))
 		{
-			elem.style.display = 'block';
-			arrow_down.style.display = 'none';
-			arrow_up.style.display = 'inline';
+			$elem.slideUp('fast');
+			$(this).removeClass('close').addClass('open');
 		}
 		else
 		{
-			elem.style.display = 'none';
-			arrow_down.style.display = 'inline';
-			arrow_up.style.display = 'none';
+			$elem.slideDown('fast');
+			$(this).removeClass('open').addClass('close');
 		}
 
 		return true;

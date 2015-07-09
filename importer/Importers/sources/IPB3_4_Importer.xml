@@ -362,7 +362,6 @@
 		<detect>{$from_prefix}pfields_data</detect>
 		<query>
 			SELECT
-				pf_id AS id_field,
 				pf_key AS col_name,
 				pf_title AS field_name,
 				pf_desc AS field_desc,

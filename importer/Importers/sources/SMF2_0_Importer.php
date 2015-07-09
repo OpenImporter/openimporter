@@ -13,8 +13,6 @@ class SMF2_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 {
 	protected $smf_attach_folders = null;
 
-	protected $_is_nibogo_like = null;
-
 	public function getName()
 	{
 		return 'SMF2_0';
@@ -103,8 +101,7 @@ class SMF2_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 
 	protected function isNibogo()
 	{
-		if ($this->_is_nibogo_like !== null)
-			return $this->_is_nibogo_like;
+		$return = false;
 
 		$request = $this->db->query("
 			SHOW COLUMNS
@@ -114,14 +111,28 @@ class SMF2_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 			// This is Nibogo
 			if ($row['Field'] == 'id_topic')
 			{
-				$this->_is_nibogo_like = true;
-				return $this->_is_nibogo_like;
+				$return = true;
+				break;
 			}
 		}
+		$this->db->free_result($request);
 
-		// Not Nibogo means Illori
-		$this->_is_nibogo_like = false;
-		return $this->_is_nibogo_like;
+		return $return;
+	}
+
+	protected function isThankYouMod()
+	{
+		$db_name_str = $this->config->source->getDbName();
+
+		$result = $this->db->query("
+			SHOW TABLES
+			FROM `{$db_name_str}`
+			LIKE '{$table}'");
+
+		if (!($result instanceof \Doctrine\DBAL\Driver\Statement) || $this->db->num_rows($result) == 0)
+			return false;
+		else
+			return true;
 	}
 
 	/**
@@ -143,6 +154,13 @@ class SMF2_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 
 	public function codeLikes()
 	{
-		return $this->fetchLikes();
+		if ($this->isThankYouMod())
+		{
+			return false;
+		}
+		else
+		{
+			return $this->fetchLikes();
+		}
 	}
 }

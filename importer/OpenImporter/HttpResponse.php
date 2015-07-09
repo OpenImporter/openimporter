@@ -11,6 +11,9 @@ namespace OpenImporter\Core;
 
 /**
  * This should contain the data used by the template.
+ *
+ * @property string $assets_dir
+ * @property Lang $lng
  */
 class HttpResponse extends ValuesBag
 {
@@ -19,12 +22,6 @@ class HttpResponse extends ValuesBag
 	 * @var ResponseHeader
 	 */
 	protected $headers = null;
-
-	/**
-	 * The "translator" (i.e. the Lang object)
-	 * @var object
-	 */
-	public $lng = null;
 
 	/**
 	 * Error messages occurred during the import process.
@@ -86,33 +83,23 @@ class HttpResponse extends ValuesBag
 	 */
 	public function addErrorParam($error_message, $trace = false, $line = false, $file = false)
 	{
-		if ($this->errorExists($error_message, $trace !== false))
+		if ($this->errorExists($error_message))
 			return;
 
-		if ($trace === false)
-			$this->error_params[] = $error_message;
-		else
-			$this->error_params[] = array($error_message, $trace, $line, $file);
+		$this->error_params[] = array(
+			'message' => $error_message,
+			'trace' => $trace,
+			'line' => $line,
+			'file' => $file
+		);
 	}
 
-	protected function errorExists($error_message, $is_array)
+	protected function errorExists($error_message)
 	{
 		foreach ($this->error_params as $error_param)
 		{
-			// Of course if the structure is different no need to test further
-			if ((is_array($error_param) && !$is_array) || (!is_array($error_param) && $is_array))
-				continue;
-
-			if (is_array($error_param))
-			{
-				if ($error_param[0] === $error_message)
-					return true;
-			}
-			else
-			{
-				if ($error_param === $error_message)
-					return true;
-			}
+			if ($error_param['message'] === $error_message)
+				return true;
 		}
 
 		return false;
@@ -126,10 +113,12 @@ class HttpResponse extends ValuesBag
 		$return = array();
 		foreach ($this->error_params as $msg)
 		{
-			if (is_array($msg) && count($msg) == 2)
-				$return[] = sprintf($msg[0], $msg[1]);
-			else
-				$return[] = $msg;
+			if (is_array($msg['message']))
+			{
+				$msg['message'] = sprintf($msg['message'][0], $msg['message'][1]);
+			}
+
+			$return[] = $msg;
 		}
 
 		return $return;
@@ -144,7 +133,7 @@ class HttpResponse extends ValuesBag
 	{
 		$this->addTemplate('renderStatuses');
 
-		$this->statuses[] = array($status, $title);
+		$this->statuses[] = array('status' => $status, 'title' => $title);
 	}
 
 	public function getStatuses()

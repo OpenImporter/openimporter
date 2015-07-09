@@ -127,6 +127,17 @@ class Lang
 	}
 
 	/**
+	 * Tests if the key is set.
+	 *
+	 * @param string|int $key
+	 * @return bool
+	 */
+	public function __isset($key)
+	{
+		return array_key_exists($key, $this->_lang);
+	}
+
+	/**
 	 * Returns the value of the specified $key in lang.
 	 *
 	 * @param string|mixed[] $key Name of the variable

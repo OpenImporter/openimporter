@@ -44,6 +44,8 @@
 	<string name="complete">Import complete!</string>
 	<string name="congrats">Congratulations, the importer has completed successfully.</string>
 	<string name="check_box">Please check this box to delete the importer right now for security reasons.</string>
+	<string name="delete_successful">OpenImporter directory has been successfully removed from the server.</string>
+	<string name="delete_not_successful">OpenImporter was not able to remove its directory from the server:  Remember to delete it manually.</string>
 	<string name="may_fail">doesn't work on all servers.</string>
 	<string name="not_done">Not quite done yet!</string>
 	<string name="importer_paused"><![CDATA[The importer has paused a few seconds to avoid overloading your server. Don't worry though, <b>nothing's wrong</b>.]]></string>
