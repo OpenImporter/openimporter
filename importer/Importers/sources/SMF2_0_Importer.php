@@ -152,6 +152,38 @@ class SMF2_0_Importer extends \OpenImporter\Importers\AbstractSourceSmfImporter
 		return $rows;
 	}
 
+	public function preparseTopics($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			if ($row['approved'] == 0)
+				$row['approved'] = 1;
+			else
+				$row['approved'] = 0;
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function preparseMessages($originalRows)
+	{
+		$rows = array();
+		foreach ($originalRows as $row)
+		{
+			if ($row['approved'] == 0)
+				$row['approved'] = 1;
+			else
+				$row['approved'] = 0;
+
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
 	public function codeLikes()
 	{
 		if ($this->isThankYouMod())
