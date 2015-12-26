@@ -237,7 +237,7 @@ class XmlProcessor
 			return false;
 
 		$table = $this->fixParams((string) $step->detect);
-		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fixParams($table));
+		$table = preg_replace('/^`[\w\d_\-]*`\./i', '', $this->fixParams($table));
 
 		$db_name_str = $this->config->source->getDbName();
 
