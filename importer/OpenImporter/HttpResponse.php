@@ -81,7 +81,7 @@ class HttpResponse extends ValuesBag
 	 *
 	 * @param mixed|mixed[] $error_message
 	 */
-	public function addErrorParam($error_message, $trace = false, $line = false, $file = false)
+	public function addErrorParam($error_message, $trace = false, $line = false, $file = false, $query = false)
 	{
 		if ($this->errorExists($error_message))
 			return;
@@ -90,7 +90,8 @@ class HttpResponse extends ValuesBag
 			'message' => $error_message,
 			'trace' => $trace,
 			'line' => $line,
-			'file' => $file
+			'file' => $file,
+			'query' => $query,
 		);
 	}
 

@@ -23,12 +23,6 @@ class ImportManager
 	public $importer;
 
 	/**
-	 * Our cookie settings
-	 * @var object
-	 */
-	protected $cookie;
-
-	/**
 	 * The configurator that holds all the settings
 	 * @var object
 	 */
@@ -56,11 +50,10 @@ class ImportManager
 	/**
 	 * initialize the main Importer object
 	 */
-	public function __construct(Configurator $config, Importer $importer, Cookie $cookie, HttpResponse $response)
+	public function __construct(Configurator $config, Importer $importer, HttpResponse $response)
 	{
 		$this->config = $config;
 		$this->importer = $importer;
-		$this->cookie = $cookie;
 		$this->response = $response;
 
 		$this->loadFromSession();
@@ -125,10 +118,8 @@ class ImportManager
 	{
 		if (isset($_REQUEST['start']))
 			$this->config->progress->start = (int) $_REQUEST['start'];
-		elseif (!isset($_SESSION['import_progress']))
-			$this->config->progress->start = 0;
 		else
-			$this->config->progress->start = (int) $_SESSION['import_progress'];
+			$this->config->progress->start = 0;
 
 		if (!empty($_SESSION['importer_data']))
 			$this->data = $_SESSION['importer_data'];
@@ -397,8 +388,6 @@ class ImportManager
 	 */
 	public function doStep0()
 	{
-		$this->cookie->destroy();
-
 		//previously imported? we need to clean some variables ..
 		$this->resetImporter();
 
@@ -449,8 +438,6 @@ class ImportManager
 	 */
 	public function doStep1()
 	{
-		$this->cookie->set(array($this->config->path_to, $this->config->path_from));
-
 		$this->response->step = 1;
 
 		try
@@ -460,7 +447,11 @@ class ImportManager
 		catch (DatabaseException $e)
 		{
 			$trace = $e->getTrace();
-			$this->response->addErrorParam(str_repeat('{script_url}', $this->response->scripturl, $e->getMessage()), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->response->addErrorParam('', isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile(), array(
+				'query' => $e->getQuery(),
+				'error' => $e->getErrorString(),
+				'action_url' => $this->response->scripturl . $this->buildActionQuery(),
+			));
 			$this->response->is_page = true;
 			$this->response->template_error = true;
 
@@ -471,6 +462,29 @@ class ImportManager
 		$this->config->progress->start = 0;
 
 		return $this->doStep2();
+	}
+
+	/**
+	 * Puts together the url used in the DatabaseException of sendError to go
+	 * back to the last step.
+	 *
+	 * @return string
+	 */
+	protected function buildActionQuery()
+	{
+		// @todo $_GET and $_REQUEST
+		// Get the query string so we pass everything.
+		if (isset($_REQUEST['start']))
+			$_GET['start'] = $_REQUEST['start'];
+
+		$query_string = '';
+		foreach ($_GET as $k => $v)
+			$query_string .= '&' . $k . '=' . $v;
+
+		if (strlen($query_string) != 0)
+			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
+
+		return $query_string;
 	}
 
 	/**

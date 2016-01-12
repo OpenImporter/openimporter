@@ -59,6 +59,9 @@
 	<string name="error_trace">Trace: %s</string>
 	<string name="error_line">Line: %s</string>
 	<string name="error_file">File: %s</string>
+	<string name="db_unsuccessful">Unsuccessful!</string>
+	<string name="db_query_failed">This query: %s</string>
+	<string name="db_error_caused">Caused the error: %s</string>
 	<string name="imported_from">Forum imported from %s</string>
 	<string name="to">to</string>
 </resources>

@@ -10,7 +10,6 @@
 use Symfony\Component\ClassLoader\Psr4ClassLoader;
 use OpenImporter\Core\Configurator;
 use OpenImporter\Core\Lang;
-use OpenImporter\Core\Cookie;
 use OpenImporter\Core\Template;
 use OpenImporter\Core\Importer;
 use OpenImporter\Core\Strings;
@@ -86,7 +85,7 @@ try
 
 	$template->setResponse($response);
 
-	$import = new ImportManager($OI_configurator, $importer, new Cookie(), $response);
+	$import = new ImportManager($OI_configurator, $importer, $response);
 	$import->setupScripts($_REQUEST);
 
 	ImportException::setImportManager($template);
