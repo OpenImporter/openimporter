@@ -10,8 +10,8 @@
 namespace OpenImporter\Core;
 
 /**
- * class PasttimeException extends the build-in Exception class and
- * catches potential errors
+ * Class PasttimeException
+ * Extends the build-in Exception class and catches potential errors
  */
 class PasttimeException extends \Exception
 {

@@ -9,12 +9,17 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Importers\destinations;
 
+/**
+ * Class SmfCommonOriginStep2
+ *
+ * @package OpenImporter\Importers\destinations
+ */
 abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
@@ -87,7 +92,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		if ($where === null)
 		{
 			if (empty($board))
+			{
 				return;
+			}
 
 			$where = "id_board = $board";
 		}
@@ -201,7 +208,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 
 		if (empty($max))
+		{
 			return;
+		}
 
 		$case = "CASE WHEN posts > " . $max['min_posts'] . " THEN " . $max['id_group'];
 
@@ -214,7 +223,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 				$first = false;
 			}
 			else
+			{
 				$case .= " WHEN posts BETWEEN " . $group['min_posts'] . " AND " . $post_groups[$id - 1]['min_posts'] . " THEN " . $group['id_group'];
+			}
 		}
 		$case .= " ELSE 4 END";
 
@@ -349,14 +360,16 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 	/**
 	 *
 	 * Get the id_member associated with the specified message.
+	 *
 	 * @param type $messageID
+	 *
 	 * @return int
 	 */
 	protected function getMsgMemberID($messageID)
 	{
 		$to_prefix = $this->config->to_prefix;
 
-			// Find the topic and make sure the member still exists.
+		// Find the topic and make sure the member still exists.
 		$result = $this->db->query("
 			SELECT IFNULL(mem.id_member, 0)
 			FROM {$to_prefix}messages AS m
@@ -365,10 +378,14 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			LIMIT 1");
 
 		if ($this->db->num_rows($result) > 0)
+		{
 			list ($memberID) = $this->db->fetch_row($result);
+		}
 		// The message doesn't even exist.
 		else
+		{
 			$memberID = 0;
+		}
 
 		$this->db->free_result($result);
 
@@ -405,7 +422,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 				foreach ($dummy as $board)
 				{
 					if (empty($cat_map[$board]))
+					{
 						$cat_map[$board] = $parent;
+					}
 				}
 
 				$child_map[0] = array_merge(isset($child_map[0]) ? $child_map[0] : array(), $dummy);
@@ -429,13 +448,17 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		{
 			list ($parent, $level) = array_pop($solid_parents);
 			if (!isset($child_map[$parent]))
+			{
 				continue;
+			}
 
 			// Fix all of this board's children.
 			foreach ($child_map[$parent] as $board)
 			{
 				if ($parent != 0)
+				{
 					$cat_map[$board] = $cat_map[$parent];
+				}
 
 				$this->setBoardProperty((int) $board, array('id_parent' => (int) $parent, 'id_cat' => (int) $cat_map[$board], 'child_level' => (int) $level));
 
@@ -474,7 +497,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 		foreach ($cat_map as $cat)
 		{
 			if (!in_array($cat, $real_cats))
+			{
 				$fix_cats[] = $cat;
+			}
 		}
 
 		if (!empty($fix_cats))
@@ -510,14 +535,18 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			{
 				$curCat = $row['id_cat'];
 				if (++$cat_order != $row['cat_order'])
+				{
 					$this->db->query("
 						UPDATE {$to_prefix}categories
 						SET cat_order = $cat_order
 						WHERE id_cat = $row[id_cat]
 						LIMIT 1");
+				}
 			}
 			if (!empty($row['id_board']) && ++$board_order != $row['board_order'])
+			{
 				$this->setBoardProperty($row['id_board'], array('board_order' => $board_order));
+			}
 		}
 		$this->db->free_result($request);
 	}
@@ -555,11 +584,14 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 
 				// Probably not one of the imported ones, then?
 				if (!file_exists($filename))
+				{
 					continue;
+				}
 
 				$size = @getimagesize($filename);
 				$filesize = @filesize($filename);
 				if (!empty($size) && !empty($size[0]) && !empty($size[1]) && !empty($filesize))
+				{
 					$this->db->query("
 						UPDATE {$to_prefix}attachments
 						SET
@@ -568,6 +600,7 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 							height = " . (int) $size[1] . "
 						WHERE id_attach = $row[id_attach]
 						LIMIT 1");
+				}
 			}
 			$this->db->free_result($request);
 
@@ -592,7 +625,9 @@ abstract class SmfCommonOriginStep2 extends Step2BaseImporter
 			$filename = $row['filename'];
 		}
 		else
+		{
 			$filename = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+		}
 
 		return $dir . '/' . $filename;
 	}

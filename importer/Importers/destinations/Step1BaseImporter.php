@@ -12,10 +12,13 @@ namespace OpenImporter\Importers\destinations;
 use OpenImporter\Core\Strings;
 
 /**
+ * Class Step1BaseImporter
  * The starting point for the first step of any importer.
  * Step 1 is where the actual conversion happens, where the data are moved
  * from the source system to the destination one.
  * It's the only step that <b>shall</s> know about both the systems.
+ *
+ * @package OpenImporter\Importers\destinations
  */
 abstract class Step1BaseImporter extends BaseImporter
 {
@@ -23,7 +26,7 @@ abstract class Step1BaseImporter extends BaseImporter
 	{
 		$row = $this->doSpecialTable($special_table, $row);
 
-		// fixing the charset, we need proper utf-8
+		// Fixing the charset, we need proper utf-8
 		$row = Strings::fix_charset($row);
 
 		$row = $this->fixTexts($row);

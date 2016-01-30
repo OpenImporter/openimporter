@@ -21,7 +21,10 @@ namespace OpenImporter\Importers\destinations\Wedge1_0;
 use OpenImporter\Core\Files;
 
 /**
+ * Class ImporterStep1
  * Does the actual conversion.
+ *
+ * @package OpenImporter\Importers\destinations\Wedge1_0
  */
 class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep1
 {

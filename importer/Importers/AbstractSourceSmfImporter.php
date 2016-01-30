@@ -12,11 +12,14 @@ namespace OpenImporter\Importers;
 use OpenImporter\Core\Files;
 
 /**
+ * Class AbstractSourceSmfImporter
  * This abstract class is the base for any php importer file.
  *
  * It provides some common necessary methods and some default properties
- * so that Importer can do its job without having to test for existinance
+ * so that Importer can do its job without having to test for existence
  * of methods every two/three lines of code.
+ *
+ * @package OpenImporter\Importers
  */
 abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 {
@@ -27,16 +30,30 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 		return $this->fetchSetting('db_prefix');
 	}
 
+	protected function fetchSetting($name)
+	{
+		$content = $this->readSettingsFile();
+
+		$match = array();
+		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
+	}
+
 	public function setDefines()
 	{
 		if (!defined('SMF'))
+		{
 			define('SMF', 1);
+		}
 	}
 
 	public function dbConnectionData()
 	{
 		if ($this->path === null)
+		{
 			return false;
+		}
 
 		return array(
 			'dbname' => $this->fetchSetting('db_name'),
@@ -67,19 +84,30 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 		return '{db_prefix}members';
 	}
 
-	protected function fetchSetting($name)
-	{
-		$content = $this->readSettingsFile();
-
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
-
-		return isset($match[1]) ? $match[1] : '';
-	}
-
 	public function getDbName()
 	{
 		return $this->fetchSetting('db_name');
+	}
+
+	public function preparseBoards($originalRows)
+	{
+		$rows = array();
+
+		foreach ($originalRows as $row)
+		{
+			$memberGroups = array_filter(explode(',', $row['member_groups']));
+			$groups = array();
+			foreach ($memberGroups as $group)
+			{
+				$groups[] = $this->mapBoardsGroups($group);
+			}
+
+			$row['member_groups'] = implode(',', $groups);
+
+			$rows[] = $row;
+		}
+
+		return $rows;
 	}
 
 	protected function mapBoardsGroups($group)
@@ -92,25 +120,6 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 		);
 
 		return isset($known[$group]) ? $known[$group] : $group + 10;
-	}
-
-	public function preparseBoards($originalRows)
-	{
-		$rows = array();
-
-		foreach ($originalRows as $row)
-		{
-			$memberGroups = array_filter(explode(',', $row['member_groups']));
-			$groups = array();
-			foreach ($memberGroups as $group)
-				$groups[] = $this->mapBoardsGroups($group);
-
-			$row['member_groups'] = implode(',', $groups);
-
-			$rows[] = $row;
-		}
-
-		return $rows;
 	}
 
 	public function codeSettings()
@@ -271,7 +280,6 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 		$request = $this->db->query("
 			SELECT variable, value
 			FROM {$this->config->from_prefix}settings;");
-
 		$rows = array();
 		while ($row = $this->db->fetch_assoc($request))
 		{
@@ -294,7 +302,6 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 		foreach ($originalRows as $row)
 		{
 			$row['date_registered'] = date('Y-m-d G:i:s', $row['date_registered']);
-
 			$rows[] = $row;
 		}
 
@@ -314,7 +321,9 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 
 		$avatar_gallery = array();
 		if (!empty($smf_avatarg) && file_exists($smf_avatarg))
+		{
 			$avatar_gallery = Files::get_files_recursive($smf_avatarg);
+		}
 
 		foreach ($avatar_gallery as $file)
 		{
@@ -337,16 +346,23 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 
 		$avatar_custom = array();
 		if (!empty($smf_avatarg) && file_exists($smf_avatarg))
+		{
 			$avatar_custom = Files::get_files_recursive($smf_avatarg);
+		}
 
 		foreach ($avatar_custom as $file)
 		{
 			$file = str_replace('\\', '/', $file);
 			preg_match('~avatar_(\d+)_\d+~i', $file, $match);
+
 			if (!empty($match[1]))
+			{
 				$id_member = $match[1];
+			}
 			else
+			{
 				$id_member = 0;
+			}
 
 			$rows[] = array(
 				'id_member' => $id_member,
@@ -373,6 +389,7 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 			$smf_smileys_dir = str_replace('\\', '/', $smf_smileys_dir);
 			$smiley = array();
 			$files = Files::get_files_recursive($smf_smileys_dir);
+
 			foreach ($files as $file)
 			{
 				$file = str_replace('\\', '/', $file);
@@ -382,12 +399,19 @@ abstract class AbstractSourceSmfImporter extends AbstractSourceImporter
 					'filename' => basename($file),
 				);
 			}
+
 			if (!empty($smiley))
+			{
 				return array($smiley);
+			}
 			else
+			{
 				return false;
+			}
 		}
 		else
+		{
 			return false;
+		}
 	}
 }

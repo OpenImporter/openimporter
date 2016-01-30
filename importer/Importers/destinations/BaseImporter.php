@@ -13,13 +13,19 @@ use \OpenImporter\Core\Configurator;
 use \OpenImporter\Core\Database;
 
 /**
+ * Class BaseImporter
  * The starting point for any step of any importer.
+ *
+ * @package OpenImporter\Importers\destinations
  */
 abstract class BaseImporter
 {
 	protected $db = null;
+
 	protected $config = null;
+
 	protected $setting_file = '';
+
 	protected $path = '';
 
 	public function __construct(Database $db, Configurator $config)

@@ -18,6 +18,11 @@ namespace OpenImporter\Importers\destinations\ElkArte1_0;
 use OpenImporter\Core\Files;
 use OpenImporter\Core\Strings;
 
+/**
+ * Class ImporterStep1
+ *
+ * @package OpenImporter\Importers\destinations\ElkArte1_0
+ */
 class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep1
 {
 
@@ -28,6 +33,7 @@ class ImporterStep1 extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 	/**
 	 * Until further notice these methods are for table detection
 	 */
+
 	/**
 	 * In case the avatar is an attachment, we try to store it into the
 	 * attachments table.

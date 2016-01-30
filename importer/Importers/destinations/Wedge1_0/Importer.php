@@ -19,8 +19,11 @@
 namespace OpenImporter\Importers\destinations\Wedge1_0;
 
 /**
+ * Class Importer
  * The class contains code that allows the Importer to obtain settings
  * from the Wedge installation.
+ *
+ * @package OpenImporter\Importers\destinations\Wedge1_0
  */
 class Importer extends \OpenImporter\Importers\destinations\SmfCommonOrigin
 {

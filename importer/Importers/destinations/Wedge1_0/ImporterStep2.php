@@ -19,7 +19,10 @@
 namespace OpenImporter\Importers\destinations\Wedge1_0;
 
 /**
+ * Class ImporterStep2
  * Recount statistics, and fixes stuff.
+ *
+ * @package OpenImporter\Importers\destinations\Wedge1_0
  */
 class ImporterStep2 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep2
 {

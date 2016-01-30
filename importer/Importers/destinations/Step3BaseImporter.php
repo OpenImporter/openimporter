@@ -10,11 +10,14 @@
 namespace OpenImporter\Importers\destinations;
 
 /**
+ * Class Step3BaseImporter
  * The starting point for the third step of any importer.
  * Nothing fancy, just one last step that, if needed/wanted, allows for example
  * to store somewhere destination-specific the name of the import script.
  *
  * @todo Is a whole step even necessary just for that?
+ *
+ * @package OpenImporter\Importers\destinations
  */
 abstract class Step3BaseImporter extends BaseImporter
 {

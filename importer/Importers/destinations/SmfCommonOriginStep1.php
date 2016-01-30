@@ -9,14 +9,19 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Importers\destinations;
 
 use OpenImporter\Core\Files;
 
+/**
+ * Class SmfCommonOriginStep1
+ *
+ * @package OpenImporter\Importers\destinations
+ */
 abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 {
 	public function fixTexts($row)
@@ -24,11 +29,9 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 		// If we have a message here, we'll want to convert <br /> to <br>.
 		if (isset($row['body']))
 		{
-			$row['body'] = str_replace(array(
-					'<br />', '&#039;', '&#39;', '&quot;'
-				), array(
-					'<br>', '\'', '\'', '"'
-				), $row['body']
+			$row['body'] = str_replace(
+				array('<br />', '&#039;', '&#39;', '&quot;'),
+				array('<br>', '\'', '\'', '"'), $row['body']
 			);
 		}
 
@@ -38,138 +41,6 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 	public function doSpecialTable($special_table, $params = null)
 	{
 		return $params;
-	}
-
-	public function removeAttachments()
-	{
-		$to_prefix = $this->config->to_prefix;
-
-		// !!! This should probably be done in chunks too.
-		// attachment_type = 1 are avatars.
-		$result = $this->db->query("
-			SELECT id_attach, filename, id_folder
-			FROM {$to_prefix}attachments");
-
-		while ($row = $this->db->fetch_assoc($result))
-		{
-			$enc_name = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
-
-			$attach_dir = $this->getAttachDir($row);
-
-			if (file_exists($attach_dir . '/' . $enc_name))
-				$filename = $attach_dir . '/' . $enc_name;
-			else
-			{
-				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
-				$clean_name = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
-				$filename = $attach_dir . '/' . $clean_name;
-			}
-
-			if (is_file($filename))
-				@unlink($filename);
-		}
-
-		$this->db->free_result($result);
-	}
-
-	/**
-	 * helper function to create an encrypted attachment name
-	 *
-	 * @param string $filename
-	 * @return string
-	 */
-	protected function createAttachmentFilehash($filename)
-	{
-		return sha1(md5($filename . time()) . mt_rand());
-	}
-
-	protected function createAttachFoldersStructure($folders)
-	{
-		$source_base = $this->guessBase($folders);
-		$destination_base = $this->guessBase($this->config->destination->getAllAttachDirs());
-
-		// No idea where to start, better not mess with the filesystem
-		// Though if $destination_base is empty it *is* a mess.
-		if (empty($source_base) || empty($destination_base))
-			return false;
-
-		$dest_folders = str_replace($source_base, $destination_base, $folders);
-
-		// Prepare the directory structure
-		foreach ($dest_folders as $folder)
-			Files::create_folders_recursive($folder);
-
-		// Save the new structure in the database
-		$this->db->query("
-			UPDATE {$this->config->to_prefix}settings
-			SET value = '" . serialize($dest_folders) . "'
-			WHERE variable = 'attachmentUploadDir'
-			LIMIT 1");
-
-		// Reload the new directories
-		$this->config->destination->specialAttachments(true);
-	}
-
-	protected function guessBase($folders)
-	{
-		foreach ($folders as $folder)
-		{
-			if ($this->isCommon($folder, $folders))
-			{
-				return $folder;
-			}
-		}
-
-		foreach ($folders as $folder)
-		{
-			$dir = $folder;
-			while (strlen($dir) > 4)
-			{
-				$dir = dirname($dir);
-				if ($this->isCommon($dir, $folders))
-					return $dir;
-			}
-		}
-
-		return false;
-	}
-
-	protected function isCommon($dir, $folders)
-	{
-		foreach ($folders as $folder)
-		{
-			if (substr($folder, 0, strlen($dir)) !== $dir)
-				return false;
-		}
-
-		return true;
-	}
-
-	public function getAttachDir($row)
-	{
-		return $this->config->destination->getAttachDir($row);
-	}
-
-	public function getAvatarDir($row)
-	{
-		return $this->config->destination->getAvatarDir($row);
-	}
-
-	public function getAvatarFolderId($row)
-	{
-		// @todo in theory we could be able to find the "current" directory
-		if ($this->config->destination->avatarUploadDir === null)
-			return 1;
-		else
-			return false;
-	}
-
-	public function newIdAttach()
-	{
-		$this->config->destination->newMaxIdAttach();
-
-		// The one to return
-		return $this->config->destination->id_attach;
 	}
 
 	public function moveAvatar($row, $source, $filename)
@@ -189,6 +60,7 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 				$destination = str_replace($row['basedir'], $elk_avatarg, $row['basedir'] . '/' . $row['filename']);
 				Files::copy_file($row['basedir'] . '/' . $row['filename'], $destination);
 			}
+
 			return false;
 		}
 
@@ -235,18 +107,43 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 
 		return $return;
 	}
-	protected function specialMembers($row)
+
+	public function getAvatarFolderId($row)
 	{
-		// Let's ensure there are no illegal characters.
-		$row['member_name'] = preg_replace('/[<>&"\'=\\\]/is', '', $row['member_name']);
-		$row['real_name'] = trim($row['real_name'], " \t\n\r\x0B\0\xA0");
-
-		if (strpos($row['real_name'], '<') !== false || strpos($row['real_name'], '>') !== false || strpos($row['real_name'], '& ') !== false)
-			$row['real_name'] = htmlspecialchars($row['real_name'], ENT_QUOTES);
+		// @todo in theory we could be able to find the "current" directory
+		if ($this->config->destination->avatarUploadDir === null)
+		{
+			return 1;
+		}
 		else
-			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
+		{
+			return false;
+		}
+	}
 
-		return $row;
+	public function getAvatarDir($row)
+	{
+		return $this->config->destination->getAvatarDir($row);
+	}
+
+	/**
+	 * helper function to create an encrypted attachment name
+	 *
+	 * @param string $filename
+	 *
+	 * @return string
+	 */
+	protected function createAttachmentFilehash($filename)
+	{
+		return sha1(md5($filename . time()) . mt_rand());
+	}
+
+	public function newIdAttach()
+	{
+		$this->config->destination->newMaxIdAttach();
+
+		// The one to return
+		return $this->config->destination->id_attach;
 	}
 
 	/**
@@ -266,6 +163,47 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 			TRUNCATE {$this->config->to_prefix}attachments");
 
 		$this->config->destination->specialAttachments();
+	}
+
+	public function removeAttachments()
+	{
+		$to_prefix = $this->config->to_prefix;
+
+		// !!! This should probably be done in chunks too.
+		// attachment_type = 1 are avatars.
+		$result = $this->db->query("
+			SELECT id_attach, filename, id_folder
+			FROM {$to_prefix}attachments");
+
+		while ($row = $this->db->fetch_assoc($result))
+		{
+			$enc_name = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], false);
+
+			$attach_dir = $this->getAttachDir($row);
+
+			if (file_exists($attach_dir . '/' . $enc_name))
+			{
+				$filename = $attach_dir . '/' . $enc_name;
+			}
+			else
+			{
+				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
+				$clean_name = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach'], true);
+				$filename = $attach_dir . '/' . $clean_name;
+			}
+
+			if (is_file($filename))
+			{
+				@unlink($filename);
+			}
+		}
+
+		$this->db->free_result($result);
+	}
+
+	public function getAttachDir($row)
+	{
+		return $this->config->destination->getAttachDir($row);
 	}
 
 	public function beforeCategories()
@@ -632,5 +570,93 @@ abstract class SmfCommonOriginStep1 extends Step1BaseImporter
 	public function tablePaidsubscriptions()
 	{
 		return '{$to_prefix}subscriptions';
+	}
+
+	protected function createAttachFoldersStructure($folders)
+	{
+		$source_base = $this->guessBase($folders);
+		$destination_base = $this->guessBase($this->config->destination->getAllAttachDirs());
+
+		// No idea where to start, better not mess with the filesystem
+		// Though if $destination_base is empty it *is* a mess.
+		if (empty($source_base) || empty($destination_base))
+		{
+			return false;
+		}
+
+		$dest_folders = str_replace($source_base, $destination_base, $folders);
+
+		// Prepare the directory structure
+		foreach ($dest_folders as $folder)
+		{
+			Files::create_folders_recursive($folder);
+		}
+
+		// Save the new structure in the database
+		$this->db->query("
+			UPDATE {$this->config->to_prefix}settings
+			SET value = '" . serialize($dest_folders) . "'
+			WHERE variable = 'attachmentUploadDir'
+			LIMIT 1");
+
+		// Reload the new directories
+		$this->config->destination->specialAttachments(true);
+	}
+
+	protected function guessBase($folders)
+	{
+		foreach ($folders as $folder)
+		{
+			if ($this->isCommon($folder, $folders))
+			{
+				return $folder;
+			}
+		}
+
+		foreach ($folders as $folder)
+		{
+			$dir = $folder;
+			while (strlen($dir) > 4)
+			{
+				$dir = dirname($dir);
+				if ($this->isCommon($dir, $folders))
+				{
+					return $dir;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	protected function isCommon($dir, $folders)
+	{
+		foreach ($folders as $folder)
+		{
+			if (substr($folder, 0, strlen($dir)) !== $dir)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	protected function specialMembers($row)
+	{
+		// Let's ensure there are no illegal characters.
+		$row['member_name'] = preg_replace('/[<>&"\'=\\\]/is', '', $row['member_name']);
+		$row['real_name'] = trim($row['real_name'], " \t\n\r\x0B\0\xA0");
+
+		if (strpos($row['real_name'], '<') !== false || strpos($row['real_name'], '>') !== false || strpos($row['real_name'], '& ') !== false)
+		{
+			$row['real_name'] = htmlspecialchars($row['real_name'], ENT_QUOTES);
+		}
+		else
+		{
+			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
+		}
+
+		return $row;
 	}
 }

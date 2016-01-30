@@ -9,26 +9,26 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Core;
 
 class ProgressTracker
 {
-	protected $start_time = 0;
-	protected $stop_time = 5;
-	protected $response = null;
-	protected $config = null;
 	public $current_step = 0;
-	protected $do_not_stop = false;
-	protected $do_steps = null;
-	protected $steps_collection = array();
 	public $start = 0;
 	public $max = 0;
 	public $substep = 0;
 	public $store = array();
+	protected $start_time = 0;
+	protected $stop_time = 5;
+	protected $response = null;
+	protected $config = null;
+	protected $do_not_stop = false;
+	protected $do_steps = null;
+	protected $steps_collection = array();
 
 	public function __construct(HttpResponse $response, Configurator $config, $options)
 	{
@@ -45,7 +45,9 @@ class ProgressTracker
 
 			// This condition covers the case of stop_time set externally to 0
 			if (empty($real))
+			{
 				$real = $val;
+			}
 
 			$this->{$key} = $real;
 		}
@@ -63,7 +65,9 @@ class ProgressTracker
 	public function doStepsDefined()
 	{
 		if (empty($this->do_steps) && !empty($this->config->store['do_steps']))
+		{
 			$this->do_steps = $this->config->store['do_steps'];
+		}
 
 		return $this->do_steps !== null;
 	}
@@ -103,15 +107,10 @@ class ProgressTracker
 		return !empty($this->do_steps) && !in_array($step, $this->do_steps);
 	}
 
-	protected function initBar($start = 0, $substep = 0)
+	public function stepCompleted()
 	{
-		// some details for our progress bar
-		if (isset($this->steps_collection[$substep]) && $this->steps_collection[$substep] > 0 && $start > 0 && isset($substep))
-			$bar = round($start / $this->steps_collection[$substep] * 100, 0);
-		else
-			$bar = false;
-
-		return $bar;
+		$this->start = 0;
+		$this->steps_collection[$this->current_step]['completed'] = true;
 	}
 
 	public function resetStep()
@@ -122,12 +121,6 @@ class ProgressTracker
 	public function isStepCompleted()
 	{
 		return isset($this->steps_collection[$this->current_step]) && $this->steps_collection[$this->current_step]['completed'];
-	}
-
-	public function stepCompleted()
-	{
-		$this->start = 0;
-		$this->steps_collection[$this->current_step]['completed'] = true;
 	}
 
 	public function isPreSqlDone()
@@ -144,6 +137,8 @@ class ProgressTracker
 	 * Checks if we've passed a time limit..
 	 *
 	 * @param int|null $substep
+	 * @throws PasttimeException
+	 *
 	 * @return null
 	 */
 	public function pastTime($substep = null)
@@ -155,12 +150,31 @@ class ProgressTracker
 
 		@set_time_limit(300);
 		if (is_callable('apache_reset_timeout'))
+		{
 			apache_reset_timeout();
+		}
 
 		if (time() - $this->start_time < $this->stop_time || $this->do_not_stop)
+		{
 			return;
+		}
 
 		throw new PasttimeException($bar, $this->start, $this->max, $this->current_step, $this->start);
+	}
+
+	protected function initBar($start = 0, $substep = 0)
+	{
+		// some details for our progress bar
+		if (isset($this->steps_collection[$substep]) && $this->steps_collection[$substep] > 0 && $start > 0 && isset($substep))
+		{
+			$bar = round($start / $this->steps_collection[$substep] * 100, 0);
+		}
+		else
+		{
+			$bar = false;
+		}
+
+		return $bar;
 	}
 
 	protected function store()
@@ -171,7 +185,9 @@ class ProgressTracker
 	public function advanceSubstep($substep, $title)
 	{
 		if ($this->steps_collection[$this->current_step]['status'] == 0)
+		{
 			$this->response->status(1, $title);
+		}
 
 		$this->steps_collection[$this->current_step]['status'] = 1;
 		$this->steps_collection[$this->current_step]['substep'] += $substep;

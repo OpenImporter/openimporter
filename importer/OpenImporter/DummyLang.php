@@ -10,15 +10,18 @@
 namespace OpenImporter\Core;
 
 /**
- * Class DummyLang replaces the Lang class if something bad happens,
- * for example if the XML file is not properly formatted or if the directory
- * is wrong
+ * Class DummyLang
+ * Replaces the Lang class if something bad happens, for example if the XML
+ * file is not properly formatted or if the directory is wrong
+ *
+ * @package OpenImporter\Core
  */
 class DummyLang extends Lang
 {
 	/**
 	 * Intercepts loading of xml file.
 	 *
+	 * @param string $path
 	 * @return null
 	 */
 	public function loadLang($path)
@@ -30,6 +33,7 @@ class DummyLang extends Lang
 	 * Tests if given $key exists in lang
 	 *
 	 * @param string $key
+	 *
 	 * @return bool
 	 */
 	public function has($key)
@@ -41,6 +45,7 @@ class DummyLang extends Lang
 	 * Returns the specified $key.
 	 *
 	 * @param string $key Name of the variable
+	 *
 	 * @return string|null Value of the specified $key
 	 */
 	public function __get($key)
@@ -52,6 +57,7 @@ class DummyLang extends Lang
 	 * Returns the specified $key.
 	 *
 	 * @param string $key Name of the variable
+	 *
 	 * @return string|null Value of the specified $key
 	 */
 	public function get($key)

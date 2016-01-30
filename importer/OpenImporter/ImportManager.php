@@ -10,7 +10,8 @@
 namespace OpenImporter\Core;
 
 /**
- * Object ImportManager loads the main importer.
+ * Class ImportManager
+ * Loads the main importer.
  * It handles all steps to completion.
  */
 class ImportManager
@@ -29,6 +30,13 @@ class ImportManager
 	public $config;
 
 	/**
+	 * Data used by the script and stored in session between a reload and the
+	 * following one.
+	 * @var mixed[]
+	 */
+	public $data = array();
+
+	/**
 	 * The response object.
 	 * @var object
 	 */
@@ -41,14 +49,12 @@ class ImportManager
 	protected $lng;
 
 	/**
-	 * Data used by the script and stored in session between a reload and the
-	 * following one.
-	 * @var mixed[]
-	 */
-	public $data = array();
-
-	/**
-	 * initialize the main Importer object
+	 * ImportManager constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Configurator $config
+	 * @param Importer $importer
+	 * @param HttpResponse $response
 	 */
 	public function __construct(Configurator $config, Importer $importer, HttpResponse $response)
 	{
@@ -59,15 +65,48 @@ class ImportManager
 		$this->loadFromSession();
 
 		if (!empty($_POST['do_steps']))
+		{
 			$this->data['do_steps'] = $_POST['do_steps'];
+		}
 		else
+		{
 			$this->data['do_steps'] = array();
+		}
 
 		if ($this->config->action == 'reset')
 		{
 			$this->resetImporter();
 			$this->data = array('import_script' => '');
 		}
+	}
+
+	protected function loadFromSession()
+	{
+		if (isset($_REQUEST['start']))
+		{
+			$this->config->progress->start = (int) $_REQUEST['start'];
+		}
+		else
+		{
+			$this->config->progress->start = 0;
+		}
+
+		if (!empty($_SESSION['importer_data']))
+		{
+			$this->data = $_SESSION['importer_data'];
+		}
+
+		if (!empty($_SESSION['importer_progress_status']))
+		{
+			$this->config->store = new ValuesBag($_SESSION['importer_progress_status']);
+		}
+	}
+
+	protected function resetImporter()
+	{
+		unset($this->config->store['importer_data']);
+		unset($this->config->store['importer_progress_status']);
+		unset($this->config->store['import_progress']);
 	}
 
 	public function setupScripts($data)
@@ -82,56 +121,6 @@ class ImportManager
 		{
 			$this->importer->reloadImporter();
 		}
-	}
-
-	public function __destruct()
-	{
-		$this->saveInSession();
-	}
-
-	protected function loadPass($data)
-	{
-		// Check for the password...
-		if (isset($data['db_pass']))
-			$this->data['db_pass'] = $data['db_pass'];
-	}
-
-	protected function loadPaths($data)
-	{
-		if (isset($data['path_from']) || isset($data['path_to']))
-		{
-			if (isset($data['path_from']))
-				$this->config->path_from = rtrim($data['path_from'], '\\/');
-			if (isset($data['path_to']))
-				$this->config->path_to = rtrim($data['path_to'], '\\/');
-
-			$this->data['import_paths'] = array($this->config->path_from, $this->config->path_to);
-		}
-		elseif (isset($this->data['import_paths']))
-			list ($this->config->path_from, $this->config->path_to) = $this->data['import_paths'];
-
-		if (!empty($this->data))
-			$this->importer->setData($this->data);
-	}
-
-	protected function loadFromSession()
-	{
-		if (isset($_REQUEST['start']))
-			$this->config->progress->start = (int) $_REQUEST['start'];
-		else
-			$this->config->progress->start = 0;
-
-		if (!empty($_SESSION['importer_data']))
-			$this->data = $_SESSION['importer_data'];
-
-		if (!empty($_SESSION['importer_progress_status']))
-			$this->config->store = new ValuesBag($_SESSION['importer_progress_status']);
-	}
-
-	protected function saveInSession()
-	{
-		$_SESSION['importer_data'] = $this->data;
-		$_SESSION['importer_progress_status'] = $this->config->store;
 	}
 
 	/**
@@ -159,7 +148,100 @@ class ImportManager
 	}
 
 	/**
+	 * Verifies the scripts exist.
+	 *
+	 * @param string[] $scripts Destination and source script in an associative
+	 *   array:
+	 *   	array(
+	 *      	'destination' => 'destination_name.php',
+	 *          'source' => 'source_name.xml',
+	 *       )
+	 *
+	 * @return bool|mixed[]
+	 */
+	protected function validateScript($scripts)
+	{
+		$return = array();
+
+		foreach ((array) $scripts as $key => $script)
+		{
+			$script = preg_replace('~[\.]+~', '.', $script);
+			$key = preg_replace('~[\.]+~', '.', $key);
+
+			if ($key === 'source')
+			{
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_Importer\.(xml|php)$~', $script) == 0)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script . DS . 'Importer.php'))
+				{
+					return false;
+				}
+			}
+
+			$return[$key] = $script;
+		}
+
+		return $return;
+	}
+
+	protected function loadPass($data)
+	{
+		// Check for the password...
+		if (isset($data['db_pass']))
+		{
+			$this->data['db_pass'] = $data['db_pass'];
+		}
+	}
+
+	protected function loadPaths($data)
+	{
+		if (isset($data['path_from']) || isset($data['path_to']))
+		{
+			if (isset($data['path_from']))
+			{
+				$this->config->path_from = rtrim($data['path_from'], '\\/');
+			}
+
+			if (isset($data['path_to']))
+			{
+				$this->config->path_to = rtrim($data['path_to'], '\\/');
+			}
+
+			$this->data['import_paths'] = array($this->config->path_from, $this->config->path_to);
+		}
+		elseif (isset($this->data['import_paths']))
+		{
+			list ($this->config->path_from, $this->config->path_to) = $this->data['import_paths'];
+		}
+
+		if (!empty($this->data))
+		{
+			$this->importer->setData($this->data);
+		}
+	}
+
+	public function __destruct()
+	{
+		$this->saveInSession();
+	}
+
+	protected function saveInSession()
+	{
+		$_SESSION['importer_data'] = $this->data;
+		$_SESSION['importer_progress_status'] = $this->config->store;
+	}
+
+	/**
 	 * Prepares the response to send to the template system
+	 *
+	 * @param $data
+	 *
+	 * @return object|HttpResponse
 	 */
 	public function process($data)
 	{
@@ -185,9 +267,13 @@ class ImportManager
 			default:
 				$this->response->is_page = true;
 				if (method_exists($this, 'doStep' . $this->config->progress->step))
+				{
 					call_user_func(array($this, 'doStep' . $this->config->progress->step));
+				}
 				else
+				{
 					$this->doStep0();
+				}
 		}
 
 		$this->populateResponseDetails();
@@ -195,32 +281,16 @@ class ImportManager
 		return $this->response;
 	}
 
-	protected function validateFields($data)
-	{
-		$this->detectScripts();
-
-		$this->importer->reloadImporter();
-
-		if (isset($data['path_to']))
-		{
-			$this->response->valid = $this->config->destination->testPath($data['path_to']);
-		}
-		elseif (isset($data['path_from']))
-		{
-			$this->response->valid = $this->config->source->loadSettings($data['path_from'], true);
-		}
-		else
-		{
-			$this->response->valid = false;
-		}
-	}
-
 	public function populateResponseDetails()
 	{
 		if (isset($this->importer->xml->general->name) && isset($this->importer->config->destination->scriptname))
+		{
 			$this->response->page_title = $this->importer->xml->general->name . ' ' . $this->response->lng->to . ' ' . $this->importer->config->destination->scriptname;
+		}
 		else
+		{
 			$this->response->page_title = 'OpenImporter';
+		}
 
 		$this->response->source = !empty($this->response->script['source']) ? addslashes($this->response->script['source']) : '';
 		$this->response->destination = !empty($this->response->script['destination']) ? addslashes($this->response->script['destination']) : '';
@@ -242,43 +312,30 @@ class ImportManager
 
 		@unlink(__FILE__);
 		if (preg_match('~_importer\.xml$~', $this->data['import_script']) != 0)
+		{
 			@unlink(BASEDIR . DS . $this->data['import_script']);
+		}
 		$this->data['import_script'] = null;
 	}
 
-	/**
-	 * Verifies the scripts exist.
-	 * @param string[] $scripts Destination and source script in an associative
-	 *                 array:
-	 *                   array(
-	 *                     'destination' => 'destination_name.php',
-	 *                     'source' => 'source_name.xml',
-	 *                   )
-	 */
-	protected function validateScript($scripts)
+	protected function validateFields($data)
 	{
-		$return = array();
+		$this->detectScripts();
 
-		foreach ((array) $scripts as $key => $script)
+		$this->importer->reloadImporter();
+
+		if (isset($data['path_to']))
 		{
-			$script = preg_replace('~[\.]+~', '.', $script);
-			$key = preg_replace('~[\.]+~', '.', $key);
-
-			if ($key === 'source')
-			{
-				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script) || preg_match('~_Importer\.(xml|php)$~', $script) == 0)
-					return false;
-			}
-			else
-			{
-				if (!file_exists($this->config->importers_dir . DS . $key . 's' . DS . $script . DS . 'Importer.php'))
-					return false;
-			}
-
-			$return[$key] = $script;
+			$this->response->valid = $this->config->destination->testPath($data['path_to']);
 		}
-
-		return $return;
+		elseif (isset($data['path_from']))
+		{
+			$this->response->valid = $this->config->source->loadSettings($data['path_from'], true);
+		}
+		else
+		{
+			$this->response->valid = false;
+		}
 	}
 
 	/**
@@ -319,41 +376,6 @@ class ImportManager
 	}
 
 	/**
-	 * Simply scans the Importers/sources directory looking for source
-	 * files.
-	 *
-	 * @return string[]
-	 */
-	protected function findSources()
-	{
-		$scripts = array();
-
-		// Silence simplexml errors
-		libxml_use_internal_errors(true);
-		$iterator = new \GlobIterator($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml');
-		foreach ($iterator as $entry)
-		{
-			// If a script is broken simply skip it.
-			if (!$xmlObj = simplexml_load_file($entry->getPathname(), 'SimpleXMLElement', LIBXML_NOCDATA))
-			{
-				continue;
-			}
-			$file_name = $entry->getBasename();
-
-			$scripts[$file_name] = array(
-				'path' => $file_name,
-				'name' => (string) $xmlObj->general->name
-			);
-		}
-
-		usort($scripts, function ($v1, $v2) {
-			return strcasecmp($v1['name'], $v2['name']);
-		});
-
-		return $scripts;
-	}
-
-	/**
 	 * Simply scans the Importers/destinations directory looking for destination
 	 * files.
 	 *
@@ -362,6 +384,7 @@ class ImportManager
 	protected function findDestinations()
 	{
 		$destinations = array();
+
 		$iterator = new \GlobIterator($this->config->importers_dir . DS . 'destinations' . DS . '*', GLOB_ONLYDIR);
 		foreach ($iterator as $possible_dir)
 		{
@@ -381,7 +404,43 @@ class ImportManager
 	}
 
 	/**
-	 * collects all the important things, the importer can't do anything
+	 * Simply scans the Importers/sources directory looking for source files.
+	 *
+	 * @return string[]
+	 */
+	protected function findSources()
+	{
+		$scripts = array();
+
+		// Silence simplexml errors
+		libxml_use_internal_errors(true);
+		$iterator = new \GlobIterator($this->config->importers_dir . DS . 'sources' . DS . '*_Importer.xml');
+		foreach ($iterator as $entry)
+		{
+			// If a script is broken simply skip it.
+			if (!$xmlObj = simplexml_load_file($entry->getPathname(), 'SimpleXMLElement', LIBXML_NOCDATA))
+			{
+				continue;
+			}
+
+			$file_name = $entry->getBasename();
+
+			$scripts[$file_name] = array(
+				'path' => $file_name,
+				'name' => (string) $xmlObj->general->name
+			);
+		}
+
+		usort($scripts, function ($v1, $v2)
+		{
+			return strcasecmp($v1['name'], $v2['name']);
+		});
+
+		return $scripts;
+	}
+
+	/**
+	 * Collects all the important things, the importer can't do anything
 	 * without this information.
 	 *
 	 * @return boolean|null
@@ -392,13 +451,15 @@ class ImportManager
 		$this->resetImporter();
 
 		if ($this->detectScripts())
+		{
 			return true;
+		}
 
 		try
 		{
 			$this->importer->reloadImporter();
 		}
-		catch(Exception $e)
+		catch (Exception $e)
 		{
 			$this->response->template_error = true;
 			$this->response->addErrorParam($e->getMessage());
@@ -407,7 +468,9 @@ class ImportManager
 		$this->response->source_name = (string) $this->importer->xml->general->name;
 		$this->response->destination_name = (string) $this->config->destination->scriptname;
 		if (($this->response->template_error && $this->response->noTemplates()) || empty($this->response->template_error))
+		{
 			$this->response->addTemplate('step0', array('form' => $this->getFormStructure()));
+		}
 
 		return;
 	}
@@ -430,7 +493,7 @@ class ImportManager
 	}
 
 	/**
-	 * the important one, transfer the content from the source forum to our
+	 * The important one, transfer the content from the source forum to our
 	 * destination system
 	 *
 	 * @throws \Exception
@@ -475,20 +538,26 @@ class ImportManager
 		// @todo $_GET and $_REQUEST
 		// Get the query string so we pass everything.
 		if (isset($_REQUEST['start']))
+		{
 			$_GET['start'] = $_REQUEST['start'];
+		}
 
 		$query_string = '';
 		foreach ($_GET as $k => $v)
+		{
 			$query_string .= '&' . $k . '=' . $v;
+		}
 
 		if (strlen($query_string) != 0)
+		{
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
+		}
 
 		return $query_string;
 	}
 
 	/**
-	 * we have imported the old database, let's recalculate the forum statistics.
+	 * We have imported the old database, let's recalculate the forum statistics.
 	 *
 	 * @throws \Exception
 	 * @return boolean
@@ -516,13 +585,6 @@ class ImportManager
 		$this->response->status(1, $this->response->lng->get('recalculate'));
 
 		return $this->doStep3();
-	}
-
-	protected function resetImporter()
-	{
-		unset($this->config->store['importer_data']);
-		unset($this->config->store['importer_progress_status']);
-		unset($this->config->store['import_progress']);
 	}
 
 	/**

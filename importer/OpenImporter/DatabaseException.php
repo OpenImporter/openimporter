@@ -10,8 +10,10 @@
 namespace OpenImporter\Core;
 
 /**
- * class DatabaseException extends the build-in Exception class and
- * catches potential errors
+ * Class DatabaseException
+ * extends the build-in Exception class and catches potential errors
+ *
+ * @package OpenImporter\Core
  */
 class DatabaseException extends \Exception
 {
