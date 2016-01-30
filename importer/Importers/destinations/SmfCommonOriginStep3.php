@@ -9,12 +9,17 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Importers\destinations;
 
+/**
+ * Class SmfCommonOriginStep3
+ *
+ * @package OpenImporter\Importers\destinations
+ */
 abstract class SmfCommonOriginStep3 extends Step3BaseImporter
 {
 	public function run($import_script)

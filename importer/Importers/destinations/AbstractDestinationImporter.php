@@ -10,11 +10,14 @@
 namespace OpenImporter\Importers\destinations;
 
 /**
+ * Class AbstractDestinationImporter
  * This abstract class is the base for any php destination file.
  *
  * It provides some common necessary methods and some default properties
- * so that Importer can do its job without having to test for existinance
+ * so that Importer can do its job without having to test for existence
  * of methods every two/three lines of code.
+ *
+ * @package OpenImporter\Importers\destinations
  */
 abstract class AbstractDestinationImporter implements DestinationImporterInterface
 {
@@ -23,6 +26,7 @@ abstract class AbstractDestinationImporter implements DestinationImporterInterfa
 	protected $path = null;
 
 	protected $db = null;
+
 	protected $config = null;
 
 	public function setUtils($db, $config)
@@ -48,7 +52,9 @@ abstract class AbstractDestinationImporter implements DestinationImporterInterfa
 		$found = file_exists($path . $this->setting_file);
 
 		if ($found && $this->path === null)
+		{
 			$this->path = $path;
+		}
 
 		return $found;
 	}
@@ -58,7 +64,9 @@ abstract class AbstractDestinationImporter implements DestinationImporterInterfa
 		static $content = null;
 
 		if ($content === null)
+		{
 			$content = file_get_contents($this->path . $this->setting_file);
+		}
 
 		return $content;
 	}

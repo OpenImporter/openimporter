@@ -9,28 +9,39 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Core;
 
+/**
+ * Class Strings
+ *
+ * @package OpenImporter\Core
+ */
 class Strings
 {
 	/**
 	 * // Add slashes recursively...
 	 *
 	 * @param array $var
+	 *
 	 * @return array
 	 */
 	public static function addslashes_recursive($var)
 	{
 		if (!is_array($var))
+		{
 			return addslashes($var);
+		}
 		else
 		{
 			foreach ($var as $k => $v)
+			{
 				$var[$k] = Strings::addslashes_recursive($v);
+			}
+
 			return $var;
 		}
 	}
@@ -39,19 +50,24 @@ class Strings
 	 * Remove slashes recursively...
 	 *
 	 * @param array $var
+	 *
 	 * @return array
 	 */
 	public static function stripslashes_recursive($var, $level = 0)
 	{
 		if (!is_array($var))
+		{
 			return stripslashes($var);
+		}
 
 		// Reindex the array without slashes, this time.
 		$new_var = array();
 
 		// Strip the slashes from every element.
 		foreach ($var as $k => $v)
+		{
 			$new_var[stripslashes($k)] = $level > 25 ? null : Strings::stripslashes_recursive($v, $level + 1);
+		}
 
 		return $new_var;
 	}
@@ -60,7 +76,9 @@ class Strings
 	 * @todo apparently unused
 	 *
 	 * detects, if a string is utf-8 or not
+	 *
 	 * @param type $string
+	 *
 	 * @return boolean
 	 */
 	public static function is_utf8($string)
@@ -86,7 +104,9 @@ class Strings
 	 * 3) when any of these: ðñòó  are followed by THREE chars from group B.
 	 *
 	 * @name fix
-	 * @param string|string[] $text  Any string.
+	 *
+	 * @param string|string[] $text Any string.
+	 *
 	 * @return string  The same string, UTF8 encoded
 	 */
 	public static function fix_charset($text)
@@ -94,12 +114,18 @@ class Strings
 		if (is_array($text))
 		{
 			foreach ($text as $k => $v)
+			{
 				$text[$k] = Strings::fix_charset($v);
+			}
+
 			return $text;
 		}
+
 		// numeric? There's nothing to do, we simply return our input.
 		if (is_numeric($text))
+		{
 			return $text;
+		}
 
 		$max = strlen($text);
 		$buf = '';
@@ -110,9 +136,9 @@ class Strings
 			if ($c1 >= "\xc0")
 			{
 				// Should be converted to UTF8, if it's not UTF8 already
-				$c2 = $i+1 >= $max? "\x00" : $text{$i+1};
-				$c3 = $i+2 >= $max? "\x00" : $text{$i+2};
-				$c4 = $i+3 >= $max? "\x00" : $text{$i+3};
+				$c2 = $i + 1 >= $max ? "\x00" : $text{$i + 1};
+				$c3 = $i + 2 >= $max ? "\x00" : $text{$i + 2};
+				$c4 = $i + 3 >= $max ? "\x00" : $text{$i + 3};
 				if ($c1 >= "\xc0" & $c1 <= "\xdf")
 				{
 					// looks like 2 bytes UTF8
@@ -179,12 +205,17 @@ class Strings
 				$cc2 = (($c1 & "\x3f") | "\x80");
 				$buf .= $cc1 . $cc2;
 			}
+			// Doesn't need conversion
 			else
-				// Doesn't need conversion
+			{
 				$buf .= $c1;
+			}
 		}
+
 		if (function_exists('mb_decode_numericentity'))
+		{
 			$buf = mb_decode_numericentity($buf, array(0x80, 0x2ffff, 0, 0xffff), 'UTF-8');
+		}
 		else
 		{
 			preg_replace_callback('~(&#(\d{1,7}|x[0-9a-fA-F]{1,6});)~', 'Strings::replaceEntities__callback', $buf);
@@ -203,38 +234,55 @@ class Strings
 	 * - Does basic scan to ensure characters are inside a valid range
 	 *
 	 * @param mixed[] $matches matches from a preg_match_all
+	 *
 	 * @return string $string
 	 */
 	public static function replaceEntities__callback($matches)
 	{
 		if (!isset($matches[2]))
+		{
 			return '';
+		}
 
 		$num = $matches[2][0] === 'x' ? hexdec(substr($matches[2], 1)) : (int) $matches[2];
 
 		// remove left to right / right to left overrides
 		if ($num === 0x202D || $num === 0x202E)
+		{
 			return '';
+		}
 
 		// Quote, Ampersand, Apostrophe, Less/Greater Than get html replaced
 		if (in_array($num, array(0x22, 0x26, 0x27, 0x3C, 0x3E)))
+		{
 			return '&#' . $num . ';';
+		}
 
 		// <0x20 are control characters, 0x20 is a space, > 0x10FFFF is past the end of the utf8 character set
 		// 0xD800 >= $num <= 0xDFFF are surrogate markers (not valid for utf8 text)
 		if ($num < 0x20 || $num > 0x10FFFF || ($num >= 0xD800 && $num <= 0xDFFF))
+		{
 			return '';
+		}
 		// <0x80 (or less than 128) are standard ascii characters a-z A-Z 0-9 and puncuation
 		elseif ($num < 0x80)
+		{
 			return chr($num);
+		}
 		// <0x800 (2048)
 		elseif ($num < 0x800)
+		{
 			return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+		}
 		// < 0x10000 (65536)
 		elseif ($num < 0x10000)
+		{
 			return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+		}
 		// <= 0x10FFFF (1114111)
 		else
+		{
 			return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+		}
 	}
 }

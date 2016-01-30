@@ -9,33 +9,24 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Core;
 
+// @todo needed?
 use OpenImporter\Core\Strings;
 
 /**
+ * Class XmlProcessor
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
  *
+ * @package OpenImporter\Core
  */
 class XmlProcessor
 {
-	/**
-	 * This is the database object of the destination system.
-	 * @var object
-	 */
-	protected $db;
-
-	/**
-	 * This is the database object of the source system.
-	 * @var object
-	 */
-	protected $source_db;
-
 	/**
 	 * Contains any kind of configuration.
 	 * @var object
@@ -74,7 +65,25 @@ class XmlProcessor
 	public $completed;
 
 	/**
-	 * initialize the main Importer object
+	 * This is the database object of the destination system.
+	 * @var object
+	 */
+	protected $db;
+
+	/**
+	 * This is the database object of the source system.
+	 * @var object
+	 */
+	protected $source_db;
+
+	/**
+	 * XmlProcessor constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Database $db
+	 * @param Database $source_db
+	 * @param Configurator $config
+	 * @param \SimpleXMLElement $xml
 	 */
 	public function __construct(Database $db, Database $source_db, Configurator $config, \SimpleXMLElement $xml)
 	{
@@ -105,6 +114,7 @@ class XmlProcessor
 		{
 			// @todo consider delegate the complete definition to some code in the source importer
 			$this->completed = true;
+
 			return $from_code;
 		}
 		// sql block?
@@ -116,14 +126,18 @@ class XmlProcessor
 		return array();
 	}
 
-	public function getStepTable($id)
+	protected function doCode()
 	{
-		return strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
-	}
+		$id = ucFirst($this->current_step['id']);
 
-	public function processDestination($id, $rows)
-	{
-		return $this->step1_importer->callMethod('preparse' . $id, $rows);
+		$rows = $this->config->source->callMethod('code' . $id);
+
+		if (!empty($rows))
+		{
+			return $rows;
+		}
+
+		return false;
 	}
 
 	protected function doSql()
@@ -153,15 +167,11 @@ class XmlProcessor
 		return $rows;
 	}
 
-	public function stillRunning()
-	{
-		return empty($this->completed);
-	}
-
 	/**
-	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
+	 * Used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
 	 * @param string string in which parameters are replaced
+	 *
 	 * @return string
 	 */
 	protected function fixParams($string)
@@ -176,17 +186,46 @@ class XmlProcessor
 		return $string;
 	}
 
+	protected function prepareSpecialResult($current_data, $special_limit)
+	{
+		$start = $this->config->progress->start;
+		$stop = $this->config->progress->start + $special_limit - 1;
+
+		if (strpos($current_data, '%d') !== false)
+		{
+			return $this->source_db->query(sprintf($current_data, $start, $stop) . "\n" . 'LIMIT ' . $special_limit);
+		}
+		else
+		{
+			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $start . ', ' . $special_limit);
+		}
+
+	}
+
+	public function processDestination($id, $rows)
+	{
+		return $this->step1_importer->callMethod('preparse' . $id, $rows);
+	}
+
+	public function stillRunning()
+	{
+		return empty($this->completed);
+	}
+
 	/**
 	 * Counts the records in a table of the source database
 	 * @todo move to ProgressTracker
 	 *
 	 * @param object $step
+	 *
 	 * @return bool|int the number of records in the table
 	 */
 	public function getCurrent($step)
 	{
 		if (!isset($step->detect))
+		{
 			return false;
+		}
 
 		$table = $this->fixParams((string) $step->detect);
 
@@ -194,7 +233,6 @@ class XmlProcessor
 		$request = $this->source_db->query("
 			SELECT COUNT(*)
 			FROM $count", true);
-
 		$current = 0;
 		if (!empty($request))
 		{
@@ -208,33 +246,23 @@ class XmlProcessor
 	public function doPreSqlStep($id)
 	{
 		if ($this->config->progress->isPreSqlDone())
+		{
 			return;
+		}
 
 		$this->step1_importer->callMethod('before' . ucFirst($id));
 		$this->config->source->callMethod('before' . ucFirst($id));
 
-		// don't do this twice..
+		// Don't do this twice..
 		$this->config->progress->preSqlDone();
-	}
-
-	protected function doCode()
-	{
-		$id = ucFirst($this->current_step['id']);
-
-		$rows = $this->config->source->callMethod('code' . $id);
-
-		if (!empty($rows))
-		{
-			return $rows;
-		}
-
-		return false;
 	}
 
 	public function detect($step)
 	{
 		if (!isset($step->detect))
+		{
 			return false;
+		}
 
 		$table = $this->fixParams((string) $step->detect);
 		$table = preg_replace('/^`[\w\d_\-]*`\./i', '', $this->fixParams($table));
@@ -247,9 +275,13 @@ class XmlProcessor
 			LIKE '{$table}'");
 
 		if (!($result instanceof \Doctrine\DBAL\Driver\Statement) || $this->db->num_rows($result) == 0)
+		{
 			return false;
+		}
 		else
+		{
 			return true;
+		}
 	}
 
 	public function insertRows($rows)
@@ -257,7 +289,9 @@ class XmlProcessor
 		$special_table = $this->getStepTable($this->current_step['id']);
 
 		if (empty($rows) || empty($special_table))
+		{
 			return;
+		}
 
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
@@ -265,16 +299,41 @@ class XmlProcessor
 		foreach ($rows as $row)
 		{
 			if (empty($ignore_slashes))
+			{
 				$row = Strings::addslashes_recursive($row);
+			}
 
 			$this->db->insert($special_table, $row, $insert_statement);
+		}
+	}
+
+	public function getStepTable($id)
+	{
+		return strtr(trim((string) $this->step1_importer->callMethod('table' . $id)), array('{$to_prefix}' => $this->config->to_prefix));
+	}
+
+	protected function insertStatement($options)
+	{
+		if ($this->shouldIgnore($options))
+		{
+			return 'ignore';
+		}
+		elseif ($this->shouldReplace($options))
+		{
+			return 'replace';
+		}
+		else
+		{
+			return 'insert';
 		}
 	}
 
 	protected function shouldIgnore($options)
 	{
 		if (isset($options->ignore) && (bool) $options->ignore === false)
+		{
 			return false;
+		}
 
 		return isset($options->ignore) && !isset($options->replace);
 	}
@@ -287,29 +346,5 @@ class XmlProcessor
 	protected function ignoreSlashes($options)
 	{
 		return isset($options->ignore_slashes) && (bool) $options->ignore_slashes === true;
-	}
-
-	protected function insertStatement($options)
-	{
-		if ($this->shouldIgnore($options))
-			return 'ignore';
-		elseif ($this->shouldReplace($options))
-			return 'replace';
-		else
-			return 'insert';
-	}
-
-	protected function prepareSpecialResult($current_data, $special_limit)
-	{
-		$start = $this->config->progress->start;
-		$stop = $this->config->progress->start + $special_limit - 1;
-
-		if (strpos($current_data, '%d') !== false)
-			return $this->source_db->query(sprintf($current_data, $start, $stop) . "\n" . 'LIMIT ' . $special_limit);
-		else
-		{
-			return $this->source_db->query($current_data . "\n" . 'LIMIT ' . $start . ', ' . $special_limit);
-		}
-
 	}
 }

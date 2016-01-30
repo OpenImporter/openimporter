@@ -9,22 +9,29 @@
 
 namespace OpenImporter\Core;
 
+// @todo I don't think the next 5 are ever used?
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\Exception\DriverException;
+
+use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Exception;
 
 /**
- * The database class.
+ * Class Database
  *
  * This class provides an easy wrapper around the common database
  * functions we work with.
+ *
+ * @package OpenImporter\Core
  */
 class Database
 {
 	/**
 	 * The database connection
-	 * @var Doctrine\DBAL\Connection
+	 * @var \Doctrine\DBAL\Connection
 	 */
 	protected $con;
 
@@ -50,12 +57,15 @@ class Database
 	 *
 	 * @param string $string
 	 * @param bool $allow_second_try
+	 *
 	 * @return \Doctrine\DBAL\Driver\Statement
 	 */
 	public function query($string, $allow_second_try = false)
 	{
 		if (substr($string, -1, 1) !== ';')
+		{
 			$string .= ';';
+		}
 
 		try
 		{
@@ -70,7 +80,39 @@ class Database
 	}
 
 	/**
-	 * Returns the code of last error occurrend with the current connection.
+	 * Analyze and sends an error.
+	 *
+	 * @param string $string
+	 * @param bool $allow_second_try
+	 *
+	 * @throws DatabaseException If a SQL fails
+	 * @return string
+	 */
+	protected function sendError($string, $allow_second_try)
+	{
+		$error = $this->con->errorInfo();
+		$errno = $this->con->errorCode();
+
+		// @todo MySQL specific errors, check Doctrine DBAL documentation
+		// 1016: Can't open file '....MYI'
+		// 2013: Lost connection to server during query.
+		if (in_array($errno, array(1016, 2013)) && $allow_second_try)
+		{
+			// Try to repair the table and run the query again.
+			if ($errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $error[2], $match) != 0 && !empty($match[1]))
+			{
+				$this->con->query("
+					REPAIR TABLE $match[1]");
+			}
+
+			return $this->query($string, false);
+		}
+
+		throw new DatabaseException(nl2br(htmlspecialchars(trim($string))), nl2br(htmlspecialchars($error[2])));
+	}
+
+	/**
+	 * Returns the code of last error that occurred with the current connection.
 	 *
 	 * @return string
 	 */
@@ -85,16 +127,22 @@ class Database
 	 * @param string $table The table name
 	 * @param mixed[] $data The array of data
 	 * @param string $type The way the data are going to be inserted
-	 *                 update/replace/ignore/anything
+	 *  update/replace/ignore/anything
 	 */
 	public function insert($table, $data, $type)
 	{
 		if ($type === 'update' || $type === 'replace')
+		{
 			$this->con->update($table, $data, $data);
+		}
 		elseif ($type === 'ignore')
+		{
 			$this->insertIgnore($table, $data);
+		}
 		else
+		{
 			$this->con->insert($table, $data);
+		}
 	}
 
 	/**
@@ -102,6 +150,7 @@ class Database
 	 *
 	 * @param string $table The table name
 	 * @param mixed[] $data The array of data
+	 *
 	 * @throws \Exception in case something is wrong
 	 */
 	public function insertIgnore($table, $data)
@@ -110,7 +159,7 @@ class Database
 		{
 			$this->con->insert($table, $data);
 		}
-		catch (ConstraintViolationException $e)
+		catch (Exception\ConstraintViolationException $e)
 		{
 			return;
 		}
@@ -118,35 +167,6 @@ class Database
 		{
 			throw $e;
 		}
-	}
-
-	/**
-	 * Analyze and sends an error.
-	 *
-	 * @param string $string
-	 * @param bool $allow_second_try
-	 * @throws DatabaseException If a SQL fails
-	 * @return type
-	 */
-	protected function sendError($string, $allow_second_try)
-	{
-		$error = $this->con->errorInfo();
-		$errno = $this->con->errorCode();
-
-		// @todo MySQL specific errors, check Doctrine DBAL documentation
-		// 1016: Can't open file '....MYI'
-		// 2013: Lost connection to server during query.
-		if (in_array($errno, array(1016, 2013)) && $allow_second_try)
-		{
-			// Try to repair the table and run the query again.
-			if ($errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $error[2], $match) != 0 && !empty($match[1]))
-				$this->con->query("
-					REPAIR TABLE $match[1]");
-
-			return $this->query($string, false);
-		}
-
-		throw new DatabaseException(nl2br(htmlspecialchars(trim($string))), nl2br(htmlspecialchars($error[2])));
 	}
 
 	/**
@@ -163,6 +183,7 @@ class Database
 	 * Wrapper for fetch_assoc.
 	 *
 	 * @param Statement $result
+	 *
 	 * @return mixed[]
 	 */
 	public function fetch_assoc(Statement $result)
@@ -171,9 +192,10 @@ class Database
 	}
 
 	/**
-	 * wrapper for fetch_row
+	 * Wrapper for fetch_row
 	 *
 	 * @param Statement $result
+	 *
 	 * @return mixed[]
 	 */
 	public function fetch_row(Statement $result)
@@ -182,9 +204,10 @@ class Database
 	}
 
 	/**
-	 * wrapper for num_rows
+	 * Wrapper for num_rows
 	 *
 	 * @param Statement $result
+	 *
 	 * @return integer
 	 */
 	public function num_rows(Statement $result)
@@ -193,7 +216,7 @@ class Database
 	}
 
 	/**
-	 * wrapper for insert_id
+	 * Wrapper for insert_id
 	 *
 	 * @return integer
 	 */

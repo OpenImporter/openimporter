@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
 	<string name="locale">en</string>
-	<string name="which_software">Which software are you using?</string>
+	<string name="which_software">Which forum software are you using?</string>
 	<string name="multiple_files">The importer found multiple import data files. Please choose the one you wish to use.</string>
 	<string name="not_here">It's not here!</string>
 	<string name="start_conversion">Start conversion</string>
@@ -17,11 +17,11 @@
 	<string name="select_step">You must select at least one step to import.</string>
 	<string name="permission_denied"><![CDATA[Sorry, the database connection information used in the specified installation of your forum cannot access the installation of %2$s. This may either mean that the installation doesn't exist, or that the MySQL account used does not have permissions to access it.<br /><br />The error MySQL gave was: %1$s']]></string>
 	<string name="before_continue">Before you continue</string>
-	<string name="before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly. It copies members, posts and other data from your &quot;source&quot; installation of %s into the &quot;destination&quot; installation of %s, so it won't work without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.</p>]]></string>
+	<string name="before_details"><![CDATA[This importer assumes you have already installed the destination forum and that your installation is working properly.<br />It copies members, posts and other data from your &quot;source&quot; installation of %s into the &quot;destination&quot; installation of %s.  It <strong>won't work</strong> without an installation of your destination forum.<p>All or some of the data in your installation of your destination forum will be <b>overwritten</b>.  Your source data will not be changed.</p>]]></string>
 	<string name="destination_installed">Try again!</string>
 	<string name="to_what">Import to which platform?</string>
 	<string name="where">Where are they?</string>
-	<string name="locate_destination">The importer should only need to know where the two installations are, after which it should be able to handle everything for itself.</string>
+	<string name="locate_destination">The importer only needs to know where the two installations are, after which it should be able to handle everything for itself.</string>
 	<string name="locate_source">The importer need to know in to which software you are importing your forum.</string>
 	<string name="advanced_options">Advanced options</string>
 	<string name="path_to">Path to %s</string>

@@ -10,7 +10,10 @@
 namespace OpenImporter\Core;
 
 /**
+ * Class ValuesBag
  * A generic class that define simple setter and getter
+ *
+ * @package OpenImporter\Core
  */
 class ValuesBag implements \ArrayAccess
 {
@@ -29,7 +32,28 @@ class ValuesBag implements \ArrayAccess
 	public function __construct($defaults = null)
 	{
 		if ($defaults !== null)
+		{
 			$this->data = $defaults;
+		}
+	}
+
+	/**
+	 * Getter
+	 *
+	 * @param string|int $key
+	 *
+	 * @return string|int|bool|null|object
+	 */
+	public function __get($key)
+	{
+		if (isset($this->data[$key]))
+		{
+			return $this->data[$key];
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -44,23 +68,10 @@ class ValuesBag implements \ArrayAccess
 	}
 
 	/**
-	 * Getter
-	 *
-	 * @param string|int $key
-	 * @return string|int|bool|null|object
-	 */
-	public function __get($key)
-	{
-		if (isset($this->data[$key]))
-			return $this->data[$key];
-		else
-			return null;
-	}
-
-	/**
 	 * Tests if the key is set.
 	 *
 	 * @param string|int $key
+	 *
 	 * @return bool
 	 */
 	public function __isset($key)

@@ -9,8 +9,8 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
 namespace OpenImporter\Core;
@@ -19,24 +19,14 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 
 /**
+ * Class ImporterSetup
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
  *
+ * @package OpenImporter\Core
  */
 class ImporterSetup
 {
-	/**
-	 * This is our main database object.
-	 * @var object
-	 */
-	protected $db;
-
-	/**
-	 * This is the connection to the source database.
-	 * @var object
-	 */
-	protected $source_db;
-
 	/**
 	 * The "translator" (i.e. the Lang object)
 	 * @var object
@@ -63,6 +53,18 @@ class ImporterSetup
 	public $data = array();
 
 	/**
+	 * This is our main database object.
+	 * @var object
+	 */
+	protected $db;
+
+	/**
+	 * This is the connection to the source database.
+	 * @var object
+	 */
+	protected $source_db;
+
+	/**
 	 * The "base" class name of the destination system.
 	 * @var string
 	 */
@@ -75,11 +77,16 @@ class ImporterSetup
 	protected $i_namespace = '';
 
 	/**
-	 * initialize the main Importer object
+	 * ImporterSetup constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Configurator $config
+	 * @param Lang $lang
+	 * @param $data
 	 */
 	public function __construct(Configurator $config, Lang $lang, $data)
 	{
-		// initialize some objects
+		// Initialize some objects
 		$this->config = $config;
 		$this->lng = $lang;
 		$this->data = $data;
@@ -119,11 +126,118 @@ class ImporterSetup
 
 		// If the paths are unknown it's useless to proceed.
 		if (empty($this->config->path_to) || empty($this->config->path_from))
+		{
 			return;
+		}
 
 		$this->initDb();
 		$this->config->source->setUtils($this->source_db, $this->config);
 		$this->config->destination->setUtils($this->db, $this->config);
+	}
+
+	protected function loadSource($file)
+	{
+		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
+		$this->preparseXml($full_path);
+
+		$class = $this->i_namespace . 'sources\\' . (string) $this->xml->general->className . '_Importer';
+		$this->config->source = new $class();
+	}
+
+	/**
+	 * Loads the _importer.xml files
+	 *
+	 * @param string $file
+	 *
+	 * @throws ImportException
+	 */
+	protected function preparseXml($file)
+	{
+		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
+
+		if (!$this->xml)
+		{
+			throw new ImportException('XML-Syntax error in file: ' . $file);
+		}
+	}
+
+	protected function loadDestination($file)
+	{
+		$this->_importer_base_class_name = $this->i_namespace . 'destinations\\' . $file . '\\Importer';
+
+		$this->config->destination = new $this->_importer_base_class_name();
+	}
+
+	/**
+	 * Prepare the importer with custom settings of the source
+	 *
+	 * @param int[] $do_steps
+	 *
+	 * @throws \Exception
+	 * @return boolean|null
+	 */
+	protected function prepareSettings($do_steps)
+	{
+		$this->config->source->setDefines();
+
+		$this->config->source->setGlobals();
+
+		$this->loadSettings();
+
+		if (empty($this->config->path_to))
+		{
+			return;
+		}
+
+		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
+
+		if ($this->config->boardurl === false)
+		{
+			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
+		}
+
+		if (empty($this->data['db_pass']))
+		{
+			return;
+		}
+
+		if ($this->config->destination->verifyDbPass($this->data['db_pass']) === false)
+		{
+			throw new \Exception($this->lng->get('password_incorrect'));
+		}
+
+		// Check the steps that we have decided to go through.
+		if (!empty($do_steps))
+		{
+			$this->config->progress->doSteps($do_steps);
+		}
+
+		if (!$this->config->progress->doStepsDefined())
+		{
+			throw new \Exception($this->lng->get('select_step'));
+		}
+	}
+
+	protected function loadSettings()
+	{
+		if (!empty($this->config->path_from))
+		{
+			$found = $this->config->source->loadSettings($this->config->path_from);
+		}
+		else
+		{
+			$found = true;
+		}
+
+		if ($found === false)
+		{
+			if (ini_get('open_basedir') != '')
+			{
+				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
+			}
+
+			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
+		}
 	}
 
 	protected function loadFormFields()
@@ -145,105 +259,19 @@ class ImporterSetup
 		}
 	}
 
-	protected function loadSource($file)
-	{
-		$full_path = $this->config->importers_dir . DS . 'sources' . DS . $file;
-		$this->preparseXml($full_path);
-
-		$class = $this->i_namespace . 'sources\\' . (string) $this->xml->general->className . '_Importer';
-		$this->config->source = new $class();
-	}
-
-	protected function loadDestination($file)
-	{
-		$this->_importer_base_class_name = $this->i_namespace . 'destinations\\' . $file . '\\Importer';
-
-		$this->config->destination = new $this->_importer_base_class_name();
-	}
-
-	/**
-	 * loads the _importer.xml files
-	 * @param string $file
-	 * @throws ImportException
-	 */
-	protected function preparseXml($file)
-	{
-		$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
-
-		if (!$this->xml)
-			throw new ImportException('XML-Syntax error in file: ' . $file);
-	}
-
-	/**
-	 * Prepare the importer with custom settings of the source
-	 *
-	 * @param int[] $do_steps
-	 * @throws \Exception
-	 * @return boolean|null
-	 */
-	protected function prepareSettings($do_steps)
-	{
-		$this->config->source->setDefines();
-
-		$this->config->source->setGlobals();
-
-		$this->loadSettings();
-
-		if (empty($this->config->path_to))
-			return;
-
-		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
-
-		if ($this->config->boardurl === false)
-			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
-
-		if (empty($this->data['db_pass']))
-			return;
-
-		if ($this->config->destination->verifyDbPass($this->data['db_pass']) === false)
-			throw new \Exception($this->lng->get('password_incorrect'));
-
-		// Check the steps that we have decided to go through.
-		if (!empty($do_steps))
-		{
-			$this->config->progress->doSteps($do_steps);
-		}
-
-		if (!$this->config->progress->doStepsDefined())
-		{
-			throw new \Exception($this->lng->get('select_step'));
-		}
-	}
-
-	protected function loadSettings()
-	{
-		if (!empty($this->config->path_from))
-			$found = $this->config->source->loadSettings($this->config->path_from);
-		else
-			$found = true;
-
-		if ($found === false)
-		{
-			if (ini_get('open_basedir') != '')
-				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
-
-			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
-		}
-	}
-
 	protected function initDb()
 	{
-		$DestConnectionParams = $this->config->destination->dbConnectionData();
+		$DestinationConnectionParams = $this->config->destination->dbConnectionData();
 
 		list ($this->db, $this->config->to_prefix) = $this->setupDbConnection(
-			$DestConnectionParams,
+			$DestinationConnectionParams,
 			$this->config->destination->getDbPrefix()
 		);
 
 		list ($this->source_db, $this->config->from_prefix) = $this->setupDbConnection(
 			$this->config->source->dbConnectionData(),
 			$this->config->source->getDbPrefix(),
-			$DestConnectionParams
+			$DestinationConnectionParams
 		);
 	}
 
@@ -256,7 +284,9 @@ class ImporterSetup
 			$db = new Database($con);
 
 			if (empty($db))
+			{
 				throw new \Exception($this->lng->get(array('permission_denied', $db->getLastError(), $connectionParams['system_name'])));
+			}
 
 			//We want UTF8 only, let's set our mysql connetction to utf8
 			$db->query('SET NAMES \'utf8\'');
@@ -288,7 +318,7 @@ class ImporterSetup
 				}
 			}
 		}
-		catch(\Exception $e)
+		catch (\Exception $e)
 		{
 			if ($fallbackParams === null)
 			{
@@ -314,9 +344,13 @@ class ImporterSetup
 		{
 			// @todo ???
 			if (is_numeric(substr($db_prefix, 0, 1)))
+			{
 				$prefix = $db_name . '.' . $db_prefix;
+			}
 			else
+			{
 				$prefix = '`' . $db_name . '`.' . $db_prefix;
+			}
 		}
 
 		// @todo again ???

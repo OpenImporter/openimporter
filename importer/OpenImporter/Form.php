@@ -38,6 +38,7 @@ class Form extends ValuesBag
 	 */
 	public function __construct(Lang $lng)
 	{
+		parent::__construct();
 		$this->lng = $lng;
 	}
 
@@ -46,6 +47,8 @@ class Form extends ValuesBag
 	 *
 	 * @param string|int $key
 	 * @param mixed[] $val
+	 *
+	 * @throws FormException
 	 */
 	public function __set($key, $val)
 	{
@@ -127,6 +130,8 @@ class Form extends ValuesBag
 	 * Converts a \SimpleXMLElement object into an array to feed addField
 	 *
 	 * @param \SimpleXMLElement $field
+	 *
+	 * @returns string[]
 	 */
 	public function makeFieldArray($field)
 	{

@@ -10,10 +10,13 @@
 namespace OpenImporter\Importers\destinations;
 
 /**
+ * Class Step2BaseImporter
  * The starting point for the second step of any importer.
  * Step2 is usually used to recalculate statistics and "fix" any data that
  * may need adjustments.
  * This should only know about the destination and not about the source.
+ *
+ * @package OpenImporter\Importers\destinations
  */
 abstract class Step2BaseImporter extends BaseImporter
 {

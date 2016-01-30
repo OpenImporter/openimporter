@@ -10,7 +10,10 @@
 namespace OpenImporter\Importers\destinations;
 
 /**
+ * Interface DestinationImporterInterface
  * This is the interface that any Destination class should implement.
+ *
+ * @package OpenImporter\Importers\destinations
  */
 interface DestinationImporterInterface
 {

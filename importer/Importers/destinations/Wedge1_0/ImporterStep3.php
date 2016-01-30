@@ -19,7 +19,10 @@
 namespace OpenImporter\Importers\destinations\Wedge1_0;
 
 /**
+ * Class ImporterStep3
  * Records the conversion
+ *
+ * @package OpenImporter\Importers\destinations\Wedge1_0
  */
 class ImporterStep3 extends \OpenImporter\Importers\destinations\SmfCommonOriginStep3
 {

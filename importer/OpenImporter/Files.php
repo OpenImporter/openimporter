@@ -10,19 +10,23 @@
 namespace OpenImporter\Core;
 
 /**
- * Class with a bunch of static methods to deal with copying files and all that.
+ * Class Files
+ * A bunch of static methods to deal with copying files and all that.
  * @todo consider using:
  *    http://symfony.com/components/Filesystem
  *    http://symfony.com/components/Finder
+ *
+ * @package OpenImporter\Core
  */
 class Files
 {
 	/**
-	 * Helper function, simple copies a file from a source to a destination.
+	 * Helper function, simply copies a file from a source to a destination.
 	 * If necessary creates the whole destination directory structure.
 	 *
 	 * @param string $source
 	 * @param string $destination
+	 *
 	 * @return boolean
 	 */
 	public static function copy_file($source, $destination)
@@ -33,37 +37,8 @@ class Files
 		{
 			return copy($source, $destination);
 		}
+
 		return false;
-	}
-
-	/**
-	 * Reads all the files in a directory recursively.
-	 *
-	 * @param string $base The directory to start from
-	 * @return string[] Full path of all the files.
-	 */
-	public static function get_files_recursive($base)
-	{
-		$files = array();
-		$base = rtrim($base, '\\/') . DIRECTORY_SEPARATOR;
-
-		if (!file_exists($base))
-			return $files;
-
-		$dir = opendir($base);
-
-		while ($file = readdir($dir))
-		{
-			if ($file == '.' || $file == '..')
-				continue;
-
-			if (is_dir($base . $file))
-				$files = array_merge($files, Files::get_files_recursive($base . $file));
-			else
-				$files[] = $base . $file;
-		}
-
-		return $files;
 	}
 
 	/**
@@ -76,9 +51,52 @@ class Files
 		$parent = dirname($path);
 
 		if (!file_exists($parent))
+		{
 			Files::create_folders_recursive($parent);
+		}
 
 		if (!file_exists($path))
+		{
 			@mkdir($path, 0755);
+		}
+	}
+
+	/**
+	 * Reads all the files in a directory recursively.
+	 *
+	 * @param string $base The directory to start from
+	 *
+	 * @return string[] Full path of all the files.
+	 */
+	public static function get_files_recursive($base)
+	{
+		$files = array();
+		$base = rtrim($base, '\\/') . DIRECTORY_SEPARATOR;
+
+		if (!file_exists($base))
+		{
+			return $files;
+		}
+
+		$dir = opendir($base);
+
+		while ($file = readdir($dir))
+		{
+			if ($file == '.' || $file == '..')
+			{
+				continue;
+			}
+
+			if (is_dir($base . $file))
+			{
+				$files = array_merge($files, Files::get_files_recursive($base . $file));
+			}
+			else
+			{
+				$files[] = $base . $file;
+			}
+		}
+
+		return $files;
 	}
 }

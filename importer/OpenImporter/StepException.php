@@ -10,8 +10,8 @@
 namespace OpenImporter\Core;
 
 /**
- * class StepException extends the build-in Exception class and
- * catches potential errors
+ * Class StepException
+ * Extends the build-in Exception class and catches potential errors
  */
 class StepException extends \Exception
 {

@@ -10,7 +10,10 @@
 namespace OpenImporter\Importers;
 
 /**
+ * Interface SourceImporterInterface
  * This is the interface that any Source class should implement.
+ *
+ * @package OpenImporter\Importers
  */
 interface SourceImporterInterface
 {

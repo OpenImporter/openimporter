@@ -10,18 +10,20 @@
 namespace OpenImporter\Core;
 
 /**
+ * Class Configurator
  * The configurator is just a class holding the common configuration
  * info such as the paths (to/from), prefixes, etc.
  * Basically a getter/setter
  *
- * @property string $lang_dir
- * @property string $importers_dir
- * @property string $action
+ * @package OpenImporter\Core
+ * @property string lang_dir
+ * @property string importers_dir
+ * @property string action
  * @property \OpenImporter\Importers\destinations\DestinationImporterInterface $destination
  * @property \OpenImporter\Importers\SourceImporterInterface $source
- * @property string $to_prefix
- * @property string $from_prefix
- * @property OpenImporter\Core\Configurator $progress
+ * @property string to_prefix
+ * @property string from_prefix
+ * @property \OpenImporter\Core\ProgressTracker progress
  */
 class Configurator extends ValuesBag
 {

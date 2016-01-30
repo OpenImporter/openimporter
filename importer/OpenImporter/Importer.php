@@ -80,11 +80,15 @@ class Importer
 	protected $_importer_base_class_name = '';
 
 	/**
-	 * initialize the main Importer object
+	 * Importer constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Configurator $config
+	 * @param HttpResponse $response
 	 */
 	public function __construct(Configurator $config, HttpResponse $response)
 	{
-		// initialize some objects
+		// Initialize some objects
 		$this->config = $config;
 		$this->response = $response;
 
@@ -92,7 +96,7 @@ class Importer
 	}
 
 	/**
-	 * initialize the $data variable
+	 * Initialize the $data variable
 	 * @param mixed[] $data
 	 */
 	public function setData($data)
