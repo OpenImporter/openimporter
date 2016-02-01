@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter;
+
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 
@@ -20,6 +22,7 @@ if (!defined('DS'))
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
  *
+ * @package OpenImporter
  */
 class Importer
 {
@@ -127,7 +130,12 @@ class Importer
 	public $settings  = null;
 
 	/**
-	 * initialize the main Importer object
+	 * Importer constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Configurator $config
+	 * @param Lang $lang
+	 * @param Template $template
 	 */
 	public function __construct($config, $lang, $template)
 	{
@@ -178,6 +186,7 @@ class Importer
 
 	/**
 	 * loads the _importer.xml files
+	 *
 	 * @param string $file
 	 * @throws ImportException
 	 */
@@ -190,12 +199,15 @@ class Importer
 
 			$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ImportException::exception_handler($e, $this->template);
 		}
 	}
 
+	/**
+	 * @param Form $form
+	 */
 	public function populateFormFields($form)
 	{
 		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
@@ -207,6 +219,7 @@ class Importer
 		if (!isset($this->config->path_from))
 			$this->config->path_from = BASEDIR;
 
+		//
 		$path_from = $settings->loadSettings($this->config->path_from, true);
 		if ($path_from !== null)
 		{
@@ -520,7 +533,8 @@ class Importer
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
 	 * @global Database $db
-	 * @global type $to_prefix
+	 * @global string $to_prefix
+	 *
 	 * @return boolean
 	 */
 	public function doStep2()

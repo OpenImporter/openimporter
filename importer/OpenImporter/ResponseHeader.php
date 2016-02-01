@@ -7,8 +7,12 @@
  * @version 1.0 Alpha
  */
 
+namespace OpenImporter;
+
 /**
  * Any page served needs an header.
+ *
+ * @package OpenImporter
  */
 class ResponseHeader
 {
@@ -16,6 +20,7 @@ class ResponseHeader
 
 	/**
 	 * Add an header
+	 *
 	 * @param string $key
 	 * @param string|null $value (optional)
 	 */
@@ -33,24 +38,31 @@ class ResponseHeader
 
 	/**
 	 * Send the headers
+	 *
 	 * @return string[]
 	 */
 	public function get()
 	{
 		$return = array();
+
 		foreach ($this->headers as $key => $value)
+		{
 			$return[] = $key . ': ' . $value;
+		}
 
 		return $return;
 	}
 
 	/**
 	 * Add an header
+	 *
 	 * @param string $key
 	 */
 	public function remove($key)
 	{
 		if (isset($this->headers[$key]))
+		{
 			unset($this->headers[$key]);
+		}
 	}
 }
