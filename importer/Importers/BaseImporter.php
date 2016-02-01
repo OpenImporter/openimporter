@@ -7,6 +7,8 @@
  * @version 1.0 Alpha
  */
 
+namespace Importers;
+
 /**
  * The starting point for any step of any importer.
  */

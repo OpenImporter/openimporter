@@ -13,9 +13,11 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace Importers;
+
 /**
  * The class contains code that allows the Importer to obtain settings
- * from softwares that still have an SMF heritage.
+ * from software that still has an SMF heritage.
  */
 abstract class SmfCommonSource
 {
@@ -24,10 +26,13 @@ abstract class SmfCommonSource
 	protected $path = null;
 
 	public $id_attach = null;
+
 	public $attachmentUploadDirs = null;
+
 	public $avatarUploadDir = null;
 
 	protected $config = null;
+
 	protected $db = null;
 
 	public function setParam($db, $config)
