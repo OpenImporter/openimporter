@@ -280,7 +280,7 @@ class ImportManager
 			$this->template->header();
 		}
 
-		if (isset($_GET['action']) && $_GET['action'] == 'validate')
+		if (isset($_GET['action']) && $_GET['action'] === 'validate')
 		{
 			$this->validateFields();
 		}
@@ -481,9 +481,9 @@ class ImportManager
 	 */
 	public function doStep0($error_message = null, $object = false)
 	{
-		global $import;
+		global $oi_import;
 
-		$import = isset($object) ? $object : false;
+		$oi_import = isset($object) ? $object : false;
 		$this->cookie->destroy();
 
 		// Previously imported? we need to clean some variables ..

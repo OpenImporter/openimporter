@@ -32,17 +32,17 @@ class Viscacha extends AbstractSourceImporter
 	public function getPrefix()
 	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
+		global $oi_config;
 
-		return '`' . $this->getDbName() . '`.' . $config['dbprefix'];
+		return '`' . $this->getDbName() . '`.' . $oi_config['dbprefix'];
 	}
 
 	public function getDbName()
 	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $config;
+		global $oi_config;
 
-		return $config['database'];
+		return $oi_config['database'];
 	}
 
 	public function getTableTest()

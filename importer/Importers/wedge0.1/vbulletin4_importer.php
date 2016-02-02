@@ -23,16 +23,16 @@ class vBulletin_4 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $config;
+		global $oi_config;
 
-		return '`' . $this->getDbName() . '`.' . $config['Database']['tableprefix'];
+		return '`' . $this->getDbName() . '`.' . $oi_config['Database']['tableprefix'];
 	}
 
 	public function getDbName()
 	{
-		global $config;
+		global $oi_config;
 
-		return $config['Database']['dbname'];
+		return $oi_config['Database']['dbname'];
 	}
 
 	public function getTableTest()
@@ -64,7 +64,7 @@ function vb4_replace_bbc($content)
 
 	// fixing Code tags
 	$replace = array();
-	
+
 	preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
 	foreach ($matches as $temp)
 		$replace[$temp] = htmlspecialchars($temp);

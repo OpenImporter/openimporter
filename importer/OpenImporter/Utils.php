@@ -23,7 +23,7 @@
  */
 function pastTime($substep = null, $stop_time = 5)
 {
-	global $import, $time_start;
+	global $oi_import, $time_start;
 
 	if (isset($_GET['substep']) && $_GET['substep'] < $substep)
 	{
@@ -31,9 +31,9 @@ function pastTime($substep = null, $stop_time = 5)
 	}
 
 	// Some details for our progress bar
-	if (isset($import->count->$substep) && $import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
+	if (isset($oi_import->count->$substep) && $oi_import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
 	{
-		$bar = round($_REQUEST['start'] / $import->count->$substep * 100, 0);
+		$bar = round($_REQUEST['start'] / $oi_import->count->$substep * 100, 0);
 	}
 	else
 	{
@@ -52,8 +52,8 @@ function pastTime($substep = null, $stop_time = 5)
 	}
 
 	// @todo maybe throw an exception?
-	$import->template->time_limit($bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
-	$import->template->footer();
+	$oi_import->template->time_limit($bar, $_SESSION['import_progress'], $_SESSION['import_overall']);
+	$oi_import->template->footer();
 
 	exit;
 }
@@ -82,11 +82,18 @@ function copy_file($source, $destination)
 
 function copy_dir_recursive($source, $destination)
 {
-	$source = rtrim($source, '\\/') . DIRECTORY_SEPARATOR;
+	// Create the destination tree
 	$destination = rtrim($destination, '\\/') . DIRECTORY_SEPARATOR;
-
-	$dir = opendir($source);
 	create_folders_recursive($destination);
+
+	$source = rtrim($source, '\\/') . DIRECTORY_SEPARATOR;
+	$dir = opendir($source);
+
+	// If we can't open the directory ...
+	if ($dir === false)
+	{
+		return;
+	}
 
 	while ($file = readdir($dir))
 	{
@@ -106,6 +113,11 @@ function copy_dir_recursive($source, $destination)
 	}
 }
 
+/**
+ * Create attachment folders as deep as needed.
+ *
+ * @param $path
+ */
 function create_folders_recursive($path)
 {
 	$parent = dirname($path);
@@ -175,11 +187,11 @@ function stripslashes_recursive($var, $level = 0)
  * Copies a directory
  *
  * @param string $source
- * @param string $dest
+ * @param string $destination
  *
  * @return type
  */
-function copy_dir($source, $dest)
+function copy_dir($source, $destination)
 {
 	if (!is_dir($source) || !($dir = opendir($source)))
 	{
@@ -196,19 +208,19 @@ function copy_dir($source, $dest)
 		// If we have a directory create it on the destination and copy contents into it!
 		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
 		{
-			if (!is_dir($dest))
+			if (!is_dir($destination))
 			{
-				@mkdir($dest, 0755);
+				@mkdir($destination, 0755);
 			}
-			copy_dir($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
+			copy_dir($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 		else
 		{
-			if (!is_dir($dest))
+			if (!is_dir($destination))
 			{
-				@mkdir($dest, 0755);
+				@mkdir($destination, 0755);
 			}
-			copy($source . DIRECTORY_SEPARATOR . $file, $dest . DIRECTORY_SEPARATOR . $file);
+			copy($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 	}
 	closedir($dir);
@@ -217,7 +229,7 @@ function copy_dir($source, $dest)
 /**
  * Detects, if a string is utf-8 or not
  *
- * @param type $string
+ * @param string $string
  *
  * @return boolean
  */
@@ -446,4 +458,28 @@ function print_dbg($val)
 	echo '<pre>';
 	print_r($val);
 	echo '</pre>';
+}
+
+/**
+ * Helper function to create an encrypted attachment name
+ *
+ * @param string $filename
+ * @return string
+ */
+function createAttachmentFilehash($filename)
+{
+	return sha1(md5($filename . time()) . mt_rand());
+}
+
+/**
+ * Used to copy smileys from a source to destination.
+ *
+ * @param string $source
+ * @param string $dest
+ *
+ * @return type
+ */
+function copy_smileys($source, $dest)
+{
+	copy_dir($source, $dest);
 }
