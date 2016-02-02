@@ -7,7 +7,7 @@
  * @version 1.0 Alpha
  */
 
-class vBulletin_4 extends AbstractSourceImporter
+class vBulletin_4 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.php';
 
@@ -23,16 +23,16 @@ class vBulletin_4 extends AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $config;
+		global $oi_config;
 
-		return '`' . $this->getDbName() . '`.' . $config['Database']['tableprefix'];
+		return '`' . $this->getDbName() . '`.' . $oi_config['Database']['tableprefix'];
 	}
 
 	public function getDbName()
 	{
-		global $config;
+		global $oi_config;
 
-		return $config['Database']['dbname'];
+		return $oi_config['Database']['dbname'];
 	}
 
 	public function getTableTest()
@@ -43,6 +43,10 @@ class vBulletin_4 extends AbstractSourceImporter
 
 /**
  * Utility functions
+ *
+ * @param string $content
+ *
+ * @return mixed|string
  */
 function vb4_replace_bbc($content)
 {
@@ -62,12 +66,13 @@ function vb4_replace_bbc($content)
 			'[list type=decimal]',
 		), strtr($content, array('"' => '&quot;')));
 
-	// fixing Code tags
+	// Fixing Code tags
 	$replace = array();
-	
+
 	preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
 	foreach ($matches as $temp)
 		$replace[$temp] = htmlspecialchars($temp);
+
 	$content = substr(strtr($content, $replace), 0, 65534);
 
 	return $content;
