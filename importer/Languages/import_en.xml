@@ -20,7 +20,7 @@
 	<string name="destination_installed">Try again!</string>
 	<string name="to_what">Import to which platform?</string>
 	<string name="where">Where are they?</string>
-	<string name="locate_destination">The importer only needs to know where the two forum installations are located, after which it should be able to handle everything for itself.</string>
+	<string name="locate_destination">The importer only needs to know where the two forum installations (root directory) are located, after which it should be able to handle everything for itself.</string>
 	<string name="locate_source">The importer needs to know which software you are importing to.</string>
 	<string name="advanced_options">Advanced options</string>
 	<string name="path_to_destination">Path to destination</string>
