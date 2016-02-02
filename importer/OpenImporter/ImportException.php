@@ -32,12 +32,12 @@ class ImportException extends \Exception
 			return;
 		}
 
-		// Telling !
+		// Telling, just convert the error over to an exception
 		$exception = new self($string, $code);
 		$exception->line = $line;
 		$exception->file = $file;
 
-		throw $exception;
+		ImportException::exception_handler($exception);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class ImportException extends \Exception
 	 */
 	public static function exception_handler($exception, $template = null)
 	{
-		global $import;
+		global $oi_import;
 
 		// Keeping secrets
 		if (error_reporting() == 0)
@@ -59,9 +59,9 @@ class ImportException extends \Exception
 		// Tell just your friends
 		if ($template === null)
 		{
-			if (!empty($import))
+			if (!empty($oi_import))
 			{
-				$template = $import->template;
+				$template = $oi_import->template;
 			}
 			else
 			{
