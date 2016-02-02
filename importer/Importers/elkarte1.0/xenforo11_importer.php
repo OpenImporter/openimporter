@@ -7,13 +7,16 @@
  * @version 1.0 Alpha
  */
 
-class XenForo1_1 extends AbstractSourceImporter
+/**
+ * Class XenForo1_1
+ */
+class XenForo1_1 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.php';
 
 	public function getName()
 	{
-		return 'Wordpress 3.x';
+		return 'XenForo 1.1';
 	}
 
 	public function getVersion()
