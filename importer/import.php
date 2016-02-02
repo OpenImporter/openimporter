@@ -12,10 +12,10 @@ define('BASEDIR', __DIR__);
 
 // Autoload our classes from the OpenImporter and Importers directory's
 require_once(BASEDIR . '/OpenImporter/SplClassLoader.php');
-$classLoader = new SplClassLoader('OpenImporter', BASEDIR);
-$classLoader->register();
-$classLoader2 = new SplClassLoader('Importers', BASEDIR);
-$classLoader2->register();
+$oi_classLoader = new SplClassLoader('OpenImporter', BASEDIR);
+$oi_classLoader->register();
+$oi_classLoader2 = new SplClassLoader('Importers', BASEDIR);
+$oi_classLoader2->register();
 
 // Can always ask, but whats taking 10mins?
 @set_time_limit(600);
@@ -50,7 +50,7 @@ if (@ini_get('session.save_handler') === 'user')
 
 ob_start();
 @session_start();
-global $import;
+global $oi_import;
 
 // Add slashes, as long as they aren't already being added.
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
@@ -59,33 +59,33 @@ if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 }
 
 // Start a configurator values container for use
-$config = new OpenImporter\Configurator();
-$config->lang_dir = BASEDIR . '/Languages';
+$oi_config = new OpenImporter\Configurator();
+$oi_config->lang_dir = BASEDIR . '/Languages';
 
 // Load our language strings, can't say much without them
 try
 {
 	// Load the users language based on detected browser language settings
-	$lng = new OpenImporter\Lang();
-	$lng->loadLang($config->lang_dir);
+	$oi_language = new OpenImporter\Lang();
+	$oi_language->loadLang($oi_config->lang_dir);
 }
-catch (Exception $e)
+catch (\Exception $e)
 {
 	OpenImporter\ImportException::exception_handler($e);
 }
 
 // Template, import and response engine
-$template = new OpenImporter\Template($lng);
-$importer = new OpenImporter\Importer($config, $lng, $template);
-$response = new OpenImporter\HttpResponse(new OpenImporter\ResponseHeader());
+$oi_template = new OpenImporter\Template($oi_language);
+$oi_importer = new OpenImporter\Importer($oi_config, $oi_language, $oi_template);
+$oi_response = new OpenImporter\HttpResponse(new OpenImporter\ResponseHeader());
 
-$template->setResponse($response);
-$import = new OpenImporter\ImportManager($config, $importer, $template, new OpenImporter\Cookie(), $response);
+$oi_template->setResponse($oi_response);
+$oi_import = new OpenImporter\ImportManager($oi_config, $oi_importer, $oi_template, new OpenImporter\Cookie(), $oi_response);
 
 // Lets get this show on the road
 try
 {
-	$import->process();
+	$oi_import->process();
 }
 catch (Exception $e)
 {
