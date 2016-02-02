@@ -7,7 +7,10 @@
  * @version 1.0 Alpha
  */
 
-class SMF2_0 extends AbstractSourceImporter
+/**
+ * Class SMF2_0
+ */
+class SMF2_0 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 
@@ -27,13 +30,15 @@ class SMF2_0 extends AbstractSourceImporter
 
 	public function setDefines()
 	{
-		define('SMF', 1);
+		if (!defined('SMF'))
+			define('SMF', 1);
 	}
 
 	public function getPrefix()
 	{
 		$db_name = $this->getDbName();
 		$db_prefix = $this->fetchSetting('db_prefix');
+
 		return '`' . $db_name . '`.' . $db_prefix;
 	}
 
@@ -60,6 +65,11 @@ class SMF2_0 extends AbstractSourceImporter
 		return isset($match[1]) ? $match[1] : '';
 	}
 
+	/**
+	 * Read the attachment directory structure from the source db
+	 *
+	 * @return array|null
+	 */
 	public function getAttachmentDirs()
 	{
 		if ($this->smf_attach_folders === null)
@@ -81,6 +91,11 @@ class SMF2_0 extends AbstractSourceImporter
 		return $this->smf_attach_folders;
 	}
 
+	/**
+	 * Import likes from one of the known addons
+	 *
+	 * @return array
+	 */
 	public function fetchLikes()
 	{
 		if ($this->isNibogo())
@@ -89,6 +104,11 @@ class SMF2_0 extends AbstractSourceImporter
 			return $this->fetchIllori();
 	}
 
+	/**
+	 * Nibogo version of likes
+	 *
+	 * @return array
+	 */
 	protected function fetchNibogo()
 	{
 		$from_prefix = $this->config->from_prefix;
@@ -110,6 +130,11 @@ class SMF2_0 extends AbstractSourceImporter
 		return $return;
 	}
 
+	/**
+	 * Illori version of likes
+	 *
+	 * @return array
+	 */
 	protected function fetchIllori()
 	{
 		$from_prefix = $this->config->from_prefix;
@@ -131,6 +156,11 @@ class SMF2_0 extends AbstractSourceImporter
 		return $return;
 	}
 
+	/**
+	 * Figure out which likes system may be in use
+	 *
+	 * @return bool|null
+	 */
 	protected function isNibogo()
 	{
 		$from_prefix = $this->config->from_prefix;
@@ -157,10 +187,19 @@ class SMF2_0 extends AbstractSourceImporter
 	}
 }
 
+/**
+ * Copy attachments from the source to our destination
+ *
+ * @param array $row
+ * @param \OpenImporter\Database $db
+ * @param string $from_prefix
+ * @param string $attachmentUploadDir
+ */
 function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 {
 	static $smf_folders = null;
 
+	// We need to know where the attachments are located
 	if ($smf_folders === null)
 	{
 		$request = $db->query("
@@ -170,6 +209,7 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 		list ($smf_attachments_dir) = $db->fetch_row($request);
 
 		$smf_folders = @unserialize($smf_attachments_dir);
+
 		if (!is_array($smf_folders))
 			$smf_folders = array(1 => $smf_attachments_dir);
 	}
@@ -180,6 +220,7 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 	else
 		$smf_attachments_dir = $smf_folders[1];
 
+	// Missing the file hash ... create one
 	if (empty($row['file_hash']))
 	{
 		$row['file_hash'] = createAttachmentFileHash($row['filename']);
@@ -188,5 +229,6 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 	else
 		$source_file = $row['id_attach'] . '_' . $row['file_hash'];
 
+	// Copy it over
 	copy_file($smf_attachments_dir . '/' . $source_file, $attachmentUploadDir . '/' . $row['id_attach'] . '_' . $row['file_hash'] . '.elk');
 }
