@@ -366,11 +366,11 @@ class XmlProcessor
 
 	protected function doDetect($substep)
 	{
-		global $import;
+		global $oi_import;
 
-		if (isset($this->current_step->detect) && isset($import->count))
+		if (isset($this->current_step->detect) && isset($oi_import->count))
 		{
-			$import->count->$substep = $this->detect((string) $this->current_step->detect);
+			$oi_import->count->$substep = $this->detect((string) $this->current_step->detect);
 		}
 	}
 
@@ -399,7 +399,7 @@ class XmlProcessor
 	protected function detect($table)
 	{
 		$table = $this->fix_params($table);
-		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fix_params($table));
+		$table = preg_replace('/^`[\w\d\-_]*`\./i', '', $this->fix_params($table));
 
 		$db_name_str = $this->config->source->getDbName();
 
