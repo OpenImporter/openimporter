@@ -8,6 +8,8 @@
  */
 
 namespace Importers;
+use OpenImporter\Configurator;
+use OpenImporter\Database;
 
 /**
  * This abstract class is the base for any php importer file.
@@ -18,12 +20,26 @@ namespace Importers;
  */
 abstract class AbstractSourceImporter
 {
+	/**
+	 * Settings file name
+	 * @var string
+	 */
 	protected $setting_file = '';
 
+	/**
+	 * Path to source
+	 * @var string
+	 */
 	protected $path = '';
 
+	/**
+	 * @var Database
+	 */
 	protected $db = null;
 
+	/**
+	 * @var Configurator
+	 */
 	protected $config = null;
 
 	public function setUtils($db, $config)

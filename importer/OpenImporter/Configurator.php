@@ -22,6 +22,7 @@ namespace OpenImporter;
  * @property string to_prefix
  * @property string from_prefix
  * @property object source
+ * @property object destination
  *
  * @package OpenImporter
  */

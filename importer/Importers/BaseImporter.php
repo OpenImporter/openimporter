@@ -9,14 +9,30 @@
 
 namespace Importers;
 
+use OpenImporter\Configurator;
+use OpenImporter\Database;
+
 /**
  * The starting point for any step of any importer.
  */
 abstract class BaseImporter
 {
+	/**
+	 * @var Database
+	 */
 	protected $db = null;
+
+	/**
+	 * @var Configurator
+	 */
 	protected $config = null;
 
+	/**
+	 * BaseImporter constructor.
+	 *
+	 * @param Database $db
+	 * @param Configurator $config
+	 */
 	public function __construct($db, $config)
 	{
 		$this->db = $db;
