@@ -8,9 +8,10 @@
  */
 
 /**
+ * Class mybb16
  * Settings for the MyBB 1.6 system.
  */
-class mybb16 extends AbstractSourceImporter
+class mybb16 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/inc/config.php';
 

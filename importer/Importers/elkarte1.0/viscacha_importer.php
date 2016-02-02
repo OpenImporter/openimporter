@@ -8,9 +8,10 @@
  */
 
 /**
- * Settings for the MyBB 1.6 system.
+ * Settings for the Viscacha system.
+ * Viscacha 0.8
  */
-class Viscacha extends AbstractSourceImporter
+class Viscacha extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/data/config.inc.php';
 

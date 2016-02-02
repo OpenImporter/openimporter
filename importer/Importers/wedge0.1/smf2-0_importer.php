@@ -7,7 +7,10 @@
  * @version 1.0 Alpha
  */
 
-class SMF2_0 extends AbstractSourceImporter
+/**
+ * Class SMF2_0
+ */
+class SMF2_0 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 
@@ -23,7 +26,10 @@ class SMF2_0 extends AbstractSourceImporter
 
 	public function setDefines()
 	{
-		define('SMF', 1);
+		if (!defined('SMF'))
+		{
+			define('SMF', 1);
+		}
 	}
 
 	public function getPrefix()
@@ -57,6 +63,14 @@ class SMF2_0 extends AbstractSourceImporter
 	}
 }
 
+// Utility functions specific to phpbb
+
+/**
+ * @param $row
+ * @param $db
+ * @param $from_prefix
+ * @param $attachmentUploadDir
+ */
 function moveAttachment($row, $db, $from_prefix, $attachmentUploadDir)
 {
 	static $smf_folders = null;
