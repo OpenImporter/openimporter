@@ -126,7 +126,7 @@ class XmlProcessor
 	}
 
 	/**
-	 * Perform querys as defined in the XML
+	 * Perform query's as defined in the XML
 	 *
 	 * @param int $substep
 	 */
@@ -317,9 +317,10 @@ class XmlProcessor
 				}
 			}
 		}
+
 		$string = strtr($string, array('{$from_prefix}' => $this->config->from_prefix, '{$to_prefix}' => $this->config->to_prefix));
 
-		return $string;
+		return trim($string);
 	}
 
 	protected function updateStatus(&$substep, &$do_steps)
