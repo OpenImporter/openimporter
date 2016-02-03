@@ -84,6 +84,13 @@ class XmlProcessor
 		$this->step1_importer = $step1_importer;
 	}
 
+	/**
+	 * Loop through each of the steps in the XML file
+	 *
+	 * @param int $step
+	 * @param array $substep
+	 * @param array $do_steps
+	 */
 	public function processSteps($step, &$substep, &$do_steps)
 	{
 		$this->current_step = $step;
@@ -95,10 +102,10 @@ class XmlProcessor
 			return;
 		}
 
-		// Pre sql queries first!!
+		// Pre sql queries (<presql> & <presqlMethod>) first!!
 		$this->doPresqlStep($substep);
 
-		// Codeblock? Then no query.
+		// Codeblock? (<code></code>) Then no query.
 		if ($this->doCode())
 		{
 			$this->advanceSubstep($substep);
@@ -106,7 +113,7 @@ class XmlProcessor
 			return;
 		}
 
-		// sql block?
+		// sql (<query></query>) block?
 		// @todo $_GET
 		if ($substep >= $_GET['substep'] && isset($this->current_step->query))
 		{
@@ -118,6 +125,11 @@ class XmlProcessor
 		$this->advanceSubstep($substep);
 	}
 
+	/**
+	 * Perform querys as defined in the XML
+	 *
+	 * @param int $substep
+	 */
 	protected function doSql($substep)
 	{
 		// These are temporarily needed to support the current xml importers
@@ -128,6 +140,7 @@ class XmlProcessor
 		$to_prefix = $this->config->to_prefix;
 		$db = $this->db;
 
+		// Update {$from_prefix} and {$to_prefix} in the query
 		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
 		$current_data = $this->fixCurrentData($current_data);
 
@@ -139,10 +152,13 @@ class XmlProcessor
 		}
 		else
 		{
+			// Prepare the <query>
 			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
+
+			// Any specific LIMIT set
 			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
-			// Any preparsing code? Loaded here to be used later.
+			// Any <preparsecode> code? Loaded here to be used later.
 			$special_code = $this->getPreparsecode();
 
 			// Create some handy shortcuts
@@ -238,6 +254,7 @@ class XmlProcessor
 
 	protected function prepareRow($row, $special_code, $special_table)
 	{
+		// Take case of preparsecode
 		if ($special_code !== null)
 		{
 			eval($special_code);
@@ -245,7 +262,7 @@ class XmlProcessor
 
 		$row = $this->step1_importer->doSpecialTable($special_table, $row);
 
-		// fixing the charset, we need proper utf-8
+		// Fixing the charset, we need proper utf-8
 		$row = fix_charset($row);
 
 		$row = $this->step1_importer->fixTexts($row);
@@ -253,6 +270,11 @@ class XmlProcessor
 		return $row;
 	}
 
+	/**
+	 * Return any <preparsecode></preparsecode> for the step
+	 *
+	 * @return null|string
+	 */
 	protected function getPreparsecode()
 	{
 		if (!empty($this->current_step->preparsecode))
@@ -277,7 +299,7 @@ class XmlProcessor
 	}
 
 	/**
-	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
+	 * Used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
 	 * @param string string string in which parameters are replaced
 	 *
@@ -335,6 +357,11 @@ class XmlProcessor
 		return $table_test;
 	}
 
+	/**
+	 * Runs any presql commands or calls any presqlMethods
+	 *
+	 * @param array $substep
+	 */
 	protected function doPresqlStep($substep)
 	{
 		if (!isset($this->current_step->presql))
@@ -347,11 +374,13 @@ class XmlProcessor
 			return;
 		}
 
+		// Calling a pre method?
 		if (isset($this->current_step->presqlMethod))
 		{
 			$this->step1_importer->beforeSql((string) $this->current_step->presqlMethod);
 		}
 
+		// Prepare presql commands for the query
 		$presql = $this->fix_params((string) $this->current_step->presql);
 		$presql_array = array_filter(explode(';', $presql));
 
@@ -360,7 +389,7 @@ class XmlProcessor
 			$this->db->query($exec . ';');
 		}
 
-		// don't do this twice..
+		// Don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
@@ -374,6 +403,11 @@ class XmlProcessor
 		}
 	}
 
+	/**
+	 * Run a <code> block
+	 *
+	 * @return bool
+	 */
 	protected function doCode()
 	{
 		if (isset($this->current_step->code))
@@ -386,7 +420,7 @@ class XmlProcessor
 			$to_prefix = $this->config->to_prefix;
 			$db = $this->db;
 
-			// execute our code block
+			// Execute our code block
 			$special_code = $this->fix_params((string) $this->current_step->code);
 			eval($special_code);
 
