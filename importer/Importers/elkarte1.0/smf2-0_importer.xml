@@ -2,7 +2,6 @@
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
 	<general>
 		<name>SMF 2.0</name>
-		<version>ElkArte 1.0</version>
 		<className>SMF2_0</className>
 	</general>
 	<step>
@@ -214,7 +213,8 @@
 				usertitle, notify_announcements, notify_regularity, notify_send_body,
 				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
-				total_time_logged_in, password_salt, ignore_boards, IFNULL(warning, 0) AS warning, passwd_flood,
+				total_time_logged_in, password_salt, ignore_boards,
+				IFNULL(warning, 0) AS warning, passwd_flood,
 				pm_receive_from AS receive_from
 			FROM {$from_prefix}members;
 		</query>
@@ -238,6 +238,7 @@
 	<step>
 		<title>Importing avatars</title>
 		<code>
+			// First check avatar_directory
 			$avatarg = $this->db->query("
 				SELECT value
 				FROM {$from_prefix}settings
@@ -255,6 +256,7 @@
 			if (!empty($smf_avatarg) and !empty($elk_avatarg))
 				copy_dir_recursive($smf_avatarg, $elk_avatarg);
 
+			// Next check custom_avatar_dir
 			$avatarg = $this->db->query("
 				SELECT value
 				FROM {$from_prefix}settings
@@ -648,7 +650,7 @@
 		<presql>TRUNCATE {$to_prefix}custom_fields;</presql>
 		<query>
 			SELECT
-				id_field, col_name, field_name, field_desc, field_type, field_length,
+				col_name, field_name, field_desc, field_type, field_length,
 				field_options, mask, show_reg, show_display, show_profile, private,
 				active, bbc, can_search, default_value, enclose, placement
 			FROM {$from_prefix}custom_fields;
