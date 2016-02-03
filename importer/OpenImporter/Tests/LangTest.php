@@ -53,7 +53,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::findLanguage
+	 * @covers OpenImporter\Lang::findLanguage
 	 */
 	public function testFindLanguage()
 	{
@@ -83,7 +83,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::set
+	 * @covers OpenImporter\Lang::set
 	 */
 	public function testSet()
 	{
@@ -138,7 +138,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @runInSeparateProcess
-	 * @covers Lang::set
+	 * @covers OpenImporter\Lang::set
 	 * @expectedException Exception
 	 * @expectedExceptionMessage Unable to set language string for <em>testing</em>. It was already set.
 	 */
@@ -158,7 +158,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::get
+	 * @covers OpenImporter\Lang::get
 	 */
 	public function testGet()
 	{
@@ -183,7 +183,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Lang::__get
+	 * @covers OpenImporter\Lang::__get
 	 */
 	public function testGetter()
 	{
@@ -202,15 +202,3 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$this->assertNull($invoke_lang->random);
 	}
 }
-
-/**
- * Temporary class to forward the currently static exception handler to a
- * default exception
- */
-// class ImportException extends Exception
-// {
-// 	public static function exception_handler($e)
-// 	{
-// 		throw new \Exception($e->getMessage(), $e->getCode(), $e);
-// 	}
-// }
