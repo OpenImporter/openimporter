@@ -1,5 +1,12 @@
 <?php
 
+namespace OpenImporter;
+use OpenImporter;
+
+/**
+ * Class LangTest
+ * @package OpenImporter
+ */
 class LangTest extends \PHPUnit_Framework_TestCase
 {
 	public function testLoadLangSuccess()
@@ -197,10 +204,10 @@ class LangTest extends \PHPUnit_Framework_TestCase
  * Temporary class to forward the currently static exception handler to a
  * default exception
  */
-class ImportException extends Exception
+class ImportException extends \Exception
 {
 	public static function exception_handler($e)
 	{
-		throw new Exception($e->getMessage(), $e->getCode(), $e);
+		throw new \Exception($e->getMessage(), $e->getCode(), $e);
 	}
 }
