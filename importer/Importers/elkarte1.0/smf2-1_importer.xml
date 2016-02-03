@@ -175,7 +175,8 @@
 			);
 
 			$request = $this->db->query("
-				SELECT variable, value
+				SELECT
+					variable, value
 				FROM {$from_prefix}settings;");
 
 			while ($row = $this->db->fetch_assoc($request))
@@ -188,7 +189,7 @@
 						VALUES('$row[variable]', '$row[value]')");
 				}
 
-				if ($row['variable'] == 'pretty_board_urls')
+				if ($row['variable'] === 'pretty_board_urls')
 				{
 					$pretty_urls = $row['value'];
 					store_global('pretty_urls', $row['value']);

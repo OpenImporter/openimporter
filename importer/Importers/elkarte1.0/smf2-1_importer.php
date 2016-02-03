@@ -96,7 +96,7 @@ class SMF2_1 extends Importers\AbstractSourceImporter
 	}
 
 	/**
-	 * Import likes from one of the known addons
+	 * Import likes from the 2.1 table
 	 *
 	 * @return array
 	 */
@@ -170,7 +170,7 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 	}
 	else
 	{
-		$source_file = $row['id_attach'] . '_' . $row['file_hash'];
+		$source_file = $row['id_attach'] . '_' . $row['file_hash'] . '.dat';
 	}
 
 	// Copy it over
