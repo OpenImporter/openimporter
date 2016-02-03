@@ -52,6 +52,12 @@ ob_start();
 @session_start();
 global $oi_import;
 
+// Resetting to another import combination from the UI
+if ((isset($_GET['import_script']) && $_GET['import_script'] == '') || empty($_GET))
+{
+	unset($_SESSION['importer_data'], $_SESSION['do_steps'], $_SESSION['import_progress']);
+}
+
 // Add slashes, as long as they aren't already being added.
 if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 {
@@ -87,7 +93,7 @@ try
 {
 	$oi_import->process();
 }
-catch (Exception $e)
+catch (\Exception $e)
 {
 	// Debug, remember to remove before GA
 	echo '<br>' . $e->getMessage() . '<br>';

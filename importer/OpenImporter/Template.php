@@ -549,14 +549,11 @@ class Template
 
 		$this->renderForm($form);
 
-		if (!empty($object->possible_scripts))
-		{
-			echo '
+		echo '
 			<h2>', $this->language->get('not_this'), '</h2>
 			<div class="content">
 				<p>', sprintf($this->language->get('pick_different'), $_SERVER['PHP_SELF']), '</p>
 			</div>';
-		}
 	}
 
 	/**
