@@ -171,12 +171,13 @@ class Importer
 		$source_helper = str_replace('.xml', '.php', $file);
 		require_once($source_helper);
 
-		// Maybe the "destination" comes with php helper functions?
+		// The "destination" php helper functions
 		$path = dirname($file);
-		$dest_helper = $path . DS . basename($path) . '_importer.php';
-		require_once($dest_helper);
+		$destination_helper = $path . DS . basename($path) . '_importer.php';
+		require_once($destination_helper);
 
-		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
+		// Initiate the class
+		$this->_importer_base_class_name = str_replace('.', '_', basename($destination_helper, '.php'));
 		$this->config->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
@@ -278,11 +279,12 @@ class Importer
 	 */
 	private function _loadSettings()
 	{
+		// Initiate the source class
 		$class = (string) $this->xml->general->className;
 		$this->config->source = new $class();
 
+		// Defines / Globals
 		$this->config->source->setDefines();
-
 		$this->config->source->setGlobals();
 
 		// Dirty hack
@@ -294,15 +296,17 @@ class Importer
 			}
 		}
 
+		// Load the settings from the source forum
 		$this->loadSettings();
 
 		// Any custom form elements to speak of?
 		$this->init_form_data();
 
+		// Check passwords, and paths?
 		if (empty($this->config->path_to))
 			return;
-		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 
+		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 		if ($this->config->boardurl === false)
 			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
 
@@ -344,12 +348,18 @@ class Importer
 				FROM ' . $this->config->from_prefix . $this->config->source->getTableTest(), true);
 
 			if ($result === false)
-				throw new Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
 
 			$this->db->free_result($result);
 		}
 	}
 
+	/**
+	 * Calls the loadSettings function of AbstractSourceImporter
+	 * Used to load source forum settings
+	 *
+	 * @throws \Exception
+	 */
 	protected function loadSettings()
 	{
 		if (!empty($this->config->path_from))

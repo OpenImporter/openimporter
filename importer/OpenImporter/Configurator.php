@@ -21,6 +21,7 @@ namespace OpenImporter;
  * @property string script
  * @property string to_prefix
  * @property string from_prefix
+ * @property string boardurl;
  * @property object source
  * @property object destination
  *
