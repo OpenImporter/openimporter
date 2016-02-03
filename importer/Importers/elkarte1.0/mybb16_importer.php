@@ -28,17 +28,17 @@ class mybb16 extends Importers\AbstractSourceImporter
 	public function getPrefix()
 	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $oi_config;
+		global $config;
 
-		return '`' . $this->getDbName() . '`.' . $oi_config['database']['table_prefix'];
+		return '`' . $this->getDbName() . '`.' . $config['database']['table_prefix'];
 	}
 
 	public function getDbName()
 	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $oi_config;
+		global $config;
 
-		return $oi_config['database']['database'];
+		return $config['database']['database'];
 	}
 
 	public function getTableTest()

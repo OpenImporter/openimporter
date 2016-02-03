@@ -33,17 +33,17 @@ class Viscacha extends Importers\AbstractSourceImporter
 	public function getPrefix()
 	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $oi_config;
+		global $config;
 
-		return '`' . $this->getDbName() . '`.' . $oi_config['dbprefix'];
+		return '`' . $this->getDbName() . '`.' . $config['dbprefix'];
 	}
 
 	public function getDbName()
 	{
 		// @todo Convert the use of globals to a scan of the file or something similar.
-		global $oi_config;
+		global $config;
 
-		return $oi_config['database'];
+		return $config['database'];
 	}
 
 	public function getTableTest()
