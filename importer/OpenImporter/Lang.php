@@ -7,15 +7,26 @@
  * @version 1.0 Alpha
  */
 
+namespace OpenImporter;
+
 /**
- * Class Lang loads the appropriate language file(s) if they exist.
+ * Class Lang
+ * loads the appropriate language file(s) if they exist.
  *
- * The default import_en.xml file contains the English strings used by the
- * importer.
+ * The default import_en.xml file contains the English strings used by the importer.
+ *
+ * @package OpenImporter
  */
 class Lang
 {
+	/**
+	 * @var array
+	 */
 	protected $_lang = array();
+
+	/**
+	 * @var array
+	 */
 	protected $_ns = array();
 
 	/**
@@ -23,20 +34,22 @@ class Lang
 	 *
 	 * @param string $key Name of the variable
 	 * @param string $value Value of the variable
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean|null
 	 */
 	protected function set($key, $value)
 	{
 		try
 		{
+			// No duplicates, we only use the first set
 			if ($this->has($key))
-				throw new Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
+				throw new \Exception('Unable to set language string for <em>' . $key . '</em>. It was already set.');
 
 			$this->_lang[$key] = $value;
+
 			return true;
 		}
-		catch(Exception $e)
+		catch(\Exception $e)
 		{
 			// @todo this should not be a fatal error
 			ImportException::exception_handler($e);
@@ -47,57 +60,70 @@ class Lang
 	 * Loads the language xml file.
 	 *
 	 * @return null
-	 * @throws Exception if it cannot find the XML file.
+	 * @throws \Exception if it cannot find the XML file.
 	 * @throws ImportException if the XML file has got a corrupted structure.
 	 */
 	public function loadLang($path)
 	{
-		// detect the browser language
+		// Detect the browser language
 		$language = $this->detect_browser_language();
-		$lngfile = $this->findLanguage($path, $language);
+		$language_file = $this->findLanguage($path, $language);
 
-		// ouch, we really should never arrive here..
-		if (!$lngfile)
-			throw new Exception('Unable to detect language file!');
+		// Ouch, we really should never arrive here..
+		if (!$language_file)
+			throw new \Exception('Unable to detect language file!');
 
 		// Silence simplexml errors because we take care of them by ourselves
 		libxml_use_internal_errors(true);
-		if (!$langObj = simplexml_load_file($lngfile, 'SimpleXMLElement', LIBXML_NOCDATA))
-			throw new ImportException('XML-Syntax error in file: ' . $lngfile);
 
+		// Import the xml language
+		if (!$langObj = simplexml_load_file($language_file, 'SimpleXMLElement', LIBXML_NOCDATA))
+			throw new ImportException('XML-Syntax error in file: ' . $language_file);
+
+		// Set them for use
 		foreach ($langObj as $strings)
 			$this->set((string) $strings->attributes()->{'name'}, (string) $strings);
 
 		return null;
 	}
 
+	/**
+	 * Finds the best language file to use, falls back to english
+	 *
+	 * @param string $path
+	 * @param string[] $language
+	 *
+	 * @return bool|string
+	 */
 	protected function findLanguage($path, $language)
 	{
-		$lngfile = false;
+		$language_file = false;
 
-		// loop through the preferred languages and try to find the related language file
+		// Loop through the preferred languages and try to find the related language file
 		foreach ($language as $key)
 		{
 			if (file_exists($path . '/import_' . $key . '.xml'))
 			{
-				$lngfile = $path . '/import_' . $key . '.xml';
+				$language_file = $path . '/import_' . $key . '.xml';
 				break;
 			}
 		}
-		// english is still better than nothing
-		if (empty($lngfile))
+
+		// English is still better than nothing
+		if (empty($language_file))
 		{
 			if (file_exists($path . '/import_en.xml'))
-				$lngfile = $path . '/import_en.xml';
+				$language_file = $path . '/import_en.xml';
 		}
 
-		return $lngfile;
+		return $language_file;
 	}
 
 	/**
 	 * Tests if given $key exists in lang
 	 *
 	 * @param string $key
+	 *
 	 * @return bool
 	 */
 	public function has($key)
@@ -105,6 +131,13 @@ class Lang
 		return isset($this->_lang[$key]);
 	}
 
+	/**
+	 * Returns a key via magic method
+	 *
+	 * @param string $key
+	 *
+	 * @return null|string
+	 */
 	public function __get($key)
 	{
 		return $this->get($key);
@@ -114,6 +147,7 @@ class Lang
 	 * Returns the value of the specified $key in lang.
 	 *
 	 * @param string $key Name of the variable
+	 *
 	 * @return string|null Value of the specified $key
 	 */
 	public function get($key)
@@ -151,30 +185,30 @@ class Lang
 	 */
 	protected function detect_browser_language()
 	{
+		$preferred = array();
+
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 		{
-			// break up string into pieces (languages and q factors)
+			// Break up string into pieces (languages and q factors)
 			// the string looks like: en-GB,en;q=0.9,it;q=0.8
 			preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']), $lang_parse);
 
 			if (count($lang_parse[1]))
 			{
-				// create a list like "en" => 0.8
+				// Create a list like "en" => 0.8
 				$preferred = array_combine($lang_parse[1], $lang_parse[4]);
 
-				// set default to 1 for any without q factor (IE fix)
+				// Set default to 1 for any without q factor (IE fix)
 				foreach ($preferred as $lang => $val)
 				{
 					if ($val === '')
 						$preferred[$lang] = 1;
 				}
 
-				// sort list based on value
+				// Sort list based on value
 				arsort($preferred, SORT_NUMERIC);
 			}
 		}
-		else
-			$preferred = array();
 
 		return array_keys($preferred);
 	}

@@ -1,5 +1,7 @@
 <?php
 
+use OpenImporter\Cookie;
+
 /**
  * we need Cooooookies..
  */

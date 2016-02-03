@@ -7,7 +7,10 @@
  * @version 1.0 Alpha
  */
 
-class phpBB3 extends AbstractSourceImporter
+/**
+ * Class phpBB3
+ */
+class phpBB3 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/config.php';
 
@@ -23,14 +26,17 @@ class phpBB3 extends AbstractSourceImporter
 
 	public function setDefines()
 	{
-		define('IN_PHPBB', 1);
+		if (!defined('IN_PHPBB'))
+		{
+			define('IN_PHPBB', 1);
+		}
 	}
 
 	public function getPrefix()
 	{
-		global $dbname, $table_prefix;
+		global $table_prefix;
 
-		return '`' . $this-getDbName() . '`.' . $table_prefix;
+		return '`' . $this - getDbName() . '`.' . $table_prefix;
 	}
 
 	public function getDbName()
@@ -46,14 +52,25 @@ class phpBB3 extends AbstractSourceImporter
 	}
 }
 
+// Utility functions specific to phpbb
+
 /**
- * Utility functions
+ * @param int $percent
+ *
+ * @return int
  */
 function percent_to_px($percent)
 {
-	return intval(11*(intval($percent)/100.0));
+	return intval(11 * (intval($percent) / 100.0));
 }
 
+/**
+ * Normalize BBC
+ *
+ * @param string $message
+ *
+ * @return mixed|string
+ */
 function phpbb_replace_bbc($message)
 {
 	$message = preg_replace(

@@ -9,20 +9,26 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
-require_once(BASEDIR . '/OpenImporter/Utils.php');
+namespace OpenImporter;
+
 // A shortcut
 if (!defined('DS'))
+{
 	define('DS', DIRECTORY_SEPARATOR);
+}
 
 /**
  * Object ImportManager loads the main importer.
  * It handles all steps to completion.
+ *
  * @todo path_to should be source-specific (i.e. in /Importers/whatever/source_importer.php
  * @todo path_from should be destination-specific (i.e. in /Importers/whatever/whatever_importer.php
+ *
+ * @package OpenImporter
  *
  */
 class ImportManager
@@ -30,7 +36,7 @@ class ImportManager
 	/**
 	 * The importer that will act as interface between the manager and the
 	 * files that will do the actual import
-	 * @var object
+	 * @var Importer
 	 */
 	public $importer;
 
@@ -42,27 +48,27 @@ class ImportManager
 
 	/**
 	 * The configurator that holds all the settings
-	 * @var object
+	 * @var Configurator
 	 */
 	protected $config;
 
 	/**
 	 * The template, basically our UI.
-	 * @var object
+	 * @var Template
 	 */
 	public $template;
 
 	/**
 	 * The response object.
-	 * @var object
+	 * @var HttpResponse
 	 */
 	protected $response;
 
 	/**
 	 * The language object.
-	 * @var object
+	 * @var Lang
 	 */
-	protected $lng;
+	protected $language;
 
 	/**
 	 * An array of possible importer scripts
@@ -108,11 +114,20 @@ class ImportManager
 	protected $db_pass = '';
 
 	/**
-	 * initialize the main Importer object
+	 * ImportManager constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Configurator $config
+	 * @param Importer $importer
+	 * @param Template $template
+	 * @param Cookie $cookie
+	 * @param HttpResponse $response
 	 */
 	public function __construct($config, $importer, $template, $cookie, $response)
 	{
 		global $time_start;
+
+		require_once(BASEDIR . '/OpenImporter/Utils.php');
 
 		$time_start = time();
 
@@ -123,7 +138,7 @@ class ImportManager
 		$this->cookie = $cookie;
 		$this->template = $template;
 		$this->response = $response;
-		$this->lng = $importer->lng;
+		$this->language = $importer->lng;
 		$this->response->lng = $importer->lng;
 
 		$this->_findScript();
@@ -142,47 +157,77 @@ class ImportManager
 		}
 	}
 
+	/**
+	 * On close, save our session
+	 */
 	public function __destruct()
 	{
 		$this->saveInSession();
 	}
 
+	/**
+	 * Need the db password to do anything useful
+	 */
 	protected function loadPass()
 	{
 		// Check for the password...
 		if (isset($_POST['db_pass']))
+		{
 			$this->data['db_pass'] = $_POST['db_pass'];
+		}
 
 		if (isset($this->data['db_pass']))
+		{
 			$this->db_pass = $this->data['db_pass'];
+		}
 	}
 
+	/**
+	 * Load in the source and destination forum paths
+	 */
 	protected function loadPaths()
 	{
 		if (isset($_POST['path_from']) || isset($_POST['path_to']))
 		{
 			if (isset($_POST['path_from']))
+			{
 				$this->config->path_from = rtrim($_POST['path_from'], '\\/');
+			}
+
 			if (isset($_POST['path_to']))
+			{
 				$this->config->path_to = rtrim($_POST['path_to'], '\\/');
+			}
 
 			$this->data['import_paths'] = array($this->config->path_from, $this->config->path_to);
 		}
 		elseif (isset($this->data['import_paths']))
+		{
 			list ($this->config->path_from, $this->config->path_to) = $this->data['import_paths'];
+		}
 
 		if (!empty($this->data))
+		{
 			$this->importer->setData($this->data);
+		}
 	}
 
+	/**
+	 * Load session data
+	 */
 	protected function loadFromSession()
 	{
 		if (empty($_SESSION['importer_data']))
+		{
 			return;
+		}
 
 		$this->data = $_SESSION['importer_data'];
 	}
 
+	/**
+	 * Save the session data
+	 */
 	protected function saveInSession()
 	{
 		$_SESSION['importer_data'] = $this->data;
@@ -195,7 +240,9 @@ class ImportManager
 	{
 		// Save here so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
+		{
 			$this->data['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
+		}
 		elseif (isset($this->data['import_script']))
 		{
 			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
@@ -222,29 +269,43 @@ class ImportManager
 
 		$this->populateResponseDetails();
 
+		// An ajax response
 		if (isset($_GET['xml']))
 		{
 			$this->response->addHeader('Content-Type', 'text/xml');
 			$this->response->is_xml = true;
 		}
 		else
+		{
 			$this->template->header();
+		}
 
-		if (isset($_GET['action']) && $_GET['action'] == 'validate')
+		if (isset($_GET['action']) && $_GET['action'] === 'validate')
+		{
 			$this->validateFields();
+		}
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
+		{
 			call_user_func(array($this, 'doStep' . $_GET['step']));
+		}
 		else
+		{
 			call_user_func(array($this, 'doStep0'));
+		}
 
 		$this->populateResponseDetails();
 
 		$this->template->render();
 
 		if (!isset($_GET['xml']))
+		{
 			$this->template->footer();
+		}
 	}
 
+	/**
+	 * Validate the step0 input fields
+	 */
 	protected function validateFields()
 	{
 		$this->_detect_scripts();
@@ -253,7 +314,7 @@ class ImportManager
 		{
 			$this->importer->reloadImporter();
 		}
-		catch(Exception $e)
+		catch (\Exception $e)
 		{
 			// Do nothing, let the code die
 		}
@@ -275,9 +336,13 @@ class ImportManager
 	protected function populateResponseDetails()
 	{
 		if (isset($this->importer->xml->general->name))
+		{
 			$this->response->page_title = $this->importer->xml->general->name . ' to ' . $this->config->destination->getName();
+		}
 		else
+		{
 			$this->response->page_title = 'OpenImporter';
+		}
 
 // 		$this->response->from = $this->importer->settings : null
 		$this->response->script = $this->config->script;
@@ -288,27 +353,45 @@ class ImportManager
 
 	/**
 	 * Deletes the importer files from the server
+	 *
 	 * @todo doesn't know yet about the new structure.
 	 */
 	protected function uninstall()
 	{
 		@unlink(__FILE__);
+
 		if (preg_match('~_importer\.xml$~', $this->data['import_script']) != 0)
+		{
 			@unlink(BASEDIR . DS . $this->data['import_script']);
+		}
+
 		$this->data['import_script'] = null;
 	}
 
+	/**
+	 * File validation, existence and format checking
+	 *
+	 * @param string $script
+	 *
+	 * @return bool|mixed
+	 */
 	protected function validateScript($script)
 	{
 		$script = preg_replace('~[\.]+~', '.', $script);
 
 		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script) && preg_match('~_importer\.xml$~', $script) != 0)
+		{
 			return $script;
+		}
 		else
+		{
 			return false;
+		}
 	}
 
 	/**
+	 * Finds import scripts that we can offer for usage
+	 *
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
 	 * @return boolean
@@ -349,7 +432,10 @@ class ImportManager
 		if (!empty($this->data['import_script']))
 		{
 			if ($count_scripts > 1)
+			{
 				$this->sources[$from] = $scripts[$from];
+			}
+
 			return false;
 		}
 
@@ -361,18 +447,22 @@ class ImportManager
 				try
 				{
 					$this->importer->reloadImporter();
-				}
-				catch (Exception $e)
+				} catch (\Exception $e)
 				{
 					$this->data['import_script'] = null;
 				}
 			}
+
 			return false;
 		}
+
 		foreach ($scripts as $key => $val)
-			usort($scripts[$key], function ($v1, $v2) {
+		{
+			usort($scripts[$key], function ($v1, $v2)
+			{
 				return strcasecmp($v1['name'], $v2['name']);
 			});
+		}
 
 		$this->response->use_template = 'select_script';
 		$this->response->params_template = array($scripts, $destination_names);
@@ -381,49 +471,53 @@ class ImportManager
 	}
 
 	/**
-	 * collects all the important things, the importer can't do anything
+	 * Collects all the important things, the importer can't do anything
 	 * without this information.
 	 *
-	 * @global object $import
 	 * @param string|null $error_message
-	 * @param object|null|false $object
+	 * @param object|null|bool $object
+	 *
 	 * @return boolean|null
 	 */
 	public function doStep0($error_message = null, $object = false)
 	{
-		global $import;
+		global $oi_import;
 
-		$import = isset($object) ? $object : false;
+		$oi_import = isset($object) ? $object : false;
 		$this->cookie->destroy();
-		//previously imported? we need to clean some variables ..
+
+		// Previously imported? we need to clean some variables ..
 		unset($_SESSION['import_overall'], $_SESSION['import_steps']);
 
 		if ($this->_detect_scripts())
+		{
 			return true;
+		}
 
 		try
 		{
 			$this->importer->reloadImporter();
 		}
-		catch(Exception $e)
+		catch (\Exception $e)
 		{
 			$this->response->template_error = true;
 			$this->response->addErrorParam($e->getMessage());
 		}
 
-		$form = new Form($this->lng);
+		// Show the step0 template, used to define source/destination directories
+		$form = new Form($this->language);
 		$this->_prepareStep0Form($form);
-
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
 
+		// If we have errors, its the end of the road
 		if ($error_message !== null)
 		{
 			$this->template->footer();
 			exit;
 		}
 
-		return;
+		return null;
 	}
 
 	protected function _prepareStep0Form($form)
@@ -442,16 +536,19 @@ class ImportManager
 		$test = empty($files);
 
 		foreach ($files as $file)
+		{
 			$test |= @file_exists($path . DS . $file);
+		}
 
 		return $test;
 	}
 
 	/**
-	 * the important one, transfer the content from the source forum to our
+	 * The important one, transfer the content from the source forum to our
 	 * destination system
 	 *
-	 * @throws Exception
+	 * @throws \Exception
+	 *
 	 * @return boolean
 	 */
 	public function doStep1()
@@ -470,7 +567,7 @@ class ImportManager
 			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new Exception($e->getMessage());
+			throw new \Exception($e->getMessage());
 		}
 
 		$_GET['substep'] = 0;
@@ -479,33 +576,45 @@ class ImportManager
 		return $this->doStep2();
 	}
 
+	/**
+	 * Show the progress being made in step 1, the main import process
+	 *
+	 * @return array
+	 */
 	protected function step1Progress()
 	{
-
 		$_GET['substep'] = isset($_GET['substep']) ? (int) @$_GET['substep'] : 0;
 		// @TODO: check if this is needed
 		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
 
 		// Skipping steps?
 		if (isset($_SESSION['do_steps']))
+		{
 			$do_steps = $_SESSION['do_steps'];
+		}
 		else
+		{
 			$do_steps = array();
+		}
 
-		//calculate our overall time and create the progress bar
-		if(!isset($_SESSION['import_overall']))
+		// Calculate our overall time and create the progress bar
+		if (!isset($_SESSION['import_overall']))
+		{
 			list ($_SESSION['import_overall'], $_SESSION['import_steps']) = $this->importer->determineProgress();
+		}
 
-		if(!isset($_SESSION['import_progress']))
+		if (!isset($_SESSION['import_progress']))
+		{
 			$_SESSION['import_progress'] = 0;
+		}
 
 		return $do_steps;
 	}
 
 	/**
-	 * we have imported the old database, let's recalculate the forum statistics.
+	 * We have imported the old database, let's recalculate the forum statistics.
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean
 	 */
 	public function doStep2()
@@ -516,7 +625,7 @@ class ImportManager
 
 		try
 		{
-			$key = $this->importer->doStep2($_GET['substep']);
+			$key = $this->importer->doStep2();
 		}
 		catch (DatabaseException $e)
 		{
@@ -524,7 +633,7 @@ class ImportManager
 			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
-			throw new Exception($e->getMessage());
+			throw new \Exception($e->getMessage());
 		}
 
 		$this->template->status($key + 1, 1, false, true);
@@ -533,7 +642,7 @@ class ImportManager
 	}
 
 	/**
-	 * we are done :)
+	 * We are done :)
 	 *
 	 * @return boolean
 	 */

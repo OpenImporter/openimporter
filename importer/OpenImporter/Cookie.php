@@ -7,14 +7,17 @@
  * @version 1.0 Alpha
  */
 
+namespace OpenImporter;
+
 /**
- * We need Cooooookies..
+ * We need Cooooookies.
+ *
+ * @package OpenImporter
  */
 class Cookie
 {
 	/**
-	 * Constructor
-	 * @return boolean
+	 * Cookie constructor.
 	 */
 	public function __construct()
 	{
@@ -22,7 +25,8 @@ class Cookie
 	}
 
 	/**
-	 * set a cookie
+	 * Set a cookie
+	 *
 	 * @param mixed[] $data
 	 * @param string $name
 	 * @return boolean
@@ -33,14 +37,18 @@ class Cookie
 		{
 			setcookie($name, serialize($data), time()+ 86400);
 			$_COOKIE[$name] = serialize($data);
+
 			return true;
 		}
+
 		return false;
 	}
 
 	/**
-	 * get our cookie
+	 * Get our cookie
+	 *
 	 * @param string $name
+	 *
 	 * @return boolean
 	 */
 	public function get($name = 'openimporter_cookie')
@@ -48,6 +56,7 @@ class Cookie
 		if (isset($_COOKIE[$name]))
 		{
 			$cookie = unserialize($_COOKIE[$name]);
+
 			return $cookie;
 		}
 
@@ -55,8 +64,10 @@ class Cookie
 	}
 
 	/**
-	 * once we are done, we should destroy our cookie
+	 * Once we are done, we should destroy our cookie
+	 *
 	 * @param string $name
+	 *
 	 * @return boolean
 	 */
 	public function destroy($name = 'openimporter_cookie')
@@ -68,9 +79,11 @@ class Cookie
 	}
 
 	/**
-	 * extend the cookie with new infos
+	 * Extend the cookie with new information
+	 *
 	 * @param mixed[] $data
 	 * @param string $name
+	 *
 	 * @return boolean
 	 */
 	public function extend($data, $name = 'openimporter_cookie')

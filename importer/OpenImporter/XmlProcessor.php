@@ -9,32 +9,37 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter;
+
 /**
+ * Class XmlProcessor
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
+ *
+ * @package OpenImporter
  *
  */
 class XmlProcessor
 {
 	/**
 	 * This is our main database object.
-	 * @var object
+	 * @var Database
 	 */
 	protected $db;
 
 	/**
 	 * Contains any kind of configuration.
-	 * @var object
+	 * @var Configurator
 	 */
 	public $config;
 
 	/**
 	 * The template
-	 * @var object
+	 * @var Template
 	 */
 	public $template;
 
@@ -58,7 +63,13 @@ class XmlProcessor
 	public $step1_importer;
 
 	/**
-	 * initialize the main Importer object
+	 * XmlProcessor constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Database $db
+	 * @param Configurator $config
+	 * @param Template $template
+	 * @param $xml
 	 */
 	public function __construct($db, $config, $template, $xml)
 	{
@@ -73,26 +84,36 @@ class XmlProcessor
 		$this->step1_importer = $step1_importer;
 	}
 
+	/**
+	 * Loop through each of the steps in the XML file
+	 *
+	 * @param int $step
+	 * @param array $substep
+	 * @param array $do_steps
+	 */
 	public function processSteps($step, &$substep, &$do_steps)
 	{
 		$this->current_step = $step;
 		$table_test = $this->updateStatus($substep, $do_steps);
 
-		// do we need to skip this step?
+		// Do we need to skip this step?
 		if ($table_test === false || !in_array($substep, $do_steps))
-			return;
-
-		// pre sql queries first!!
-		$this->doPresqlStep($substep);
-
-		// Codeblock? Then no query.
-		if ($this->doCode())
 		{
-			$this->advanceSubstep($substep);
 			return;
 		}
 
-		// sql block?
+		// Pre sql queries (<presql> & <presqlMethod>) first!!
+		$this->doPresqlStep($substep);
+
+		// Codeblock? (<code></code>) Then no query.
+		if ($this->doCode())
+		{
+			$this->advanceSubstep($substep);
+
+			return;
+		}
+
+		// sql (<query></query>) block?
 		// @todo $_GET
 		if ($substep >= $_GET['substep'] && isset($this->current_step->query))
 		{
@@ -104,6 +125,11 @@ class XmlProcessor
 		$this->advanceSubstep($substep);
 	}
 
+	/**
+	 * Perform query's as defined in the XML
+	 *
+	 * @param int $substep
+	 */
 	protected function doSql($substep)
 	{
 		// These are temporarily needed to support the current xml importers
@@ -114,22 +140,28 @@ class XmlProcessor
 		$to_prefix = $this->config->to_prefix;
 		$db = $this->db;
 
+		// Update {$from_prefix} and {$to_prefix} in the query
 		$current_data = substr(rtrim($this->fix_params((string) $this->current_step->query)), 0, -1);
 		$current_data = $this->fixCurrentData($current_data);
 
 		$this->doDetect($substep);
 
 		if (!isset($this->current_step->destination))
+		{
 			$this->db->query($current_data);
+		}
 		else
 		{
+			// Prepare the <query>
 			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
+
+			// Any specific LIMIT set
 			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
 
-			// any preparsing code? Loaded here to be used later.
+			// Any <preparsecode> code? Loaded here to be used later.
 			$special_code = $this->getPreparsecode();
 
-			// create some handy shortcuts
+			// Create some handy shortcuts
 			$no_add = $this->shoudNotAdd($this->current_step->options);
 
 			$this->step1_importer->doSpecialTable($special_table);
@@ -144,7 +176,9 @@ class XmlProcessor
 				$keys = array();
 
 				if (isset($this->current_step->detect))
+				{
 					$_SESSION['import_progress'] += $special_limit;
+				}
 
 				while ($row = $this->db->fetch_assoc($special_result))
 				{
@@ -157,7 +191,9 @@ class XmlProcessor
 						$rows[] = $this->prepareRow($row, $special_code, $special_table);
 
 						if (empty($keys))
+						{
 							$keys = array_keys($row);
+						}
 					}
 				}
 
@@ -167,7 +203,9 @@ class XmlProcessor
 				$_REQUEST['start'] += $special_limit;
 
 				if ($this->db->num_rows($special_result) < $special_limit)
+				{
 					break;
+				}
 
 				$this->db->free_result($special_result);
 			}
@@ -177,7 +215,9 @@ class XmlProcessor
 	protected function fixCurrentData($current_data)
 	{
 		if (strpos($current_data, '{$') !== false)
+		{
 			$current_data = eval('return "' . addcslashes($current_data, '\\"') . '";');
+		}
 
 		return $current_data;
 	}
@@ -185,7 +225,9 @@ class XmlProcessor
 	protected function insertRows($rows, $keys, $special_table)
 	{
 		if (empty($rows))
+		{
 			return;
+		}
 
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
@@ -194,9 +236,13 @@ class XmlProcessor
 		foreach ($rows as $row)
 		{
 			if (empty($ignore_slashes))
+			{
 				$insert_rows[] = "'" . implode("', '", addslashes_recursive($row)) . "'";
+			}
 			else
+			{
 				$insert_rows[] = "'" . implode("', '", $row) . "'";
+			}
 		}
 
 		$this->db->query("
@@ -208,12 +254,15 @@ class XmlProcessor
 
 	protected function prepareRow($row, $special_code, $special_table)
 	{
+		// Take case of preparsecode
 		if ($special_code !== null)
+		{
 			eval($special_code);
+		}
 
 		$row = $this->step1_importer->doSpecialTable($special_table, $row);
 
-		// fixing the charset, we need proper utf-8
+		// Fixing the charset, we need proper utf-8
 		$row = fix_charset($row);
 
 		$row = $this->step1_importer->fixTexts($row);
@@ -221,27 +270,39 @@ class XmlProcessor
 		return $row;
 	}
 
+	/**
+	 * Return any <preparsecode></preparsecode> for the step
+	 *
+	 * @return null|string
+	 */
 	protected function getPreparsecode()
 	{
 		if (!empty($this->current_step->preparsecode))
+		{
 			return $this->fix_params((string) $this->current_step->preparsecode);
+		}
 		else
+		{
 			return null;
+		}
 	}
 
 	protected function advanceSubstep($substep)
 	{
 		if ($_SESSION['import_steps'][$substep]['status'] == 0)
+		{
 			$this->template->status($substep, 1, false, true);
+		}
 
 		$_SESSION['import_steps'][$substep]['status'] = 1;
 		flush();
 	}
 
 	/**
-	 * used to replace {$from_prefix} and {$to_prefix} with its real values.
+	 * Used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
 	 * @param string string string in which parameters are replaced
+	 *
 	 * @return string
 	 */
 	public function fix_params($string)
@@ -251,12 +312,15 @@ class XmlProcessor
 			foreach ($_SESSION['import_parameters'] as $param)
 			{
 				foreach ($param as $key => $value)
+				{
 					$string = strtr($string, array('{$' . $key . '}' => $value));
+				}
 			}
 		}
+
 		$string = strtr($string, array('{$from_prefix}' => $this->config->from_prefix, '{$to_prefix}' => $this->config->to_prefix));
 
-		return $string;
+		return trim($string);
 	}
 
 	protected function updateStatus(&$substep, &$do_steps)
@@ -268,14 +332,16 @@ class XmlProcessor
 
 		$_SESSION['import_steps'][$substep]['title'] = (string) $this->current_step->title;
 		if (!isset($_SESSION['import_steps'][$substep]['status']))
+		{
 			$_SESSION['import_steps'][$substep]['status'] = 0;
+		}
 
 		if (!in_array($substep, $do_steps))
 		{
 			$_SESSION['import_steps'][$substep]['status'] = 2;
 			$_SESSION['import_steps'][$substep]['presql'] = true;
 		}
-		// Detect the table, then count rows.. 
+		// Detect the table, then count rows..
 		elseif ($this->current_step->detect)
 		{
 			$table_test = $this->detect((string) $this->current_step->detect);
@@ -292,35 +358,57 @@ class XmlProcessor
 		return $table_test;
 	}
 
+	/**
+	 * Runs any presql commands or calls any presqlMethods
+	 *
+	 * @param array $substep
+	 */
 	protected function doPresqlStep($substep)
 	{
 		if (!isset($this->current_step->presql))
+		{
 			return;
+		}
 
 		if (isset($_SESSION['import_steps'][$substep]['presql']))
+		{
 			return;
+		}
 
+		// Calling a pre method?
 		if (isset($this->current_step->presqlMethod))
+		{
 			$this->step1_importer->beforeSql((string) $this->current_step->presqlMethod);
+		}
 
+		// Prepare presql commands for the query
 		$presql = $this->fix_params((string) $this->current_step->presql);
 		$presql_array = array_filter(explode(';', $presql));
 
 		foreach ($presql_array as $exec)
+		{
 			$this->db->query($exec . ';');
+		}
 
-		// don't do this twice..
+		// Don't do this twice..
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
 	protected function doDetect($substep)
 	{
-		global $import;
+		global $oi_import;
 
-		if (isset($this->current_step->detect) && isset($import->count))
-			$import->count->$substep = $this->detect((string) $this->current_step->detect);
+		if (isset($this->current_step->detect) && isset($oi_import->count))
+		{
+			$oi_import->count->$substep = $this->detect((string) $this->current_step->detect);
+		}
 	}
 
+	/**
+	 * Run a <code> block
+	 *
+	 * @return bool
+	 */
 	protected function doCode()
 	{
 		if (isset($this->current_step->code))
@@ -333,7 +421,7 @@ class XmlProcessor
 			$to_prefix = $this->config->to_prefix;
 			$db = $this->db;
 
-			// execute our code block
+			// Execute our code block
 			$special_code = $this->fix_params((string) $this->current_step->code);
 			eval($special_code);
 
@@ -346,7 +434,7 @@ class XmlProcessor
 	protected function detect($table)
 	{
 		$table = $this->fix_params($table);
-		$table = preg_replace('/^`[\w\d]*`\./i', '', $this->fix_params($table));
+		$table = preg_replace('/^`[\w\d\-_]*`\./i', '', $this->fix_params($table));
 
 		$db_name_str = $this->config->source->getDbName();
 
@@ -356,15 +444,21 @@ class XmlProcessor
 			LIKE '{$table}'");
 
 		if ($result === false || $this->db->num_rows($result) == 0)
+		{
 			return false;
+		}
 		else
+		{
 			return true;
+		}
 	}
 
 	protected function shouldIgnore($options)
 	{
 		if (isset($options->ignore) && $options->ignore == false)
+		{
 			return false;
+		}
 
 		return !isset($options->replace);
 	}
@@ -387,14 +481,22 @@ class XmlProcessor
 	protected function insertStatement($options)
 	{
 		if ($this->shouldIgnore($options))
+		{
 			$ignore = 'IGNORE';
+		}
 		else
+		{
 			$ignore = '';
+		}
 
 		if ($this->shouldReplace($options))
+		{
 			$replace = 'REPLACE';
+		}
 		else
+		{
 			$replace = 'INSERT';
+		}
 
 		return $replace . ' ' . $ignore . ' INTO';
 	}
@@ -403,9 +505,13 @@ class XmlProcessor
 	{
 		// @todo $_REQUEST
 		if (strpos($current_data, '%d') !== false)
+		{
 			return $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
+		}
 		else
+		{
 			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
+		}
 
 	}
 }

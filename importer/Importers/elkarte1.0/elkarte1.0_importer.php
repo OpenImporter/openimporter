@@ -17,27 +17,33 @@
  * The class contains code that allows the Importer to obtain settings
  * from the ElkArte installation.
  */
-class elkarte1_0_importer extends SmfCommonSource
+class elkarte1_0_importer extends Importers\SmfCommonSource
 {
+	/**
+	 * @var string
+	 */
 	public $attach_extension = 'elk';
 
+	/**
+	 * @return string
+	 */
 	public function getName()
 	{
 		return 'ElkArte 1.0';
 	}
 }
 
-class elkarte1_0_importer_step1 extends SmfCommonSourceStep1
+class elkarte1_0_importer_step1 extends Importers\SmfCommonSourceStep1
 {
 }
 
-class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
+class elkarte1_0_importer_step2 extends Importers\SmfCommonSourceStep2
 {
 	public function substep0()
 	{
 		$to_prefix = $this->config->to_prefix;
 
-		// Get all members with wrong number of personal messages.
+		// Get all members with wrong number of personal messages and fix it
 		$request = $this->db->query("
 			SELECT mem.id_member, COUNT(pmr.id_pm) AS real_num, mem.personal_messages
 			FROM {$to_prefix}members AS mem
@@ -79,6 +85,7 @@ class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 	{
 		$to_prefix = $this->config->to_prefix;
 
+		// Set the number of topic likes based on likes to the first message in the topic
 		$request = $this->db->query("
 			SELECT COUNT(*) AS count, t.id_topic
 			FROM {$to_prefix}message_likes AS ml
@@ -101,6 +108,7 @@ class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 	{
 		$to_prefix = $this->config->to_prefix;
 
+		// Update the likes each member has received based on liked messages
 		$request = $this->db->query("
 			SELECT COUNT(*) AS count, id_poster
 			FROM {$to_prefix}message_likes
@@ -122,6 +130,7 @@ class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 	{
 		$to_prefix = $this->config->to_prefix;
 
+		// Update the likes each member has given
 		$request = $this->db->query("
 			SELECT COUNT(*) AS count, id_member
 			FROM {$to_prefix}message_likes
@@ -140,6 +149,6 @@ class elkarte1_0_importer_step2 extends SmfCommonSourceStep2
 	}
 }
 
-class elkarte1_0_importer_step3 extends SmfCommonSourceStep3
+class elkarte1_0_importer_step3 extends Importers\SmfCommonSourceStep3
 {
 }

@@ -7,7 +7,10 @@
  * @version 1.0 Alpha
  */
 
-class WP3 extends AbstractSourceImporter
+/**
+ * Class WP3
+ */
+class WP3 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/wp-includes/version.php';
 

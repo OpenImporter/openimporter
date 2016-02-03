@@ -9,18 +9,19 @@
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
  *
  * Copyright (c) 2014, Thorsten Eurich and René-Gilles Deberdt
  * All rights reserved.
  */
 
 /**
+ * Class wedge0_1_importer
  * The class contains code that allows the Importer to obtain settings
  * from the Wedge installation.
  */
-class wedge0_1_importer extends SmfCommonSource
+class wedge0_1_importer extends Importers\SmfCommonSource
 {
 	public $attach_extension = 'ext';
 
@@ -30,7 +31,10 @@ class wedge0_1_importer extends SmfCommonSource
 	}
 }
 
-class wedge0_1_importer_step1 extends SmfCommonSourceStep1
+/**
+ * Class wedge0_1_importer_step1
+ */
+class wedge0_1_importer_step1 extends Importers\SmfCommonSourceStep1
 {
 	public function doSpecialTable($special_table, $params = null)
 	{
@@ -48,7 +52,9 @@ class wedge0_1_importer_step1 extends SmfCommonSourceStep1
 		foreach ($convert_ips as $ip)
 		{
 			if (array_key_exists($ip, $row))
+			{
 				$row[$ip] = $this->_prepare_ipv6($row[$ip]);
+			}
 		}
 
 		return $row;
@@ -97,10 +103,13 @@ class wedge0_1_importer_step1 extends SmfCommonSourceStep1
 	}
 
 	/**
-	 * placehoder function to convert IPV4 to IPV6
+	 * Placeholder function to convert IPV4 to IPV6
+	 *
 	 * @todo convert IPV4 to IPV6
 	 * @todo move to source file, because it depends on the source for any specific destination
+	 *
 	 * @param string $ip
+	 *
 	 * @return string $ip
 	 */
 	private function _prepare_ipv6($ip)
@@ -109,7 +118,10 @@ class wedge0_1_importer_step1 extends SmfCommonSourceStep1
 	}
 }
 
-class wedge0_1_importer_step2 extends SmfCommonSourceStep2
+/**
+ * Class wedge0_1_importer_step2
+ */
+class wedge0_1_importer_step2 extends Importers\SmfCommonSourceStep2
 {
 	public function substep0()
 	{
@@ -206,7 +218,9 @@ class wedge0_1_importer_step2 extends SmfCommonSourceStep2
 		);
 
 		foreach ($indexes as $index_info)
+		{
 			$this->db->alter_table("{$to_prefix}topics", $index_info);
+		}
 
 		$_REQUEST['start'] = 0;
 		pastTime(13);
@@ -268,14 +282,19 @@ class wedge0_1_importer_step2 extends SmfCommonSourceStep2
 		);
 
 		foreach ($indexes as $index_info)
+		{
 			$this->db->alter_table("{$to_prefix}messages", $index_info);
+		}
 
 		$_REQUEST['start'] = 0;
 		pastTime(14);
 	}
 }
 
-class wedge0_1_importer_step3 extends SmfCommonSourceStep3
+/**
+ * Class wedge0_1_importer_step3
+ */
+class wedge0_1_importer_step3 extends Importers\SmfCommonSourceStep3
 {
 	public function run($import_script)
 	{
