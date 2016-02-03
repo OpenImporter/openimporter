@@ -1,7 +1,7 @@
 <?php
 
 
-namespace OpenImporter;
+use OpenImporter\Cookie;
 
 /**
  * we need Cooooookies..
