@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
-		<name>MyBB 1.6</name>
+		<name>MyBB 1.8</name>
 		<version>ElkArte 1.0</version>
-		<className>mybb16</className>
+		<className>mybb18</className>
 	</general>
 	<step type="mandatory">
 		<title>Importing Members</title>
@@ -11,10 +11,15 @@
 		<destination>{$to_prefix}members</destination>
 		<presql>
 			TRUNCATE {$to_prefix}members;
+			ALTER TABLE {$to_prefix}members
+				CHANGE COLUMN password_salt password_salt varchar(16) NOT NULL default '';
 		</presql>
 		<preparsecode>
 			if (!preg_match('/\d{4}-\d{2}-\d{2}/', $row['birthdate']))
 				$row['birthdate'] = '0001-01-01';
+
+			if (strpos($row['avatar'],'http') === false)
+			    $row['avatar'] = '';
 		</preparsecode>
 		<query>
 			SELECT
@@ -52,6 +57,16 @@
 			TRUNCATE {$to_prefix}boards;
 			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
 		</presql>
+		<preparsecode>
+			$request = $this->db->query("
+				SELECT id_cat
+				FROM {$to_prefix}categories");
+				while ($cats = $this->db->fetch_assoc($request))
+				{
+					if (!in_array($row['id_cat'], $cats))
+						$row['id_parent'] = $row['id_cat'];
+				}
+		</preparsecode>
 		<query>
 			SELECT
 				fid AS id_board, SUBSTRING(name, 1, 255) AS name,
@@ -149,6 +164,7 @@
 			$votes = explode('||~|~||', $row['votes']);
 
 			$id_poll = $row['id_poll'];
+
 			for ($i = 0, $n = count($options); $i < $n; $i++)
 			{
 				$rows[] = implode(', ', array(
@@ -158,6 +174,8 @@
 					'votes' => @$votes[$i],
 				));
 			}
+			$no_add = true;
+
 		]]></preparsecode>
 		<query>
 			SELECT pid AS id_poll, options AS opt, votes
@@ -169,7 +187,8 @@
 		<detect>{$from_prefix}pollvotes</detect>
 		<destination>{$to_prefix}log_polls</destination>
 		<query>
-			SELECT pid AS id_poll, uid AS id_member, voteoption AS id_choice
+			SELECT
+				pid AS id_poll, uid AS id_member, voteoption AS id_choice
 			FROM {$from_prefix}pollvotes;
 		</query>
 	</step>
@@ -200,7 +219,8 @@
 		<detect>{$from_prefix}privatemessages</detect>
 		<destination>{$to_prefix}pm_recipients</destination>
 		<query>
-			SELECT pmid AS id_pm, toid AS id_member, readtime != 0 AS is_read, '-1' AS labels
+			SELECT
+				pmid AS id_pm, toid AS id_member, readtime != 0 AS is_read, '-1' AS labels
 			FROM {$from_prefix}privatemessages
 			WHERE folder != 2;
 		</query>
@@ -239,26 +259,33 @@
 		<options>
 			<no_add>true</no_add>
 		</options>
+		<presql>
+			TRUNCATE {$to_prefix}attachments;
+		</presql>
 		<preparsecode>
 			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_msg', 'downloads', 'width', 'height');
+			$no_add = true;
 
 			if (!isset($mybb_attachment_dir))
 			{
-				$result = $db->query("
-					SELECT value
+				$result = $this->db->query("
+					SELECT
+						value
 					FROM {$from_prefix}settings
 					WHERE name = 'uploadspath'
 					LIMIT 1");
-				list ($mybb_attachment_dir) = $db->fetch_row($result);
-				$db->free_result($result);
+				list ($mybb_attachment_dir) = $this->db->fetch_row($result);
+				$this->db->free_result($result);
 
-				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
+				$mybb_attachment_dir = $_POST['path_from'] . ltrim($mybb_attachment_dir, '.');
 			}
 
-			//create some useful shortcuts, we start with images..
+			// Create some useful shortcuts, we start with images..
 			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
 			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png')))
+			{
 				$ext = '';
+			}
 
 			$source = $mybb_attachment_dir . '/' . $row['attachname'];
 			$file_hash = createAttachmentFileHash($row['filename']);
@@ -273,15 +300,15 @@
 			if (!empty($ext))
 			{
 				list ($width, $height) = getimagesize($destination);
-				if(empty($width))
+				if (empty($width))
 				{
 					$width = 0;
 					$height = 0;
 				}
 			}
 
-			//prepare our insert
-			$rows[] = implode(', ', array(
+			// Prepare our insert
+			$rows[] = array(
 				'id_attach' => $id_attach,
 				'size' => filesize($destination),
 				'filename' => $row['filename'],
@@ -290,10 +317,11 @@
 				'downloads' => $row['downloads'],
 				'width' => $width,
 				'height' => $height,
-			));
+			);
 		</preparsecode>
 		<query>
-			SELECT pid AS id_msg, downloads, filename, filesize, attachname
+			SELECT
+				pid AS id_msg, downloads, filename, filesize, attachname
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
@@ -305,31 +333,33 @@
 			<no_add>true</no_add>
 		</options>
 		<preparsecode>
-			//create some useful shortcuts
-			$source = $this->config->path_from . strtok(ltrim($row['filename'], '.'), '?');
-			$filename = preg_replace('~avatar_(.+?)\?~is', 'avatar_$1', $row['filename']);
+			$keys = array('size', 'filename', 'file_hash', 'id_member');
+			$no_add = true;
 
-			$upload_result = $this->step1_importer->moveAvatar($row, $source, $filename);
-
-			if (empty($upload_result))
-			{
-				// Ensure nothing is updated.
-				$rows = array();
-			}
-			else
-			{
-				$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_member');
-
-				$rows[] = $upload_result;
-			}
+			// Create some useful shortcuts
+			$source = $_POST['path_from'] . strtok(ltrim($row['filename'], '.'), '?');
+			$filename = preg_replace('~avatar_(.+?)\?dateline=\d*~is', 'avatar_$1', $row['filename']);
+			$file = substr(strrchr($filename, "/"), 1);
+			$file_hash = createAttachmentFileHash($filename);
+			$id_attach = $this->step1_importer->newIdAttach();
+			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 
 			copy_file($source, $destination);
+
+			// Prepare the insert
+			$rows[] = array(
+				'size' => file_exists($destination) ? filesize($destination) : 0,
+				'filename' => $file,
+				'file_hash' => $file_hash,
+				'id_member' => $row['id_member'],
+			);
 		</preparsecode>
 		<query>
-			SELECT uid AS id_member, avatar AS filename
+			SELECT
+				uid AS id_member, avatar AS filename
 			FROM {$from_prefix}users
 			WHERE avatartype = 'upload'
-			OR avatartype = 'gallery';
+				OR avatartype = 'gallery';
 		</query>
 	</step>
 </importer>

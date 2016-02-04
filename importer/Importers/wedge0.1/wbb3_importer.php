@@ -7,7 +7,10 @@
  * @version 1.0 Alpha
  */
 
-class wbb3_1 extends AbstractSourceImporter
+/**
+ * Class wbb3_1
+ */
+class wbb3_1 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/wc/config.inc.php';
 
@@ -42,8 +45,15 @@ class wbb3_1 extends AbstractSourceImporter
 	}
 }
 
+
+// Utility functions
+
 /**
- * Utility functions
+ * Normalize BBC
+ *
+ * @param string $message
+ *
+ * @return mixed
  */
 function wbb_replace_bbc($message)
 {
@@ -100,5 +110,6 @@ function wbb_replace_bbc($message)
 		),
 		trim($message)
 	);
+
 	return $message;
 }

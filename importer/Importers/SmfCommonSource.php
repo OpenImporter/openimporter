@@ -13,23 +13,63 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace Importers;
+
+use OpenImporter\Configurator;
+use OpenImporter\Database;
+
 /**
+ * Class SmfCommonSource
  * The class contains code that allows the Importer to obtain settings
- * from softwares that still have an SMF heritage.
+ * from software that still has an SMF heritage.
+ *
+ * @package Importers
  */
 abstract class SmfCommonSource
 {
+	/**
+	 * The attachment extension
+	 * @var string
+	 */
 	public $attach_extension = '';
 
+	/**
+	 * Path to the forum
+	 * @var null
+	 */
 	protected $path = null;
 
+	/**
+	 * @var null|int
+	 */
 	public $id_attach = null;
+
+	/**
+	 * @var null|string
+	 */
 	public $attachmentUploadDirs = null;
+
+	/**
+	 * @var null|string
+	 */
 	public $avatarUploadDir = null;
 
+	/**
+	 * @var Configurator
+	 */
 	protected $config = null;
+
+	/**
+	 * @var Database
+	 */
 	protected $db = null;
 
+	/**
+	 * Set the database and configuration to the class
+	 *
+	 * @param Database $db
+	 * @param Configurator $config
+	 */
 	public function setParam($db, $config)
 	{
 		$this->db = $db;
@@ -38,6 +78,13 @@ abstract class SmfCommonSource
 
 	abstract public function getName();
 
+	/**
+	 * Check that the Settings.php file exists
+	 *
+	 * @param $path
+	 *
+	 * @return bool
+	 */
 	public function checkSettingsPath($path)
 	{
 		$found = file_exists($path . '/Settings.php');
@@ -48,6 +95,13 @@ abstract class SmfCommonSource
 		return $found;
 	}
 
+	/**
+	 * The path to our destination forum
+	 *
+	 * @param $path
+	 *
+	 * @return bool|string
+	 */
 	public function getDestinationURL($path)
 	{
 		// Cannot find Settings.php?
@@ -109,7 +163,7 @@ abstract class SmfCommonSource
 	}
 
 	/**
-	 * helper function for old (SMF) attachments and some new ones
+	 * Helper function for old (SMF) attachments and some new ones
 	 *
 	 * @param string $filename
 	 * @param int $attachment_id
@@ -137,18 +191,26 @@ abstract class SmfCommonSource
 		}
 	}
 
+	/**
+	 * Determine the source attachment and avatar directories
+	 *
+	 * @param bool $force
+	 */
 	public function specialAttachments($force = false)
 	{
 		$to_prefix = $this->config->to_prefix;
 
+		// If we don't know the attachment or avatar directories
 		if ($force === true || !isset($this->id_attach, $this->attachmentUploadDirs, $this->avatarUploadDir))
 		{
+			// Attachment starting id
 			$result = $this->db->query("
 				SELECT MAX(id_attach) + 1
 				FROM {$to_prefix}attachments");
 			list ($this->id_attach) = $this->db->fetch_row($result);
 			$this->db->free_result($result);
 
+			// Attachment directories
 			$result = $this->db->query("
 				SELECT value
 				FROM {$to_prefix}settings
@@ -156,9 +218,9 @@ abstract class SmfCommonSource
 				LIMIT 1");
 			list ($attachmentdir) = $this->db->fetch_row($result);
 			$attachment_UploadDir = @unserialize($attachmentdir);
-
 			$this->attachmentUploadDirs = !empty($attachment_UploadDir) ? $attachment_UploadDir : array(1 => $attachmentdir);
 
+			// Avatar directories
 			$result = $this->db->query("
 				SELECT value
 				FROM {$to_prefix}settings
@@ -202,6 +264,11 @@ abstract class SmfCommonSource
 	}
 }
 
+/**
+ * Class SmfCommonSourceStep1
+ *
+ * @package Importers
+ */
 abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 {
 	public function fixTexts($row)
@@ -226,6 +293,7 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		if ($special_table == $this->config->to_prefix . 'attachments' && $params === null)
 		{
 			$this->config->destination->specialAttachments();
+
 			return $params;
 		}
 		// Here we have various bits of custom code for some known problems global to all importers.
@@ -235,11 +303,14 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		return $params;
 	}
 
+	/**
+	 * Delete any defined db attachments that exist on disk for the source system
+	 */
 	public function removeAttachments()
 	{
 		$to_prefix = $this->config->to_prefix;
 
-		// !!! This should probably be done in chunks too.
+		// @todo This should probably be done in chunks too.
 		// attachment_type = 1 are avatars.
 		$result = $this->db->query("
 			SELECT id_attach, filename, id_folder
@@ -266,13 +337,23 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 		$this->db->free_result($result);
 
-		// This is valid for some of the srouces (e.g. Elk/SMF/Wedge), but not for others
+		// This is valid for some of the sources (e.g. Elk/SMF/Wedge), but not for others
 		if (method_exists($this->config->source, 'getAttachmentDirs'))
+		{
 			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
+		}
 	}
 
+	/**
+	 * Create the destination directory structure for the attachments
+	 *
+	 * @param string[] $folders
+	 *
+	 * @return bool
+	 */
 	protected function createAttachFoldersStructure($folders)
 	{
+
 		$source_base = $this->guessBase($folders);
 		$destination_base = $this->guessBase($this->config->destination->getAllAttachDirs());
 
@@ -298,6 +379,13 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		$this->config->destination->specialAttachments(true);
 	}
 
+	/**
+	 * Determine the base / root folder for attachments
+	 *
+	 * @param string[] $folders
+	 *
+	 * @return bool|string
+	 */
 	protected function guessBase($folders)
 	{
 		foreach ($folders as $folder)
@@ -426,6 +514,11 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	}
 }
 
+/**
+ * Class SmfCommonSourceStep2
+ *
+ * @package Importers
+ */
 abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 {
 	abstract public function substep0();
@@ -991,6 +1084,11 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	}
 }
 
+/**
+ * Class SmfCommonSourceStep3
+ *
+ * @package Importers
+ */
 abstract class SmfCommonSourceStep3 extends Step3BaseImporter
 {
 	public function run($import_script)
@@ -1004,26 +1102,4 @@ abstract class SmfCommonSourceStep3 extends Step3BaseImporter
 					('enable_password_conversion', '1'),
 					('imported_from', '" . $import_script . "')");
 	}
-}
-
-/**
- * helper function to create an encrypted attachment name
- *
- * @param string $filename
- * @return string
- */
-function createAttachmentFilehash($filename)
-{
-	return sha1(md5($filename . time()) . mt_rand());
-}
-
-/**
- * function copy_smileys is used to copy smileys from a source to destination.
- * @param type $source
- * @param type $dest
- * @return type
- */
-function copy_smileys($source, $dest)
-{
-	copy_dir($source, $dest);
 }

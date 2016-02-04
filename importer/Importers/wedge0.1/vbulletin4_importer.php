@@ -7,7 +7,10 @@
  * @version 1.0 Alpha
  */
 
-class vBulletin_4 extends AbstractSourceImporter
+/**
+ * Class vBulletin_4
+ */
+class vBulletin_4 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/includes/config.php';
 
@@ -41,8 +44,14 @@ class vBulletin_4 extends AbstractSourceImporter
 	}
 }
 
+// Utility functions
+
 /**
- * Utility functions
+ * Normalize BBC
+ *
+ * @param string $content
+ *
+ * @return mixed|string
  */
 function vb4_replace_bbc($content)
 {
@@ -64,10 +73,12 @@ function vb4_replace_bbc($content)
 
 	// fixing Code tags
 	$replace = array();
-	
+
 	preg_match('~\[code\](.+?)\[/code\]~is', $content, $matches);
 	foreach ($matches as $temp)
+	{
 		$replace[$temp] = htmlspecialchars($temp);
+	}
 	$content = substr(strtr($content, $replace), 0, 65534);
 
 	return $content;

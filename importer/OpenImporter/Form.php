@@ -7,12 +7,21 @@
  * @version 1.0 Alpha
  */
 
+namespace OpenImporter;
+
 /**
  * Just a way to collect a bunch of stuff to be used to build a form.
+ *
+ * @property string title
+ * @property string description
+ * @property array submit
+ *
+ * @package OpenImporter
  */
 class Form
 {
 	protected $data = array();
+
 	protected $lng = null;
 
 	/**
@@ -28,7 +37,9 @@ class Form
 	public function __set($key, $val)
 	{
 		if ($key === 'options')
+		{
 			throw new FormException('Use Form::addOptions or Form::addField to set new fields');
+		}
 
 		$this->data[$key] = $val;
 	}
@@ -36,9 +47,13 @@ class Form
 	public function __get($key)
 	{
 		if (isset($this->data[$key]))
+		{
 			return $this->data[$key];
+		}
 		else
+		{
 			return null;
+		}
 	}
 
 	public function addOption($field)
@@ -98,10 +113,13 @@ class Form
 	public function addField($field)
 	{
 		if (is_object($field))
+		{
 			return $this->addField($this->makeFieldArray($field));
+		}
 		else
 		{
 			$field['id'] = 'field' . $field['id'];
+
 			return $this->addOption($field);
 		}
 	}

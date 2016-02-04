@@ -2,7 +2,7 @@
 <resources>
 	<string name="locale">en</string>
 	<string name="which_software">Which software are you using?</string>
-	<string name="multiple_files">The importer found multiple import data files. Please choose the one you wish to use.</string>
+	<string name="multiple_files">The importer has multiple import sources available for use. Please choose the one you wish to use.</string>
 	<string name="not_here">It's not here!</string>
 	<string name="check_more"><![CDATA[If the software you're looking for doesn't appear above, please check to see if it is available for download at <a href="https://github.com/openimporter/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></string>
 	<string name="having_problems"><![CDATA[If you're having any other problems with this importer, don't hesitate to look for help.]]></string>
@@ -20,8 +20,8 @@
 	<string name="destination_installed">Try again!</string>
 	<string name="to_what">Import to which platform?</string>
 	<string name="where">Where are they?</string>
-	<string name="locate_destination">The importer should only need to know where the two installations are, after which it should be able to handle everything for itself.</string>
-	<string name="locate_source">The importer need to know in to which software you are importing your forum.</string>
+	<string name="locate_destination">The importer only needs to know where the two forum installations (root directory) are located, after which it should be able to handle everything for itself.</string>
+	<string name="locate_source">The importer needs to know which software you are importing to.</string>
 	<string name="advanced_options">Advanced options</string>
 	<string name="path_to_destination">Path to destination</string>
 	<string name="path_from">Path to %s</string>

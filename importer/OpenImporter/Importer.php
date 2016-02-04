@@ -13,6 +13,8 @@
  * license:	BSD, See included LICENSE.TXT for terms and conditions.
  */
 
+namespace OpenImporter;
+
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 
@@ -20,24 +22,25 @@ if (!defined('DS'))
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
  *
+ * @package OpenImporter
  */
 class Importer
 {
 	/**
 	 * This is our main database object.
-	 * @var object
+	 * @var Database
 	 */
 	protected $db;
 
 	/**
 	 * The "translator" (i.e. the Lang object)
-	 * @var object
+	 * @var Lang
 	 */
 	public $lng;
 
 	/**
 	 * Contains any kind of configuration.
-	 * @var object
+	 * @var Configurator
 	 */
 	public $config;
 
@@ -49,7 +52,7 @@ class Importer
 
 	/**
 	 * The template, basically our UI.
-	 * @var object
+	 * @var Template
 	 */
 	public $template;
 
@@ -66,8 +69,8 @@ class Importer
 	public $from_prefix;
 
 	/**
-	 * The XML file which will be used from the importer.
-	 * @var Object
+	 * The XML file which will be used from the importer (output from SimpleXMLElement)
+	 * @var object
 	 */
 	public $xml;
 
@@ -127,7 +130,12 @@ class Importer
 	public $settings  = null;
 
 	/**
-	 * initialize the main Importer object
+	 * Importer constructor.
+	 * Initialize the main Importer object
+	 *
+	 * @param Configurator $config
+	 * @param Lang $lang
+	 * @param Template $template
 	 */
 	public function __construct($config, $lang, $template)
 	{
@@ -163,12 +171,13 @@ class Importer
 		$source_helper = str_replace('.xml', '.php', $file);
 		require_once($source_helper);
 
-		// Maybe the "destination" comes with php helper functions?
+		// The "destination" php helper functions
 		$path = dirname($file);
-		$dest_helper = $path . DS . basename($path) . '_importer.php';
-		require_once($dest_helper);
+		$destination_helper = $path . DS . basename($path) . '_importer.php';
+		require_once($destination_helper);
 
-		$this->_importer_base_class_name = str_replace('.', '_', basename($dest_helper, '.php'));
+		// Initiate the class
+		$this->_importer_base_class_name = str_replace('.', '_', basename($destination_helper, '.php'));
 		$this->config->destination = new $this->_importer_base_class_name();
 
 		$this->_loadSettings();
@@ -178,6 +187,7 @@ class Importer
 
 	/**
 	 * loads the _importer.xml files
+	 *
 	 * @param string $file
 	 * @throws ImportException
 	 */
@@ -190,23 +200,29 @@ class Importer
 
 			$this->xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ImportException::exception_handler($e, $this->template);
 		}
 	}
 
+	/**
+	 * @param Form $form
+	 */
 	public function populateFormFields($form)
 	{
-		$form_path = isset($this->config->path_to) ? $this->config->path_to : BASEDIR;
+		// From forum path
+		$form_path = isset($this->config->path_to) ? $this->config->path_to : dirname(BASEDIR);
 		$form->addOption($this->config->destination->getFormFields($form_path));
 
 		$class = (string) $this->xml->general->className;
 		$settings = new $class();
 
+		// To path
 		if (!isset($this->config->path_from))
-			$this->config->path_from = BASEDIR;
+			$this->config->path_from = dirname(BASEDIR);
 
+		// Check if we can load the settings given the path from
 		$path_from = $settings->loadSettings($this->config->path_from, true);
 		if ($path_from !== null)
 		{
@@ -227,6 +243,7 @@ class Importer
 				$form->addField($field);
 		}
 
+		// We will want the db access password
 		$form->addOption(array(
 			'id' => 'db_pass',
 			'label' => 'database_passwd',
@@ -236,8 +253,10 @@ class Importer
 
 		$form->addSeparator();
 
+		// How many steps are involved in this forum conversion
 		$steps = $this->_find_steps();
 
+		// Give the option to not perform certain steps
 		if (!empty($steps))
 		{
 			foreach ($steps as $key => $step)
@@ -255,19 +274,20 @@ class Importer
 	/**
 	 * Prepare the importer with custom settings of the source
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return boolean|null
 	 */
 	private function _loadSettings()
 	{
+		// Initiate the source class
 		$class = (string) $this->xml->general->className;
 		$this->config->source = new $class();
 
+		// Defines / Globals
 		$this->config->source->setDefines();
-
 		$this->config->source->setGlobals();
 
-		//Dirty hack
+		// Dirty hack
 		if (isset($_SESSION['store_globals']))
 		{
 			foreach ($_SESSION['store_globals'] as $varname => $value)
@@ -276,25 +296,27 @@ class Importer
 			}
 		}
 
+		// Load the settings from the source forum
 		$this->loadSettings();
 
 		// Any custom form elements to speak of?
 		$this->init_form_data();
 
+		// Check passwords, and paths?
 		if (empty($this->config->path_to))
 			return;
-		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 
+		$this->config->boardurl = $this->config->destination->getDestinationURL($this->config->path_to);
 		if ($this->config->boardurl === false)
-			throw new Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
+			throw new \Exception($this->lng->get(array('settings_not_found', $this->config->destination->getName())));
 
 		if (!$this->config->destination->verifyDbPass($this->data['db_pass']))
-			throw new Exception($this->lng->get('password_incorrect'));
+			throw new \Exception($this->lng->get('password_incorrect'));
 
 		// Check the steps that we have decided to go through.
 		if (!isset($_POST['do_steps']) && !isset($_SESSION['do_steps']))
 		{
-			throw new Exception($this->lng->get('select_step'));
+			throw new \Exception($this->lng->get('select_step'));
 		}
 		elseif (isset($_POST['do_steps']))
 		{
@@ -326,12 +348,18 @@ class Importer
 				FROM ' . $this->config->from_prefix . $this->config->source->getTableTest(), true);
 
 			if ($result === false)
-				throw new Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('permission_denied', $this->db->getLastError(), (string) $this->xml->general->name)));
 
 			$this->db->free_result($result);
 		}
 	}
 
+	/**
+	 * Calls the loadSettings function of AbstractSourceImporter
+	 * Used to load source forum settings
+	 *
+	 * @throws \Exception
+	 */
 	protected function loadSettings()
 	{
 		if (!empty($this->config->path_from))
@@ -342,9 +370,9 @@ class Importer
 		if ($found === false)
 		{
 			if (@ini_get('open_basedir') != '')
-				throw new Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
+				throw new \Exception($this->lng->get(array('open_basedir', (string) $this->xml->general->name)));
 
-			throw new Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
+			throw new \Exception($this->lng->get(array('config_not_found', (string) $this->xml->general->name)));
 		}
 	}
 
@@ -355,10 +383,11 @@ class Importer
 			list ($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name) = $this->config->destination->dbConnectionData();
 
 			$this->db = new Database($db_server, $db_user, $db_passwd, $db_persist);
-			//We want UTF8 only, let's set our mysql connetction to utf8
+
+			// We want UTF8 only, let's set our mysql connection to utf8
 			$this->db->query('SET NAMES \'utf8\'');
 		}
-		catch(Exception $e)
+		catch(\Exception $e)
 		{
 			ImportException::exception_handler($e, $this->template);
 			die();
@@ -466,7 +495,7 @@ class Importer
 
 		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
 
-		// loop through each step
+		// Loop through each step
 		foreach ($this->xml->step as $counts)
 		{
 			if ($counts->detect)
@@ -520,7 +549,8 @@ class Importer
 	 * we have imported the old database, let's recalculate the forum statistics.
 	 *
 	 * @global Database $db
-	 * @global type $to_prefix
+	 * @global string $to_prefix
+	 *
 	 * @return boolean
 	 */
 	public function doStep2()

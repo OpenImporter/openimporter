@@ -8,15 +8,16 @@
  */
 
 /**
- * Class XenForo1_1
+ * Class mybb18
+ * Settings for the MyBB 1.8 system.
  */
-class XenForo1_1 extends Importers\AbstractSourceImporter
+class mybb18 extends Importers\AbstractSourceImporter
 {
-	protected $setting_file = '/includes/config.php';
+	protected $setting_file = '/inc/config.php';
 
 	public function getName()
 	{
-		return 'XenForo 1.1';
+		return 'MyBB 1.8';
 	}
 
 	public function getVersion()
@@ -26,20 +27,20 @@ class XenForo1_1 extends Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $xf_prefix;
+		global $config;
 
-		return '`' . $this->getDbName() . '`.' . $xf_prefix;
+		return '`' . $this->getDbName() . '`.' . $config['database']['table_prefix'];
 	}
 
 	public function getDbName()
 	{
-		global $xf_database;
+		global $config;
 
-		return $xf_database;
+		return $config['database']['database'];
 	}
 
 	public function getTableTest()
 	{
-		return 'user';
+		return 'users';
 	}
 }

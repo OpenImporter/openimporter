@@ -7,23 +7,21 @@
  * @version 1.0 Alpha
  */
 
+namespace OpenImporter;
+
 /**
- * The database class.
- *
+ * Class Database
  * This class provides an easy wrapper around the common database
  * functions we work with.
+ *
+ * @package OpenImporter
  */
 class Database
 {
 	/**
-	 * Constructor, connects to the database.
-	 *
-	 * @param type $db_server
-	 * @param type $db_user
-	 * @param type $db_password
-	 * @param type $db_persist
+	 * @var \mysqli
 	 */
-	protected $con;
+	protected $connect;
 
 	/**
 	 * Allows to run a query two times on certain errors.
@@ -31,9 +29,10 @@ class Database
 	 * @var bool
 	 */
 	protected $second_try = true;
-	
+
 	/**
-	 * 
+	 * Database constructor.
+	 *
 	 * @param string $db_server
 	 * @param string $db_user
 	 * @param string $db_password
@@ -41,10 +40,12 @@ class Database
 	 */
 	public function __construct($db_server, $db_user, $db_password, $db_persist)
 	{
-		$this->con = mysqli_connect(($db_persist == 1 ? 'p:' : '') . $db_server, $db_user, $db_password);
- 
+		$this->connect = mysqli_connect(($db_persist == 1 ? 'p:' : '') . $db_server, $db_user, $db_password);
+
 		if (mysqli_connect_error())
- 			die('Database error: ' . mysqli_connect_error());
+		{
+			die('Database error: ' . mysqli_connect_error());
+		}
 	}
 
 	/**
@@ -52,42 +53,48 @@ class Database
 	 *
 	 * @param string $string
 	 * @param bool $return_error
-	 * @return type
+	 *
+	 * @return \mysqli_result
 	 */
 	public function query($string, $return_error = false)
 	{
-		$result = @mysqli_query($this->con, $string);
+		$result = @mysqli_query($this->connect, $string);
 
 		if ($result !== false || $return_error)
 		{
 			$this->second_try = true;
+
 			return $result;
 		}
 		else
+		{
 			return $this->sendError($string);
+		}
 	}
 
 	/**
-	 * Returns the last MySQL error occurrend with the current connection.
+	 * Returns the last MySQL error occurred with the current connection.
 	 *
 	 * @return string
 	 */
 	public function getLastError()
 	{
-		return mysqli_error($this->con);
+		return mysqli_error($this->connect);
 	}
 
 	/**
 	 * Analyze and sends an error.
 	 *
 	 * @param string $string
+	 *
 	 * @throws DatabaseException If a SQL fails
-	 * @return type
+	 *
+	 * @return \mysqli_result
 	 */
 	protected function sendError($string)
 	{
-		$mysql_error = mysqli_error($this->con);
-		$mysql_errno = mysqli_errno($this->con);
+		$mysql_error = mysqli_error($this->connect);
+		$mysql_errno = mysqli_errno($this->connect);
 
 		// 1016: Can't open file '....MYI'
 		// 2013: Lost connection to server during query.
@@ -97,8 +104,10 @@ class Database
 
 			// Try to repair the table and run the query again.
 			if ($mysql_errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
-				mysqli_query($this->con, "
+			{
+				mysqli_query($this->connect, "
 					REPAIR TABLE $match[1]");
+			}
 
 			return $this->query($string, false);
 		}
@@ -127,14 +136,20 @@ class Database
 		// @todo $_GET and $_REQUEST
 		// Get the query string so we pass everything.
 		if (isset($_REQUEST['start']))
+		{
 			$_GET['start'] = $_REQUEST['start'];
+		}
 
 		$query_string = '';
 		foreach ($_GET as $k => $v)
+		{
 			$query_string .= '&' . $k . '=' . $v;
+		}
 
 		if (strlen($query_string) != 0)
+		{
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
+		}
 
 		return $_SERVER['PHP_SELF'] . $query_string;
 	}
@@ -142,7 +157,7 @@ class Database
 	/**
 	 * Wrapper for mysqli_free_result.
 	 *
-	 * @param object $result
+	 * @param \mysqli_result $result
 	 */
 	public function free_result($result)
 	{
@@ -152,7 +167,8 @@ class Database
 	/**
 	 * Wrapper for mysqli_fetch_assoc.
 	 *
-	 * @param object $result
+	 * @param \mysqli_result $result
+	 *
 	 * @return mixed[]
 	 */
 	public function fetch_assoc($result)
@@ -163,7 +179,8 @@ class Database
 	/**
 	 * wrapper for mysqli_fetch_row
 	 *
-	 * @param object $result
+	 * @param \mysqli_result $result
+	 *
 	 * @return mixed[]
 	 */
 	public function fetch_row($result)
@@ -174,7 +191,8 @@ class Database
 	/**
 	 * wrapper for mysqli_num_rows
 	 *
-	 * @param object $result
+	 * @param \mysqli_result $result
+	 *
 	 * @return integer
 	 */
 	public function num_rows($result)
@@ -189,7 +207,7 @@ class Database
 	 */
 	public function insert_id()
 	{
-		return mysqli_insert_id($this->con);
+		return mysqli_insert_id($this->connect);
 	}
 
 	/**
@@ -197,18 +215,25 @@ class Database
 	 *
 	 * @param string $table_name
 	 * @param mixed[] $index_info
+	 *
+	 * @return bool
 	 */
 	public function add_index($table_name, $index_info)
 	{
 		// No columns = no index.
 		if (empty($index_info['columns']))
+		{
 			return false;
+		}
+
 		$columns = implode(',', $index_info['columns']);
 
 		$index_info['name'] = $this->calculateIndexName($index_info);
 
 		if ($this->indexExists($table_name, $index_info))
+		{
 			return false;
+		}
 
 		// If we're here we know we don't have the index - so just add it.
 		if (!empty($index_info['type']) && $index_info['type'] == 'primary')
@@ -220,9 +245,13 @@ class Database
 		else
 		{
 			if (!isset($index_info['type']) || !in_array($index_info['type'], array('unique', 'index', 'key')))
+			{
 				$type = 'INDEX';
+			}
 			else
+			{
 				$type = strtoupper($index_info['type']);
+			}
 
 			$this->query('
 				ALTER TABLE ' . $table_name . '
@@ -230,6 +259,13 @@ class Database
 		}
 	}
 
+	/**
+	 * Set a name for the index
+	 *
+	 * @param $index_info
+	 *
+	 * @return string
+	 */
 	protected function calculateIndexName($index_info)
 	{
 		// No name - make it up!
@@ -237,14 +273,28 @@ class Database
 		{
 			// No need for primary.
 			if (isset($index_info['type']) && $index_info['type'] == 'primary')
+			{
 				return '';
+			}
 			else
+			{
 				return implode('_', $index_info['columns']);
+			}
 		}
 		else
+		{
 			return $index_info['name'];
+		}
 	}
 
+	/**
+	 * Check if an index exists or not
+	 *
+	 * @param string $table_name
+	 * @param string $index_info
+	 *
+	 * @return bool
+	 */
 	protected function indexExists($table_name, $index_info)
 	{
 		// Let's get all our indexes.
@@ -267,6 +317,7 @@ class Database
 	 *
 	 * @param string $table_name
 	 * @param bool $detail
+	 *
 	 * @return mixed
 	 */
 	public function list_indexes($table_name, $detail = false)
@@ -279,7 +330,9 @@ class Database
 		while ($row = $this->fetch_assoc($result))
 		{
 			if (!$detail)
+			{
 				$indexes[] = $row['Key_name'];
+			}
 			else
 			{
 				// This is the first column we've seen?
@@ -294,9 +347,13 @@ class Database
 
 				// Is it a partial index?
 				if (!empty($row['Sub_part']))
+				{
 					$indexes[$row['Key_name']]['columns'][] = $row['Column_name'] . '(' . $row['Sub_part'] . ')';
+				}
 				else
+				{
 					$indexes[$row['Key_name']]['columns'][] = $row['Column_name'];
+				}
 			}
 		}
 		$this->free_result($result);
@@ -305,19 +362,29 @@ class Database
 	}
 
 	/**
-	 * What is the type?
+	 * What is the index type?
 	 *
 	 * @param string[] $row
+	 *
+	 * @return string
 	 */
 	protected function determineIndexType($row)
 	{
 		if ($row['Key_name'] == 'PRIMARY')
+		{
 			return 'primary';
+		}
 		elseif (empty($row['Non_unique']))
+		{
 			return 'unique';
+		}
 		elseif (isset($row['Index_type']) && $row['Index_type'] == 'FULLTEXT')
+		{
 			return 'fulltext';
+		}
 		else
+		{
 			return 'index';
+		}
 	}
 }
