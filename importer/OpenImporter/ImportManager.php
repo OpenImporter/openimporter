@@ -447,7 +447,8 @@ class ImportManager
 				try
 				{
 					$this->importer->reloadImporter();
-				} catch (\Exception $e)
+				}
+				catch (\Exception $e)
 				{
 					$this->data['import_script'] = null;
 				}

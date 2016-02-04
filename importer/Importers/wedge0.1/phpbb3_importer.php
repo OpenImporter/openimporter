@@ -36,7 +36,7 @@ class phpBB3 extends Importers\AbstractSourceImporter
 	{
 		global $table_prefix;
 
-		return '`' . $this - getDbName() . '`.' . $table_prefix;
+		return '`' . $this->getDbName() . '`.' . $table_prefix;
 	}
 
 	public function getDbName()

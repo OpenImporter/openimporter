@@ -26,16 +26,16 @@ class vBulletin_4 extends Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $oi_config;
+		global $config;
 
-		return '`' . $this->getDbName() . '`.' . $oi_config['Database']['tableprefix'];
+		return '`' . $this->getDbName() . '`.' . $config['Database']['tableprefix'];
 	}
 
 	public function getDbName()
 	{
-		global $oi_config;
+		global $config;
 
-		return $oi_config['Database']['dbname'];
+		return $config['Database']['dbname'];
 	}
 
 	public function getTableTest()

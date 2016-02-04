@@ -45,7 +45,7 @@ class vBulletin_4 extends Importers\AbstractSourceImporter
 	}
 }
 
-// Utility functions specific to vbulletin
+// Utility functions specific to vBulletin
 
 /**
  * Normalize BBC
