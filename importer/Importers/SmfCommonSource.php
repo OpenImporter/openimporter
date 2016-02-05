@@ -230,7 +230,7 @@ abstract class SmfCommonSource
 			$this->db->free_result($result);
 
 			if (empty($this->avatarUploadDir))
-				$this->avatarUploadDir = null;
+				$this->avatarUploadDir = '';
 
 			if (empty($this->id_attach))
 				$this->id_attach = 1;
