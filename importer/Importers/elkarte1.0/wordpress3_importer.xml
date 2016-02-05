@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>Wordpress 3.x</name>
 		<version>ElkArte 1.0</version>
@@ -58,7 +58,7 @@
 		<query>
 			SELECT
 				tax.term_id AS id_board, '1' AS id_cat, terms.name AS name, 0 AS board_order,
-				SUBSTRING(tax.description, 1, 65534) AS description, '1,2,3,-1,0' AS member_groups, 
+				SUBSTRING(tax.description, 1, 65534) AS description, '1,2,3,-1,0' AS member_groups,
 				tax.count AS num_topics, tax.parent AS id_parent, 0 AS num_posts
 			FROM {$from_prefix}term_taxonomy AS tax
 				LEFT JOIN {$from_prefix}terms AS terms ON (tax.term_id = terms.term_id)
@@ -121,7 +121,7 @@
 		</options>
 		<query>
 			SELECT
-				p.comment_post_ID AS id_topic, t.id_board AS id_board, 
+				p.comment_post_ID AS id_topic, t.id_board AS id_board,
 				UNIX_TIMESTAMP(p.comment_date) AS poster_time, p.user_id AS id_member,
 				c.post_title AS subject, p.comment_author_IP AS poster_ip,
 				p.comment_author AS poster_name, p.comment_author_email AS poster_email,

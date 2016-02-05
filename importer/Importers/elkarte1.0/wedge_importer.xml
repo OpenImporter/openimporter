@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>Wedge 1.0</name>
 		<className>Wedge1_0</className>
