@@ -7,7 +7,7 @@
  * @version 1.0 Alpha
  */
 
-class SMF1_1 extends AbstractSourceImporter
+class SMF1_1 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/Settings.php';
 
