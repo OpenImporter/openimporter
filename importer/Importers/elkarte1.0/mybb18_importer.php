@@ -64,7 +64,7 @@ class mybb18 extends Importers\AbstractSourceImporter
 		$file = $thumb ? $row['thumbnail'] : $row['attachname'];
 		$source = $dir . '/' . $file;
 		$file_hash = createAttachmentFileHash($file);
-		$destination = $destination_path . '/' . $id_attach . '_' . $file_hash . ($thumb ? '_thumb.elk' : '.elk');
+		$destination = $destination_path . '/' . $id_attach . '_' . $file_hash . '.elk';
 		$width = 0;
 		$height = 0;
 		$type = 0;
