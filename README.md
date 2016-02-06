@@ -2,7 +2,7 @@
 
 OpenImporter was inspired by SMF's forum converter engine and is supposed to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination. 
 
-## Supported Source systems:
+## Supported Source systems
 
 * MyBB [http://www.mybb.com/](http://www.mybb.com/)
 * phpBB3 [https://www.phpbb.com/](https://www.phpbb.com/)
@@ -13,7 +13,7 @@ OpenImporter was inspired by SMF's forum converter engine and is supposed to "co
 * Wordpress [https://wordpress.org/](https://wordpress.org/)
 * Wedge [wedge.org](wedge.org)
 
-## Supported destination systems:
+## Supported destination systems
 
 * ElkArte [www.elkarte.net](www.elkarte.net)
 * Wedge [wedge.org](wedge.org)
@@ -24,7 +24,7 @@ Contributions to documentation are licensed under [CC-by-SA 3](http://creativeco
 
 
 
-## Notes:
+## Notes
 
 Feel free to fork this repository and make your desired changes.
 
