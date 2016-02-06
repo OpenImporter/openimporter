@@ -230,7 +230,7 @@ abstract class SmfCommonSource
 			$this->db->free_result($result);
 
 			if (empty($this->avatarUploadDir))
-				$this->avatarUploadDir = null;
+				$this->avatarUploadDir = '';
 
 			if (empty($this->id_attach))
 				$this->id_attach = 1;
@@ -353,7 +353,6 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 	 */
 	protected function createAttachFoldersStructure($folders)
 	{
-
 		$source_base = $this->guessBase($folders);
 		$destination_base = $this->guessBase($this->config->destination->getAllAttachDirs());
 
@@ -528,10 +527,10 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
-			SELECT id_board, MAX(id_msg) AS id_last_msg, MAX(modified_time) AS last_edited
+			SELECT
+				id_board, MAX(id_msg) AS id_last_msg, MAX(modified_time) AS last_edited
 			FROM {$to_prefix}messages
 			GROUP BY id_board");
-
 		$modifyData = array();
 		$modifyMsg = array();
 		while ($row = $this->db->fetch_assoc($request))
@@ -607,7 +606,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
-			SELECT id_group
+			SELECT
+				id_group
 			FROM {$to_prefix}membergroups
 			WHERE min_posts = -1");
 
@@ -617,7 +617,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 
 		$request = $this->db->query("
-			SELECT id_board, member_groups
+			SELECT
+				id_board, member_groups
 			FROM {$to_prefix}boards
 			WHERE FIND_IN_SET(0, member_groups)");
 
@@ -629,20 +630,25 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
+	/**
+	 * Fix various system totals
+	 */
 	public function substep3()
 	{
 		$to_prefix = $this->config->to_prefix;
 
 		// Get the number of messages...
 		$result = $this->db->query("
-			SELECT COUNT(*) AS totalMessages, MAX(id_msg) AS maxMsgID
+			SELECT
+				COUNT(*) AS totalMessages, MAX(id_msg) AS maxMsgID
 			FROM {$to_prefix}messages");
 		$row = $this->db->fetch_assoc($result);
 		$this->db->free_result($result);
 
 		// Update the latest member. (Highest ID_MEMBER)
 		$result = $this->db->query("
-			SELECT id_member AS latestMember, real_name AS latestreal_name
+			SELECT
+				id_member AS latestMember, real_name AS latestreal_name
 			FROM {$to_prefix}members
 			ORDER BY id_member DESC
 			LIMIT 1");
@@ -660,14 +666,16 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		// Update the member count.
 		$result = $this->db->query("
-			SELECT COUNT(*) AS totalMembers
+			SELECT
+				COUNT(*) AS totalMembers
 			FROM {$to_prefix}members");
 		$row += $this->db->fetch_assoc($result);
 		$this->db->free_result($result);
 
 		// Get the number of topics.
 		$result = $this->db->query("
-			SELECT COUNT(*) AS totalTopics
+			SELECT
+				COUNT(*) AS totalTopics
 			FROM {$to_prefix}topics");
 		$row += $this->db->fetch_assoc($result);
 		$this->db->free_result($result);
@@ -692,7 +700,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
-			SELECT id_group, min_posts
+			SELECT
+				id_group, min_posts
 			FROM {$to_prefix}membergroups
 			WHERE min_posts != -1
 			ORDER BY min_posts DESC");
@@ -731,7 +740,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$to_prefix = $this->config->to_prefix;
 
 		$result_topics = $this->db->query("
-			SELECT id_board, COUNT(*) as num_topics
+			SELECT
+				id_board, COUNT(*) as num_topics
 			FROM {$to_prefix}topics
 			GROUP BY id_board");
 
@@ -744,7 +754,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		// Find how many messages are in the board.
 		$result_posts = $this->db->query("
-			SELECT id_board, COUNT(*) as num_posts
+			SELECT
+				id_board, COUNT(*) as num_posts
 			FROM {$to_prefix}messages
 			GROUP BY id_board");
 
@@ -766,7 +777,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		while (true)
 		{
 			$resultTopic = $this->db->query("
-				SELECT t.id_topic, COUNT(m.id_msg) AS num_msg
+				SELECT
+					t.id_topic, COUNT(m.id_msg) AS num_msg
 				FROM {$to_prefix}topics AS t
 					LEFT JOIN {$to_prefix}messages AS m ON (m.id_topic = t.id_topic)
 				GROUP BY t.id_topic
@@ -845,9 +857,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	/**
 	 *
 	 * Get the id_member associated with the specified message.
-	 * @global type $to_prefix
-	 * @global type $db
-	 * @param type $messageID
+	 *
+	 * @param int $messageID
 	 * @return int
 	 */
 	protected function getMsgMemberID($messageID)
@@ -856,7 +867,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 			// Find the topic and make sure the member still exists.
 		$result = $this->db->query("
-			SELECT IFNULL(mem.id_member, 0)
+			SELECT
+				IFNULL(mem.id_member, 0)
 			FROM {$to_prefix}messages AS m
 			LEFT JOIN {$to_prefix}members AS mem ON (mem.id_member = m.id_member)
 			WHERE m.id_msg = " . (int) $messageID . "
@@ -882,7 +894,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		// First, let's get an array of boards and parents.
 		$request = $this->db->query("
-			SELECT id_board, id_parent, id_cat
+			SELECT
+				id_board, id_parent, id_cat
 			FROM {$to_prefix}boards");
 
 		$child_map = array();
@@ -952,7 +965,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		// Last check: any boards not in a good category?
 		$request = $this->db->query("
-			SELECT id_cat
+			SELECT
+				id_cat
 			FROM {$to_prefix}categories");
 		$real_cats = array();
 		while ($row = $this->db->fetch_assoc($request))
@@ -986,7 +1000,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
-			SELECT c.id_cat, c.cat_order, b.id_board, b.board_order
+			SELECT
+				c.id_cat, c.cat_order, b.id_board, b.board_order
 			FROM {$to_prefix}categories AS c
 				LEFT JOIN {$to_prefix}boards AS b ON (b.id_cat = c.id_cat)
 			ORDER BY c.cat_order, b.child_level, b.board_order, b.id_board");
@@ -1011,12 +1026,16 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$this->db->free_result($request);
 	}
 
+	/**
+	 * Fix attachment size, W & H values
+	 */
 	public function substep11()
 	{
 		$to_prefix = $this->config->to_prefix;
 
 		$request = $this->db->query("
-			SELECT COUNT(*)
+			SELECT
+				COUNT(*)
 			FROM {$to_prefix}attachments");
 		list ($attachments) = $this->db->fetch_row($request);
 		$this->db->free_result($request);
@@ -1024,7 +1043,8 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		while ($_REQUEST['start'] < $attachments)
 		{
 			$request = $this->db->query("
-				SELECT id_attach, filename, attachment_type, id_folder
+				SELECT
+					id_attach, filename, attachment_type, id_folder
 				FROM {$to_prefix}attachments
 				WHERE id_thumb = 0
 					AND (RIGHT(filename, 4) IN ('.gif', '.jpg', '.png', '.bmp') OR RIGHT(filename, 5) = '.jpeg')

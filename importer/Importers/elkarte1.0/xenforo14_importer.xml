@@ -1,0 +1,285 @@
+<?xml version="1.0"?>
+<importer xmlns="http://elkarte.net/xml/importer" xmlns:elkarte="http://elkarte.net/">
+	<general>
+		<name>Xenforo 1.4</name>
+		<version>ElkArte 1.0</version>
+		<className>XenForo1_4</className>
+	</general>
+	<step type="mandatory">
+		<title>Importing Members</title>
+		<detect>{$from_prefix}user</detect>
+		<destination>{$to_prefix}members</destination>
+		<presql>
+			TRUNCATE {$to_prefix}members;
+		</presql>
+		<preparsecode>
+			// Extract the password hash
+			$pass = unserialize($row['tmp']);
+
+			if (isset($pass['hash']))
+				$row['passwd'] = $pass['hash'];
+			else
+				$row['passwd'] = sha1(md5(mktime()));
+
+			if (isset($pass['salt']))
+				$row['password_salt'] = $pass['salt'];
+			else
+				$row['password_salt'] = '';
+
+			// Yes I used AND to avoid CDATA here
+			$row['birthdate'] = '0000-00-00';
+			if ($row['dob_day'] != '0' AND $row['dob_month'] != '0')
+			{
+				$row['birthdate'] = $row['dob_year'] . '-' . $row['dob_month'] . '-' . $row['dob_day'];
+			}
+
+			// Remove these temp columns
+			unset($row['tmp'], $row['dob_day'], $row['dob_month'], $row['dob_year']);
+		</preparsecode>
+		<query>
+			SELECT
+				m.user_id AS id_member, SUBSTRING(m.username, 1, 80) AS member_name,
+				SUBSTRING(m.username, 1, 255) AS real_name,
+				SUBSTRING(m.email, 1, 255) AS email_address,
+				(CASE WHEN m.gender = 'male' THEN 1 WHEN m.gender = 'female' THEN 2 ELSE 0 END) AS gender,
+				m.custom_title AS usertitle, m.visible AS show_online, IF(m.is_admin = 1, 1, 0) AS id_group,
+				m.message_count AS posts, m.conversations_unread AS unread_messages, m.register_date AS date_registered,
+				m.last_activity AS last_login,
+				'' AS passwd, '' AS password_salt, '' AS openid_uri, '' AS ignore_boards, 1 AS hide_email,
+				'' AS lngfile, '' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
+				'' AS personal_text, '' AS time_format, '' AS avatar,
+				'' AS member_ip, '' AS secret_question, '' AS secret_answer,
+				'' AS validation_code, '' AS additional_groups, '' AS smiley_set, '' AS member_ip2,
+				details.homepage AS website_title, details.homepage AS website_url, details.location AS location,
+				details.signature AS signature, details.dob_day, details.dob_month, details.dob_year,
+				p.data AS tmp
+			FROM {$from_prefix}user AS m
+				INNER JOIN {$from_prefix}user_authenticate AS p ON (m.user_id = p.user_id)
+				LEFT JOIN {$from_prefix}user_profile AS details ON (m.user_id = details.user_id)
+			WHERE m.user_state != 'email_confirm';
+		</query>
+	</step>
+	<step>
+		<title>Importing Categories</title>
+		<detect>{$from_prefix}node WHERE node_type_id = 'Category'</detect>
+		<destination>{$to_prefix}categories</destination>
+		<presql>TRUNCATE {$to_prefix}categories;</presql>
+		<query>
+			SELECT
+				node_id AS id_cat, SUBSTRING(title, 1, 255) AS name, display_order AS cat_order
+			FROM {$from_prefix}node
+			WHERE node_type_id = 'Category';
+		</query>
+	</step>
+	<step>
+		<title>Importing Boards</title>
+		<detect>{$from_prefix}node WHERE node_type_id = 'Forum'</detect>
+		<destination>{$to_prefix}boards</destination>
+		<options>
+			<slashes>true</slashes>
+		</options>
+		<presql>
+			TRUNCATE {$to_prefix}boards;
+			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
+		</presql>
+		<preparsecode>
+			$request = $this->db->query("
+			SELECT
+				thread_id, last_post_id
+			FROM {$from_prefix}thread
+			WHERE node_id = $row[id_board]
+			ORDER BY thread_id DESC
+			LIMIT 1");
+
+			list($tmp, $row['id_last_msg']) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
+		</preparsecode>
+		<query>
+			SELECT
+				node_id AS id_board, parent_node_id AS id_cat, display_order AS board_order,
+				SUBSTRING(title, 1, 255) AS name,
+				SUBSTRING(description, 1, 65534) AS description, '-1,0' AS member_groups
+			FROM {$from_prefix}node
+			WHERE node_type_id = 'Forum';
+		</query>
+	</step>
+	<step>
+		<title>Importing Topics</title>
+		<detect>{$from_prefix}thread</detect>
+		<destination>{$to_prefix}topics</destination>
+		<presql>
+			TRUNCATE {$to_prefix}topics;
+			TRUNCATE {$to_prefix}log_topics;
+			TRUNCATE {$to_prefix}log_boards;
+			TRUNCATE {$to_prefix}log_mark_read;
+		</presql>
+		<query>
+			SELECT
+				t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky,
+				IF(t.discussion_open = 1, 0, 1) AS locked, t.last_post_user_id AS id_member_updated,
+				t.view_count AS num_views, t.reply_count AS num_replies, t.user_id AS id_member_started,
+				t.first_post_id id_first_msg, t.last_post_id AS id_last_msg
+			FROM {$from_prefix}thread AS t
+			WHERE t.discussion_state != 'deleted';
+		</query>
+	</step>
+	<step>
+		<title>Importing Messages</title>
+		<detect> {$from_prefix}post</detect>
+		<destination>{$to_prefix}messages</destination>
+		<presql>TRUNCATE {$to_prefix}messages;</presql>
+		<options>
+			<slashes>false</slashes>
+			<ignore>true</ignore>
+			<limit>100</limit>
+		</options>
+		<preparsecode>
+			$this->row['poster_ip'] = convertIp($this->row['poster_ip']);
+		</preparsecode>
+		<query>
+			SELECT
+				m.post_id AS id_msg, m.thread_id AS id_topic, m.post_date AS poster_time,
+				m.last_edit_user_id AS id_msg_modified, m.last_edit_date AS modified_time,
+				SUBSTRING(t.title, 1, 255) AS subject, m.user_id AS id_member, mu.username AS modified_name,
+				SUBSTRING(m.username, 1, 255) AS poster_name,
+				SUBSTRING(m.username, 1, 255) AS poster_email,
+				SUBSTRING(i.ip, 1, 255) AS poster_ip, t.node_id AS id_board,
+				SUBSTRING(m.message, 1, 65534) AS body, '' AS modified_name, 'xx' AS icon
+			FROM {$from_prefix}post AS m
+				LEFT JOIN {$from_prefix}user AS u ON (u.user_id = m.user_id)
+				LEFT JOIN {$from_prefix}user AS mu ON (mu.user_id = m.last_edit_user_id)
+				LEFT JOIN {$from_prefix}ip AS i ON (i.ip_id = m.ip_id)
+				INNER JOIN {$from_prefix}thread AS t ON (m.thread_id = t.thread_id)
+			WHERE t.discussion_state != 'deleted';
+		</query>
+	</step>
+	<step>
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}conversation_message</detect>
+		<destination>{$to_prefix}personal_messages</destination>
+		<presql>
+			TRUNCATE {$to_prefix}personal_messages;
+			TRUNCATE {$to_prefix}pm_recipients;
+		</presql>
+		<query>
+			SELECT
+				msg.message_id AS id_pm, msg.user_id AS id_member_from, msg.message_date AS msgtime,
+				0 AS deleted_by_sender, msg.conversation_id AS id_pm_head,
+				SUBSTRING(IFNULL(msg.username, "Guest"), 1, 255) AS from_name,
+				SUBSTRING(mt.title, 1, 255) AS subject,
+				SUBSTRING(msg.message, 1, 65534) AS body
+			FROM {$from_prefix}conversation_message as msg
+				INNER JOIN {$from_prefix}conversation_master AS mt ON (mt.conversation_id = msg.conversation_id);
+		</query>
+	</step>
+	<step>
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}conversation_recipient</detect>
+		<destination>{$to_prefix}pm_recipients</destination>
+		<query>
+			SELECT
+				msg.message_id AS id_pm, r.user_id AS id_member, 1 AS is_read,
+				0 AS deleted, '-1' AS labels
+			FROM {$from_prefix}conversation_message AS msg
+				INNER JOIN {$from_prefix}conversation_recipient AS r ON (r.conversation_id = msg.conversation_id)
+			WHERE msg.user_id != r.user_id
+			ORDER BY id_pm;
+		</query>
+	</step>
+	<step>
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}attachment</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<presql>
+			TRUNCATE {$to_prefix}attachments;
+		</presql>
+		<preparsecode>
+			// DB values to store
+			$this->keys = array('id_attach', 'id_thumb', 'size', 'filename', 'file_hash', 'fileext', 'mime_type', 'attachment_type', 'id_msg', 'downloads', 'width', 'height');
+
+			if (!isset($xen_attachment_dir))
+			{
+				$xen_attachment_dir = rtrim($_POST['path_from'], '/\\') . "/internal_data/attachments/";
+				$xen_thumbnail_dir = rtrim($_POST['path_from'], '/\\') . "/data/attachments/";
+			}
+
+			// Copy the attachment
+			$destination_path = $this->step1_importer->getAttachDir($this->row);
+			$id_attach = $this->step1_importer->newIdAttach();
+			$this->rows[] = $this->config->source->xen_copy_files($xen_attachment_dir, $this->row, $id_attach, $destination_path, false);
+
+			// If we have its thumbnail ...
+			if (!empty($this->row['thumbnail_width']))
+			{
+				$id_attach = $this->step1_importer->newIdAttach();
+				$this->rows[] = $this->config->source->xen_copy_files($xen_thumbnail_dir, $this->row, $id_attach, $destination_path, true);
+			}
+		</preparsecode>
+		<query>
+			SELECT
+				a.attachment_id, a.data_id, a.view_count, a.content_id, a.content_type,
+				d.filename, d.file_size, d.file_hash, d.width, d.height, d.thumbnail_width, d.thumbnail_height
+			FROM {$from_prefix}attachment AS a
+				LEFT JOIN {$from_prefix}attachment_data AS d ON (a.data_id = d.data_id)
+			WHERE content_type = "post";
+		</query>
+	</step>
+	<step>
+		<title>Importing avatars</title>
+		<detect>{$from_prefix}user</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<options>
+			<no_add>true</no_add>
+		</options>
+		<preparsecode>
+			$this->keys = array('size', 'filename', 'file_hash', 'fileext', 'mime_type', 'id_member');
+
+			// Create some useful shortcuts
+			$xen_avatar_dir = rtrim($_POST['path_from'], '/\\') . '/data/avatars/';
+			$xen_avatar_name = 'l/' . floor($this->row['id_member']/1000) . '/' . $this->row['id_member'] . '.jpg';
+
+			// Create the destination name
+			$source = $xen_avatar_dir . $xen_avatar_name;
+			$filename = $this->row['id_member'] . '.jpg';
+			$file_hash = createAttachmentFileHash($filename);
+			$id_attach = $this->step1_importer->newIdAttach();
+			$destination = $this->step1_importer->getAttachDir($this->row) . '/' . $id_attach . '_' . $file_hash . '.elk';
+
+			// Copy it!
+			copy_file($source, $destination);
+
+			// Prepare the insert
+			$this->rows[] = array(
+				'size' => file_exists($destination) ? filesize($destination) : 0,
+				'filename' => $filename,
+				'file_hash' => $file_hash,
+				'fileext' => 'jpg',
+				'mime_type' => 'image/jpg',
+				'id_member' => $this->row['id_member'],
+			);
+		</preparsecode>
+		<query>
+			SELECT
+				user_id AS id_member, user_id AS filename, avatar_date, gravatar
+			FROM {$from_prefix}user
+			WHERE avatar_date > 0
+				OR gravatar != '';
+		</query>
+	</step>
+	<step>
+		<title>Importing likes</title>
+		<detect>{$from_prefix}post</detect>
+		<destination>{$to_prefix}message_likes</destination>
+		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<code>
+			$this->keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
+			$this->rows = $this->config->source->fetchLikes();
+			$special_table = $this->config->to_prefix . 'message_likes';
+
+			$this->insertRows($special_table);
+		</code>
+	</step>
+</importer>

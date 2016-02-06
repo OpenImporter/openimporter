@@ -193,6 +193,7 @@ class Template
 					req.send(null);
 				};
 			}
+
 			function validateField(string)
 			{
 				var target = document.getElementById(string),
@@ -209,7 +210,7 @@ class Template
 					validate = document.getElementById(\'validate_\' + string),
 					submitBtn = document.getElementById("submit_button");
 
-				if (msg == "false")
+				if (msg === "false")
 				{
 					field.className = "invalid_field";
 					validate.innerHTML = "' . $this->language->get('invalid') . '";
@@ -224,6 +225,11 @@ class Template
 
 					submitBtn.disabled = false;
 				}
+			}
+
+			window.onload = function() {
+				validateField(\'path_to\');
+				validateField(\'path_from\');
 			}
 		</script>
 		<style type="text/css">
@@ -385,6 +391,8 @@ class Template
 				display: block;
 				margin-bottom: 3px;
 				padding-bottom: 3px;
+				border-bottom: medium none;
+				line-height: 4em;
 			}
 			#destinations ul li, #source li {
 				cursor: pointer;
@@ -474,7 +482,6 @@ class Template
 					echo '
 					<li>
 						<a href="', $_SERVER['PHP_SELF'], '?import_script=', $script['path'], '">', $script['name'], '</a>
-						<span>(', $script['path'], ')</span>
 					</li>';
 				}
 

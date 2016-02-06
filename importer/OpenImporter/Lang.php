@@ -128,7 +128,7 @@ class Lang
 	 */
 	public function has($key)
 	{
-		return isset($this->_lang[$key]);
+		return isset($this->_lang[(string) $key]);
 	}
 
 	/**
@@ -165,7 +165,7 @@ class Lang
 				return $this->_lang[$key];
 		}
 
-		return null;
+		return (string) $key;
 	}
 
 	/**

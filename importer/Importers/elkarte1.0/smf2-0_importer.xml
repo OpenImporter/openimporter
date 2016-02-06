@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>SMF 2.0</name>
 		<className>SMF2_0</className>
@@ -696,11 +696,11 @@
 		<destination>{$to_prefix}message_likes</destination>
 		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
 		<code>
-			$keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
-			$rows = $this->config->source->fetchLikes();
+			$this->keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
+			$this->rows = $this->config->source->fetchLikes();
 			$special_table = $this->config->to_prefix . 'message_likes';
 
-			$this->insertRows($rows, $keys, $special_table);
+			$this->insertRows($special_table);
 		</code>
 	</step>
 </importer>

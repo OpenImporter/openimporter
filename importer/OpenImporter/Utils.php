@@ -189,7 +189,7 @@ function stripslashes_recursive($var, $level = 0)
  * @param string $source
  * @param string $destination
  *
- * @return type
+ * @return null
  */
 function copy_dir($source, $destination)
 {
@@ -212,6 +212,7 @@ function copy_dir($source, $destination)
 			{
 				@mkdir($destination, 0755);
 			}
+
 			copy_dir($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 		else
@@ -220,6 +221,7 @@ function copy_dir($source, $destination)
 			{
 				@mkdir($destination, 0755);
 			}
+
 			copy($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 	}
@@ -482,4 +484,38 @@ function createAttachmentFilehash($filename)
 function copy_smileys($source, $dest)
 {
 	copy_dir($source, $dest);
+}
+
+/**
+ * Return the attachment extension and mime type
+ *
+ * @param string $filename
+ *
+ * @return array
+ */
+function attachment_type($filename)
+{
+	// Is this an image (basic ext sniff)
+	$path_parts = pathinfo($filename);
+	$ext = $path_parts['extension'];
+	$basename = $path_parts['filename'];
+
+	if (!in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png')))
+	{
+		$ext = '';
+		$mime_type = '';
+	}
+	else
+	{
+		if (strtolower($ext) === 'jpg')
+		{
+			$mime_type = 'image/jpeg';
+		}
+		else
+		{
+			$mime_type = 'image/' . strtolower($ext);
+		}
+	}
+
+	return array($ext, $basename, $mime_type);
 }

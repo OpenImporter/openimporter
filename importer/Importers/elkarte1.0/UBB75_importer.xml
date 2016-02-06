@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>UBB Threads 7.5.x</name>
 		<version>ElkArte 1.0</version>
@@ -73,7 +73,7 @@
 			SELECT
 				FORUM_ID AS id_board, CATEGORY_ID as id_cat, SUBSTRING(FORUM_TITLE, 1, 255) AS name,
 				SUBSTRING(FORUM_DESCRIPTION, 1, 65534) AS description, FORUM_SORT_ORDER AS board_order,
-				FORUM_POSTS AS num_posts, IFNULL(FORUM_PARENT, 0) as id_parent, FORUM_POSTS_COUNT AS count_posts, 
+				FORUM_POSTS AS num_posts, IFNULL(FORUM_PARENT, 0) as id_parent, FORUM_POSTS_COUNT AS count_posts,
 				'' AS member_groups
 			FROM {$from_prefix}FORUMS;
 		</query>
@@ -331,7 +331,7 @@
 			copy_smileys($smf_smileys_dir, $smileys_dir);
 		</code>
 	</step>
-	
+
 	<step>
 		<title>Importing statistics (activity log)</title>
 		<detect>{$from_prefix}log_activity</detect>

@@ -263,9 +263,10 @@
 			TRUNCATE {$to_prefix}attachments;
 		</presql>
 		<preparsecode>
-			$keys = array('id_attach', 'size', 'filename', 'file_hash', 'id_msg', 'downloads', 'width', 'height');
-			$no_add = true;
+			// DB values to store
+			$this->keys = array('id_attach', 'id_thumb', 'size', 'filename', 'file_hash', 'fileext', 'mime_type', 'attachment_type', 'id_msg', 'downloads', 'width', 'height');
 
+			// Need where they files are on mybb
 			if (!isset($mybb_attachment_dir))
 			{
 				$result = $this->db->query("
@@ -280,48 +281,21 @@
 				$mybb_attachment_dir = $_POST['path_from'] . ltrim($mybb_attachment_dir, '.');
 			}
 
-			// Create some useful shortcuts, we start with images..
-			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
-			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png')))
-			{
-				$ext = '';
-			}
-
-			$source = $mybb_attachment_dir . '/' . $row['attachname'];
-			$file_hash = createAttachmentFileHash($row['filename']);
+			// Copy the attachment
+			$destination_path = $this->step1_importer->getAttachDir($this->row);
 			$id_attach = $this->step1_importer->newIdAttach();
-			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
-			$width = 0;
-			$height = 0;
+			$this->rows[] = $this->config->source->mybb_copy_files($mybb_attachment_dir, $this->row, $id_attach, $destination_path, false);
 
-			copy_file($source, $destination);
-
-			// Is image? we need a thumbnail
-			if (!empty($ext))
+			// If we have its thumbnail, might as well copy it also
+			if (!empty($this->row['thumbnail']))
 			{
-				list ($width, $height) = getimagesize($destination);
-				if (empty($width))
-				{
-					$width = 0;
-					$height = 0;
-				}
+				$id_attach = $this->step1_importer->newIdAttach();
+				$this->rows[] = $this->config->source->mybb_copy_files($mybb_attachment_dir, $this->row, $id_attach, $destination_path, true);
 			}
-
-			// Prepare our insert
-			$rows[] = array(
-				'id_attach' => $id_attach,
-				'size' => filesize($destination),
-				'filename' => $row['filename'],
-				'file_hash' => $file_hash,
-				'id_msg' => $row['id_msg'],
-				'downloads' => $row['downloads'],
-				'width' => $width,
-				'height' => $height,
-			);
 		</preparsecode>
 		<query>
 			SELECT
-				pid AS id_msg, downloads, filename, filesize, attachname
+				pid AS id_msg, downloads, filename, filesize, attachname, thumbnail
 			FROM {$from_prefix}attachments;
 		</query>
 	</step>
@@ -333,25 +307,24 @@
 			<no_add>true</no_add>
 		</options>
 		<preparsecode>
-			$keys = array('size', 'filename', 'file_hash', 'id_member');
-			$no_add = true;
+			$this->keys = array('size', 'filename', 'file_hash', 'id_member');
 
 			// Create some useful shortcuts
-			$source = $_POST['path_from'] . strtok(ltrim($row['filename'], '.'), '?');
-			$filename = preg_replace('~avatar_(.+?)\?dateline=\d*~is', 'avatar_$1', $row['filename']);
+			$source = $_POST['path_from'] . strtok(ltrim($this->row['filename'], '.'), '?');
+			$filename = preg_replace('~avatar_(.+?)\?dateline=\d*~is', 'avatar_$1', $this->row['filename']);
 			$file = substr(strrchr($filename, "/"), 1);
 			$file_hash = createAttachmentFileHash($filename);
 			$id_attach = $this->step1_importer->newIdAttach();
-			$destination = $this->step1_importer->getAttachDir($row) . '/' . $id_attach . '_' . $file_hash . '.elk';
+			$destination = $this->step1_importer->getAttachDir($this->row) . '/' . $id_attach . '_' . $file_hash . '.elk';
 
 			copy_file($source, $destination);
 
 			// Prepare the insert
-			$rows[] = array(
+			$this->rows[] = array(
 				'size' => file_exists($destination) ? filesize($destination) : 0,
 				'filename' => $file,
 				'file_hash' => $file_hash,
-				'id_member' => $row['id_member'],
+				'id_member' => $this->row['id_member'],
 			);
 		</preparsecode>
 		<query>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>Woltlab Burning Board 3.1</name>
 		<version>ElkArte 1.0</version>
@@ -57,13 +57,13 @@
 				SELECT *
 				FROM {$from_prefix}{$wcf_prefix}user_option_value
 				WHERE userID = $row[id_member]");
-	
+
 			while ($userdata = $db->fetch_assoc($request))
 				$smfOptions = $userdata;
-	
+
 			$db->free_result($request);
 
-			/* now we can fix some profile options*/	
+			/* now we can fix some profile options*/
 			$row['birthdate'] = $smfOptions['userOption'. $userOptions['birthday']];
 			$row['show_online'] = !empty($smfOptions['userOption'. $userOptions['invisible']]) ? (int) $smfOptions['userOption'. $userOptions['invisible']] : 0;
 			$row['hide_email'] = (int)$smfOptions['userOption'. $userOptions['hideEmailAddress']];
@@ -98,7 +98,7 @@
 				o.position AS cat_order
 			FROM {$from_prefix}{$wbb_prefix}board AS c
 				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = c.boardID)
-			WHERE boardType = 1;		
+			WHERE boardType = 1;
 		</query>
 	</step>
 	<step>
@@ -116,7 +116,7 @@
 				b.threads AS num_topics, b.countUserPosts AS num_posts, '2,-1,0,1' AS member_groups
 			FROM {$from_prefix}{$wbb_prefix}board AS b
 				LEFT JOIN {$from_prefix}{$wbb_prefix}board_structure AS o ON (o.boardID = b.boardID)
-			WHERE boardType = 0;		
+			WHERE boardType = 0;
 		</query>
 	</step>
 	<step>
@@ -212,7 +212,7 @@
 		<destination>{$to_prefix}poll_choices</destination>
 		<preparsecode>
 			if (!isset($_SESSION['convert_last_poll']) || $_SESSION['convert_last_poll'] != $row['id_poll'])
-			{	
+			{
 				$_SESSION['convert_last_poll'] = $row['id_poll'];
 				$_SESSION['convert_last_choice'] = 0;
 			}

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>Viscacha 0.8</name>
 		<version>ElkArte 1.0</version>
@@ -18,7 +18,7 @@
 				SUBSTRING(u.name, 1, 255) AS real_name,
 				SUBSTRING(u.pw, 1, 64) AS passwd,
 				IF(u.gender != '', u.gender, 0) AS gender,
-				SUBSTRING(u.mail, 1, 255) AS email_address, 
+				SUBSTRING(u.mail, 1, 255) AS email_address,
 				u.lastvisit AS last_login, u.regdate AS date_registered,
 				u.birthday AS birthdate, u.location AS location,
 				IF (u.groups = 1, 1, 0) AS id_group,
@@ -32,7 +32,7 @@
 		<destination>{$to_prefix}categories</destination>
 		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
-			SELECT 
+			SELECT
 				id AS id_cat, name AS name, position AS cat_order
 			FROM {$from_prefix}categories;
 		</query>
@@ -50,7 +50,7 @@
 		</options>
 		<query>
 			SELECT
-				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups, 
+				id AS id_board, SUBSTRING(name, 1, 255) AS name, '-1,0,1,2' AS member_groups,
 				SUBSTRING(description, 1, 65534) AS description, position AS board_order,
 				(topics + replies) AS num_posts, topics AS num_topics, parent AS id_cat, parent AS id_parent
 			FROM {$from_prefix}forums;
@@ -80,10 +80,10 @@
 		</preparsecode>
 		<query>
 			SELECT
-				t.id AS id_topic, t.board AS id_board, 
-				t.sticky AS is_sticky, t.name AS id_member_started, 
+				t.id AS id_topic, t.board AS id_board,
+				t.sticky AS is_sticky, t.name AS id_member_started,
 				t.last_name AS id_member_updated, t.vquestion AS id_poll,
-				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg, 
+				MIN(p.id) AS id_first_msg, MAX(p.id) AS id_last_msg,
 				t.status AS locked
 			FROM {$from_prefix}topics AS t
 				LEFT JOIN {$from_prefix}replies AS p ON (p.topic_id = t.id)
@@ -119,7 +119,7 @@
 				$row['modified_name'] = $editdata[0];
 				$row['modified_time'] = $editdata[1];
 			}
-			else 
+			else
 				$row['modified_time'] = 0;
 
 			$row['id_member'] = (int) $row['id_member'];
@@ -132,10 +132,10 @@
 		</preparsecode>
 		<query>
 			SELECT
-				p.id AS id_msg, p.topic_id AS id_topic,	p.board  AS id_board, 
+				p.id AS id_msg, p.topic_id AS id_topic,	p.board  AS id_board,
 				p.date AS poster_time, p.name AS id_member, p.topic AS subject,
-				u.name AS poster_name, u.mail AS poster_email,	p.ip AS poster_ip, 
-				p.dosmileys AS smileys_enabled,	p.edit AS modified_name, '' AS modified_time, 
+				u.name AS poster_name, u.mail AS poster_email,	p.ip AS poster_ip,
+				p.dosmileys AS smileys_enabled,	p.edit AS modified_name, '' AS modified_time,
 				p.comment AS body, 'xx' AS icon
 			FROM {$from_prefix}replies AS p
 				LEFT JOIN {$from_prefix}user AS u ON (u.id = p.name)
@@ -148,7 +148,7 @@
 		<destination>{$to_prefix}moderators</destination>
 		<presql>TRUNCATE {$to_prefix}moderators;</presql>
 		<query>
-			SELECT 
+			SELECT
 				mid AS id_member, bid AS id_board
 			FROM {$from_prefix}moderators;
 		</query>
@@ -239,7 +239,7 @@
 			$row['votes'] = $count;
 		</preparsecode>
 		<query>
-			SELECT 
+			SELECT
 				tid AS id_poll, id AS id_choice, SUBSTRING(answer, 1, 255) AS label, 0 AS votes
 			FROM {$from_prefix}vote;
 		</query>
@@ -252,7 +252,7 @@
 		</options>
 		<destination>{$to_prefix}log_polls</destination>
 		<query>
-			SELECT 
+			SELECT
 				p.tid AS id_poll, v.mid AS id_member, v.aid AS id_choice
 			FROM {$from_prefix}votes AS v
 				LEFT JOIN {$from_prefix}vote AS p ON (v.aid = p.id);
@@ -303,7 +303,7 @@
 		<preparsecode>
 			$file = explode('/', $row['filenamepath']);
 			$row['filename'] = end($file);
-			
+
 			$source = $_POST['path_from'] . '/' . $row['filenamepath'];
 			$destination = $attachmentUploadDir . '/' . $physical_filename;
 

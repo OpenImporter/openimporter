@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>phpBB3</name>
 		<version>ElkArte 1.0</version>
@@ -88,17 +88,17 @@
 		<query>
 			SELECT
 				t.topic_id AS id_topic, t.forum_id AS id_board, t.topic_first_post_id AS id_first_msg,
-				CASE t.topic_type 
-					WHEN 1 THEN 1 
-					WHEN 2 THEN 1 
-					ELSE 0 
+				CASE t.topic_type
+					WHEN 1 THEN 1
+					WHEN 2 THEN 1
+					ELSE 0
 				END AS is_sticky,
 				t.topic_last_post_id AS id_last_msg, t.topic_poster AS id_member_started,
 				t.topic_last_poster_id AS id_member_updated, IF(po.topic_id > 0, po.topic_id, 0) AS id_poll,
 				t.topic_replies AS num_replies, t.topic_views AS num_views,
-				CASE t.topic_status 
-					WHEN 1 THEN 1 
-					ELSE 0 
+				CASE t.topic_status
+					WHEN 1 THEN 1
+					ELSE 0
 				END AS locked
 			FROM {$from_prefix}topics AS t
 				LEFT JOIN {$from_prefix}poll_options AS po ON (po.topic_id = t.topic_id);
@@ -174,7 +174,7 @@
 			<ignore>true</ignore>
 		</options>
 		<query>
-			SELECT 
+			SELECT
 				topic_id AS id_poll, vote_user_id AS id_member, poll_option_id AS id_choice
 			FROM {$from_prefix}poll_votes
 			WHERE vote_user_id > 0;
@@ -198,7 +198,7 @@
 				pm.msg_id AS id_pm, pm.author_id AS id_member_from, pm.message_time AS msgtime,
 				SUBSTRING(uf.username, 1, 255) AS from_name, SUBSTRING(pm.message_subject, 1, 255) AS subject,
 				pm.bbcode_uid AS tmp_bbc_replace,
-				SUBSTRING(REPLACE(IF(pm.bbcode_uid = '', pm.message_text, 
+				SUBSTRING(REPLACE(IF(pm.bbcode_uid = '', pm.message_text,
 				REPLACE(REPLACE(pm.message_text, CONCAT(':1:', pm.bbcode_uid), ''), CONCAT(':', pm.bbcode_uid), '')), '\n', '<br>'), 1, 65534) AS body
 			FROM {$from_prefix}privmsgs AS pm
 				LEFT JOIN {$from_prefix}users AS uf ON (uf.user_id = pm.author_id);

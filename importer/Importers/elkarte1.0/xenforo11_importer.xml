@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://wedge.org/xml/importer" xmlns:smf="http://wedge.org/">
+<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:elkarte="http://www.elkarte.net/">
 	<general>
 		<name>Xenforo 1.1</name>
 		<version>ElkArte 1.0</version>
@@ -20,7 +20,7 @@
 				$row['passwd'] = $pass['hash'];
 			else
 				$row['passwd'] = sha1(md5(mktime()));
-	
+
 			if	(isset($pass['salt']))
 				$row['password_salt'] = $pass['salt'];
 			else
@@ -36,7 +36,7 @@
 				'' AS openid_uri, m.register_date AS date_registered,
 				m.last_activity AS last_login, '' AS ignore_boards,
 				1 AS hide_email, details.homepage AS website_title,
-				details.homepage AS website_url, IF(m.is_admin = 1, 1, 0) AS id_group, 
+				details.homepage AS website_url, IF(m.is_admin = 1, 1, 0) AS id_group,
 				details.location AS location,
 				'' AS lngfile, '' AS buddy_list, '' AS pm_ignore_list, '' AS message_labels,
 				'' AS personal_text, '' AS time_format, '' AS avatar,
@@ -55,7 +55,7 @@
 		<destination>{$to_prefix}categories</destination>
 		<presql>TRUNCATE {$to_prefix}categories;</presql>
 		<query>
-			SELECT 
+			SELECT
 				node_id AS id_cat, SUBSTRING(title, 1, 255) AS name, display_order AS cat_order
 			FROM {$from_prefix}node
 			WHERE node_type_id = 'Category';
@@ -73,16 +73,16 @@
 			DELETE FROM {$to_prefix}board_permissions WHERE id_profile > 4;
 		</presql>
 		<preparsecode>
-		$request = $db->query("
-			SELECT 
+		$request = $this->db->query("
+			SELECT
 				thread_id, last_post_id
 			FROM {$from_prefix}thread
 			WHERE node_id  = $row[id_board]
 			ORDER BY thread_id DESC
 			LIMIT 1");
 
-			list($tmp, $row['id_last_msg']) = $db->fetch_row($request);
-			$db->free_result($request);
+			list($tmp, $row['id_last_msg']) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
 		</preparsecode>
 		<query>
 			SELECT
@@ -105,7 +105,7 @@
 		</presql>
 		<query>
 			SELECT
-				t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky, 
+				t.thread_id AS id_topic, t.node_id AS id_board, t.sticky AS is_sticky,
 				IF(t.discussion_open = 1, 0, 1) AS locked, t.last_post_user_id AS id_member_updated,
 				t.view_count AS num_views, t.reply_count AS num_replies, t.user_id AS id_member_started,
 				t.first_post_id id_first_msg, t.last_post_id AS id_last_msg

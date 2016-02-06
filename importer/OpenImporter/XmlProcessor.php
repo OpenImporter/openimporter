@@ -63,6 +63,22 @@ class XmlProcessor
 	public $step1_importer;
 
 	/**
+	 * Holds the row result from the query
+	 * @var string[]
+	 */
+	public $row;
+
+	/**
+	 * Holds the processed rows
+	 */
+	public $rows;
+
+	/**
+	 * Holds the (processed) row keys
+	 */
+	public $keys;
+
+	/**
 	 * XmlProcessor constructor.
 	 * Initialize the main Importer object
 	 *
@@ -172,15 +188,15 @@ class XmlProcessor
 
 				$special_result = $this->prepareSpecialResult($current_data, $special_limit);
 
-				$rows = array();
-				$keys = array();
+				$this->rows = array();
+				$this->keys = array();
 
 				if (isset($this->current_step->detect))
 				{
 					$_SESSION['import_progress'] += $special_limit;
 				}
 
-				while ($row = $this->db->fetch_assoc($special_result))
+				while ($this->row = $this->db->fetch_assoc($special_result))
 				{
 					if ($no_add)
 					{
@@ -188,16 +204,18 @@ class XmlProcessor
 					}
 					else
 					{
-						$rows[] = $this->prepareRow($row, $special_code, $special_table);
+						// Process the row (preparse, charset, etc)
+						$this->prepareRow($special_code, $special_table);
+						$this->rows[] = $this->row;
 
-						if (empty($keys))
+						if (empty($this->keys))
 						{
-							$keys = array_keys($row);
+							$this->keys = array_keys($this->row);
 						}
 					}
 				}
 
-				$this->insertRows($rows, $keys, $special_table);
+				$this->insertRows($special_table);
 
 				// @todo $_REQUEST
 				$_REQUEST['start'] += $special_limit;
@@ -222,9 +240,10 @@ class XmlProcessor
 		return $current_data;
 	}
 
-	protected function insertRows($rows, $keys, $special_table)
+	protected function insertRows($special_table)
 	{
-		if (empty($rows))
+		// Nothing to insert?
+		if (empty($this->rows))
 		{
 			return;
 		}
@@ -232,8 +251,9 @@ class XmlProcessor
 		$insert_statement = $this->insertStatement($this->current_step->options);
 		$ignore_slashes = $this->ignoreSlashes($this->current_step->options);
 
+		// Build the insert
 		$insert_rows = array();
-		foreach ($rows as $row)
+		foreach ($this->rows as $row)
 		{
 			if (empty($ignore_slashes))
 			{
@@ -247,27 +267,27 @@ class XmlProcessor
 
 		$this->db->query("
 			$insert_statement $special_table
-				(" . implode(', ', $keys) . ")
+				(" . implode(', ', $this->keys) . ")
 			VALUES (" . implode('),
 				(', $insert_rows) . ")");
 	}
 
-	protected function prepareRow($row, $special_code, $special_table)
+	protected function prepareRow($special_code, $special_table)
 	{
 		// Take case of preparsecode
 		if ($special_code !== null)
 		{
+			$row = $this->row;
 			eval($special_code);
+			$this->row = $row;
 		}
 
-		$row = $this->step1_importer->doSpecialTable($special_table, $row);
+		$this->row = $this->step1_importer->doSpecialTable($special_table, $this->row);
 
 		// Fixing the charset, we need proper utf-8
-		$row = fix_charset($row);
+		$this->row = fix_charset($this->row);
 
-		$row = $this->step1_importer->fixTexts($row);
-
-		return $row;
+		$this->row = $this->step1_importer->fixTexts($this->row);
 	}
 
 	/**
@@ -394,6 +414,10 @@ class XmlProcessor
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
+	/**
+	 * Process a <detect> statement
+	 * @param $substep
+	 */
 	protected function doDetect($substep)
 	{
 		global $oi_import;
@@ -431,17 +455,38 @@ class XmlProcessor
 		return false;
 	}
 
+	/**
+	 * Process <detect> statements from the xml file
+	 *
+	 * {$from_prefix}node WHERE node_type_id = 'Category'
+	 *
+	 * @param string $table
+	 *
+	 * @return bool
+	 */
 	protected function detect($table)
 	{
+		// Query substitutes
 		$table = $this->fix_params($table);
 		$table = preg_replace('/^`[\w\d\-_]*`\./i', '', $this->fix_params($table));
 
+		// Databse name
 		$db_name_str = $this->config->source->getDbName();
 
-		$result = $this->db->query("
-			SHOW TABLES
-			FROM `{$db_name_str}`
-			LIKE '{$table}'");
+		// Simple table check or something more complex?
+		if (strpos($table, 'WHERE') === false)
+		{
+			$result = $this->db->query("
+				SHOW TABLES
+				FROM `{$db_name_str}`
+				LIKE '{$table}'");
+		}
+		else
+		{
+			$result = $this->db->query("
+				SELECT COUNT(*)
+				FROM `{$db_name_str}`.{$table}");
+		}
 
 		if ($result === false || $this->db->num_rows($result) == 0)
 		{

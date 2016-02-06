@@ -173,8 +173,9 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		// An existing string
 		$this->assertEquals('testing', $invoke_lang->get('testing'));
-		// A non existing one
-		$this->assertNull($invoke_lang->get('random'));
+
+		// A non existing one should return the key
+		$this->assertEquals('random', $invoke_lang->get('random'));
 
 		$method->invoke($invoke_lang, 'testing_array', 'testing %s');
 
@@ -198,7 +199,8 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		// An existing string
 		$this->assertEquals('testing', $invoke_lang->testing);
-		// A non existing one
-		$this->assertNull($invoke_lang->random);
+
+		// A non existing one, its the key
+		$this->assertEquals('random', $invoke_lang->random);
 	}
 }
