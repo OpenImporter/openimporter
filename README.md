@@ -4,18 +4,18 @@ OpenImporter was inspired by SMF's forum converter engine and is supposed to "co
 
 ## Supported Source systems:
 
-* MyBB
-* phpBB3
-* SMF 1.1
-* SMF 2.0
-* vBulletin 4
-* Woltlab Burning Board
-* Wordpress
-* Wedge
+* MyBB [http://www.mybb.com/](http://www.mybb.com/)
+* phpBB3 [https://www.phpbb.com/](https://www.phpbb.com/)
+* SMF 1.1 [http://www.simplemachines.org/](http://www.simplemachines.org/)
+* SMF 2.0 [http://www.simplemachines.org/](http://www.simplemachines.org/)
+* vBulletin 4 [http://www.vbulletin.com/](http://www.vbulletin.com/)
+* Woltlab Burning Board [http://www.woltlab.com/](http://www.woltlab.com/)
+* Wordpress [https://wordpress.org/](https://wordpress.org/)
+* Wedge [wedge.org](wedge.org)
 
 ## Supported destination systems:
 
-* ElkArte www.elkarte.net
+* ElkArte [www.elkarte.net](www.elkarte.net)
 * Wedge [wedge.org](wedge.org)
 
 The software is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
