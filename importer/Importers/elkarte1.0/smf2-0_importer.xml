@@ -172,6 +172,17 @@
 				'paypal_email',
 				'smiley_enable',
 				'messageIcons_enable',
+				'disableHostnameLookup',
+				'approveAccountDeletion',
+				'avatar_download_external',
+				'spider_mode',
+				'calendar_updated',
+				'coppaAge',
+				'disallow_sendBody',
+				'enableErrorQueryLogging',
+				'hitStats',
+				'password_strength',
+				'mail_queue',
 			);
 
 			$request = $this->db->query("
