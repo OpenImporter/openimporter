@@ -762,6 +762,16 @@
 		</query>
 	</step>
 	<step>
+		<title>Importing bookmarks from Bookmarks mod (requires Bookmarks mod installed on Elkarte)</title>
+		<detect>{$from_prefix}bookmarks</detect>
+		<destination>{$to_prefix}bookmarks</destination>
+		<presql>TRUNCATE {$to_prefix}bookmarks;</presql>
+		<query>
+			SELECT id_member, id_topic
+			FROM {$from_prefix}bookmarks;
+		</query>
+	</step>
+	<step>
 		<title>Importing likes from Thank you mod</title>
 		<detect>{$from_prefix}thank_you_post</detect>
 		<destination>{$to_prefix}message_likes</destination>

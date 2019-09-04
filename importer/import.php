@@ -25,12 +25,6 @@ error_reporting(E_ALL);
 set_exception_handler(array('OpenImporter\ImportException', 'exception_handler'));
 set_error_handler(array('OpenImporter\ImportException', 'error_handler_callback'), E_ALL);
 
-// Clean up after unfriendly php.ini settings.
-if (function_exists('set_magic_quotes_runtime') && version_compare(PHP_VERSION, '5.3.0') < 0)
-{
-	@set_magic_quotes_runtime(0);
-}
-
 // User aborts are not a good thing
 ignore_user_abort(true);
 

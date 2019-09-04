@@ -271,22 +271,6 @@ abstract class SmfCommonSource
  */
 abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 {
-	public function fixTexts($row)
-	{
-		// If we have a message here, we'll want to convert <br /> to <br>.
-		if (isset($row['body']))
-		{
-			$row['body'] = str_replace(array(
-					'<br />', '&#039;', '&#39;', '&quot;'
-				), array(
-					'<br>', '\'', '\'', '"'
-				), $row['body']
-			);
-		}
-
-		return $row;
-	}
-
 	public function doSpecialTable($special_table, $params = null)
 	{
 		// Are we doing attachments? They're going to want a few things...
