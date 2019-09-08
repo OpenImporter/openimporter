@@ -290,6 +290,17 @@
 				copy_dir_recursive($smf_avatarg, $elk_avatarg);
 		</code>
 	</step>
+    <step>
+        <title>Importing calendar</title>
+        <detect>{$from_prefix}calendar</detect>
+        <destination>{$to_prefix}calendar</destination>
+        <presql>TRUNCATE {$to_prefix}calendar;</presql>
+        <query>
+            SELECT
+            id_event, start_date, id_board, id_topic, title, id_member, end_date
+            FROM {$from_prefix}calendar;
+        </query>
+    </step>
 	<step>
 		<title>Importing categories</title>
 		<detect>{$from_prefix}categories</detect>
@@ -312,6 +323,42 @@
 			FROM {$from_prefix}collapsed_categories;
 		</query>
 	</step>
+    <step>
+        <title>Importing ban groups</title>
+        <detect>{$from_prefix}ban_groups</detect>
+        <destination>{$to_prefix}ban_groups</destination>
+        <presql>TRUNCATE {$to_prefix}ban_groups;</presql>
+        <query>
+            SELECT
+                id_ban_group, name, ban_time, expire_time,
+                cannot_access, cannot_register, cannot_post, cannot_login,
+                reason, notes
+            FROM {$from_prefix}ban_groups;
+        </query>
+    </step>
+    <step>
+        <title>Importing ban items</title>
+        <detect>{$from_prefix}ban_items</detect>
+        <destination>{$to_prefix}ban_items</destination>
+        <presql>TRUNCATE {$to_prefix}ban_items;</presql>
+        <query>
+            SELECT
+                id_ban, id_ban_group,
+                ip_low1, ip_high1, ip_low2, ip_high2, ip_low3, ip_high3, ip_low4, ip_high4,
+                hostname, email_address, id_member, hits
+            FROM {$from_prefix}ban_items;
+        </query>
+    </step>
+    <step>
+        <title>Importing banned log</title>
+        <detect>{$from_prefix}log_banned</detect>
+        <destination>{$to_prefix}log_banned</destination>
+        <presql>TRUNCATE {$to_prefix}log_banned;</presql>
+        <query>
+            SELECT id_ban_log, id_member, ip, email, log_time
+            FROM {$from_prefix}log_banned;
+        </query>
+    </step>
 	<step>
 		<title>Importing boards</title>
 		<detect>{$from_prefix}boards</detect>
@@ -435,6 +482,17 @@
 			FROM {$from_prefix}moderators;
 		</query>
 	</step>
+    <step>
+        <title>Importing Digest Queue</title>
+        <detect>{$from_prefix}log_digest</detect>
+        <destination>{$to_prefix}log_digest</destination>
+        <presql>TRUNCATE {$to_prefix}log_digest;</presql>
+        <query>
+            SELECT
+            id_topic, id_msg, note_type, daily, exclude
+            FROM {$from_prefix}log_digest;
+        </query>
+    </step>
 	<step>
 		<title>Importing mark read data (boards)</title>
 		<detect>{$from_prefix}log_boards</detect>
@@ -468,6 +526,40 @@
 			FROM {$from_prefix}log_mark_read;
 		</query>
 	</step>
+    <step>
+        <title>Importing notices log</title>
+        <detect>{$from_prefix}log_member_notices</detect>
+        <destination>{$to_prefix}log_member_notices</destination>
+        <presql>TRUNCATE {$to_prefix}log_member_notices;</presql>
+        <query>
+            SELECT
+            id_notice, subject, body
+            FROM {$from_prefix}log_member_notices;
+        </query>
+    </step>
+    <step>
+        <title>Importing group requests</title>
+        <detect>{$from_prefix}log_group_requests</detect>
+        <destination>{$to_prefix}log_group_requests</destination>
+        <presql>TRUNCATE {$to_prefix}log_group_requests;</presql>
+        <query>
+            SELECT
+            id_request, id_member, id_group, time_applied, reason
+            FROM {$from_prefix}log_group_requests;
+        </query>
+    </step>
+    <step>
+        <title>Importing subscriber log</title>
+        <detect>{$from_prefix}log_subscribed</detect>
+        <destination>{$to_prefix}log_subscribed</destination>
+        <presql>TRUNCATE {$to_prefix}log_subscribed;</presql>
+        <query>
+            SELECT
+            id_sublog, id_subscribe, id_member, old_id_group, start_time, end_time,
+            status, payments_pending, pending_details, reminder_sent, vendor_ref
+            FROM {$from_prefix}log_subscribed;
+        </query>
+    </step>
 	<step>
 		<title>Importing notifications</title>
 		<detect>{$from_prefix}log_notify</detect>
@@ -479,6 +571,17 @@
 			FROM {$from_prefix}log_notify;
 		</query>
 	</step>
+    <step>
+        <title>Importing Approval Queue</title>
+        <detect>{$from_prefix}approval_queue</detect>
+        <destination>{$to_prefix}approval_queue</destination>
+        <presql>TRUNCATE {$to_prefix}approval_queue;</presql>
+        <query>
+            SELECT
+            id_msg, id_attach, id_event
+            FROM {$from_prefix}approval_queue;
+        </query>
+    </step>
 	<step>
 		<title>Importing membergroups</title>
 		<detect>{$from_prefix}membergroups</detect>
