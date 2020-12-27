@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<string name="locale">ru</string>
+	<string name="which_software">Какой движок вы используете?</string>
+	<string name="multiple_files">Скрипт импорта поддерживает несколько движков, доступных для использования. Пожалуйста, выберите желаемый.</string>
+	<string name="not_here">Не здесь!</string>
+	<string name="check_more"><![CDATA[Если программное обеспечение, которое вы ищете, не отображается в списке выше, пожалуйста, проверьте, доступно ли оно для скачивания на <a href="https://github.com/openimporter/openimporter/">Github</a>. Если нет, мы можем добавить поддержку нужной вам платформы — просто попросите!]]></string>
+	<string name="having_problems"><![CDATA[Если у вас возникли какие-либо другие проблемы с этим скриптом, не стесняйтесь обращаться за помощью.]]></string>
+	<string name="not_found"><![CDATA[Скрипт импорта не нашел никаких файлов данных. Пожалуйста, проверьте, доступен ли тот, который вы хотите скачать, на <a href="https://github.com/openimporter/openimporter/">Github</a>. Если нет, мы можем добавить поддержку нужной вам платформы — просто попросите!]]></string>
+	<string name="not_found_download"><![CDATA[Просто загрузите его в ту же папку, что и файл <b>import.php</b>. Если у вас возникли другие проблемы с этим скриптом, не стесняйтесь обращаться за помощью.]]></string>
+	<string name="try_again">Попробовать снова!</string>
+	<string name="settings_not_found">Скрипт импорта не смог найти %s в указанном вами пути. Пожалуйста, дважды проверьте путь, и что он уже там установлен.</string>
+	<string name="open_basedir">Скрипт импорта обнаружил, что на вашем хосте включена функция open_basedir. Пожалуйста, попросите хостера отключить эту настройку или попробуйте переместить содержимое %s в общедоступную папку html вашего сайта (public_html и т. п.).</string>
+	<string name="config_not_found">Не удалось найти настройки для %s. Пожалуйста, дважды проверьте путь и повторите попытку.</string>
+	<string name="password_incorrect">Пароль базы данных, который вы ввели, был неверным. Пожалуйста, убедитесь, что вы используете правильный пароль и попробуйте ещё раз. В случае сомнений используйте пароль из Settings.php.</string>
+	<string name="select_step">Для импорта необходимо выбрать хотя бы один шаг.</string>
+	<string name="permission_denied"><![CDATA[К сожалению, предоставленные данные не позволяют получить доступ к базе данных %2$s. Это может означать либо то, что установка не существует, либо то, что используемая учётная запись MySQL не имеет разрешений на доступ к ней.<br />< br />Ошибка MySQL: %1$s']]></string>
+	<string name="before_continue">Прежде чем продолжить</string>
+	<string name="before_details"><![CDATA[Предполагается, что вы уже установили форум назначения и ваша установка работает правильно. Будут скопированы пользователи, сообщения и другие данные из исходного форума %s в форум назначения.<p>Все или некоторые данные форума назначения будут <b>перезаписаны</b>.</p>]]></string>
+	<string name="destination_installed">Попробуйте снова!</string>
+	<string name="to_what">Платформа для импорта?</string>
+	<string name="where">Расположение</string>
+	<string name="locate_destination">Где расположены корневые каталоги исходного форума и форума назначения?</string>
+	<string name="locate_source">Куда вы импортируете данные?</string>
+	<string name="advanced_options">Расширенные параметры</string>
+	<string name="path_to_destination">Путь к месту назначения</string>
+	<string name="path_from">Путь к %s</string>
+	<string name="restart_after">приостановить скрипт через (секунд)</string>
+	<string name="countdown">Обратный отсчёт Javascript (сон)</string>
+	<string name="right_path">Это может быть правильный путь.</string>
+	<string name="change_path">Вам нужно будет изменить значение в этом поле.</string>
+	<string name="database_passwd">пароль к базе данных</string>
+	<string name="database_verify">Пароль MySQL (только для верификации).</string>
+	<string name="selected_only">Импортировать только выбранные данные</string>
+	<string name="empty_log">Очистить журнал ошибок скрипта импорта?</string>
+	<string name="continue">Продолжить</string>
+	<string name="not_this">Не тот движок?</string>
+	<string name="skipped">пропущено</string>
+	<string name="not_found_skipped">не найдено, пропущено</string>
+	<string name="pick_different"><![CDATA[Если указано не то программное обеспечение, можно вернуться и <a href="%s?import_script=">выбрать другой файл данных</a>.]]></string>
+	<string name="recalculate">Пересчёт статистики</string>
+	<string name="importing">Импорт</string>
+	<string name="complete">Импорт завершён!</string>
+	<string name="congrats">Поздравляем, импорт успешно завершён.</string>
+	<string name="check_box">Установите этот флажок, чтобы удалить скрипт импорта прямо сейчас, из соображений безопасности.</string>
+	<string name="may_fail">работает не на всех серверах.</string>
+	<string name="not_done">Ещё не совсем готово!</string>
+	<string name="importer_paused"><![CDATA[Скрипт импорта сделал паузу на несколько секунд, чтобы избежать перегрузки вашего сервера. Не волнуйтесь, <b>всё в порядке</b>.]]></string>
+	<string name="all_imported">Теперь на форуме назначения должны быть все данные из установки %s.</string>
+	<string name="smooth_transition">Надеемся, всё прошло как по маслу!</string>
+	<string name="valid">установка действительна</string>
+	<string name="invalid">неверный путь, установка не может быть проверена!</string>
+	<string name="validated">установка подтверждена!</string>
+	<string name="overall_progress">Общий прогресс</string>
+	<string name="error_message">Сообщение: %s</string>
+	<string name="error_trace">Trace: %s</string>
+	<string name="error_line">Строка: %s</string>
+	<string name="error_file">Файл: %s</string>
+	<string name="imported_from">Форум импортирован из %s</string>
+</resources>
