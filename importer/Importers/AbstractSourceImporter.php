@@ -4,13 +4,10 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace Importers;
-
-use OpenImporter\Configurator;
-use OpenImporter\Database;
 
 /**
  * This abstract class is the base for any php importer file.
@@ -21,27 +18,17 @@ use OpenImporter\Database;
  */
 abstract class AbstractSourceImporter
 {
-	/**
-	 * Settings file name
-	 * @var string
-	 */
+	/** @var string Settings file name */
 	protected $setting_file = '';
 
-	/**
-	 * Path to source
-	 * @var string
-	 */
+	/** @var string Path to source */
 	protected $path = '';
 
-	/**
-	 * @var Database
-	 */
-	protected $db = null;
+	/** @var \OpenImporter\Database */
+	protected $db;
 
-	/**
-	 * @var Configurator
-	 */
-	protected $config = null;
+	/** @var \OpenImporter\Configurator */
+	protected $config;
 
 	public function setUtils($db, $config)
 	{
@@ -64,13 +51,17 @@ abstract class AbstractSourceImporter
 		if ($test)
 		{
 			if (empty($this->setting_file))
+			{
 				return null;
+			}
 
 			return $this->testPath($path);
 		}
 
 		if (empty($this->setting_file))
+		{
 			return true;
+		}
 
 		if ($this->testPath($path))
 		{
@@ -88,8 +79,8 @@ abstract class AbstractSourceImporter
 
 			return true;
 		}
-		else
-			return false;
+
+		return false;
 	}
 
 	protected function testPath($path)
@@ -97,7 +88,9 @@ abstract class AbstractSourceImporter
 		$found = @file_exists($path . $this->setting_file);
 
 		if ($found)
+		{
 			$this->path = $path;
+		}
 
 		return $found;
 	}

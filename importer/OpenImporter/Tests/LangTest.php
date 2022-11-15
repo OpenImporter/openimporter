@@ -58,7 +58,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	public function testFindLanguage()
 	{
 		$method = new ReflectionMethod(
-			'OpenImporter\Lang', 'findLanguage'
+			Lang::class, 'findLanguage'
 		);
 
 		$method->setAccessible(true);
@@ -88,7 +88,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	public function testSet()
 	{
 		$method = new ReflectionMethod(
-			'OpenImporter\Lang', 'set'
+			Lang::class, 'set'
 		);
 
 		$method->setAccessible(true);
@@ -106,7 +106,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	public function testGetAll()
 	{
 		$method = new ReflectionMethod(
-			'OpenImporter\Lang', 'set'
+			Lang::class, 'set'
 		);
 
 		$method->setAccessible(true);
@@ -146,7 +146,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	{
 		require_once(TESTDIR . '/TestOiException.php');
 		$method = new ReflectionMethod(
-			'OpenImporter\Lang', 'set'
+			Lang::class, 'set'
 		);
 
 		$method->setAccessible(true);
@@ -163,7 +163,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	public function testGet()
 	{
 		$method = new ReflectionMethod(
-			'OpenImporter\Lang', 'set'
+			Lang::class, 'set'
 		);
 
 		$method->setAccessible(true);
@@ -189,7 +189,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	public function testGetter()
 	{
 		$method = new ReflectionMethod(
-			'OpenImporter\Lang', 'set'
+			Lang::class, 'set'
 		);
 
 		$method->setAccessible(true);

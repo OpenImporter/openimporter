@@ -4,13 +4,14 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
 
 /**
  * Class DummyLang
+ *
  * Replaces the Lang class if something bad happens, for example if the
  * XML file is not properly formatted or if the directory is wrong
  *
@@ -53,7 +54,7 @@ class DummyLang
 	/**
 	 * Returns the specified $key.
 	 *
-	 * @param string $key Name of the variable
+	 * @param string|array $key Name of the variable
 	 *
 	 * @return string|null Value of the specified $key
 	 */
@@ -65,10 +66,8 @@ class DummyLang
 
 			return $l_key . ' ' . implode(' ', $key);
 		}
-		else
-		{
-			return $key;
-		}
+
+		return $key;
 	}
 
 	/**

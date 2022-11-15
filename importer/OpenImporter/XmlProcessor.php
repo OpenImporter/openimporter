@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  *
  * This file contains code based on:
  *
@@ -20,72 +20,47 @@ namespace OpenImporter;
  * Object Importer creates the main XML object.
  * It detects and initializes the script to run.
  *
- * @package OpenImporter
+ * @class XmlProcessor
  *
  */
 class XmlProcessor
 {
-	/**
-	 * This is our main database object.
-	 * @var Database
-	 */
+	/** @var \OpenImporter\Database This is our main database object. */
 	protected $db;
 
-	/**
-	 * Contains any kind of configuration.
-	 * @var Configurator
-	 */
+	/** @var \OpenImporter\Configurator Contains any kind of configuration. */
 	public $config;
 
-	/**
-	 * The template
-	 * @var Template
-	 */
+	/** @var \OpenImporter\Template The template */
 	public $template;
 
-	/**
-	 * The xml object containing the settings.
-	 * Required (for now) to convert IPs (v4/6)
-	 * @var object
-	 */
+	/** @var object The xml object containing the settings. Required (for now) to convert IPs (v4/6) */
 	public $xml;
 
-	/**
-	 * The step running in this very moment.
-	 * @var object
-	 */
+	/** @var object The step running in this very moment, right here, right now. */
 	public $current_step;
 
-	/**
-	 * Holds all the methods required to perform the conversion.
-	 * @var object
-	 */
+	/** @var object Holds all the methods required to perform the conversion. */
 	public $step1_importer;
 
-	/**
-	 * Holds the row result from the query
-	 * @var string[]
-	 */
+	/** @var string[] Holds the row result from the query */
 	public $row;
 
-	/**
-	 * Holds the processed rows
-	 */
+	/** @var mixed Holds the processed rows */
 	public $rows;
 
-	/**
-	 * Holds the (processed) row keys
-	 */
+	/** @var mixed Holds the (processed) row keys */
 	public $keys;
 
 	/**
 	 * XmlProcessor constructor.
+	 *
 	 * Initialize the main Importer object
 	 *
 	 * @param Database $db
 	 * @param Configurator $config
 	 * @param Template $template
-	 * @param $xml
+	 * @param object $xml (output from SimpleXMLElement)
 	 */
 	public function __construct($db, $config, $template, $xml)
 	{
@@ -104,7 +79,7 @@ class XmlProcessor
 	 * Loop through each of the steps in the XML file
 	 *
 	 * @param int $step
-	 * @param array $substep
+	 * @param int $substep
 	 * @param array $do_steps
 	 */
 	public function processSteps($step, &$substep, &$do_steps)
@@ -172,7 +147,7 @@ class XmlProcessor
 			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
 
 			// Any specific LIMIT set
-			$special_limit = isset($this->current_step->options->limit) ? $this->current_step->options->limit : 500;
+			$special_limit = $this->current_step->options->limit ?? 500;
 
 			// Any <preparsecode> code? Loaded here to be used later.
 			$special_code = $this->getPreparsecode();
@@ -217,7 +192,6 @@ class XmlProcessor
 
 				$this->insertRows($special_table);
 
-				// @todo $_REQUEST
 				$_REQUEST['start'] += $special_limit;
 
 				if ($this->db->num_rows($special_result) < $special_limit)
@@ -301,10 +275,8 @@ class XmlProcessor
 		{
 			return $this->fix_params((string) $this->current_step->preparsecode);
 		}
-		else
-		{
-			return null;
-		}
+
+		return null;
 	}
 
 	protected function advanceSubstep($substep)
@@ -321,7 +293,7 @@ class XmlProcessor
 	/**
 	 * Used to replace {$from_prefix} and {$to_prefix} with its real values.
 	 *
-	 * @param string string string in which parameters are replaced
+	 * @param string string in which parameters are replaced
 	 *
 	 * @return string
 	 */
@@ -343,7 +315,7 @@ class XmlProcessor
 		return trim($string);
 	}
 
-	protected function updateStatus(&$substep, &$do_steps)
+	protected function updateStatus(&$substep, $do_steps)
 	{
 		$table_test = true;
 
@@ -410,7 +382,7 @@ class XmlProcessor
 			$this->db->query($exec . ';');
 		}
 
-		// Don't do this twice..
+		// Don't do this twice.
 		$_SESSION['import_steps'][$substep]['presql'] = true;
 	}
 
@@ -468,9 +440,9 @@ class XmlProcessor
 	{
 		// Query substitutes
 		$table = $this->fix_params($table);
-		$table = preg_replace('/^`[\w\d\-_]*`\./i', '', $this->fix_params($table));
+		$table = preg_replace('/^`[\w\-_]*`\./', '', $this->fix_params($table));
 
-		// Databse name
+		// Database name
 		$db_name_str = $this->config->source->getDbName();
 
 		// Simple table check or something more complex?
@@ -488,19 +460,12 @@ class XmlProcessor
 				FROM `{$db_name_str}`.{$table}");
 		}
 
-		if ($result === false || $this->db->num_rows($result) == 0)
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
+		return !($result === false || $this->db->num_rows($result) === 0);
 	}
 
 	protected function shouldIgnore($options)
 	{
-		if (isset($options->ignore) && $options->ignore == false)
+		if (isset($options->ignore) && $options->ignore === false)
 		{
 			return false;
 		}
@@ -510,17 +475,17 @@ class XmlProcessor
 
 	protected function shouldReplace($options)
 	{
-		return isset($options->replace) && $options->replace == true;
+		return isset($options->replace) && $options->replace === true;
 	}
 
 	protected function shoudNotAdd($options)
 	{
-		return isset($options->no_add) && $options->no_add == true;
+		return isset($options->no_add) && $options->no_add === true;
 	}
 
 	protected function ignoreSlashes($options)
 	{
-		return isset($options->ignore_slashes) && $options->ignore_slashes == true;
+		return isset($options->ignore_slashes) && $options->ignore_slashes === true;
 	}
 
 	protected function insertStatement($options)
@@ -553,10 +518,7 @@ class XmlProcessor
 		{
 			return $this->db->query(sprintf($current_data, $_REQUEST['start'], $_REQUEST['start'] + $special_limit - 1) . "\n" . 'LIMIT ' . $special_limit);
 		}
-		else
-		{
-			return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
-		}
 
+		return $this->db->query($current_data . "\n" . 'LIMIT ' . $_REQUEST['start'] . ', ' . $special_limit);
 	}
 }

@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 /**
@@ -56,7 +56,7 @@ class XenForo1_4 extends Importers\AbstractSourceImporter
 		$match = array();
 		preg_match('~\$config\[\'db\'\]\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);
 
-		return isset($match[1]) ? $match[1] : '';
+		return $match[1] ?? '';
 	}
 
 	public function xen_copy_files($dir, $row, $id_attach, $destination_path, $thumb = false)
@@ -143,11 +143,12 @@ class XenForo1_4 extends Importers\AbstractSourceImporter
  */
 function convertIp($ip)
 {
-	if (strlen($ip) == 8)
+	if (strlen($ip) === 8)
 	{
-		return long2ip(hexdec($ip) + 0);
+		return long2ip(hexdec($ip));
 	}
-	else if (strlen($ip) == 4)
+
+	if (strlen($ip) === 4)
 	{
 		$parts = array();
 		foreach (str_split($ip) AS $char)
@@ -157,14 +158,13 @@ function convertIp($ip)
 
 		return implode('.', $parts);
 	}
-	else if (preg_match('/^[0-9]+$/', $ip))
+
+	if (preg_match('/^[0-9]+$/', $ip))
 	{
-		return long2ip($ip + 0);
+		return long2ip($ip);
 	}
-	else
-	{
-		return '127.0.0.1';
-	}
+
+	return '127.0.0.1';
 }
 
 /**
@@ -179,7 +179,5 @@ function convertIp($ip)
 function xen_attach_filename($row)
 {
 	$subdir = floor($row['data_id'] / 1000);
-	$name = $subdir . "/{$row['data_id']}-{$row['file_hash']}";
-
-	return $name;
+	return $subdir . "/{$row['data_id']}-{$row['file_hash']}";
 }

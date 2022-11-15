@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 /**
@@ -58,10 +58,8 @@ function fix_quotes($string, $new_lines = true)
 	{
 		return strtr(htmlspecialchars($string, ENT_QUOTES), array("\n" => '<br />'));
 	}
-	else
-	{
-		return htmlspecialchars($string);
-	}
+
+	return htmlspecialchars($string);
 }
 
 /**
@@ -81,8 +79,6 @@ function convert_birthdate($date)
 
 		return $tmp_birthdate[2] . '-' . str_pad($tmp_birthdate[0], 2, "0", STR_PAD_LEFT) . '-' . str_pad($tmp_birthdate[1], 2, "0", STR_PAD_LEFT);
 	}
-	else
-	{
-		return '0001-01-01';
-	}
+
+	return '0001-01-01';
 }

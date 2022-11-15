@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace Importers;
@@ -20,7 +20,9 @@ abstract class Step1BaseImporter extends BaseImporter
 	public function beforeSql($method)
 	{
 		if (method_exists($this, $method))
+		{
 			$this->$method();
+		}
 	}
 
 	public function doSpecialTable($table, $params = null)

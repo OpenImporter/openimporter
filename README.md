@@ -1,22 +1,27 @@
 # This is the OpenImporter development repository.
 
-OpenImporter was inspired by SMF's forum converter engine and is supposed to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination. 
+OpenImporter is a forum converter engine and is intended to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination. 
 
 ## Supported Source systems
 
-* MyBB [http://www.mybb.com/](http://www.mybb.com/)
-* phpBB3 [https://www.phpbb.com/](https://www.phpbb.com/)
-* SMF 1.1 [http://www.simplemachines.org/](http://www.simplemachines.org/)
-* SMF 2.0 [http://www.simplemachines.org/](http://www.simplemachines.org/)
-* vBulletin 4 [http://www.vbulletin.com/](http://www.vbulletin.com/)
-* Woltlab Burning Board [http://www.woltlab.com/](http://www.woltlab.com/)
+* IPB 3.4.x
+* MyBB [https://www.mybb.com/](https://www.mybb.com/)
+* phpBB3 [https://www.phpbb.com/](https://www.phpbb.com/)\
+* PHPBoost 3.x [https://www.phpboost.com](https://www.phpboost.com)
+* SeoBoards 1.x
+* SMF [https://www.simplemachines.org/](https://www.simplemachines.org/)
+* UBB Threads [https://www.ubbcentral.com](https://www.ubbcentral.com)
+* vBulletin 4 [https://www.vbulletin.com/](https://www.vbulletin.com/)
+* Viscacha 0.8 [https://www.viscacha.org/](https://www.viscacha.org/)
+* Woltlab Burning Board [http://www.woltlab.com/](https://www.woltlab.com/)
+* Wedge [https://wedge.org](https://wedge.org)
 * Wordpress [https://wordpress.org/](https://wordpress.org/)
-* Wedge [wedge.org](wedge.org)
+* Xenforo [https://xenforo.com](https://xenforo.com)
 
 ## Supported destination systems
 
-* ElkArte [www.elkarte.net](www.elkarte.net)
-* Wedge [wedge.org](wedge.org)
+* ElkArte [https://www.elkarte.net](https://www.elkarte.net)
+* Wedge [https://wedge.org](https://wedge.org)
 
 The software is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
 

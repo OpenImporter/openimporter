@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  *
  * This file contains code based on:
  *
@@ -14,7 +14,7 @@
  */
 
 /**
- * Checks if we've passed a time limit..
+ * Checks if we've passed a time limit.
  *
  * @param int|null $substep
  * @param int $stop_time
@@ -31,7 +31,7 @@ function pastTime($substep = null, $stop_time = 5)
 	}
 
 	// Some details for our progress bar
-	if (isset($oi_import->count->$substep) && $oi_import->count->$substep > 0 && isset($_REQUEST['start']) && $_REQUEST['start'] > 0 && isset($substep))
+	if (isset($oi_import->count->$substep, $_REQUEST['start']) && $oi_import->count->$substep > 0 && $_REQUEST['start'] > 0 && isset($substep))
 	{
 		$bar = round($_REQUEST['start'] / $oi_import->count->$substep * 100, 0);
 	}
@@ -97,7 +97,7 @@ function copy_dir_recursive($source, $destination)
 
 	while ($file = readdir($dir))
 	{
-		if ($file == '.' || $file == '..')
+		if ($file === '.' || $file === '..')
 		{
 			continue;
 		}
@@ -127,9 +127,9 @@ function create_folders_recursive($path)
 		create_folders_recursive($parent);
 	}
 
-	if (!file_exists($path))
+	if (!file_exists($path) && !mkdir($path, 0755) && !is_dir($path))
 	{
-		@mkdir($path, 0755);
+		throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
 	}
 }
 
@@ -138,7 +138,7 @@ function create_folders_recursive($path)
  *
  * @param array $var
  *
- * @return array
+ * @return string|array
  */
 function addslashes_recursive($var)
 {
@@ -146,15 +146,13 @@ function addslashes_recursive($var)
 	{
 		return addslashes($var);
 	}
-	else
-	{
-		foreach ($var as $k => $v)
-		{
-			$var[$k] = addslashes_recursive($v);
-		}
 
-		return $var;
+	foreach ($var as $k => $v)
+	{
+		$var[$k] = addslashes_recursive($v);
 	}
+
+	return $var;
 }
 
 /**
@@ -162,7 +160,7 @@ function addslashes_recursive($var)
  *
  * @param array $var
  *
- * @return array
+ * @return string|array
  */
 function stripslashes_recursive($var, $level = 0)
 {
@@ -200,31 +198,31 @@ function copy_dir($source, $destination)
 
 	while ($file = readdir($dir))
 	{
-		if ($file == '.' || $file == '..')
+		if ($file === '.' || $file === '..')
 		{
 			continue;
 		}
 
 		// If we have a directory create it on the destination and copy contents into it!
+		if (!is_dir($destination))
+		{
+			if (!mkdir($destination, 0755) && !is_dir($destination))
+			{
+				throw new \RuntimeException(sprintf('Directory "%s" was not created', $destination));
+			}
+		}
 		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
 		{
-			if (!is_dir($destination))
-			{
-				@mkdir($destination, 0755);
-			}
 
 			copy_dir($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 		else
 		{
-			if (!is_dir($destination))
-			{
-				@mkdir($destination, 0755);
-			}
 
 			copy($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 	}
+
 	closedir($dir);
 }
 
@@ -237,7 +235,7 @@ function copy_dir($source, $destination)
  */
 function is_utf8($string)
 {
-	return utf8_encode(utf8_decode($string)) == $string;
+	return utf8_encode(utf8_decode($string)) === $string;
 }
 
 /**
@@ -261,7 +259,7 @@ function is_utf8($string)
  *
  * @param string|string[] $text Any string.
  *
- * @return string  The same string, UTF8 encoded
+ * @return string|string[] The same string, UTF8 encoded
  */
 function fix_charset($text)
 {
@@ -316,7 +314,7 @@ function fix_charset($text)
 				{
 					// yeah, almost sure it's UTF8 already
 					$buf .= $c1 . $c2 . $c3;
-					$i = $i + 2;
+					$i += 2;
 				}
 				else
 				{
@@ -333,7 +331,7 @@ function fix_charset($text)
 				{
 					// Yeah, almost sure it's UTF8 already
 					$buf .= $c1 . $c2 . $c3;
-					$i = $i + 2;
+					$i += 2;
 				}
 				else
 				{
@@ -351,7 +349,7 @@ function fix_charset($text)
 				$buf .= $cc1 . $cc2;
 			}
 		}
-		elseif (($c1 & "\xc0") == "\x80")
+		elseif (($c1 & "\xc0") === "\x80")
 		{
 			// Needs conversion
 			$cc1 = (chr(ord($c1) / 64) | "\xc0");
@@ -359,8 +357,8 @@ function fix_charset($text)
 			$buf .= $cc1 . $cc2;
 		}
 		else
-			// Doesn't need conversion
 		{
+			// Doesn't need conversion
 			$buf .= $c1;
 		}
 	}
@@ -386,7 +384,7 @@ function fix_charset($text)
  * - Uses capture group 2 in the supplied array
  * - Does basic scan to ensure characters are inside a valid range
  *
- * @param mixed[] $matches matches from a preg_match_all
+ * @param array $matches matches from a preg_match_all
  *
  * @return string $string
  */
@@ -406,7 +404,7 @@ function replaceEntities__callback($matches)
 	}
 
 	// Quote, Ampersand, Apostrophe, Less/Greater Than get html replaced
-	if (in_array($num, array(0x22, 0x26, 0x27, 0x3C, 0x3E)))
+	if (in_array($num, array(0x22, 0x26, 0x27, 0x3C, 0x3E), true))
 	{
 		return '&#' . $num . ';';
 	}
@@ -417,26 +415,27 @@ function replaceEntities__callback($matches)
 	{
 		return '';
 	}
+
 	// <0x80 (or less than 128) are standard ascii characters a-z A-Z 0-9 and puncuation
-	elseif ($num < 0x80)
+	if ($num < 0x80)
 	{
 		return chr($num);
 	}
+
 	// <0x800 (2048)
-	elseif ($num < 0x800)
+	if ($num < 0x800)
 	{
 		return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
 	}
+
 	// < 0x10000 (65536)
-	elseif ($num < 0x10000)
+	if ($num < 0x10000)
 	{
 		return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
 	}
+
 	// <= 0x10FFFF (1114111)
-	else
-	{
-		return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
-	}
+	return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
 }
 
 /**
@@ -505,16 +504,13 @@ function attachment_type($filename)
 		$ext = '';
 		$mime_type = '';
 	}
+	elseif (strtolower($ext) === 'jpg')
+	{
+		$mime_type = 'image/jpeg';
+	}
 	else
 	{
-		if (strtolower($ext) === 'jpg')
-		{
-			$mime_type = 'image/jpeg';
-		}
-		else
-		{
-			$mime_type = 'image/' . strtolower($ext);
-		}
+		$mime_type = 'image/' . strtolower($ext);
 	}
 
 	return array($ext, $basename, $mime_type);

@@ -46,7 +46,7 @@ Details about the rebase operation:
 [git rebase] (http://www.kernel.org/pub/software/scm/git/docs/git-rebase.html)
 
 Recommended reading for github pull requests workflow:
-[About Github workflow](http://qsapp.com/wiki/Github#Github_Contributor_Workflow)
+[About Github workflow](https://qsapp.com/wiki/Github#Github_Contributor_Workflow)
 
 ## Code Reviews
 

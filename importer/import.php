@@ -4,11 +4,11 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 // Handy shortcut
-define('BASEDIR', __DIR__);
+const BASEDIR = __DIR__;
 
 // Autoload our classes from the OpenImporter and Importers directory's
 require_once(BASEDIR . '/OpenImporter/SplClassLoader.php');
@@ -17,10 +17,10 @@ $oi_classLoader->register();
 $oi_classLoader2 = new SplClassLoader('Importers', BASEDIR);
 $oi_classLoader2->register();
 
-// Can always ask, but whats taking 10mins?
+// Can always ask, but what's taking 10 mins?
 @set_time_limit(600);
 
-// Lets catch those errors and exceptions
+// Catch those errors and exceptions
 error_reporting(E_ALL);
 set_exception_handler(array('OpenImporter\ImportException', 'exception_handler'));
 set_error_handler(array('OpenImporter\ImportException', 'error_handler_callback'), E_ALL);
@@ -47,7 +47,7 @@ ob_start();
 global $oi_import;
 
 // Resetting to another import combination from the UI
-if ((isset($_GET['import_script']) && $_GET['import_script'] == '') || empty($_GET))
+if ((isset($_GET['import_script']) && trim($_GET['import_script']) === '') || empty($_GET))
 {
 	unset($_SESSION['importer_data'], $_SESSION['do_steps'], $_SESSION['import_progress']);
 }
@@ -61,6 +61,7 @@ if (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() != 0)
 // Start a configurator values container for use
 $oi_config = new OpenImporter\Configurator();
 $oi_config->lang_dir = BASEDIR . '/Languages';
+$oi_language = '';
 
 // Load our language strings, can't say much without them
 try
@@ -82,14 +83,14 @@ $oi_response = new OpenImporter\HttpResponse(new OpenImporter\ResponseHeader());
 $oi_template->setResponse($oi_response);
 $oi_import = new OpenImporter\ImportManager($oi_config, $oi_importer, $oi_template, new OpenImporter\Cookie(), $oi_response);
 
-// Lets get this show on the road
+// Get this show on the road
 try
 {
 	$oi_import->process();
 }
 catch (\Exception $e)
 {
-	// Debug, remember to remove before GA
+	// Debug, remember to remove before GA (ROFL)
 	echo '<br>' . $e->getMessage() . '<br>';
 	echo $e->getFile() . '<br>';
 	echo $e->getLine() . '<br>';

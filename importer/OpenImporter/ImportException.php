@@ -4,7 +4,7 @@
  * @copyright OpenImporter contributors
  * @license   BSD http://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
@@ -17,6 +17,7 @@ class ImportException extends \Exception
 {
 	/**
 	 * OI Error handler
+	 *
 	 * @param int $code
 	 * @param string $string
 	 * @param string $file
@@ -27,7 +28,7 @@ class ImportException extends \Exception
 	public static function error_handler_callback($code, $string, $file, $line)
 	{
 		// Not telling?
-		if (error_reporting() == 0)
+		if (error_reporting() === 0)
 		{
 			return;
 		}
@@ -37,7 +38,7 @@ class ImportException extends \Exception
 		$exception->line = $line;
 		$exception->file = $file;
 
-		ImportException::exception_handler($exception);
+		self::exception_handler($exception);
 	}
 
 	/**
@@ -51,7 +52,7 @@ class ImportException extends \Exception
 		global $oi_import;
 
 		// Keeping secrets
-		if (error_reporting() == 0)
+		if (error_reporting() === 0)
 		{
 			return;
 		}
@@ -59,14 +60,7 @@ class ImportException extends \Exception
 		// Tell just your friends
 		if ($template === null)
 		{
-			if (!empty($oi_import))
-			{
-				$template = $oi_import->template;
-			}
-			else
-			{
-				$template = new Template(null);
-			}
+			$template = $oi_import->template ?? new Template(null);
 		}
 
 		$message = $exception->getMessage();
@@ -74,6 +68,6 @@ class ImportException extends \Exception
 		$line = $exception->getLine();
 		$file = $exception->getFile();
 
-		$template->error($message, isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $line, $file);
+		$template->error($message, $trace[0]['args'][1] ?? null, $line, $file);
 	}
 }
