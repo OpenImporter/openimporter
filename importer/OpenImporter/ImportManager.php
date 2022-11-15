@@ -2,7 +2,7 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
  * @version 1.0
  *
@@ -324,6 +324,11 @@ class ImportManager
 	 */
 	protected function validateScript($script)
 	{
+		if (empty($script))
+		{
+			return false;
+		}
+
 		$script = preg_replace('~\.+~', '.', $script);
 
 		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script)

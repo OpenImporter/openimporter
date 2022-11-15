@@ -9,9 +9,9 @@
 	<string name="not_found"><![CDATA[The importer did not find any import data files. Please check to see if the one you want is available for download at <a href="https://github.com/openimporter/openimporter/">Github</a>. If it isn't, we may be able to write one for you - just ask us!]]></string>
 	<string name="not_found_download"><![CDATA[After you download it, simply upload it into the same folder as <b>this import.php file</b>. If you're having any other problems with this importer, don't hesitate to look for help.]]></string>
 	<string name="try_again">Try again!</string>
-	<string name="settings_not_found">This importer was unable to find %s in the path you specified. Please double check the path, and that it is already installed there.</string>
+	<string name="settings_not_found">This importer was unable to find %s in the path you specified. Please double-check the path, and that it is already installed there.</string>
 	<string name="open_basedir">The importer detected that your host has open_basedir enabled on this server. Please ask your host to disable this setting or try moving the contents of your %s to the public html folder of your site.</string>
-	<string name="config_not_found">Unable to find the settings for %s. Please double check the path and try again.</string>
+	<string name="config_not_found">Unable to find the settings for %s. Please double-check the path and try again.</string>
 	<string name="password_incorrect">The database password you entered was incorrect. Please make sure you are using the right password and try it again. If in doubt, use the password from Settings.php.</string>
 	<string name="select_step">You must select at least one step to import.</string>
 	<string name="permission_denied"><![CDATA[Sorry, the database connection information used in the specified installation of your forum cannot access the installation of %2$s. This may either mean that the installation doesn't exist, or that the MySQL account used does not have permissions to access it.<br /><br />The error MySQL gave was: %1$s']]></string>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <importer xmlns="https://www.elkarte.net/xml/importer" xmlns:smf="https://www.elkarte.net/">
 	<general>
-		<name>SMF 2.1 Beta</name>
+		<name>SMF 2.1</name>
 		<className>SMF2_1</className>
 	</general>
 	<step>
