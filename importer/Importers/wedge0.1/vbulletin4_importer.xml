@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="https://www.elkarte.net/xml/importer" xmlns:smf="https://www.elkarte.net/">
 	<general>
 		<name>vBulletin 4</name>
 		<version>Wedge 0.1</version>
@@ -127,7 +127,7 @@
 			{
 				foreach ($cats as $key => $value)
 				{
-					if ($key == $row['id_cat'])	
+					if ($key == $row['id_cat'])
 						$db->query("
 							UPDATE {$to_prefix}boards
 							SET id_cat = '$key'

@@ -1,0 +1,418 @@
+<?xml version="1.0"?>
+<importer xmlns="https://www.elkarte.net/xml/importer" xmlns:smf="https://www.elkarte.net/">
+	<general>
+		<name>IP.Board 3.4.x</name>
+		<className>IPB3_4</className>
+	</general>
+<!--	<step id="settings">
+		<title>Importing settings</title>
+		<detect>{$from_prefix}settings</detect>
+	</step>-->
+	<step id="members" type="mandatory">
+		<title>Importing members</title>
+		<detect>{$from_prefix}members</detect>
+		<query>
+			SELECT
+				m.member_id AS id_member,
+				m.name AS member_name,
+				joined AS date_registered,
+				m.posts,
+				m.member_group_id AS id_group,
+				lng.lang_short AS language,
+				last_visit AS last_login,
+				members_display_name AS real_name,
+				msg_count_total AS unread_messages,
+				msg_count_new AS new_pm,
+				'' AS buddy_list,
+				ignored_users AS pm_ignore_list,
+				'' AS pm_prefs,
+				'' AS mod_prefs,
+				'' AS message_labels,
+				members_pass_hash AS passwd,
+				email AS email_address,
+				'' AS personal_text,
+				'' AS gender,
+				CONCAT(LPAD(m.bday_year, 4, 0), '-', LPAD(m.bday_month, 2, 0), '-', LPAD(m.bday_day, 2, 0)) AS birthdate,
+				'' AS website_url,
+				'' AS website_title,
+				'' AS location,
+				1 AS hide_email,
+				1 AS show_online,
+				'' AS time_format,
+				pp.signature AS signature,
+				'' AS time_offset,
+				pp.pp_thumb_photo AS avatar,
+				1 AS pm_email_notify,
+				'' AS usertitle,
+				1 AS notify_announcements,
+				1 AS notify_regularity,
+				0 AS notify_send_body,
+				2 AS notify_types,
+				ip_address AS member_ip,
+				ip_address AS member_ip2,
+				'' AS secret_question,
+				'' AS secret_answer,
+				1 AS id_theme,
+				1 AS is_activated,
+				'' AS validation_code,
+				0 AS id_msg_last_visit,
+				mgroup_others AS additional_groups,
+				'' AS smiley_set,
+				0 AS id_post_group,
+				0 AS total_time_logged_in,
+				members_pass_salt AS password_salt,
+				'' AS ignore_boards,
+				IFNULL(warn_level, 0) AS warning,
+				0 AS passwd_flood,
+				'' AS pm_receive_from,
+				'' as avatartype
+			FROM {$from_prefix}members AS m
+				LEFT JOIN {$from_prefix}core_sys_lang AS lng ON (m.language = lng.lang_id)
+				LEFT JOIN {$from_prefix}profile_portal AS pp ON (m.member_id = pp.pp_member_id);
+		</query>
+	</step>
+	<step id="attachments">
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}attachments</detect>
+		<query>
+			SELECT
+				a.attach_id AS id_attach,
+				0 AS id_thumb,
+				p.pid AS id_msg,
+				a.attach_member_id AS id_member,
+				0 AS attachment_type,
+				a.attach_file AS filename,
+				'' AS file_hash,
+				a.attach_filesize AS size,
+				a.attach_hits AS downloads,
+				a.attach_img_width AS width,
+				a.attach_img_height AS height,
+				a.attach_ext AS fileext,
+				at.atype_mimetype AS mime_type,
+				a.attach_location,
+				1 AS id_folder
+			FROM {$from_prefix}attachments AS a
+				LEFT JOIN {$from_prefix}posts AS p ON (a.attach_post_key = p.post_key)
+				LEFT JOIN {$from_prefix}attachments_type AS at ON (a.attach_ext = at.atype_extension);
+		</query>
+	</step>
+<!--	<step id="avatars">
+		<title>Importing avatars</title>
+	</step>-->
+	<step id="categories">
+		<title>Importing categories</title>
+		<detect>{$from_prefix}forums</detect>
+		<query>
+			SELECT
+				id AS id_cat,
+				name,
+				position AS cat_order,
+				0 AS can_collapse
+			FROM {$from_prefix}forums
+			WHERE parent_id = -1;
+		</query>
+	</step>
+	<step id="boards">
+		<title>Importing boards</title>
+		<detect>{$from_prefix}forums</detect>
+		<query>
+			SELECT
+				f.id AS id_board,
+				1 AS id_cat,
+				f.name,
+				f.description,
+				f.position AS board_order,
+				f.posts AS num_posts,
+				f.topics AS num_topics,
+				f.parent_id AS id_parent,
+				pi.perm_view
+			FROM {$from_prefix}forums AS f
+				LEFT JOIN {$from_prefix}permission_index AS pi ON (pi.app = 'forums' AND pi.perm_type_id = f.id)
+			WHERE parent_id != -1;
+		</query>
+	</step>
+	<step id="topics">
+		<title>Importing topics</title>
+		<detect>{$from_prefix}topics</detect>
+		<query>
+			SELECT
+				t.tid AS id_topic,
+				t.pinned AS is_sticky,
+				t.forum_id AS id_board,
+				t.topic_firstpost AS id_first_msg,
+				MAX(p.pid) AS id_last_msg,
+				t.starter_id AS id_member_started,
+				t.last_poster_id AS id_member_updated,
+				pl.pid AS id_poll,
+				0 AS id_previous_board,
+				0 AS id_previous_topic,
+				t.posts AS num_replies,
+				t.views AS num_views,
+				CASE t.state
+					WHEN 'open' THEN 0
+					WHEN 'closed' THEN 1
+					ELSE 1
+					END AS locked,
+				0 AS unapproved_posts,
+				t.approved
+			FROM ({$from_prefix}topics AS t,
+				{$from_prefix}posts AS p)
+				LEFT JOIN {$from_prefix}polls AS pl ON (t.tid = pl.tid)
+			WHERE p.topic_id = t.tid
+			GROUP BY t.tid
+			HAVING id_first_msg != 0
+				AND id_last_msg != 0
+		</query>
+	</step>
+	<step id="messages">
+		<title>Importing messages</title>
+		<detect>{$from_prefix}posts</detect>
+		<options>
+			<limit>100</limit>
+		</options>
+		<query>
+			SELECT
+				p.pid AS id_msg,
+				p.topic_id AS id_topic,
+				t.forum_id AS id_board,
+				p.post_date AS poster_time,
+				p.author_id AS id_member,
+				p.pid AS id_msg_modified,
+				t.title AS subject,
+				p.author_name AS poster_name,
+				IFNULL(m.email, 'guest@localhost.com') AS poster_email,
+				p.ip_address AS poster_ip,
+				p.use_emo AS smileys_enabled,
+				IFNULL(p.edit_time, 0) AS modified_time,
+				IFNULL(p.edit_name, '') AS modified_name,
+				p.post AS body,
+				'' AS icon,
+				CASE p.queued
+					WHEN 1 THEN 0
+					ELSE 1
+				END AS approved
+			FROM {$from_prefix}posts AS p
+				LEFT JOIN {$from_prefix}topics AS t ON (p.topic_id = t.tid)
+				LEFT JOIN {$from_prefix}members AS m ON (p.author_id = m.member_id)
+		</query>
+	</step>
+	<step id="polls">
+		<title>Importing polls</title>
+		<detect>{$from_prefix}polls</detect>
+		<query>
+			SELECT
+				p.pid AS id_poll,
+				p.poll_question AS question,
+				p.poll_view_voters AS view_voters,
+				0 AS voting_locked,
+				0 AS max_votes,
+				0 AS expire_time,
+				0 AS hide_results,
+				0 AS change_vote,
+				0 AS guest_vote,
+				0 AS num_guest_voters,
+				0 AS reset_poll,
+				p.starter_id AS id_member,
+				IFNULL(m.name, 'Guest') AS poster_name
+			FROM {$from_prefix}polls AS p
+				LEFT JOIN {$from_prefix}members AS m ON (m.member_id = p.starter_id)
+		</query>
+	</step>
+	<step id="polloptions">
+		<title>Importing poll choices</title>
+		<detect>{$from_prefix}polls</detect>
+		<query>
+			SELECT
+				pid,
+				choices
+			FROM {$from_prefix}polls
+		</query>
+	</step>
+	<step id="pollvotes">
+		<title>Importing poll votes</title>
+		<detect>{$from_prefix}voters</detect>
+		<query>
+			SELECT
+				pl.pid AS id_poll,
+				v.member_id AS id_member,
+				v.member_choices
+			FROM {$from_prefix}voters AS v
+				LEFT JOIN {$from_prefix}polls AS pl ON (pl.tid = v.tid)
+			WHERE v.member_id != 0;
+		</query>
+	</step>
+	<step id="pm">
+		<title>Importing personal messages</title>
+		<detect>{$from_prefix}message_topics</detect>
+		<options>
+			<limit>200</limit>
+		</options>
+		<query>
+			SELECT
+				pm.msg_id AS id_pm,
+				mt.mt_first_msg_id AS id_pm_head,
+				pm.msg_author_id AS id_member_from,
+				mt.mt_is_deleted AS deleted_by_sender,
+				IFNULL(m.name, "Guest") AS from_name,
+				pm.msg_date AS msgtime,
+				mt.mt_title AS subject,
+				pm.msg_post AS body
+			FROM {$from_prefix}message_topics AS mt
+				LEFT JOIN {$from_prefix}message_posts AS pm ON (mt.mt_id = pm.msg_topic_id)
+				LEFT JOIN {$from_prefix}members AS m ON (m.member_id = pm.msg_author_id)
+			WHERE mt.mt_is_draft = 0
+		</query>
+	</step>
+	<step id="pmrecipients">
+		<title>Importing pm recipients</title>
+		<detect>{$from_prefix}message_topics</detect>
+		<options>
+			<ignore>true</ignore>
+		</options>
+		<query>
+			SELECT
+				pm.msg_id AS id_pm,
+				mt.mt_to_member_id AS id_member,
+				'-1' AS labels,
+				mt.mt_invited_members,
+				pm.msg_author_id,
+				mt.mt_starter_id,
+				IF(mt.mt_is_deleted = 1 AND mt.mt_starter_id = pm.msg_author_id, 1, 0) AS deleted,
+				IF(IFNULL(mtum.map_has_unread, 1) > 0, 0, 1) AS is_read
+			FROM {$from_prefix}message_topics AS mt
+				LEFT JOIN {$from_prefix}message_posts AS pm ON (mt.mt_id = pm.msg_topic_id)
+				LEFT JOIN {$from_prefix}message_topic_user_map AS mtum ON (mtum.map_topic_id = mt.mt_id)
+			WHERE mt.mt_is_draft != 1;
+		</query>
+	</step>
+	<step id="boardmods">
+		<title>Importing board moderators</title>
+		<detect>{$from_prefix}moderators</detect>
+		<query>
+			SELECT
+				forum_id AS id_board,
+				member_id AS id_member
+			FROM {$from_prefix}moderators
+		</query>
+	</step>
+	<step id="smiley">
+		<title>Importing smileys</title>
+		<detect>{$from_prefix}emoticons</detect>
+		<options>
+			<replace>true</replace>
+		</options>
+		<query>
+			SELECT
+				id AS id_smiley,
+				typed AS code,
+				image AS filename,
+				CASE clickable
+					WHEN 1 THEN 0
+					ELSE 1
+				END AS hidden,
+				emo_position AS smiley_order,
+				typed AS description,
+				1 AS smiley_row
+			FROM {$from_prefix}emoticons;
+		</query>
+	</step>
+	<step id="copysmiley">
+		<title>Copying smileys</title>
+		<detect>{$from_prefix}emoticons</detect>
+	</step>
+<!--	<step id="reports">
+		<title>Importing reported posts</title>
+		<detect>{$from_prefix}log_reported</detect>
+		<query>
+			SELECT
+				id_report, id_msg, id_topic, id_board, id_member, membername, subject,
+				body, time_started, time_updated, num_reports, closed, ignore_all
+			FROM {$from_prefix}log_reported;
+		</query>
+	</step>
+	<step id="reportscomments">
+		<title>Importing reported comments</title>
+		<detect>{$from_prefix}log_reported_comments</detect>
+		<query>
+			SELECT
+				id_comment, id_report, id_member, membername, comment, time_sent
+			FROM {$from_prefix}log_reported_comments;
+		</query>
+	</step>-->
+<!--	<step id="friendlyurls">
+		<title>Importing pretty topic urls</title>
+		<detect>{$from_prefix}pretty_topic_urls</detect>
+		<query>
+			SELECT
+				id_topic, pretty_url as friendly_url
+			FROM {$from_prefix}pretty_topic_urls;
+		</query>
+	</step>
+	<step id="friendlyurlcache">
+		<title>Importing pretty urls cache</title>
+		<detect>{$from_prefix}pretty_urls_cache</detect>
+		<query>
+			SELECT
+				url_id, replacement
+			FROM {$from_prefix}pretty_urls_cache;
+		</query>
+	</step>-->
+	<step id="customfields">
+		<title>Importing custom fields</title>
+		<detect>{$from_prefix}pfields_data</detect>
+		<query>
+			SELECT
+				pf_key AS col_name,
+				pf_title AS field_name,
+				pf_desc AS field_desc,
+				pf_type AS field_type,
+				pf_max_input AS field_length,
+				pf_content AS field_options,
+				'' AS mask,
+				pf_show_on_reg AS show_reg,
+				0 AS show_display,
+				0 AS show_profile,
+				pf_member_hide,
+				pf_member_edit,
+				pf_admin_only,
+				0 AS active,
+				1 AS bbc,
+				1 AS can_search,
+				'' AS default_value,
+				pf_topic_format AS enclose,
+				0 AS placement
+			FROM {$from_prefix}pfields_data;
+		</query>
+	</step>
+	<step id="customfieldsdata">
+		<title>Importing custom fields data</title>
+		<detect>{$from_prefix}pfields_content</detect>
+		<query>
+			SELECT
+				*
+			FROM {$from_prefix}pfields_content
+		</query>
+	</step>
+<!--	<step id="likes">
+		<title>Importing likes from Thank you mod</title>
+		<detect>{$from_prefix}thank_you_post</detect>
+		<query>
+			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
+			FROM {$from_prefix}thank_you_post AS th
+				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
+				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
+		</query>
+	</step>
+	<step id="likes">
+		<title>Importing likes from Joker's Like Posts mod</title>
+		<detect>{$from_prefix}like_post</detect>
+		<query>
+			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
+			FROM {$from_prefix}like_post AS lp;
+		</query>
+	</step>
+	<step id="likes">
+		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
+		<detect>{$from_prefix}likes</detect>
+	</step>-->
+</importer>

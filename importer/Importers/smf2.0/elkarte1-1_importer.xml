@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <importer xmlns="https://www.elkarte.net/xml/importer" xmlns:elkarte="https://www.elkarte.net/">
 	<general>
-		<name>SMF 2.0</name>
-		<className>SMF2_0</className>
+		<name>Elkarte 1.1</name>
+		<className>elkarte1_1</className>
+		<version>SMF 2.0</version>
 	</general>
 	<step>
 		<title>Importing settings</title>
@@ -172,17 +173,6 @@
 				'paypal_email',
 				'smiley_enable',
 				'messageIcons_enable',
-				'disableHostnameLookup',
-				'approveAccountDeletion',
-				'avatar_download_external',
-				'spider_mode',
-				'calendar_updated',
-				'coppaAge',
-				'disallow_sendBody',
-				'enableErrorQueryLogging',
-				'hitStats',
-				'password_strength',
-				'mail_queue',
 			);
 
 			$request = $this->db->query("
@@ -199,11 +189,7 @@
 						VALUES('$row[variable]', '" . addcslashes($row['value'], '\'\\"') . "')");
 				}
 
-				if ($row['variable'] == 'pretty_board_urls')
-				{
-					$pretty_urls = $row['value'];
-					store_global('pretty_urls', $row['value']);
-				}
+
 			}
 
 			$this->db->free_result($request);
@@ -218,73 +204,16 @@
 			SELECT
 				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
 				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
-				pm_prefs, mod_prefs, message_labels, passwd, email_address, personal_text,
+				pm_prefs, mod_prefs, passwd, email_address, personal_text,
 				gender, birthdate, website_url, website_title, location, hide_email, show_online,
-				time_format, signature, time_offset, avatar, pm_email_notify,
-				usertitle, notify_announcements, notify_regularity, notify_send_body,
-				notify_types, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
+				signature, time_offset, avatar,
+				usertitle,  member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
 				total_time_logged_in, password_salt, ignore_boards,
-				IFNULL(warning, 0) AS warning, passwd_flood,
-				pm_receive_from AS receive_from
+				IFNULL(warning, 0) AS warning, passwd_flood
+
 			FROM {$from_prefix}members;
 		</query>
-	</step>
-	<step>
-		<title>Importing attachments</title>
-		<detect>{$from_prefix}attachments</detect>
-		<destination>{$to_prefix}attachments</destination>
-		<presql>TRUNCATE {$to_prefix}attachments;</presql>
-		<presqlMethod>removeAttachments</presqlMethod>
-		<preparsecode>
-			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
-		</preparsecode>
-		<query>
-			SELECT
-				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
-				width, height, fileext, mime_type, id_folder
-			FROM {$from_prefix}attachments;
-		</query>
-	</step>
-	<step>
-		<title>Importing avatars</title>
-		<code>
-			// First check avatar_directory
-			$avatarg = $this->db->query("
-				SELECT value
-				FROM {$from_prefix}settings
-				WHERE variable = 'avatar_directory';");
-			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
-
-			$avatarg = $this->db->query("
-				SELECT value
-				FROM {$to_prefix}settings
-				WHERE variable = 'avatar_directory';");
-			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
-
-			if (!empty($smf_avatarg) and !empty($elk_avatarg))
-				copy_dir_recursive($smf_avatarg, $elk_avatarg);
-
-			// Next check custom_avatar_dir
-			$avatarg = $this->db->query("
-				SELECT value
-				FROM {$from_prefix}settings
-				WHERE variable = 'custom_avatar_dir';");
-			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
-
-			$avatarg = $this->db->query("
-				SELECT value
-				FROM {$to_prefix}settings
-				WHERE variable = 'custom_avatar_dir';");
-			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
-
-			if (!empty($smf_avatarg) and !empty($elk_avatarg))
-				copy_dir_recursive($smf_avatarg, $elk_avatarg);
-		</code>
 	</step>
 	<step>
 		<title>Importing categories</title>
@@ -295,17 +224,6 @@
 			SELECT
 				id_cat, name, cat_order, can_collapse
 			FROM {$from_prefix}categories;
-		</query>
-	</step>
-	<step>
-		<title>Importing collapsed categories</title>
-		<detect>{$from_prefix}collapsed_categories</detect>
-		<destination>{$to_prefix}collapsed_categories</destination>
-		<presql>TRUNCATE {$to_prefix}collapsed_categories;</presql>
-		<query>
-			SELECT
-				id_cat, id_member
-			FROM {$from_prefix}collapsed_categories;
 		</query>
 	</step>
 	<step>
@@ -405,7 +323,7 @@
 		<presql>TRUNCATE {$to_prefix}pm_recipients;</presql>
 		<query>
 			SELECT
-				id_pm, id_member, labels, bcc, is_read, is_new, deleted
+				id_pm, id_member, bcc, is_read, is_new, deleted
 			FROM {$from_prefix}pm_recipients;
 		</query>
 	</step>
@@ -485,7 +403,7 @@
 		<query>
 			SELECT
 				id_group, group_name, description, online_color, min_posts,
-				max_messages, stars AS icons, group_type, hidden, id_parent
+				max_messages, icons AS stars, group_type, hidden, id_parent
 			FROM {$from_prefix}membergroups;
 		</query>
 	</step>
@@ -668,50 +586,59 @@
 		</query>
 	</step>
 	<step>
-		<title>Importing custom fields data</title>
-		<detect>{$from_prefix}custom_fields</detect>
-		<destination>{$to_prefix}custom_fields_data</destination>
-		<presql>TRUNCATE {$to_prefix}custom_fields_data;</presql>
+		<title>Importing attachments</title>
+		<detect>{$from_prefix}attachments</detect>
+		<destination>{$to_prefix}attachments</destination>
+		<presql>TRUNCATE {$to_prefix}attachments;</presql>
+		<presqlMethod>removeAttachments</presqlMethod>
+		<preparsecode>
+			moveAttachment($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
+		</preparsecode>
 		<query>
 			SELECT
-				id_member, variable, value
-			FROM {$from_prefix}themes
-			WHERE variable LIKE 'cust\_%';
+				id_attach, id_thumb, id_msg, id_member, attachment_type, filename, file_hash, size, downloads,
+				width, height, fileext, mime_type, id_folder
+			FROM {$from_prefix}attachments;
 		</query>
 	</step>
 	<step>
-		<title>Importing likes from Thank you mod</title>
-		<detect>{$from_prefix}thank_you_post</detect>
-		<destination>{$to_prefix}message_likes</destination>
-		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
-		<query>
-			SELECT th.id_member, th.id_msg, m.id_member AS id_poster, th.thx_time AS like_timestamp
-			FROM {$from_prefix}thank_you_post AS th
-				LEFT JOIN {$from_prefix}topics AS t ON (th.id_topic = t.id_topic)
-				LEFT JOIN {$from_prefix}messages AS m ON (th.id_msg = m.id_msg);
-		</query>
-	</step>
-	<step>
-		<title>Importing likes from Joker's Like Posts mod</title>
-		<detect>{$from_prefix}like_post</detect>
-		<destination>{$to_prefix}message_likes</destination>
-		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
-		<query>
-			SELECT lp.id_member_received AS id_member, lp.id_msg, lp.id_member_gave AS id_poster, lp.liked_timestamp AS like_timestamp
-			FROM {$from_prefix}like_post AS lp;
-		</query>
-	</step>
-	<step>
-		<title>Importing likes from Nibogo's Likes Lite or Illori's SMF Likes Plus mods</title>
-		<detect>{$from_prefix}likes</detect>
-		<destination>{$to_prefix}message_likes</destination>
-		<presql>TRUNCATE {$to_prefix}message_likes;</presql>
+		<title>Importing avatars</title>
 		<code>
-			$this->keys = array('id_member', 'id_msg', 'id_poster', 'like_timestamp');
-			$this->rows = $this->config->source->fetchLikes();
-			$special_table = $this->config->to_prefix . 'message_likes';
+			// First check avatar_directory
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$from_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
 
-			$this->insertRows($special_table);
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'avatar_directory';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			if (!empty($smf_avatarg) and !empty($elk_avatarg))
+				copy_dir_recursive($smf_avatarg, $elk_avatarg);
+
+			// Next check custom_avatar_dir
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$from_prefix}settings
+				WHERE variable = 'custom_avatar_dir';");
+			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			$avatarg = $this->db->query("
+				SELECT value
+				FROM {$to_prefix}settings
+				WHERE variable = 'custom_avatar_dir';");
+			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
+			$this->db->free_result($avatarg);
+
+			if (!empty($smf_avatarg) and !empty($elk_avatarg))
+				copy_dir_recursive($smf_avatarg, $elk_avatarg);
 		</code>
 	</step>
 </importer>
