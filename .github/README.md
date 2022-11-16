@@ -1,6 +1,6 @@
 # This is the OpenImporter repository.
 
-OpenImporter is a forum converter engine and is intended to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination.
+OpenImporter is a forum converter engine and is intended to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination. 
 
 ## Supported Source systems
 
@@ -33,8 +33,8 @@ Contributions to documentation are licensed under [CC-by-SA 3](https://creativec
 
 The development happens on two branches: *master* and *development*.
 
-The *master* branch holds the current most stable version of OpenImporter. If you want to do a conversion this is the one to use (unless your system is not supported).
-The *development* branch contains the most "advanced" (in terms of refactoring and "moving-forward" ideas) code, but it's very unstable and can be badly broken.
+- The *master* branch holds the current most stable version of OpenImporter. If you want to do a conversion this is the one to use (unless your system is not supported).
+- The *development* branch contains the most "advanced" (in terms of refactoring and "moving-forward" ideas) code, but it's very unstable and can be badly broken.
 
 ### Using master code
 
@@ -54,7 +54,7 @@ External dependencies are handled by [Composer](https://getcomposer.org/), follo
 
 Feel free to fork this repository and make your desired changes.
 
-Please see the [Developer's Certificate of Origin](https://raw.github.com/OpenImporter/openimporter/master/DCO.txt) in the repository:
+Please see the [Developer's Certificate of Origin](https://github.com/openImporter/openimporter/master/.github/DCO.md) in the repository:
 by signing off your contributions, you acknowledge that you can and do license your submissions under the license of the project.
 
 Please see [How to contribute](https://github.com/openimporter/openimporter/blob/master/.github/CONTRIBUTING.md) for information on how to contribute to the development process.

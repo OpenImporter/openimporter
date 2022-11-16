@@ -1,0 +1,34 @@
+{
+  "name": "openimporter/openimporter",
+  "description": "Forum conversion engine.",
+  "version": "1.0",
+  "type": "project",
+  "keywords": ["importer", "forum", "conversion", "php"],
+  "homepage": "https://openimporter.github.io/openimporter/",
+  "readme": "https://github.com/openimporter/openimporter/README.md",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "OpenImporter Contributors",
+      "email": "operations@openimporter.net",
+      "homepage": "https://openimporter.github.io/openimporter/"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/openimporter/openimporter/issues",
+    "wiki": "https://github.com/openimporter/openimporter/wiki"
+  },
+  "minimum-stability": "dev",
+  "scripts": {
+  },
+  "replace": {
+  },
+  "require": {
+    "php": ">=7.0.0"
+  },
+  "suggest": {
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~8"
+  }
+}

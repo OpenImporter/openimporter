@@ -10,14 +10,14 @@
 /**
  * Bootstraps the autoloader for the testing with phpunit.
  */
-require_once(__DIR__ . '/../SplClassLoader.php');
+require_once(__DIR__ . '/../importer/OpenImporter/SplClassLoader.php');
 
-$classLoader = new SplClassLoader(null, __DIR__ . '/../..');
+$classLoader = new SplClassLoader(null, __DIR__ . '/../importer');
 $classLoader->register();
 
 if (!defined('BASEDIR'))
 {
-	define('BASEDIR', __DIR__ . '/../..');
+	define('BASEDIR', __DIR__ . '/../importer');
 }
 
 if (!defined('TESTDIR'))
