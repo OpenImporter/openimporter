@@ -38,32 +38,32 @@ tools:
     php_loc:
         names:
             - '*.php'
+    php_code_coverage:
+        enabled: true
+
 checks:
     php:
         code_rating: true
+        duplication: true
 
 build:
     nodes:
         analysis:
             environment:
-                php: 7.4.12
+                php: 7.4
 
             tests:
                 override:
                     - php-scrutinizer-run
+                    - command: 'vendor/bin/phpunit --verbose --configuration .github/phpunit.xml'
+                      coverage:
+                          file: '.github/tmp/coverage.clover'
+                          format: 'clover'
 
     dependencies:
         override:
             - composer self-update
             - composer update --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
-
-    tests:
-        override:
-            -
-                command: 'phpunit --coverage-clover=some-file --bootstrap .github/bootstrap.php Tests/'
-                coverage:
-                    file: 'some-file'
-                    format: 'php-clover'
 
 filter:
     excluded_paths:
