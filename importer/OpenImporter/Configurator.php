@@ -41,6 +41,18 @@ class Configurator
 	/** @var string (via magic) The script recipe we are using */
 	public $script;
 
+	/** @var string (via magic, see import.php) */
+	public $lang_dir;
+
+	/** @var int (via magic, see importer.php) */
+	public $step;
+
+	/** @var int (via magic, see importer.php) */
+	public $start;
+
+	/** @var string (via magic, see importer.php) */
+	public $boardurl;
+
 	/** @var array */
 	protected $data = array();
 

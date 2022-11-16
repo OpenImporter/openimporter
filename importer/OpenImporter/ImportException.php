@@ -45,7 +45,7 @@ class ImportException extends \Exception
 	 * OI Exception handler
 	 *
 	 * @param \Exception $exception
-	 * @param null $template
+	 * @param \OpenImporter\Template $template
 	 */
 	public static function exception_handler($exception, $template = null)
 	{

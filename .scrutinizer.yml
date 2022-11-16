@@ -38,19 +38,33 @@ tools:
     php_loc:
         names:
             - '*.php'
+    php_code_coverage:
+        enabled: true
+
 checks:
     php:
         code_rating: true
         duplication: true
 
 build:
-    tests:
+    nodes:
+        analysis:
+            environment:
+                php: 7.4
+
+            tests:
+                override:
+                    - php-scrutinizer-run
+                    - command: 'vendor/bin/phpunit --verbose --configuration .github/phpunit.xml'
+                      coverage:
+                          file: '.github/tmp/coverage.clover'
+                          format: 'clover'
+
+    dependencies:
         override:
-            -
-                command: 'phpunit --coverage-clover=some-file --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/'
-                coverage:
-                    file: 'some-file'
-                    format: 'php-clover'
+            - composer self-update
+            - composer update --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
+
 filter:
     excluded_paths:
-        - importer/OpenImporter/Tests/*
+        - Tests/*

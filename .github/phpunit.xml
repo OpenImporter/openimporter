@@ -17,6 +17,7 @@
 
   <logging>
       <log type="coverage-text" target="php://stdout" />
+      <log type="coverage-clover" target="tmp/coverage.clover"/>
   </logging>
 
   <filter>

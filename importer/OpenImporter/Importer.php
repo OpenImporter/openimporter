@@ -463,6 +463,7 @@ class Importer
 	{
 		$progress_counter = 0;
 		$counter_current_step = 0;
+		$current = 0;
 		$import_steps = array();
 
 		$xmlParser = new XmlProcessor($this->db, $this->config, $this->template, $this->xml);
