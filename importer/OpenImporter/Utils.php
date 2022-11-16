@@ -213,7 +213,6 @@ function copy_dir($source, $destination)
 		}
 		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
 		{
-
 			copy_dir($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
 		}
 		else
@@ -278,7 +277,7 @@ function fix_charset($text)
 		return $text;
 	}
 
-	$max = strlen($text);
+	$max = !empty($text) ? strlen($text) : 0;
 	$buf = '';
 
 	for ($i = 0; $i < $max; $i++)
@@ -302,7 +301,7 @@ function fix_charset($text)
 				else
 				{
 					// not valid UTF8. Convert it.
-					$cc1 = (chr(ord($c1) / 64) | "\xc0");
+					$cc1 = (chr((int) (ord($c1) / 64)) | "\xc0");
 					$cc2 = ($c1 & "\x3f") | "\x80";
 					$buf .= $cc1 . $cc2;
 				}
@@ -319,7 +318,7 @@ function fix_charset($text)
 				else
 				{
 					// not valid UTF8. Convert it.
-					$cc1 = (chr(ord($c1) / 64) | "\xc0");
+					$cc1 = (chr((int) (ord($c1) / 64)) | "\xc0");
 					$cc2 = ($c1 & "\x3f") | "\x80";
 					$buf .= $cc1 . $cc2;
 				}
@@ -336,7 +335,7 @@ function fix_charset($text)
 				else
 				{
 					// Not valid UTF8. Convert it.
-					$cc1 = (chr(ord($c1) / 64) | "\xc0");
+					$cc1 = (chr((int) (ord($c1) / 64)) | "\xc0");
 					$cc2 = ($c1 & "\x3f") | "\x80";
 					$buf .= $cc1 . $cc2;
 				}
@@ -344,7 +343,7 @@ function fix_charset($text)
 			else
 			{
 				// Doesn't look like UTF8, but should be converted
-				$cc1 = (chr(ord($c1) / 64) | "\xc0");
+				$cc1 = (chr((int) (ord($c1) / 64)) | "\xc0");
 				$cc2 = (($c1 & "\x3f") | "\x80");
 				$buf .= $cc1 . $cc2;
 			}
@@ -352,7 +351,7 @@ function fix_charset($text)
 		elseif (($c1 & "\xc0") === "\x80")
 		{
 			// Needs conversion
-			$cc1 = (chr(ord($c1) / 64) | "\xc0");
+			$cc1 = (chr((int) (ord($c1) / 64)) | "\xc0");
 			$cc2 = (($c1 & "\x3f") | "\x80");
 			$buf .= $cc1 . $cc2;
 		}
@@ -514,4 +513,24 @@ function attachment_type($filename)
 	}
 
 	return array($ext, $basename, $mime_type);
+}
+
+/**
+ * Convert a binary db value back to a string IP
+ */
+function inet_dtop($bin)
+{
+	if (empty($bin))
+	{
+		return '';
+	}
+
+	// Already a String?
+	$check = filter_var($bin, FILTER_VALIDATE_IP);
+	if ($check !== false)
+	{
+		return $bin;
+	}
+
+	return inet_ntop($bin);
 }
