@@ -47,7 +47,7 @@ class SMF2_1 extends Importers\AbstractSourceImporter
 		return $this->fetchSetting('db_name');
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		static $content = null;
 
@@ -85,7 +85,7 @@ class SMF2_1 extends Importers\AbstractSourceImporter
 				WHERE variable='attachmentUploadDir';");
 			list ($smf_attachments_dir) = $this->db->fetch_row($request);
 
-			$this->smf_attach_folders = @unserialize($smf_attachments_dir);
+			$this->smf_attach_folders = @json_decode($smf_attachments_dir, true);
 
 			if (!is_array($this->smf_attach_folders))
 			{
@@ -149,7 +149,7 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 			WHERE variable='attachmentUploadDir';");
 		list ($smf_attachments_dir) = $db->fetch_row($request);
 
-		$smf_folders = @unserialize($smf_attachments_dir);
+		$smf_folders = @json_decode($smf_attachments_dir, true);
 
 		if (!is_array($smf_folders))
 		{
@@ -183,12 +183,16 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 }
 
 /**
+ * This function is called via the preparse setting in the XML importer, imedialty after the query
+ *
  * @param array $row
  * @param \OpenImporter\Database $db
  * @param string $from_prefix
  */
 function cust_fields(&$row, $db, $from_prefix)
 {
+	// We need to grab personal_text from smf members and
+	// cust_gender and cust_loca from themes
 	$request = $db->query("
 		SELECT 
 		    variable, value
@@ -216,4 +220,39 @@ function cust_fields(&$row, $db, $from_prefix)
 		}
 	}
 	$db->free_result($request);
+}
+
+/**
+ * Partial support smf 2.1 smileys
+ *
+ * This function is called via the preparse setting in the XML importer.  It allows
+ * one to manipulate the query result.  Here we fill in the filename to the row result
+ *
+ * @param array $row
+ * @param \OpenImporter\Database $db
+ * @param string $from_prefix
+ */
+function smiley_mess(&$row, $db, $from_prefix)
+{
+	// We need to grab the filename from the smiley_files and "pick" an extension
+	$request = $db->query("
+		SELECT 
+		    id_smiley, smiley_set, filename
+		FROM {$from_prefix}smiley_files
+		WHERE id_smiley = $row[id_smiley]");
+
+	while ($smile = $db->fetch_assoc($request))
+	{
+		// The name will be right, but the extension may not be ... but the support
+		// for smileys is too different
+		$row['filename'] = $smile['filename'];
+		break;
+	}
+	$db->free_result($request);
+}
+
+function dtoptoip(&$row, $db, $from_prefix)
+{
+	$row['member_ip'] = inet_dtop($row['member_ip']);
+	$row['member_ip2'] = inet_dtop($row['member_ip2']);
 }
