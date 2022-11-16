@@ -173,6 +173,8 @@
 				'paypal_email',
 				'smiley_enable',
 				'messageIcons_enable',
+				'smiley_sets_names',
+				'smiley_sets_known'
 			);
 
 			$request = $this->db->query("
@@ -184,6 +186,7 @@
 			{
 				if (in_array($row['variable'], $do_import))
 				{
+					$row['value'] = str_replace("'", "", $row['value']);
 					$this->db->query("
 						REPLACE INTO {$to_prefix}settings
 							(variable, value)
@@ -206,14 +209,14 @@
 		<destination>{$to_prefix}members</destination>
 		<presql>TRUNCATE {$to_prefix}members;</presql>
 		<preparsecode>
-			cust_fields($row, $this->db, $this->config->from_prefix);
+			dtoptoip($row, $this->db, $this->config->from_prefix, $this->step1_importer->getAttachDir($row));
 		</preparsecode>
 		<query>
 			SELECT
 				id_member, member_name, date_registered, posts, id_group, lngfile, last_login,
 				real_name, unread_messages, unread_messages, new_pm, buddy_list, pm_ignore_list,
-				pm_prefs, mod_prefs, passwd, email_address, personal_text, '' AS gender, '' AS location,
-				birthdate, website_url, website_title, hide_email, show_online,
+				pm_prefs, mod_prefs, passwd, email_address,
+				birthdate, website_url, website_title, show_online, alerts AS mentions,
 				time_format, signature, time_offset, avatar, usertitle, member_ip, member_ip2, secret_question, secret_answer, 1 AS id_theme, is_activated,
 				validation_code, id_msg_last_visit, additional_groups, smiley_set, id_post_group,
 				total_time_logged_in, password_salt, ignore_boards, IFNULL(warning, 0) AS warning, passwd_flood,
@@ -240,41 +243,61 @@
 	<step>
 		<title>Importing avatars</title>
 		<code>
-			// First check avatar_directory
-			$avatarg = $this->db->query("
+			// First check "global" avatar_directory for site defined ones
+			$request = $this->db->query("
 				SELECT value
 				FROM {$from_prefix}settings
 				WHERE variable = 'avatar_directory';");
-			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
+			list ($smf_avatarg) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
 
-			$avatarg = $this->db->query("
+			$request = $this->db->query("
 				SELECT value
 				FROM {$to_prefix}settings
 				WHERE variable = 'avatar_directory';");
-			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
+			list ($elk_avatarg) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
 
 			if (!empty($smf_avatarg) and !empty($elk_avatarg))
 				copy_dir_recursive($smf_avatarg, $elk_avatarg);
 
 			// Next check custom_avatar_dir
-			$avatarg = $this->db->query("
+			$request = $this->db->query("
 				SELECT value
 				FROM {$from_prefix}settings
 				WHERE variable = 'custom_avatar_dir';");
-			list ($smf_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
+			list ($smf_avatarc) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
 
-			$avatarg = $this->db->query("
+			$request = $this->db->query("
 				SELECT value
 				FROM {$to_prefix}settings
 				WHERE variable = 'custom_avatar_dir';");
-			list ($elk_avatarg) = $this->db->fetch_row($avatarg);
-			$this->db->free_result($avatarg);
+			list ($elk_avatarc) = $this->db->fetch_row($request);
+			$this->db->free_result($request);
 
-			if (!empty($smf_avatarg) and !empty($elk_avatarg))
-				copy_dir_recursive($smf_avatarg, $elk_avatarg);
+			if (empty($elk_avatarc) and !empty($elk_avatarg))
+			{
+				$elk_avatarc = dirname($elk_avatarg, 1) . '/avatars_user';
+				$elk_avatarc_url = $this->config->boardurl . '/avatars_user';
+
+				if (!file_exists($elk_avatarc))
+				{
+					mkdir($elk_avatarc, 0755);
+				}
+
+				$this->db->query("
+					REPLACE INTO {$to_prefix}settings
+					(variable, value)
+					VALUES('custom_avatar_dir', '$elk_avatarc')");
+				$this->db->query("
+					REPLACE INTO {$to_prefix}settings
+					(variable, value)
+					VALUES('custom_avatar_url', '$elk_avatarc_url')");
+			}
+
+			if (!empty($smf_avatarc) and !empty($elk_avatarc))
+				copy_dir_recursive($smf_avatarc, $elk_avatarc);
 		</code>
 	</step>
 	<step>
@@ -525,13 +548,15 @@
 		<title>Importing smileys</title>
 		<detect>{$from_prefix}smileys</detect>
 		<destination>{$to_prefix}smileys</destination>
+		<preparsecode>
+			smiley_mess($row, $this->db, $this->config->from_prefix);
+		</preparsecode>
 		<options>
 			<replace>true</replace>
 		</options>
 		<query>
 			SELECT
-				id_smiley, code, filename, description, smiley_row,
-				smiley_order, hidden
+				id_smiley, code, '' AS filename, description, smiley_row, smiley_order, hidden
 			FROM {$from_prefix}smileys;
 		</query>
 	</step>

@@ -19,9 +19,7 @@
  */
 class elkarte1_1_importer extends Importers\SmfCommonSource
 {
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	public $attach_extension = 'elk';
 
 	/**
