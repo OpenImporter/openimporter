@@ -63,6 +63,11 @@ Please see [How to contribute](https://github.com/openimporter/openimporter/blob
 
 Project Homepage: https://openimporter.github.io/openimporter/
 
-[![Build Status](https://travis-ci.org/OpenImporter/openimporter.png?branch=master)](https://travis-ci.org/OpenImporter/openimporter)
+
+![Build Status](https://github.com/OpenImporter/openimporter/workflows/UnitTests/badge.svg)
+[![Open Issues](https://img.shields.io/github/issues/openimporter/OpenImporter.svg?style=flat)](https://github.com/elkarte/Elkarte/issues)
+[![Downloads](https://img.shields.io/github/downloads/openimporter/OpenImporter/total)](https://github.com/elkarte/Elkarte/releases)
+[![Current Release](https://img.shields.io/github/release/openimporter/OpenImporter.svg?style=flat)](https://github.com/elkarte/ElkArte/releases)
+[![License](https://img.shields.io/badge/License-BSD-green.svg?style=flat)](http://opensource.org/licenses/BSD-3-Clause)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
