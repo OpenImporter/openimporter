@@ -41,16 +41,19 @@ tools:
 checks:
     php:
         code_rating: true
-        duplication: true
 
 build:
+    dependencies:
+        override:
+            - composer self-update
+            - composer update --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
     tests:
         override:
             -
-                command: 'phpunit --coverage-clover=some-file --bootstrap importer/OpenImporter/Tests/bootstrap.php importer/OpenImporter/Tests/'
+                command: 'phpunit --coverage-clover=some-file --bootstrap .github/bootstrap.php Tests/'
                 coverage:
                     file: 'some-file'
                     format: 'php-clover'
 filter:
     excluded_paths:
-        - importer/OpenImporter/Tests/*
+        - Tests/*
