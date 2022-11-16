@@ -138,7 +138,7 @@ function moveAttachment(&$row, $db, $from_prefix, $attachmentUploadDir)
 		if (empty($row['fileext'])) $row['fileext'] = $fileext;
 
 		// try using getimagesize to calculate the mime type, otherwise use the $mimetype set from above
-		$size = @getimagesize($filename);
+		$size = @getimagesize($row['filename']);
 
 		$row['mime_type'] = empty($size['mime']) ? $mimetype : $size['mime'];
 	}

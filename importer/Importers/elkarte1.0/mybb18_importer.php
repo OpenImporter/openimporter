@@ -47,7 +47,7 @@ class mybb18 extends Importers\AbstractSourceImporter
 	/**
 	 * Copy attachment files
 	 *
-	 * @param string g$dir
+	 * @param string $dir
 	 * @param array $row
 	 * @param int $id_attach
 	 * @param string $destination_path

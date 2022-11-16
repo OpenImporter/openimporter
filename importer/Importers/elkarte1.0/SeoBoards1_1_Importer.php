@@ -7,8 +7,6 @@
  * @version 2.0 Alpha
  */
 
-namespace OpenImporter\Importers\sources;
-
 class SeoBoards1_1 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/seo-board_options.php';

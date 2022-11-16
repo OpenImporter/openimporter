@@ -7,8 +7,10 @@
  * @version 1.0
  */
 
-namespace OpenImporter\Importers\sources;
-
+/**
+ * Class IPB3_4
+ * Settings for the IPB3_4 system.
+ */
 class IPB3_4 extends Importers\AbstractSourceImporter
 {
 	protected $setting_file = '/conf_global.php';
@@ -37,6 +39,13 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 		return '1.0';
 	}
 
+	public function getPrefix()
+	{
+		global $config;
+
+		return '`' . $this->getDbName() . '`.' . $config['database']['table_prefix'];
+	}
+
 	public function setDefines()
 	{
 	}
@@ -57,7 +66,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 		);
 	}
 
-	protected function getTableTest()
+	public function getTableTest()
 	{
 		return '{db_prefix}members';
 	}
