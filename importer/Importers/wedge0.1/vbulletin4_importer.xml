@@ -55,7 +55,7 @@
 		<presql>
 			TRUNCATE {$to_prefix}categories;
 			ALTER TABLE {$to_prefix}categories
-				CHANGE COLUM id_cat id_cat SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+				CHANGE COLUMN id_cat id_cat SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
 				CHANGE COLUMN cat_order cat_order SMALLINT(5) NOT NULL
 		</presql>
 		<query>
