@@ -44,7 +44,7 @@ class XenForo1_4 extends Importers\AbstractSourceImporter
 		return 'user';
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		static $content = null;
 

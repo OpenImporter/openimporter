@@ -45,7 +45,7 @@ class SMF1_1 extends Importers\AbstractSourceImporter
 		return 'members';
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		static $content = null;
 

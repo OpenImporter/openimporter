@@ -74,7 +74,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 		return $this->fetchSetting('sql_database');
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		$content = $this->readSettingsFile();
 

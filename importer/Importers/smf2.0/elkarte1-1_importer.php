@@ -44,7 +44,7 @@ class elkarte1_1 extends Importers\AbstractSourceImporter
 		return $this->fetchSetting('db_name');
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		static $content = null;
 

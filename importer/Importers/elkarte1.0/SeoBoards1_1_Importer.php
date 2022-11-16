@@ -55,7 +55,7 @@ class SeoBoards1_1 extends Importers\AbstractSourceImporter
 		return '{dbPrefix}users';
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		$content = $this->readSettingsFile();
 

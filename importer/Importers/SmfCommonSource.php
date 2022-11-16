@@ -43,7 +43,6 @@ abstract class SmfCommonSource
 	protected $path;
 	/** @var \OpenImporter\Configurator */
 	protected $config;
-
 	/** @var \OpenImporter\Database */
 	protected $db;
 
@@ -99,7 +98,7 @@ abstract class SmfCommonSource
 		return $found;
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		static $content = null;
 
@@ -135,7 +134,7 @@ abstract class SmfCommonSource
 
 		$db_passwd = $this->fetchSetting('db_passwd');
 
-		return $db_passwd == $pwd_to_verify;
+		return $db_passwd === $pwd_to_verify;
 	}
 
 	public function dbConnectionData()
