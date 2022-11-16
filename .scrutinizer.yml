@@ -43,10 +43,20 @@ checks:
         code_rating: true
 
 build:
+    nodes:
+        analysis:
+            environment:
+                php: 7.4.12
+
+            tests:
+                override:
+                    - php-scrutinizer-run
+
     dependencies:
         override:
             - composer self-update
             - composer update --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
+
     tests:
         override:
             -
@@ -54,6 +64,7 @@ build:
                 coverage:
                     file: 'some-file'
                     format: 'php-clover'
+
 filter:
     excluded_paths:
         - Tests/*
