@@ -16,7 +16,11 @@ $classLoader = new SplClassLoader(null, __DIR__ . '/../..');
 $classLoader->register();
 
 if (!defined('BASEDIR'))
+{
 	define('BASEDIR', __DIR__ . '/../..');
+}
 
 if (!defined('TESTDIR'))
+{
 	define('TESTDIR', __DIR__);
+}

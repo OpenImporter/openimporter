@@ -143,7 +143,6 @@ function phpbb_replace_bbc($message)
 		'[list type=1]' => '[list type=decimal]',
 		'[list type=a]' => '[list type=lower-alpha]',
 	));
-	$message = stripslashes($message);
 
-	return $message;
+	return stripslashes($message);
 }

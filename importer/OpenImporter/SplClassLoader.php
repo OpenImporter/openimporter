@@ -151,7 +151,9 @@ class SplClassLoader
 
             $full_path = ($this->_includePath !== null ? $this->_includePath . DIRECTORY_SEPARATOR : '') . $fileName;
             if (file_exists($full_path))
-                require ($this->_includePath !== null ? $this->_includePath . DIRECTORY_SEPARATOR : '') . $fileName;
+			{
+				require ($this->_includePath !== null ? $this->_includePath . DIRECTORY_SEPARATOR : '') . $fileName;
+			}
         }
     }
 }

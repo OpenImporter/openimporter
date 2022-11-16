@@ -71,8 +71,10 @@ class Importer
 		$this->template = $template;
 
 		// The current step - starts at 0.
-		$this->config->step = $_GET['step'] = isset($_GET['step']) ? (int) @$_GET['step'] : 0;
-		$this->config->start = $_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
+		$_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
+		$this->config->step = $_GET['step'];
+		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
+		$this->config->start = $_REQUEST['start'];
 
 		if (!empty($this->config->script))
 		{
@@ -295,21 +297,17 @@ class Importer
 			die();
 		}
 
-		if (strpos($db_prefix, '.') === false)
+		if (strpos($db_prefix, '.') !== false)
 		{
-			// @todo ???
-			if (is_numeric(substr($db_prefix, 0, 1)))
-			{
-				$this->config->to_prefix = $db_name . '.' . $db_prefix;
-			}
-			else
-			{
-				$this->config->to_prefix = '`' . $db_name . '`.' . $db_prefix;
-			}
+			$this->config->to_prefix = $db_prefix;
+		}
+		elseif (is_numeric(substr($db_prefix, 0, 1)))
+		{
+			$this->config->to_prefix = $db_name . '.' . $db_prefix;
 		}
 		else
 		{
-			$this->config->to_prefix = $db_prefix;
+			$this->config->to_prefix = '`' . $db_name . '`.' . $db_prefix;
 		}
 
 		$this->config->from_prefix = $this->config->source->getPrefix();
@@ -485,7 +483,7 @@ class Importer
 					$this->db->free_result($request);
 				}
 
-				$progress_counter = $progress_counter + $current;
+				$progress_counter += $current;
 
 				$import_steps[$counter_current_step]['counter'] = $current;
 			}

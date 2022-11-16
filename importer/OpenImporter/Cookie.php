@@ -90,13 +90,13 @@ class Cookie
 
 		if (!empty($data))
 		{
-			if ($cookie === false)
+			if ($cookie !== false)
 			{
-				$merged = $data;
+				$merged = array_merge((array) $cookie, (array) $data);
 			}
 			else
 			{
-				$merged = array_merge((array) $cookie, (array) $data);
+				$merged = $data;
 			}
 
 			return $this->set($merged, $name);

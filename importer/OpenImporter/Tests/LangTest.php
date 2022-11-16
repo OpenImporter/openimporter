@@ -117,7 +117,9 @@ class LangTest extends \PHPUnit_Framework_TestCase
 			'testing2' => 'testing2',
 		);
 		foreach ($tests as $key => $val)
+		{
 			$method->invoke($invoke_lang, $key, $val);
+		}
 
 		$strings = $invoke_lang->getAll();
 		$this->assertEquals(2, count($strings));

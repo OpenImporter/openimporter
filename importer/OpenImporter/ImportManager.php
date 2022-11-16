@@ -191,11 +191,13 @@ class ImportManager
 		// Save here, so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
 		{
-			$this->data['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
+			$this->config->script = (string) $_REQUEST['import_script'];
+			$this->data['import_script'] = $this->config->script;
 		}
 		elseif (isset($this->data['import_script']))
 		{
-			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->config->script = $this->data['import_script'];
 		}
 		else
 		{
@@ -352,7 +354,8 @@ class ImportManager
 	{
 		if ($this->config->script !== null)
 		{
-			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->config->script = $this->data['import_script'];
 		}
 
 		$sources = glob(BASEDIR . DS . 'Importers' . DS . '*', GLOB_ONLYDIR);
@@ -566,7 +569,8 @@ class ImportManager
 	 */
 	public function doStep2()
 	{
-		$this->response->step = $_GET['step'] = '2';
+		$_GET['step'] = '2';
+		$this->response->step = '2';
 
 		$this->template->step2();
 

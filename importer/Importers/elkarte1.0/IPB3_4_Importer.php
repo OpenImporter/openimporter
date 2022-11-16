@@ -53,7 +53,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 			'host' => $this->fetchSetting('sql_host'),
 			'driver' => 'pdo_mysql',  // As far as I can tell IPB is MySQL only
 			'test_table' => $this->getTableTest(),
-			'system_name' => $this->getname(),
+			'system_name' => $this->getName(),
 		);
 	}
 
@@ -81,7 +81,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 		$match = array();
 		preg_match('~\$INFO\[\'' . $name . '\'\]\s*=\s*\'(.*?)\';~', $content, $match);
 
-		return isset($match[1]) ? $match[1] : '';
+		return $match[1] ?? '';
 	}
 
 	protected function html2bbc($text)
@@ -176,7 +176,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 		{
 			$groups[] = $this->mapGroups($grp);
 		}
-		$groups = array_filter($groups, function($val) { return $val !== false; });
+		$groups = array_filter($groups, static function($val) { return $val !== false; });
 		return implode(',', array_unique($groups));
 	}
 
@@ -251,7 +251,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 		$this->permissionGroupsTranslation = array();
 		// We want to stay on the safe side: either set it to a group we know, or admin-only
 		while ($row = $this->db->fetch_assoc($result))
-			$this->permissionGroupsTranslation[$row['perm_id']] = isset($known[$row['perm_name']]) ? $known[$row['perm_name']] : 1;
+			$this->permissionGroupsTranslation[$row['perm_id']] = $known[$row['perm_name']] ?? 1;
 		$this->db->free_result($result);
 	}
 
@@ -397,7 +397,7 @@ class IPB3_4 extends Importers\AbstractSourceImporter
 
 			$row['unapproved_posts'] = (int) $unapproved;
 
-			$row['approved'] = $row['approved'] > 3 ? 3 : $row['approved'];
+			$row['approved'] = min($row['approved'], 3);
 			$row['id_poll'] = (int) $row['id_poll'];
 
 			$rows[] = $row;

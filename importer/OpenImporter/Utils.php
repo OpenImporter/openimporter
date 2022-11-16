@@ -31,7 +31,7 @@ function pastTime($substep = null, $stop_time = 5)
 	}
 
 	// Some details for our progress bar
-	if (isset($oi_import->count->$substep, $_REQUEST['start']) && $oi_import->count->$substep > 0 && $_REQUEST['start'] > 0 && isset($substep))
+	if (isset($oi_import->count->$substep, $_REQUEST['start'], $substep) && $oi_import->count->$substep > 0 && $_REQUEST['start'] > 0)
 	{
 		$bar = round($_REQUEST['start'] / $oi_import->count->$substep * 100, 0);
 	}
@@ -204,12 +204,9 @@ function copy_dir($source, $destination)
 		}
 
 		// If we have a directory create it on the destination and copy contents into it!
-		if (!is_dir($destination))
+		if (!is_dir($destination) && !mkdir($destination, 0755) && !is_dir($destination))
 		{
-			if (!mkdir($destination, 0755) && !is_dir($destination))
-			{
-				throw new \RuntimeException(sprintf('Directory "%s" was not created', $destination));
-			}
+			throw new \RuntimeException(sprintf('Directory "%s" was not created', $destination));
 		}
 		if (is_dir($source . DIRECTORY_SEPARATOR . $file))
 		{

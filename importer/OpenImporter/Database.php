@@ -319,11 +319,7 @@ class Database
 		$indexes = array();
 		while ($row = $this->fetch_assoc($result))
 		{
-			if (!$detail)
-			{
-				$indexes[] = $row['Key_name'];
-			}
-			else
+			if ($detail)
 			{
 				// This is the first column we've seen?
 				if (empty($indexes[$row['Key_name']]))
@@ -344,6 +340,10 @@ class Database
 				{
 					$indexes[$row['Key_name']]['columns'][] = $row['Column_name'];
 				}
+			}
+			else
+			{
+				$indexes[] = $row['Key_name'];
 			}
 		}
 		$this->free_result($result);

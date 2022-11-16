@@ -82,7 +82,7 @@ class XmlProcessor
 	 * @param int $substep
 	 * @param array $do_steps
 	 */
-	public function processSteps($step, &$substep, &$do_steps)
+	public function processSteps($step, &$substep, $do_steps)
 	{
 		$this->current_step = $step;
 		$table_test = $this->updateStatus($substep, $do_steps);
@@ -137,11 +137,7 @@ class XmlProcessor
 
 		$this->doDetect($substep);
 
-		if (!isset($this->current_step->destination))
-		{
-			$this->db->query($current_data);
-		}
-		else
+		if (isset($this->current_step->destination))
 		{
 			// Prepare the <query>
 			$special_table = strtr(trim((string) $this->current_step->destination), array('{$to_prefix}' => $this->config->to_prefix));
@@ -201,6 +197,10 @@ class XmlProcessor
 
 				$this->db->free_result($special_result);
 			}
+		}
+		else
+		{
+			$this->db->query($current_data);
 		}
 	}
 
@@ -394,7 +394,7 @@ class XmlProcessor
 	{
 		global $oi_import;
 
-		if (isset($this->current_step->detect) && isset($oi_import->count))
+		if (isset($this->current_step->detect, $oi_import->count))
 		{
 			$oi_import->count->$substep = $this->detect((string) $this->current_step->detect);
 		}
@@ -446,18 +446,18 @@ class XmlProcessor
 		$db_name_str = $this->config->source->getDbName();
 
 		// Simple table check or something more complex?
-		if (strpos($table, 'WHERE') === false)
+		if (strpos($table, 'WHERE') !== false)
+		{
+			$result = $this->db->query("
+				SELECT COUNT(*)
+				FROM `{$db_name_str}`.{$table}");
+		}
+		else
 		{
 			$result = $this->db->query("
 				SHOW TABLES
 				FROM `{$db_name_str}`
 				LIKE '{$table}'");
-		}
-		else
-		{
-			$result = $this->db->query("
-				SELECT COUNT(*)
-				FROM `{$db_name_str}`.{$table}");
 		}
 
 		return !($result === false || $this->db->num_rows($result) === 0);

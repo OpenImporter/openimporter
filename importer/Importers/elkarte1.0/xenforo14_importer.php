@@ -67,7 +67,7 @@ class XenForo1_4 extends Importers\AbstractSourceImporter
 		// Prep for the copy
 		$file = xen_attach_filename($row) . ($thumb ? '.' . $ext : '.data');
 		$source = $dir . '/' . $file;
-		$file_hash = createAttachmentFileHash($file);
+		$file_hash = createAttachmentFilehash($file);
 		$destination = $destination_path . '/' . $id_attach . '_' . $file_hash . '.elk';
 		$type = 0;
 
