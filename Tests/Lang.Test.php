@@ -2,12 +2,24 @@
 
 use OpenImporter\Lang;
 
-class LangTest extends \PHPUnit_Framework_TestCase
+class LangTest extends PHPUnit\Framework\TestCase
 {
-	public function run(PHPUnit_Framework_TestResult $result = NULL)
+	/**
+	 * Prepare what is necessary to use in these tests.
+	 *
+	 * setUp() is run automatically by the testing framework before each test method.
+	 */
+	protected function setUp(): void
 	{
-		$this->setPreserveGlobalState(false);
-		return parent::run($result);
+	}
+
+	/**
+	 * Cleanup data we no longer need at the end of the tests in this class.
+	 *
+	 * tearDown() is run automatically by the testing framework after each test method.
+	 */
+	protected function tearDown(): void
+	{
 	}
 
 	public function testLoadLangSuccess()
@@ -15,44 +27,50 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$lng = new Lang();
 
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en-GB,en;q=0.9,it;q=0.8';
+
 		try
 		{
-			$lng->loadLang(BASEDIR . '/Languages');
+			$result = $lng->loadLang(BASEDIR . '/Languages');
 		}
 		catch (Exception $e)
 		{
 			$this->fail($e->getMessage());
 		}
+
+		$this->assertEmpty($result);
 	}
 
 	/**
-	 * @expectedException Exception
-	 * @expectedExceptionMessage Unable to detect language file!
+	 * @preserveGlobalState disabled
 	 */
 	public function testLoadLangFail()
 	{
+		$this->expectExceptionMessage("Unable to detect language file!");
+		$this->expectException(Exception::class);
 		$lng = new Lang();
 
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'it;q=0.8';
 
-		// A non existing directory in order to force the exception
+		// A non-existing directory in order to force the exception
 		$lng->loadLang(BASEDIR . '/NoLanguages');
 	}
 
 	/**
-	 * @expectedException OpenImporter\ImportException
-	 * @expectedExceptionMessage XML-Syntax error in file:
+	 * @preserveGlobalState disabled
 	 */
 	public function testLoadLangBadXML()
 	{
+		$this->expectExceptionMessage("XML-Syntax error in file:");
+		$this->expectException(OpenImporter\ImportException::class);
 		$lng = new Lang();
 
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en';
 
-		$lng->loadLang(BASEDIR . '/OpenImporter/Tests');
+		$lng->loadLang(BASEDIR . '/../Tests');
 	}
 
 	/**
+	 * @preserveGlobalState disabled
 	 * @covers OpenImporter\Lang::findLanguage
 	 */
 	public function testFindLanguage()
@@ -69,12 +87,12 @@ class LangTest extends \PHPUnit_Framework_TestCase
 			$path . '/import_en.xml', $method->invoke(new Lang, $path, array('en'))
 		);
 
-		// It doesn't exists, so it should return en by default
+		// It doesn't exist, so it should return en by default
 		$this->assertEquals(
 			$path . '/import_en.xml', $method->invoke(new Lang, $path, array('it'))
 		);
 
-		// A non existing directory in order to get a false
+		// A non-existing directory in order to get a false
 		$path = BASEDIR . '/NoLanguages';
 
 		$this->assertFalse(
@@ -83,6 +101,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
+	 * @preserveGlobalState disabled
 	 * @covers OpenImporter\Lang::set
 	 */
 	public function testSet()
@@ -103,6 +122,9 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('testing', $strings['testing']);
 	}
 
+	/**
+	 * @preserveGlobalState disabled
+	 */
 	public function testGetAll()
 	{
 		$method = new ReflectionMethod(
@@ -122,14 +144,14 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		}
 
 		$strings = $invoke_lang->getAll();
-		$this->assertEquals(2, count($strings));
+		$this->assertCount(2, $strings);
 		$equal = true;
 		$keys = array_keys($tests);
 		$vals = array_values($tests);
 		foreach ($strings as $key => $val)
 		{
 			// Just one is enough to have everything wrong
-			if (!in_array($key, $keys) || !in_array($val, $vals))
+			if (!in_array($key, $keys, true) || !in_array($val, $vals, true))
 			{
 				$equal = false;
 				break;
@@ -140,13 +162,15 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
 	 * @covers OpenImporter\Lang::set
-	 * @expectedException Exception
-	 * @expectedExceptionMessage Unable to set language string for <em>testing</em>. It was already set.
 	 */
 	public function testSetException()
 	{
+		$this->expectExceptionMessage("Unable to set language string for <em>testing</em>. It was already set.");
+		$this->expectException(Exception::class);
 		require_once(TESTDIR . '/TestOiException.php');
+
 		$method = new ReflectionMethod(
 			Lang::class, 'set'
 		);
@@ -155,11 +179,13 @@ class LangTest extends \PHPUnit_Framework_TestCase
 
 		$invoke_lang = new Lang();
 		$method->invoke($invoke_lang, 'testing', 'testing');
+
 		// setting the same twice should throw an Exception
 		$method->invoke($invoke_lang, 'testing', 'testing');
 	}
 
 	/**
+	 * @preserveGlobalState disabled
 	 * @covers OpenImporter\Lang::get
 	 */
 	public function testGet()
@@ -176,7 +202,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		// An existing string
 		$this->assertEquals('testing', $invoke_lang->get('testing'));
 
-		// A non existing one should return the key
+		// A non-existing one should return the key
 		$this->assertEquals('random', $invoke_lang->get('random'));
 
 		$method->invoke($invoke_lang, 'testing_array', 'testing %s');
@@ -186,6 +212,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
+	 * @preserveGlobalState disabled
 	 * @covers OpenImporter\Lang::__get
 	 */
 	public function testGetter()
@@ -202,7 +229,7 @@ class LangTest extends \PHPUnit_Framework_TestCase
 		// An existing string
 		$this->assertEquals('testing', $invoke_lang->testing);
 
-		// A non existing one, its the key
+		// A non-existing one, it's the key
 		$this->assertEquals('random', $invoke_lang->random);
 	}
 }

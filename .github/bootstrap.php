@@ -22,5 +22,5 @@ if (!defined('BASEDIR'))
 
 if (!defined('TESTDIR'))
 {
-	define('TESTDIR', __DIR__);
+	define('TESTDIR', __DIR__ . '/../Tests');
 }
