@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="http://www.elkarte.net/xml/importer" xmlns:smf="http://www.elkarte.net/">
+<importer xmlns="https://www.elkarte.net/xml/importer" xmlns:smf="https://www.elkarte.net/">
 	<general>
 		<name>MyBB 1.6</name>
 		<version>Wedge 0.1</version>
@@ -49,7 +49,7 @@
 		<query>
 			SELECT fid AS id_cat, SUBSTRING(name, 1, 255) AS name, disporder AS cat_order
 			FROM {$from_prefix}forums
-			WHERE type = 'c';	
+			WHERE type = 'c';
 		</query>
 	</step>
 	<step>

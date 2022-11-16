@@ -2,32 +2,27 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
 
 /**
  * Class Database
+ *
  * This class provides an easy wrapper around the common database
  * functions we work with.
  *
- * @package OpenImporter
+ * @class Database
  */
 class Database
 {
-	/**
-	 * @var \mysqli
-	 */
+	/** @var \mysqli */
 	protected $connect;
 
-	/**
-	 * Allows to run a query two times on certain errors.
-	 *
-	 * @var bool
-	 */
+	/** @var bool Allows to run a query two times on certain errors. */
 	protected $second_try = true;
 
 	/**
@@ -66,10 +61,8 @@ class Database
 
 			return $result;
 		}
-		else
-		{
-			return $this->sendError($string);
-		}
+
+		return $this->sendError($string);
 	}
 
 	/**
@@ -98,12 +91,12 @@ class Database
 
 		// 1016: Can't open file '....MYI'
 		// 2013: Lost connection to server during query.
-		if (in_array($mysql_errno, array(1016, 2013)) && $this->second_try)
+		if ($this->second_try && in_array($mysql_errno, array(1016, 2013)))
 		{
 			$this->second_try = false;
 
 			// Try to repair the table and run the query again.
-			if ($mysql_errno == 1016 && preg_match('~(?:\'([^\.\']+)~', $mysql_error, $match) != 0 && !empty($match[1]))
+			if ($mysql_errno === 1016 && preg_match('~(?:\'([^.\']+)~', $mysql_error, $match) !== 0 && !empty($match[1]))
 			{
 				mysqli_query($this->connect, "
 					REPAIR TABLE $match[1]");
@@ -115,13 +108,13 @@ class Database
 		$action_url = $this->buildActionUrl();
 
 		throw new DatabaseException('
-				<b>Unsuccessful!</b><br />
-				This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
-				Caused the error:<br />
-				<blockquote>' . nl2br(htmlspecialchars($mysql_error)) . '</blockquote>
-				<form action="' . $action_url . '" method="post">
-					<input type="submit" value="Try again" />
-				</form>
+			<b>Unsuccessful!</b><br />
+			This query:<blockquote>' . nl2br(htmlspecialchars(trim($string))) . ';</blockquote>
+			Caused the error:<br />
+			<blockquote>' . nl2br(htmlspecialchars($mysql_error)) . '</blockquote>
+			<form action="' . $action_url . '" method="post">
+				<input type="submit" value="Try again" />
+			</form>
 			</div>');
 	}
 
@@ -146,7 +139,7 @@ class Database
 			$query_string .= '&' . $k . '=' . $v;
 		}
 
-		if (strlen($query_string) != 0)
+		if (trim($query_string) !== '')
 		{
 			$query_string = '?' . strtr(substr($query_string, 1), array('&' => '&amp;'));
 		}
@@ -169,7 +162,7 @@ class Database
 	 *
 	 * @param \mysqli_result $result
 	 *
-	 * @return mixed[]
+	 * @return array
 	 */
 	public function fetch_assoc($result)
 	{
@@ -181,7 +174,7 @@ class Database
 	 *
 	 * @param \mysqli_result $result
 	 *
-	 * @return mixed[]
+	 * @return array
 	 */
 	public function fetch_row($result)
 	{
@@ -214,7 +207,7 @@ class Database
 	 * Add an index.
 	 *
 	 * @param string $table_name
-	 * @param mixed[] $index_info
+	 * @param array $index_info
 	 *
 	 * @return bool
 	 */
@@ -276,15 +269,11 @@ class Database
 			{
 				return '';
 			}
-			else
-			{
-				return implode('_', $index_info['columns']);
-			}
+
+			return implode('_', $index_info['columns']);
 		}
-		else
-		{
-			return $index_info['name'];
-		}
+
+		return $index_info['name'];
 	}
 
 	/**
@@ -303,7 +292,8 @@ class Database
 		// Do we already have it?
 		foreach ($indexes as $index)
 		{
-			if ($index['name'] == $index_info['name'] || ($index['type'] == 'primary' && isset($index_info['type']) && $index_info['type'] == 'primary'))
+			if ($index['name'] === $index_info['name']
+				|| ($index['type'] === 'primary' && isset($index_info['type']) && $index_info['type'] === 'primary'))
 			{
 				return true;
 			}
@@ -318,7 +308,7 @@ class Database
 	 * @param string $table_name
 	 * @param bool $detail
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function list_indexes($table_name, $detail = false)
 	{
@@ -329,11 +319,7 @@ class Database
 		$indexes = array();
 		while ($row = $this->fetch_assoc($result))
 		{
-			if (!$detail)
-			{
-				$indexes[] = $row['Key_name'];
-			}
-			else
+			if ($detail)
 			{
 				// This is the first column we've seen?
 				if (empty($indexes[$row['Key_name']]))
@@ -355,6 +341,10 @@ class Database
 					$indexes[$row['Key_name']]['columns'][] = $row['Column_name'];
 				}
 			}
+			else
+			{
+				$indexes[] = $row['Key_name'];
+			}
 		}
 		$this->free_result($result);
 
@@ -370,21 +360,21 @@ class Database
 	 */
 	protected function determineIndexType($row)
 	{
-		if ($row['Key_name'] == 'PRIMARY')
+		if ($row['Key_name'] === 'PRIMARY')
 		{
 			return 'primary';
 		}
-		elseif (empty($row['Non_unique']))
+
+		if (empty($row['Non_unique']))
 		{
 			return 'unique';
 		}
-		elseif (isset($row['Index_type']) && $row['Index_type'] == 'FULLTEXT')
+
+		if (isset($row['Index_type']) && $row['Index_type'] === 'FULLTEXT')
 		{
 			return 'fulltext';
 		}
-		else
-		{
-			return 'index';
-		}
+
+		return 'index';
 	}
 }

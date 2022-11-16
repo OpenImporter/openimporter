@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  *
  * This file contains code based on:
  *
@@ -15,7 +15,6 @@
 
 namespace OpenImporter;
 
-// A shortcut
 if (!defined('DS'))
 {
 	define('DS', DIRECTORY_SEPARATOR);
@@ -28,89 +27,39 @@ if (!defined('DS'))
  * @todo path_to should be source-specific (i.e. in /Importers/whatever/source_importer.php
  * @todo path_from should be destination-specific (i.e. in /Importers/whatever/whatever_importer.php
  *
- * @package OpenImporter
+ * @class ImportManager
  *
  */
 class ImportManager
 {
-	/**
-	 * The importer that will act as interface between the manager and the
-	 * files that will do the actual import
-	 * @var Importer
-	 */
+	/** @var \OpenImporter\Importer The importer that will act as interface */
 	public $importer;
 
-	/**
-	 * Our cookie settings
-	 * @var object
-	 */
+	/** @var \OpenImporter\Cookie Our cookie settings */
 	protected $cookie;
 
-	/**
-	 * The configurator that holds all the settings
-	 * @var Configurator
-	 */
+	/** @var \OpenImporter\Configurator The configurator that holds all the settings */
 	protected $config;
 
-	/**
-	 * The template, basically our UI.
-	 * @var Template
-	 */
+	/** @var \OpenImporter\Template The template, basically our UI. */
 	public $template;
 
-	/**
-	 * The response object.
-	 * @var HttpResponse
-	 */
+	/** @var \OpenImporter\HttpResponse The response object. */
 	protected $response;
 
-	/**
-	 * The language object.
-	 * @var Lang
-	 */
+	/** @var \OpenImporter\Lang The language object. */
 	protected $language;
 
-	/**
-	 * An array of possible importer scripts
-	 * @var array
-	 */
+	/** @var array An array of possible importer scripts */
 	public $sources;
 
-	/**
-	 * Data used by the script and stored in session between a reload and the
-	 * following one.
-	 * @var mixed[]
-	 */
+	/** @var array Data used by the script and stored in session between reload and the following one */
 	public $data = array();
 
-	/**
-	 * The path to the source forum.
-	 * @var string
-	 */
-	protected $path_from = null;
-
-	/**
-	 * The path to the destination forum.
-	 * @var string
-	 */
-	protected $path_to = null;
-
-	/**
-	 * The importer script which will be used for the import.
-	 * @var string
-	 */
-	protected $_script = null;
-
-	/**
-	 * This is the URL from our Installation.
-	 * @var string
-	 */
+	/** @var string This is the URL from our Installation. */
 	protected $_boardurl = '';
 
-	/**
-	 * The database password?
-	 * @var string
-	 */
+	/** @var string The database password */
 	protected $db_pass = '';
 
 	/**
@@ -144,8 +93,9 @@ class ImportManager
 		$this->_findScript();
 
 		// The current step - starts at 0.
-		$this->response->step = $_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
-		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) @$_REQUEST['start'] : 0;
+		$_GET['step'] = isset($_GET['step']) ? (int) $_GET['step'] : 0;
+		$this->response->step = $_GET['step'];
+		$_REQUEST['start'] = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
 		$this->loadPass();
 
@@ -238,14 +188,16 @@ class ImportManager
 	 */
 	protected function _findScript()
 	{
-		// Save here so it doesn't get overwritten when sessions are restarted.
+		// Save here, so it doesn't get overwritten when sessions are restarted.
 		if (isset($_REQUEST['import_script']))
 		{
-			$this->data['import_script'] = $this->config->script = (string) $_REQUEST['import_script'];
+			$this->config->script = (string) $_REQUEST['import_script'];
+			$this->data['import_script'] = $this->config->script;
 		}
 		elseif (isset($this->data['import_script']))
 		{
-			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->config->script = $this->data['import_script'];
 		}
 		else
 		{
@@ -286,11 +238,11 @@ class ImportManager
 		}
 		elseif (method_exists($this, 'doStep' . $_GET['step']))
 		{
-			call_user_func(array($this, 'doStep' . $_GET['step']));
+			$this->{'doStep' . $_GET['step']}();
 		}
 		else
 		{
-			call_user_func(array($this, 'doStep0'));
+			$this->doStep0();
 		}
 
 		$this->populateResponseDetails();
@@ -346,9 +298,6 @@ class ImportManager
 
 // 		$this->response->from = $this->importer->settings : null
 		$this->response->script = $this->config->script;
-// 		$this->response->
-// 		$this->response->
-// 		$this->response->
 	}
 
 	/**
@@ -360,7 +309,7 @@ class ImportManager
 	{
 		@unlink(__FILE__);
 
-		if (preg_match('~_importer\.xml$~', $this->data['import_script']) != 0)
+		if (preg_match('~_importer\.xml$~', $this->data['import_script']) !== 0)
 		{
 			@unlink(BASEDIR . DS . $this->data['import_script']);
 		}
@@ -377,16 +326,20 @@ class ImportManager
 	 */
 	protected function validateScript($script)
 	{
-		$script = preg_replace('~[\.]+~', '.', $script);
-
-		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script) && preg_match('~_importer\.xml$~', $script) != 0)
-		{
-			return $script;
-		}
-		else
+		if (empty($script))
 		{
 			return false;
 		}
+
+		$script = preg_replace('~\.+~', '.', $script);
+
+		if (file_exists(BASEDIR . DS . 'Importers' . DS . $script)
+			&& preg_match('~_importer\.xml$~', $script) !== 0)
+		{
+			return $script;
+		}
+
+		return false;
 	}
 
 	/**
@@ -394,19 +347,22 @@ class ImportManager
 	 *
 	 * - checks,  if we have already specified an importer script
 	 * - checks the file system for importer definition files
+	 *
 	 * @return boolean
 	 */
 	private function _detect_scripts()
 	{
 		if ($this->config->script !== null)
 		{
-			$this->config->script = $this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->data['import_script'] = $this->validateScript($this->data['import_script']);
+			$this->config->script = $this->data['import_script'];
 		}
 
 		$sources = glob(BASEDIR . DS . 'Importers' . DS . '*', GLOB_ONLYDIR);
 		$count_scripts = 0;
 		$scripts = array();
 		$destination_names = array();
+		$from = '';
 		foreach ($sources as $source)
 		{
 			$from = basename($source);
@@ -418,7 +374,7 @@ class ImportManager
 			foreach ($possible_scripts as $entry)
 			{
 				// If a script is broken simply skip it.
-				if (!$xmlObj = simplexml_load_file($entry, 'SimpleXMLElement', LIBXML_NOCDATA))
+				if (!$xmlObj = simplexml_load_string(file_get_contents($entry), 'SimpleXMLElement', LIBXML_NOCDATA))
 				{
 					continue;
 				}
@@ -439,10 +395,10 @@ class ImportManager
 			return false;
 		}
 
-		if ($count_scripts == 1)
+		if ($count_scripts === 1)
 		{
 			$this->data['import_script'] = basename($scripts[$from][0]['path']);
-			if (substr($this->data['import_script'], -4) == '.xml')
+			if (substr($this->data['import_script'], -4) === '.xml')
 			{
 				try
 				{
@@ -459,7 +415,7 @@ class ImportManager
 
 		foreach ($scripts as $key => $val)
 		{
-			usort($scripts[$key], function ($v1, $v2)
+			usort($scripts[$key], static function ($v1, $v2)
 			{
 				return strcasecmp($v1['name'], $v2['name']);
 			});
@@ -484,7 +440,7 @@ class ImportManager
 	{
 		global $oi_import;
 
-		$oi_import = isset($object) ? $object : false;
+		$oi_import = $object ?? false;
 		$this->cookie->destroy();
 
 		// Previously imported? we need to clean some variables ..
@@ -511,7 +467,7 @@ class ImportManager
 		$this->response->use_template = 'step0';
 		$this->response->params_template = array($this, $form);
 
-		// If we have errors, its the end of the road
+		// If we have errors, it's the end of the road
 		if ($error_message !== null)
 		{
 			$this->template->footer();
@@ -565,7 +521,7 @@ class ImportManager
 		catch (DatabaseException $e)
 		{
 			$trace = $e->getTrace();
-			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->template->error($e->getMessage(), $trace[0]['args'][1] ?? null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
 			throw new \Exception($e->getMessage());
@@ -589,14 +545,7 @@ class ImportManager
 		//$progress = ($_GET['substep'] ==  0 ? 1 : $_GET['substep']);
 
 		// Skipping steps?
-		if (isset($_SESSION['do_steps']))
-		{
-			$do_steps = $_SESSION['do_steps'];
-		}
-		else
-		{
-			$do_steps = array();
-		}
+		$do_steps = $_SESSION['do_steps'] ?? array();
 
 		// Calculate our overall time and create the progress bar
 		if (!isset($_SESSION['import_overall']))
@@ -620,7 +569,8 @@ class ImportManager
 	 */
 	public function doStep2()
 	{
-		$this->response->step = $_GET['step'] = '2';
+		$_GET['step'] = '2';
+		$this->response->step = '2';
 
 		$this->template->step2();
 
@@ -631,7 +581,7 @@ class ImportManager
 		catch (DatabaseException $e)
 		{
 			$trace = $e->getTrace();
-			$this->template->error($e->getMessage(), isset($trace[0]['args'][1]) ? $trace[0]['args'][1] : null, $e->getLine(), $e->getFile());
+			$this->template->error($e->getMessage(), $trace[0]['args'][1] ?? null, $e->getLine(), $e->getFile());
 
 			// Forward back to the original caller to terminate the script
 			throw new \Exception($e->getMessage());

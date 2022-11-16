@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 /**
@@ -81,7 +81,5 @@ function vb4_replace_bbc($content)
 		$replace[$temp] = htmlspecialchars($temp);
 	}
 
-	$content = substr(strtr($content, $replace), 0, 65534);
-
-	return $content;
+	return substr(strtr($content, $replace), 0, 65534);
 }

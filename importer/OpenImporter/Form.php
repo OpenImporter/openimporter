@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
@@ -12,22 +12,24 @@ namespace OpenImporter;
 /**
  * Just a way to collect a bunch of stuff to be used to build a form.
  *
- * @property string title
- * @property string description
- * @property array submit
- *
- * @package OpenImporter
+ * @class Form
  */
 class Form
 {
+	/** @var string (via magic see Template) */
+	public $title;
+
+	/** @var string (via magic see Template) */
+	public $description;
+
+	/** @var array (via magic see Template) */
+	public $submit;
+
+	/** @var array */
 	protected $data = array();
 
-	protected $lng = null;
-
-	/**
-	 * The bare minimum required to have a form: an url to post to.
-	 */
-	public $action_url = '';
+	/** @var null */
+	protected $lng;
 
 	public function __construct($lng)
 	{
@@ -46,14 +48,7 @@ class Form
 
 	public function __get($key)
 	{
-		if (isset($this->data[$key]))
-		{
-			return $this->data[$key];
-		}
-		else
-		{
-			return null;
-		}
+		return $this->data[$key] ?? null;
 	}
 
 	public function addOption($field)
@@ -61,19 +56,16 @@ class Form
 		switch ($field['type'])
 		{
 			case 'text':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
-					'value' => isset($field['default']) ? $field['default'] : '',
+					'value' => $field['default'] ?? '',
 					'correct' => isset($field['correct']) ? $this->lng->get($field['correct']) : '',
 					'validate' => !empty($field['validate']),
 					'type' => 'text',
 				);
 				break;
-			}
 			case 'password':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -81,9 +73,7 @@ class Form
 					'type' => 'password',
 				);
 				break;
-			}
 			case 'steps':
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -91,9 +81,7 @@ class Form
 					'type' => 'steps',
 				);
 				break;
-			}
 			default:
-			{
 				$this->data['options'][] = array(
 					'id' => $field['id'],
 					'label' => $this->lng->get($field['label']),
@@ -101,7 +89,6 @@ class Form
 					'attributes' => $field['checked'] == 'checked' ? ' checked="checked"' : '',
 					'type' => 'checkbox',
 				);
-			}
 		}
 	}
 
@@ -116,33 +103,29 @@ class Form
 		{
 			return $this->addField($this->makeFieldArray($field));
 		}
-		else
-		{
-			$field['id'] = 'field' . $field['id'];
 
-			return $this->addOption($field);
-		}
+		$field['id'] = 'field' . $field['id'];
+
+		return $this->addOption($field);
 	}
 
 	public function makeFieldArray($field)
 	{
-		if ($field->attributes()->{'type'} == 'text')
+		if ($field->attributes()->{'type'} === 'text')
 		{
 			return array(
 				'id' => $field->attributes()->{'id'},
 				'label' => $field->attributes()->{'label'},
-				'default' => isset($field->attributes()->{'default'}) ? $field->attributes()->{'default'} : '',
+				'default' => $field->attributes()->{'default'} ?? '',
 				'type' => 'text',
 			);
 		}
-		else
-		{
-			return array(
-				'id' => $field->attributes()->{'id'},
-				'label' => $field->attributes()->{'label'},
-				'checked' => $field->attributes()->{'checked'},
-				'type' => 'checkbox',
-			);
-		}
+
+		return array(
+			'id' => $field->attributes()->{'id'},
+			'label' => $field->attributes()->{'label'},
+			'checked' => $field->attributes()->{'checked'},
+			'type' => 'checkbox',
+		);
 	}
 }

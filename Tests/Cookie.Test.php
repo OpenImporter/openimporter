@@ -4,10 +4,28 @@
 use OpenImporter\Cookie;
 
 /**
- * we need Cooooookies..
+ * We need Cooooookies..
  */
-class CookieTest extends \PHPUnit_Framework_TestCase
+class CookieTest extends PHPUnit\Framework\TestCase
 {
+	/**
+	 * Prepare what is necessary to use in these tests.
+	 *
+	 * setUp() is run automatically by the testing framework before each test method.
+	 */
+	protected function setUp(): void
+	{
+	}
+
+	/**
+	 * cleanup data we no longer need at the end of the tests in this class.
+	 *
+	 * tearDown() is run automatically by the testing framework after each test method.
+	 */
+	protected function tearDown(): void
+	{
+	}
+
 	/**
 	 * @runInSeparateProcess
 	 */

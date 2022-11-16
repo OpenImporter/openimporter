@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  *
  * This file contains code based on:
  *
@@ -19,9 +19,7 @@
  */
 class elkarte1_1_importer extends Importers\SmfCommonSource
 {
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	public $attach_extension = 'elk';
 
 	/**

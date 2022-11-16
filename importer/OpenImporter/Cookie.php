@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
@@ -12,7 +12,7 @@ namespace OpenImporter;
 /**
  * We need Cooooookies.
  *
- * @package OpenImporter
+ * @class Cookie
  */
 class Cookie
 {
@@ -21,14 +21,14 @@ class Cookie
 	 */
 	public function __construct()
 	{
-		return true;
 	}
 
 	/**
 	 * Set a cookie
 	 *
-	 * @param mixed[] $data
+	 * @param array $data
 	 * @param string $name
+	 *
 	 * @return boolean
 	 */
 	public function set($data, $name = 'openimporter_cookie')
@@ -55,9 +55,7 @@ class Cookie
 	{
 		if (isset($_COOKIE[$name]))
 		{
-			$cookie = unserialize($_COOKIE[$name]);
-
-			return $cookie;
+			return unserialize($_COOKIE[$name], array('allowed_classes' => false));
 		}
 
 		return false;
@@ -81,7 +79,7 @@ class Cookie
 	/**
 	 * Extend the cookie with new information
 	 *
-	 * @param mixed[] $data
+	 * @param array $data
 	 * @param string $name
 	 *
 	 * @return boolean
@@ -92,10 +90,14 @@ class Cookie
 
 		if (!empty($data))
 		{
-			if ($cookie === false)
-				$merged = $data;
-			else
+			if ($cookie !== false)
+			{
 				$merged = array_merge((array) $cookie, (array) $data);
+			}
+			else
+			{
+				$merged = $data;
+			}
 
 			return $this->set($merged, $name);
 		}

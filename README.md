@@ -1,26 +1,33 @@
-# This is the OpenImporter development repository.
+# This is the OpenImporter repository.
 
-OpenImporter was inspired by SMF's forum converter engine and is supposed to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination. 
+OpenImporter is a forum converter engine and is intended to "convert" data between different forum systems. This importer assumes you have already installed one of the supported destination systems and that your installation of this system is working properly. It copies data from a source system into the destination plattform, so it won't work without an installation of the selected destination.
 
 ## Supported Source systems
 
-* MyBB [http://www.mybb.com/](http://www.mybb.com/)
-* phpBB3 [https://www.phpbb.com/](https://www.phpbb.com/)
-* SMF 1.1 [http://www.simplemachines.org/](http://www.simplemachines.org/)
-* SMF 2.0 [http://www.simplemachines.org/](http://www.simplemachines.org/)
-* vBulletin 4 [http://www.vbulletin.com/](http://www.vbulletin.com/)
-* Woltlab Burning Board [http://www.woltlab.com/](http://www.woltlab.com/)
+* ElkArte [https://www.elkarte.net](https://www.elkarte.net)
+* IPB 3.4.x
+* MyBB [https://www.mybb.com/](https://www.mybb.com/)
+* phpBB3 [https://www.phpbb.com/](https://www.phpbb.com/)\
+* PHPBoost 3.x [https://www.phpboost.com](https://www.phpboost.com)
+* SeoBoards 1.x
+* SMF [https://www.simplemachines.org/](https://www.simplemachines.org/)
+* UBB Threads [https://www.ubbcentral.com](https://www.ubbcentral.com)
+* vBulletin 4 [https://www.vbulletin.com/](https://www.vbulletin.com/)
+* Viscacha 0.8 [https://www.viscacha.org/](https://www.viscacha.org/)
+* Woltlab Burning Board [http://www.woltlab.com/](https://www.woltlab.com/)
+* Wedge [https://wedge.org](https://wedge.org)
 * Wordpress [https://wordpress.org/](https://wordpress.org/)
-* Wedge [wedge.org](wedge.org)
+* Xenforo [https://xenforo.com](https://xenforo.com)
 
 ## Supported destination systems
 
-* ElkArte [www.elkarte.net](www.elkarte.net)
-* Wedge [wedge.org](wedge.org)
+* ElkArte
+* Wedge
+* SMF
 
-The software is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
+The software is licensed under [BSD 3-clause license](https://www.opensource.org/licenses/BSD-3-Clause).
 
-Contributions to documentation are licensed under [CC-by-SA 3](http://creativecommons.org/licenses/by-sa/3.0). Third party libraries or sets of images, are under their own licenses.
+Contributions to documentation are licensed under [CC-by-SA 3](https://creativecommons.org/licenses/by-sa/3.0). Third party libraries or sets of images, are under their own licenses.
 
 ## Development notes
 
@@ -50,12 +57,17 @@ Feel free to fork this repository and make your desired changes.
 Please see the [Developer's Certificate of Origin](https://raw.github.com/OpenImporter/openimporter/master/DCO.txt) in the repository:
 by signing off your contributions, you acknowledge that you can and do license your submissions under the license of the project.
 
-Please see [How to contribute](https://github.com/openimporter/openimporter/blob/master/CONTRIBUTING.md) for information on how to contribute to the development process.
+Please see [How to contribute](https://github.com/openimporter/openimporter/blob/master/.github/CONTRIBUTING.md) for information on how to contribute to the development process.
 
 ## Site
 
-Project site: http://openimporter.github.io/openimporter/
+Project Homepage: https://openimporter.github.io/openimporter/
 
-[![Build Status](https://travis-ci.org/OpenImporter/openimporter.png?branch=master)](https://travis-ci.org/OpenImporter/openimporter)
+
+![Build Status](https://github.com/OpenImporter/openimporter/workflows/UnitTests/badge.svg)
+[![Open Issues](https://img.shields.io/github/issues/openimporter/OpenImporter.svg?style=flat)](https://github.com/elkarte/Elkarte/issues)
+[![Downloads](https://img.shields.io/github/downloads/openimporter/OpenImporter/total)](https://github.com/elkarte/Elkarte/releases)
+[![Current Release](https://img.shields.io/github/release/openimporter/OpenImporter.svg?style=flat)](https://github.com/elkarte/ElkArte/releases)
+[![License](https://img.shields.io/badge/License-BSD-green.svg?style=flat)](http://opensource.org/licenses/BSD-3-Clause)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/OpenImporter/openimporter/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/OpenImporter/openimporter/?branch=master)

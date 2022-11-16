@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
@@ -17,15 +17,11 @@ namespace OpenImporter;
  */
 class Template
 {
-	/**
-	 * @var null|HttpResponse
-	 */
-	protected $response = null;
+	/** @var \OpenImporter\HttpResponse */
+	protected $response;
 
-	/**
-	 * @var null|DummyLang
-	 */
-	protected $language = null;
+	/** @var \OpenImporter\DummyLang */
+	protected $language;
 
 	/**
 	 * Template constructor.
@@ -84,7 +80,7 @@ class Template
 	/**
 	 * Sets the response for the template to use
 	 *
-	 * @param HttpResponse $response
+	 * @param \OpenImporter\HttpResponse $response
 	 */
 	public function setResponse($response)
 	{
@@ -143,7 +139,7 @@ class Template
 	 */
 	public function footer($inner = true)
 	{
-		if (($this->response->step == 1 || $this->response->step == 2) && $inner == true)
+		if (($this->response->step === 1 || $this->response->step === 2) && $inner === true)
 		{
 			echo '
 				</p>
@@ -171,23 +167,22 @@ class Template
 		<script>
 			function AJAXCall(url, callback, string)
 			{
-				var req = new XMLHttpRequest(),
-					string = string;
+				let req = new XMLHttpRequest();
 
 				req.onreadystatechange = processRequest;
 
 				function processRequest()
 				{
 					// ReadyState of 4 signifies request is complete
-					if (req.readyState == 4)
+					if (req.readyState === 4)
 					{
 						// Status of 200 signifies successful HTTP call
-						if (req.status == 200)
+						if (req.status === 200)
 							if (callback) callback(req.responseXML, string);
 					}
 				}
 
-				// Make a HTTP GET request to the URL asynchronously
+				// Make an HTTP GET request to the URL asynchronously
 				this.doGet = function () {
 					req.open("GET", url, true);
 					req.send(null);
@@ -196,7 +191,7 @@ class Template
 
 			function validateField(string)
 			{
-				var target = document.getElementById(string),
+				let target = document.getElementById(string),
 					url = "import.php?action=validate&xml=true&" + string + "=" + target.value.replace(/\/+$/g, "") + "&import_script=' . addslashes($this->response->script) . '",
 					ajax = new AJAXCall(url, validateCallback, string);
 
@@ -205,7 +200,7 @@ class Template
 
 			function validateCallback(responseXML, string)
 			{
-				var msg = responseXML.getElementsByTagName("valid")[0].firstChild.nodeValue,
+				let msg = responseXML.getElementsByTagName("valid")[0].firstChild.nodeValue,
 					field = document.getElementById(string),
 					validate = document.getElementById(\'validate_\' + string),
 					submitBtn = document.getElementById("submit_button");
@@ -232,7 +227,7 @@ class Template
 				validateField(\'path_from\');
 			}
 		</script>
-		<style type="text/css">
+		<style>
 			body {
 				background-color: #cbd9e7;
 				margin: 0;
@@ -335,21 +330,15 @@ class Template
 				width: 300px;
 			}
 			#advanced_options {
-			 	-moz-columns: 2;
-  				-webkit-columns: 2;
   				columns: 2;
   				margin-left: 20%;
 			}
 			#advanced_options dt {
-  				-moz-page-break-after: avoid;
-				-webkit-column-break-after: avoid;
 				break-after: avoid;
 				width: 50%;
 				float: none;
 			}
 			#advanced_options dd {
-				-moz-page-break-before: avoid;
-				-webkit-column-break-before: avoid;
 				break-before: avoid;
 				float: none;
 			}
@@ -428,7 +417,8 @@ class Template
 		</div>
 		<div id="main">';
 
-		if (!empty($_GET['step']) && ($_GET['step'] == 1 || $_GET['step'] == 2) && $inner == true)
+		if (!empty($_GET['step'])
+			&& ((int) $_GET['step'] === 1 || (int) $_GET['step'] === 2) && $inner === true)
 		{
 			echo '
 			<h2 style="margin-top: 2ex">', $this->language->get('importing'), '...</h2>
@@ -454,7 +444,7 @@ class Template
 		foreach ($destination_names as $key => $values)
 		{
 			echo '
-					<li onclick="toggle_to(this);" data-value="', preg_replace('~[^\w\d]~', '_', $key), '">', $values, '</li>';
+					<li onclick="toggle_to(this);" data-value="', preg_replace('~[^\w]~', '_', $key), '">', $values, '</li>';
 		}
 
 		echo '
@@ -474,7 +464,7 @@ class Template
 			foreach ($scripts as $key => $value)
 			{
 				echo '
-				<ul id="', preg_replace('~[^\w\d]~', '_', $key), '">';
+				<ul id="', preg_replace('~[^\w]~', '_', $key), '">';
 
 				// Let's loop and output all the found scripts.
 				foreach ($value as $script)
@@ -508,7 +498,7 @@ class Template
 			<script>
 				function toggle_to(e)
 				{
-					var dest_container = document.getElementById(\'destinations\'),
+					let dest_container = document.getElementById(\'destinations\'),
 						dests = dest_container.getElementsByTagName(\'ul\'),
 						sources = document.getElementById(\'source\').getElementsByTagName(\'li\'),
 						i;
@@ -536,8 +526,8 @@ class Template
 	 *
 	 * Called from doStep0 from the ImportManager
 	 *
-	 * @param ImportManager $object
-	 * @param Form $form
+	 * @param \OpenImporter\ImportManager $object
+	 * @param \OpenImporter\Form $form
 	 */
 	public function step0($object, $form)
 	{
@@ -573,27 +563,28 @@ class Template
 	 */
 	public function status($substep, $status, $title, $hide = false)
 	{
-		if (isset($title) && $hide == false)
+		$status = (int) $status;
+		if (isset($title) && $hide === false)
 		{
 			echo '<span style="width: 250px; display: inline-block">' . $title . '...</span> ';
 		}
 
-		if ($status == 1)
+		if ($status === 1)
 		{
 			echo '<span style="color: green">&#x2714</span>';
 		}
 
-		if ($status == 2)
+		if ($status === 2)
 		{
 			echo '<span style="color: grey">&#x2714</span> (', $this->language->get('skipped'), ')';
 		}
 
-		if ($status == 3)
+		if ($status === 3)
 		{
 			echo '<span style="color: red">&#x2718</span> (', $this->language->get('not_found_skipped'), ')';
 		}
 
-		if ($status != 0)
+		if ($status !== 0)
 		{
 			echo '<br />';
 		}
@@ -674,14 +665,15 @@ class Template
 			</form>
 
 			<script>
-				var countdown = 3;
+				let countdown = 3;
+				
 				window.onload = doAutoSubmit;
 
 				function doAutoSubmit()
 				{
-					if (countdown == 0)
+					if (countdown === 0)
 						document.autoSubmit.submit();
-					else if (countdown == -1)
+					else if (countdown === -1)
 						return;
 
 					document.autoSubmit.b.value = "', $this->language->get('continue'), ' (" + countdown + ")";
@@ -693,7 +685,7 @@ class Template
 	}
 
 	/**
-	 * Ajax response, whether the paths to the source and destination
+	 * Ajax's response. Whether the paths to the source and destination
 	 * software are correctly set.
 	 */
 	public function xml()
@@ -803,14 +795,14 @@ class Template
 			<script>
 				document.getElementById(\'toggle_button\').onclick = function ()
 				{
-					var elem = document.getElementById(\'advanced_options\'),
+					let elem = document.getElementById(\'advanced_options\'),
 						arrow_up = document.getElementById(\'arrow_up\'),
 						arrow_down = document.getElementById(\'arrow_down\');
 
 					if (!elem)
 						return true;
 
-					if (elem.style.display == \'none\')
+					if (elem.style.display === \'none\')
 					{
 						elem.style.display = \'block\';
 						arrow_down.style.display = \'none\';

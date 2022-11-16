@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 /**
@@ -63,7 +63,7 @@ class mybb18 extends Importers\AbstractSourceImporter
 		// Prepare for the copy
 		$file = $thumb ? $row['thumbnail'] : $row['attachname'];
 		$source = $dir . '/' . $file;
-		$file_hash = createAttachmentFileHash($file);
+		$file_hash = createAttachmentFilehash($file);
 		$destination = $destination_path . '/' . $id_attach . '_' . $file_hash . '.elk';
 		$width = 0;
 		$height = 0;
@@ -72,7 +72,7 @@ class mybb18 extends Importers\AbstractSourceImporter
 		// Copy it over
 		copy_file($source, $destination);
 
-		// If its an image, then make sure it has legit width/height
+		// If an image, then make sure it has legit width/height
 		if (!empty($ext))
 		{
 			list ($width, $height) = getimagesize($destination);

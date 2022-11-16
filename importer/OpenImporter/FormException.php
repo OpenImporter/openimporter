@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
@@ -13,7 +13,7 @@ namespace OpenImporter;
  * class FormException extends the build-in Exception class and
  * catches potential errors
  *
- * @package OpenImporter
+ * @class FormException
  */
 class FormException extends \Exception
 {

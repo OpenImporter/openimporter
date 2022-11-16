@@ -2,44 +2,65 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
 
 /**
  * Class Configurator
+ *
  * The configurator is used to hold common configuration information
  * such as the paths (to/from), prefixes, etc.
  * Basically a generic getter/setter
  *
- * @property string lang_dir
- * @property string path_to
- * @property string path_from
- * @property string script
- * @property string to_prefix
- * @property string from_prefix
- * @property string boardurl;
- * @property object source
- * @property object destination
- *
- * @package OpenImporter
+ * @class Configurator
  */
 class Configurator
 {
-	/**
-	 * @var array
-	 */
+	/** @var mixed|null via magic */
+	public $source;
+
+	/** @var mixed|null via magic */
+	public $destination;
+
+	/** @var string (via magic) The table prefix for our destination database */
+	public $to_prefix;
+
+	/** @var string (via magic) The table prefix for our source database */
+	public $from_prefix;
+
+	/** @var string The path to the source forum. */
+	public $path_from;
+
+	/** @var string The path to the destination forum. */
+	public $path_to;
+
+	/** @var string (via magic) The script recipe we are using */
+	public $script;
+
+	/** @var array */
 	protected $data = array();
+
+	/**
+	 * Gets a data value via "magic" method
+	 *
+	 * @param string $key
+	 *
+	 * @return mixed|null
+	 */
+	public function __get($key)
+	{
+		return $this->data[$key] ?? null;
+	}
 
 	/**
 	 * Sets a data value via "magic" method
 	 *
-	 * @param $key
-	 *
-	 * @param $val
+	 * @param string $key
+	 * @param string $val
 	 */
 	public function __set($key, $val)
 	{
@@ -47,27 +68,9 @@ class Configurator
 	}
 
 	/**
-	 * Gets a data value via "magic" method
-	 *
-	 * @param $key
-	 *
-	 * @return mixed|null
-	 */
-	public function __get($key)
-	{
-		if (isset($this->data[$key]))
-		{
-			return $this->data[$key];
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-	/**
 	 * Checks if a value is et
-	 * @param $key
+	 *
+	 * @param string $key
 	 *
 	 * @return bool
 	 */

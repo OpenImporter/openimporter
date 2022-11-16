@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 class SMF1_1 extends Importers\AbstractSourceImporter
@@ -45,7 +45,7 @@ class SMF1_1 extends Importers\AbstractSourceImporter
 		return 'members';
 	}
 
-	protected function fetchSetting($name)
+	public function fetchSetting($name)
 	{
 		static $content = null;
 

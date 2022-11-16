@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 /**
@@ -143,7 +143,6 @@ function phpbb_replace_bbc($message)
 		'[list type=1]' => '[list type=decimal]',
 		'[list type=a]' => '[list type=lower-alpha]',
 	));
-	$message = stripslashes($message);
 
-	return $message;
+	return stripslashes($message);
 }

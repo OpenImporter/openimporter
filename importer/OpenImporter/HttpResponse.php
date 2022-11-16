@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
@@ -13,34 +13,50 @@ namespace OpenImporter;
  * Class HttpResponse
  * Contains the data used by the template.
  *
- * @property bool no_template
- * @property bool is_xml
- * @property bool template_error
- * @property bool is_page
- * @property bool use_template
- * @property object valid
- * @property array params_template
- * @property int step
- * @property string page_title
- * @property string script
- * @property object importer
- *
- * @package OpenImporter
+ * @class HttpResponse
  */
 class HttpResponse
 {
-	/**
-	 * Any kind of data the templates may need.
-	 */
+	/** @var int (via magic) the current step  */
+	public $step = 0;
+
+	/** @var bool (via magic) the result of a load or check */
+	public $valid;
+
+	/** @var string (via magic) title based on script being run */
+	public $page_title = 'OpenImporter';
+
+	/** @var string (via magic) the script running */
+	public $script;
+
+	/** @var string (via magic see template) name of the template to show, like select_script */
+	public $use_template;
+
+	/** @var array (via magic see template) parameters for the call */
+	public $params_template;
+
+	/** @var string (via magic see template) */
+	public $no_template;
+
+	/** @var bool (via magic see template) */
+	public $is_xml;
+
+	/** @var bool (via magic, see template) */
+	public $is_page;
+
+	/** @var mixed|null (via magic, see template) */
+	public $template_error;
+
+	/** @var array Any kind of data the templates may need. */
 	protected $data = array();
 
-	/**
-	 * @var ResponseHeader|null
-	 */
-	protected $headers = null;
+	/** @var \OpenImporter\ResponseHeader */
+	protected $headers;
 
-	public $lng = null;
+	/** @var \OpenImporter\Lang */
+	public $lng;
 
+	/** @var array */
 	protected $error_params = array();
 
 	/**
@@ -56,8 +72,8 @@ class HttpResponse
 	/**
 	 * Set a key / value pair with magic
 	 *
-	 * @param $key
-	 * @param $val
+	 * @param string $key
+	 * @param mixed $val
 	 */
 	public function __set($key, $val)
 	{
@@ -67,24 +83,17 @@ class HttpResponse
 	/**
 	 * Fetch a value for a key via magic
 	 *
-	 * @param $key
+	 * @param string $key
 	 *
-	 * @return null
+	 * @return mixed
 	 */
 	public function __get($key)
 	{
-		if (isset($this->data[$key]))
-		{
-			return $this->data[$key];
-		}
-		else
-		{
-			return null;
-		}
+		return $this->data[$key] ?? null;
 	}
 
 	/**
-	 * Output all of the defined headers
+	 * Output all defined headers
 	 */
 	public function sendHeaders()
 	{
@@ -97,8 +106,8 @@ class HttpResponse
 	/**
 	 * Add a new header for output later
 	 *
-	 * @param $key
-	 * @param $val
+	 * @param string $key
+	 * @param mixed $val
 	 */
 	public function addHeader($key, $val)
 	{

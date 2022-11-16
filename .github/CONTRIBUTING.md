@@ -1,7 +1,7 @@
 # Contributing to OpenImporter
 
-* OpenImporter is licensed under [BSD 3-clause license](http://www.opensource.org/licenses/BSD-3-Clause).
-* Documentation is licensed under [CC-by-SA 3](http://creativecommons.org/licenses/by-sa/3.0).
+* OpenImporter is licensed under [BSD 3-clause license](https://www.opensource.org/licenses/BSD-3-Clause).
+* Documentation is licensed under [CC-by-SA 3](https://creativecommons.org/licenses/by-sa/3.0).
 * Third party libraries or sets of images, are under their own licenses.
 
 ## Before You Start
@@ -11,7 +11,7 @@ By signing off your contributions, you acknowledge that you *can and do license*
 
 ## How to Contribute:
 
-* Fork / Clone the repository. ```git clone git://github.com/OpenImporter/OpenImporter.git ``` If you are not used to using Github, please read the [fork a repository](http://help.github.com/fork-a-repo).
+* Fork / Clone the repository. ```git clone git://github.com/OpenImporter/OpenImporter.git ``` If you are not used to using Github, please read the [fork a repository](https://help.github.com/fork-a-repo).
 * Create a new Branch your own repository. 
   * ```cd OpenImporter```
   * ```git checkout -b new_branch_enhancement_name```
@@ -43,10 +43,10 @@ By signing off your contributions, you acknowledge that you *can and do license*
      * alternatively: ``` git merge master ``` (this may create a merge commit by default)
 
 Details about the rebase operation:
-[git rebase] (http://www.kernel.org/pub/software/scm/git/docs/git-rebase.html)
+[git rebase] (https://www.kernel.org/pub/software/scm/git/docs/git-rebase.html)
 
 Recommended reading for github pull requests workflow:
-[About Github workflow](http://qsapp.com/wiki/Github#Github_Contributor_Workflow)
+[About Github workflow](https://qsapp.com/wiki/Github#Github_Contributor_Workflow)
 
 ## Code Reviews
 

@@ -2,15 +2,18 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  *
  * This file contains code based on:
  *
  * Simple Machines Forum (SMF)
- * copyright:	2011 Simple Machines (http://www.simplemachines.org)
- * license:	BSD, See included LICENSE.TXT for terms and conditions.
+ * copyright:    2011 Simple Machines (http://www.simplemachines.org)
+ * license:    BSD, See included LICENSE.TXT for terms and conditions.
+ *
+ * There are (4) abstract classes in this file
+ * - SmfCommonSource, SmfCommonSourceStep1, SmfCommonSourceStep2, SmfCommonSourceStep3
  */
 
 namespace Importers;
@@ -20,49 +23,28 @@ use OpenImporter\Database;
 
 /**
  * Class SmfCommonSource
+ *
  * The class contains code that allows the Importer to obtain settings
  * from software that still has an SMF heritage.
  *
- * @package Importers
+ * @class SmfCommonSource
  */
 abstract class SmfCommonSource
 {
-	/**
-	 * The attachment extension
-	 * @var string
-	 */
+	/** @var string The attachment extension */
 	public $attach_extension = '';
-
-	/**
-	 * Path to the forum
-	 * @var null
-	 */
-	protected $path = null;
-
-	/**
-	 * @var null|int
-	 */
-	public $id_attach = null;
-
-	/**
-	 * @var null|string
-	 */
-	public $attachmentUploadDirs = null;
-
-	/**
-	 * @var null|string
-	 */
-	public $avatarUploadDir = null;
-
-	/**
-	 * @var Configurator
-	 */
-	protected $config = null;
-
-	/**
-	 * @var Database
-	 */
-	protected $db = null;
+	/** @var int */
+	public $id_attach;
+	/** @var string */
+	public $attachmentUploadDirs;
+	/** @var string */
+	public $avatarUploadDir;
+	/** @var string Path to the forum */
+	protected $path;
+	/** @var \OpenImporter\Configurator */
+	protected $config;
+	/** @var \OpenImporter\Database */
+	protected $db;
 
 	/**
 	 * Set the database and configuration to the class
@@ -79,6 +61,25 @@ abstract class SmfCommonSource
 	abstract public function getName();
 
 	/**
+	 * The path to our destination forum
+	 *
+	 * @param $path
+	 *
+	 * @return bool|string
+	 */
+	public function getDestinationURL($path)
+	{
+		// Cannot find Settings.php?
+		if (!$this->checkSettingsPath($path))
+		{
+			return false;
+		}
+
+		// Everything should be alright now... no cross server includes, we hope...
+		return $this->fetchSetting('boardurl');
+	}
+
+	/**
 	 * Check that the Settings.php file exists
 	 *
 	 * @param $path
@@ -90,26 +91,26 @@ abstract class SmfCommonSource
 		$found = file_exists($path . '/Settings.php');
 
 		if ($found && $this->path === null)
+		{
 			$this->path = $path;
+		}
 
 		return $found;
 	}
 
-	/**
-	 * The path to our destination forum
-	 *
-	 * @param $path
-	 *
-	 * @return bool|string
-	 */
-	public function getDestinationURL($path)
+	public function fetchSetting($name)
 	{
-		// Cannot find Settings.php?
-		if (!$this->checkSettingsPath($path))
-			return false;
+		static $content = null;
 
-		// Everything should be alright now... no cross server includes, we hope...
-		return $this->fetchSetting('boardurl');
+		if ($content === null)
+		{
+			$content = file_get_contents($this->path . '/Settings.php');
+		}
+
+		$match = array();
+		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
+
+		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getFormFields($path_to = '')
@@ -127,17 +128,21 @@ abstract class SmfCommonSource
 	public function verifyDbPass($pwd_to_verify)
 	{
 		if ($this->path === null)
+		{
 			return false;
+		}
 
 		$db_passwd = $this->fetchSetting('db_passwd');
 
-		return $db_passwd == $pwd_to_verify;
+		return $db_passwd === $pwd_to_verify;
 	}
 
 	public function dbConnectionData()
 	{
 		if ($this->path === null)
+		{
 			return false;
+		}
 
 		$db_server = $this->fetchSetting('db_server');
 		$db_user = $this->fetchSetting('db_user');
@@ -149,25 +154,13 @@ abstract class SmfCommonSource
 		return array($db_server, $db_user, $db_passwd, $db_persist, $db_prefix, $db_name);
 	}
 
-	protected function fetchSetting($name)
-	{
-		static $content = null;
-
-		if ($content === null)
-			$content = file_get_contents($this->path . '/Settings.php');
-
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
-
-		return isset($match[1]) ? $match[1] : '';
-	}
-
 	/**
 	 * Helper function for old (SMF) attachments and some new ones
 	 *
 	 * @param string $filename
 	 * @param int $attachment_id
 	 * @param bool $legacy if true returns legacy SMF file name (default true)
+	 *
 	 * @return string
 	 */
 	public function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
@@ -176,19 +169,42 @@ abstract class SmfCommonSource
 		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
 		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
 
-			// Get rid of dots, spaces, and other weird characters.
+		// Get rid of dots, spaces, and other weird characters.
 		$clean_name = preg_replace(array('/\s/', '/[^\w_\.\-]/'), array('_', ''), $clean_name);
 
 		if ($legacy)
 		{
 			// @todo not sure about that one
 			$clean_name = preg_replace('~\.[\.]+~', '.', $clean_name);
+
 			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name);
 		}
 		else
 		{
 			return $attachment_id . '_' . strtr($clean_name, '.', '_') . md5($clean_name) . '.' . $this->attach_extension;
 		}
+	}
+
+	public function getAvatarDir($row)
+	{
+		if ($this->avatarUploadDir === null)
+		{
+			return $this->getAttachDir($row);
+		}
+
+		return $this->avatarUploadDir;
+	}
+
+	public function getAttachDir($row)
+	{
+		$this->specialAttachments();
+
+		if (!empty($row['id_folder']) && !empty($this->attachmentUploadDirs[$row['id_folder']]))
+		{
+			return $this->attachmentUploadDirs[$row['id_folder']];
+		}
+
+		return $this->attachmentUploadDirs[1];
 	}
 
 	/**
@@ -230,35 +246,23 @@ abstract class SmfCommonSource
 			$this->db->free_result($result);
 
 			if (empty($this->avatarUploadDir))
+			{
 				$this->avatarUploadDir = '';
+			}
 
 			if (empty($this->id_attach))
+			{
 				$this->id_attach = 1;
+			}
 		}
-	}
-
-	public function getAvatarDir($row)
-	{
-		if ($this->avatarUploadDir === null)
-			return $this->getAttachDir($row);
-		else
-			return $this->avatarUploadDir;
-	}
-
-	public function getAttachDir($row)
-	{
-		$this->specialAttachments();
-
-		if (!empty($row['id_folder']) && !empty($this->attachmentUploadDirs[$row['id_folder']]))
-			return $this->attachmentUploadDirs[$row['id_folder']];
-		else
-			return $this->attachmentUploadDirs[1];
 	}
 
 	public function getAllAttachDirs()
 	{
 		if ($this->attachmentUploadDirs === null)
+		{
 			$this->specialAttachments();
+		}
 
 		return $this->attachmentUploadDirs;
 	}
@@ -267,7 +271,7 @@ abstract class SmfCommonSource
 /**
  * Class SmfCommonSourceStep1
  *
- * @package Importers
+ * @class SmfCommonSourceStep1
  */
 abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 {
@@ -280,11 +284,32 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 
 			return $params;
 		}
+
 		// Here we have various bits of custom code for some known problems global to all importers.
-		elseif ($special_table == $this->config->to_prefix . 'members' && $params !== null)
+		if ($special_table == $this->config->to_prefix . 'members' && $params !== null)
+		{
 			return $this->specialMembers($params);
+		}
 
 		return $params;
+	}
+
+	protected function specialMembers($row)
+	{
+		// Let's ensure there are no illegal characters.
+		$row['member_name'] = preg_replace('/[<>&"\'=\\\]/is', '', $row['member_name']);
+		$row['real_name'] = trim($row['real_name'], " \t\n\r\x0B\0\xA0");
+
+		if (strpos($row['real_name'], '<') !== false || strpos($row['real_name'], '>') !== false || strpos($row['real_name'], '& ') !== false)
+		{
+			$row['real_name'] = htmlspecialchars($row['real_name'], ENT_QUOTES);
+		}
+		else
+		{
+			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
+		}
+
+		return $row;
 	}
 
 	/**
@@ -307,7 +332,9 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			$attach_dir = $this->getAttachDir($row);
 
 			if (file_exists($attach_dir . '/' . $enc_name))
+			{
 				$filename = $attach_dir . '/' . $enc_name;
+			}
 			else
 			{
 				// @todo this should not be here I think: it's SMF-specific, while this file shouldn't know anything about the source
@@ -316,7 +343,9 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			}
 
 			if (is_file($filename))
+			{
 				@unlink($filename);
+			}
 		}
 
 		$this->db->free_result($result);
@@ -326,6 +355,11 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		{
 			$this->createAttachFoldersStructure($this->config->source->getAttachmentDirs());
 		}
+	}
+
+	public function getAttachDir($row)
+	{
+		return $this->config->destination->getAttachDir($row);
 	}
 
 	/**
@@ -343,13 +377,17 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		// No idea where to start, better not mess with the filesystem
 		// Though if $destination_base is empty it *is* a mess.
 		if (empty($source_base) || empty($destination_base))
+		{
 			return false;
+		}
 
 		$dest_folders = str_replace($source_base, $destination_base, $folders);
 
 		// Prepare the directory structure
 		foreach ($dest_folders as $folder)
+		{
 			create_folders_recursive($folder);
+		}
 
 		// Save the new structure in the database
 		$this->db->query("
@@ -386,7 +424,9 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 			{
 				$dir = dirname($dir);
 				if ($this->isCommon($dir, $folders))
+				{
 					return $dir;
+				}
 			}
 		}
 
@@ -398,40 +438,12 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		foreach ($folders as $folder)
 		{
 			if (substr($folder, 0, strlen($dir)) !== $dir)
+			{
 				return false;
+			}
 		}
 
 		return true;
-	}
-
-	public function getAttachDir($row)
-	{
-		return $this->config->destination->getAttachDir($row);
-	}
-
-	public function getAvatarDir($row)
-	{
-		return $this->config->destination->getAvatarDir($row);
-	}
-
-	public function getAvatarFolderId($row)
-	{
-		// @todo in theory we could be able to find the "current" directory
-		if ($this->config->destination->avatarUploadDir === null)
-			return 1;
-		else
-			return false;
-	}
-
-	public function newIdAttach()
-	{
-		// The one to return
-		$current = $this->config->destination->id_attach;
-
-		// Increase preparing for the next one
-		$this->config->destination->id_attach++;
-
-		return $current;
 	}
 
 	public function moveAvatar($row, $source, $filename)
@@ -482,25 +494,38 @@ abstract class SmfCommonSourceStep1 extends Step1BaseImporter
 		return $return;
 	}
 
-	protected function specialMembers($row)
+	public function getAvatarFolderId($row)
 	{
-		// Let's ensure there are no illegal characters.
-		$row['member_name'] = preg_replace('/[<>&"\'=\\\]/is', '', $row['member_name']);
-		$row['real_name'] = trim($row['real_name'], " \t\n\r\x0B\0\xA0");
+		// @todo in theory we could be able to find the "current" directory
+		if ($this->config->destination->avatarUploadDir === null)
+		{
+			return 1;
+		}
 
-		if (strpos($row['real_name'], '<') !== false || strpos($row['real_name'], '>') !== false || strpos($row['real_name'], '& ') !== false)
-			$row['real_name'] = htmlspecialchars($row['real_name'], ENT_QUOTES);
-		else
-			$row['real_name'] = strtr($row['real_name'], array('\'' => '&#039;'));
+		return false;
+	}
 
-		return $row;
+	public function getAvatarDir($row)
+	{
+		return $this->config->destination->getAvatarDir($row);
+	}
+
+	public function newIdAttach()
+	{
+		// The one to return
+		$current = $this->config->destination->id_attach;
+
+		// Increase preparing for the next one
+		$this->config->destination->id_attach++;
+
+		return $current;
 	}
 }
 
 /**
  * Class SmfCommonSourceStep2
  *
- * @package Importers
+ * @class SmfCommonSourceStep2
  */
 abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 {
@@ -574,7 +599,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		if ($where === null)
 		{
 			if (empty($board))
+			{
 				return;
+			}
 
 			$where = "id_board = $board";
 		}
@@ -597,7 +624,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		$all_groups = array();
 		while ($row = $this->db->fetch_assoc($request))
+		{
 			$all_groups[] = $row['id_group'];
+		}
 		$this->db->free_result($request);
 
 		$request = $this->db->query("
@@ -693,7 +722,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		$post_groups = array();
 		$max = $this->db->fetch_assoc($request);
 		while ($row = $this->db->fetch_assoc($request))
+		{
 			$post_groups[] = $row;
+		}
 		$this->db->free_result($request);
 
 		$case = "CASE WHEN posts > " . $max['min_posts'] . " THEN " . $max['id_group'];
@@ -707,7 +738,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 				$first = false;
 			}
 			else
+			{
 				$case .= " WHEN posts BETWEEN " . $group['min_posts'] . " AND " . $post_groups[$id - 1]['min_posts'] . " THEN " . $group['id_group'];
+			}
 		}
 		$case .= " ELSE 4 END";
 
@@ -731,9 +764,11 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 		$updates = array();
 		while ($row = $this->db->fetch_assoc($result_topics))
+		{
 			$updates[$row['id_board']] = array(
 				'num_topics' => $row['num_topics']
 			);
+		}
 		$this->db->free_result($result_topics);
 
 		// Find how many messages are in the board.
@@ -744,7 +779,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			GROUP BY id_board");
 
 		while ($row = $this->db->fetch_assoc($result_posts))
+		{
 			$updates[$row['id_board']]['num_posts'] = $row['num_posts'];
+		}
 		$this->db->free_result($result_posts);
 
 		// Fix the board's totals.
@@ -775,7 +812,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			{
 				$stupidTopics = array();
 				while ($topicArray = $this->db->fetch_assoc($resultTopic))
+				{
 					$stupidTopics[] = $topicArray['id_topic'];
+				}
 				$this->db->query("
 					DELETE FROM {$to_prefix}topics
 					WHERE id_topic IN (" . implode(',', $stupidTopics) . ')
@@ -787,7 +826,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$this->db->free_result($resultTopic);
 
 			if ($numRows < 200)
+			{
 				break;
+			}
 
 			// @todo this should not deal with $_REQUEST and alike
 			$_REQUEST['start'] += 200;
@@ -830,7 +871,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$this->db->free_result($resultTopic);
 
 			if ($numRows < 200)
+			{
 				break;
+			}
 
 			// @todo this should not deal with $_REQUEST and alike
 			$_REQUEST['start'] += 100;
@@ -849,7 +892,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 	{
 		$to_prefix = $this->config->to_prefix;
 
-			// Find the topic and make sure the member still exists.
+		// Find the topic and make sure the member still exists.
 		$result = $this->db->query("
 			SELECT
 				IFNULL(mem.id_member, 0)
@@ -859,10 +902,14 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			LIMIT 1");
 
 		if ($this->db->num_rows($result) > 0)
+		{
 			list ($memberID) = $this->db->fetch_row($result);
+		}
 		// The message doesn't even exist.
 		else
+		{
 			$memberID = 0;
+		}
 
 		$this->db->free_result($result);
 
@@ -900,7 +947,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 				foreach ($dummy as $board)
 				{
 					if (empty($cat_map[$board]))
+					{
 						$cat_map[$board] = $parent;
+					}
 				}
 
 				$child_map[0] = array_merge(isset($child_map[0]) ? $child_map[0] : array(), $dummy);
@@ -915,13 +964,17 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 		{
 			list ($parent, $level) = array_pop($solid_parents);
 			if (!isset($child_map[$parent]))
+			{
 				continue;
+			}
 
 			// Fix all of this board's children.
 			foreach ($child_map[$parent] as $board)
 			{
 				if ($parent != 0)
+				{
 					$cat_map[$board] = $cat_map[$parent];
+				}
 
 				$this->setBoardProperty((int) $board, array('id_parent' => (int) $parent, 'id_cat' => (int) $cat_map[$board], 'child_level' => (int) $level));
 
@@ -954,14 +1007,18 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			FROM {$to_prefix}categories");
 		$real_cats = array();
 		while ($row = $this->db->fetch_assoc($request))
+		{
 			$real_cats[] = $row['id_cat'];
+		}
 		$this->db->free_result($request);
 
 		$fix_cats = array();
 		foreach ($cat_map as $cat)
 		{
 			if (!in_array($cat, $real_cats))
+			{
 				$fix_cats[] = $cat;
+			}
 		}
 
 		if (!empty($fix_cats))
@@ -998,14 +1055,18 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			{
 				$curCat = $row['id_cat'];
 				if (++$cat_order != $row['cat_order'])
+				{
 					$this->db->query("
 						UPDATE {$to_prefix}categories
 						SET cat_order = $cat_order
 						WHERE id_cat = $row[id_cat]
 						LIMIT 1");
+				}
 			}
 			if (!empty($row['id_board']) && ++$board_order != $row['board_order'])
+			{
 				$this->setBoardProperty($row['id_board'], array('board_order' => $board_order));
+			}
 		}
 		$this->db->free_result($request);
 	}
@@ -1037,7 +1098,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 				LIMIT $_REQUEST[start], 500");
 
 			if ($this->db->num_rows($request) == 0)
+			{
 				break;
+			}
 
 			while ($row = $this->db->fetch_assoc($request))
 			{
@@ -1045,11 +1108,14 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 
 				// Probably not one of the imported ones, then?
 				if (!file_exists($filename))
+				{
 					continue;
+				}
 
 				$size = @getimagesize($filename);
 				$filesize = @filesize($filename);
 				if (!empty($size) && !empty($size[0]) && !empty($size[1]) && !empty($filesize))
+				{
 					$this->db->query("
 						UPDATE {$to_prefix}attachments
 						SET
@@ -1058,6 +1124,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 							height = " . (int) $size[1] . "
 						WHERE id_attach = $row[id_attach]
 						LIMIT 1");
+				}
 			}
 			$this->db->free_result($request);
 
@@ -1082,7 +1149,9 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 			$filename = $row['filename'];
 		}
 		else
+		{
 			$filename = $this->config->destination->getLegacyAttachmentFilename($row['filename'], $row['id_attach']);
+		}
 
 		return $dir . '/' . $filename;
 	}
@@ -1091,7 +1160,7 @@ abstract class SmfCommonSourceStep2 extends Step2BaseImporter
 /**
  * Class SmfCommonSourceStep3
  *
- * @package Importers
+ * @class SmfCommonSourceStep3
  */
 abstract class SmfCommonSourceStep3 extends Step3BaseImporter
 {

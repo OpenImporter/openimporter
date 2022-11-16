@@ -2,9 +2,9 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace Importers;
@@ -17,15 +17,11 @@ use OpenImporter\Database;
  */
 abstract class BaseImporter
 {
-	/**
-	 * @var Database
-	 */
-	protected $db = null;
+	/** @var \OpenImporter\Database */
+	protected $db;
 
-	/**
-	 * @var Configurator
-	 */
-	protected $config = null;
+	/** @var \OpenImporter\Configurator */
+	protected $config;
 
 	/**
 	 * BaseImporter constructor.

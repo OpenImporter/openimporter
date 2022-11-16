@@ -2,15 +2,15 @@
 /**
  * @name      OpenImporter
  * @copyright OpenImporter contributors
- * @license   BSD http://opensource.org/licenses/BSD-3-Clause
+ * @license   BSD https://opensource.org/licenses/BSD-3-Clause
  *
- * @version 1.0 Alpha
+ * @version 1.0
  */
 
 namespace OpenImporter;
 
 /**
- * Any page served needs an header.
+ * Any page served needs a header.
  *
  * @package OpenImporter
  */
@@ -19,7 +19,7 @@ class ResponseHeader
 	protected $headers = array();
 
 	/**
-	 * Add an header
+	 * Add a header
 	 *
 	 * @param string $key
 	 * @param string|null $value (optional)
@@ -54,7 +54,7 @@ class ResponseHeader
 	}
 
 	/**
-	 * Add an header
+	 * Add a header
 	 *
 	 * @param string $key
 	 */
