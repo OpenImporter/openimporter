@@ -313,12 +313,12 @@ class Template
 				font-style: italic;
 				font-size: smaller;
 			}
-			.valid_field {
-				background-color: #DEFEDD;
+			.valid_field, .content .valid_field, input.valid_field {
+				background-color: #DEFEDD !important;
 				border: 1px solid green;
 			}
-			.invalid_field {
-				background-color: #fee;;
+			.invalid_field, .content .invalid_field {
+				background-color: #fee !important;
 				border: 1px solid red;
 			}
 			#progressbar {

@@ -229,7 +229,7 @@ class Database
 		}
 
 		// If we're here we know we don't have the index - so just add it.
-		if (!empty($index_info['type']) && $index_info['type'] == 'primary')
+		if (!empty($index_info['type']) && $index_info['type'] === 'primary')
 		{
 			$this->query('
 				ALTER TABLE ' . $table_name . '
@@ -265,7 +265,7 @@ class Database
 		if (empty($index_info['name']))
 		{
 			// No need for primary.
-			if (isset($index_info['type']) && $index_info['type'] == 'primary')
+			if (isset($index_info['type']) && $index_info['type'] === 'primary')
 			{
 				return '';
 			}
