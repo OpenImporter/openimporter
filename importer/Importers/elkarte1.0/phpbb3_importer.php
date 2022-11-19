@@ -34,16 +34,14 @@ class phpBB3 extends Importers\AbstractSourceImporter
 
 	public function getPrefix()
 	{
-		global $table_prefix;
+		$table_prefix = $this->fetchSetting('table_prefix');
 
 		return '`' . $this->getDbName() . '`.' . $table_prefix;
 	}
 
 	public function getDbName()
 	{
-		global $dbname;
-
-		return $dbname;
+		return $this->fetchSetting('dbname');
 	}
 
 	public function getTableTest()
