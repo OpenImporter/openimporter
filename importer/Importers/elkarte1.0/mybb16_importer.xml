@@ -255,7 +255,7 @@
 				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
 			}
 
-			//create some useful shortcuts, we start with images..
+			// Create some useful shortcuts, we start with images..
 			$ext = strtolower(substr(strrchr($row['filename'], '.'), 1));
 			if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png')))
 				$ext = '';
