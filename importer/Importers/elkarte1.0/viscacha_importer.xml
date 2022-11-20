@@ -273,7 +273,7 @@
 			if (strlen($physical_filename) > 255)
 				return;
 
-			if (copy_file($_POST['path_from'] . '/uploads/topics/' . $row['filename'] , $attachmentUploadDir . '/' . $physical_filename))
+			if (copy_file($this->config->path_from . '/uploads/topics/' . $row['filename'] , $attachmentUploadDir . '/' . $physical_filename))
 			{
 				$rows[] = array(
 					'id_attach' => $id_attach,
@@ -304,7 +304,7 @@
 			$file = explode('/', $row['filenamepath']);
 			$row['filename'] = end($file);
 
-			$source = $_POST['path_from'] . '/' . $row['filenamepath'];
+			$source = $this->config->path_from . '/' . $row['filenamepath'];
 			$destination = $attachmentUploadDir . '/' . $physical_filename;
 
 			$file_hash = getAttachmentFilename($row['filename'], $id_attach, null, true);

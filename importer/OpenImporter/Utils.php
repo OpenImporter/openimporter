@@ -495,7 +495,7 @@ function attachment_type($filename)
 	$ext = $path_parts['extension'];
 	$basename = $path_parts['filename'];
 
-	if (!in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png')))
+	if (!in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png', 'webp')))
 	{
 		$ext = '';
 		$mime_type = '';

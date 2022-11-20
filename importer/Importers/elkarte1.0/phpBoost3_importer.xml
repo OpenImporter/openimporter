@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<importer xmlns="https://www.elkarte.net/xml/importer" xmlns:smf="https://www.elkarte.net/">
+<importer xmlns="https://www.elkarte.net/xml/importer" xmlns:elk="https://www.elkarte.net/">
 	<general>
 		<name>PHPBoost3</name>
 		<version>ElkArte 1.0</version>

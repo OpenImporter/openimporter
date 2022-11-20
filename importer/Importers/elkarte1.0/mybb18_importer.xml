@@ -278,7 +278,7 @@
 				list ($mybb_attachment_dir) = $this->db->fetch_row($result);
 				$this->db->free_result($result);
 
-				$mybb_attachment_dir = $_POST['path_from'] . ltrim($mybb_attachment_dir, '.');
+				$mybb_attachment_dir = $this->config->path_from . ltrim($mybb_attachment_dir, '.');
 			}
 
 			// Copy the attachment
@@ -310,7 +310,7 @@
 			$this->keys = array('size', 'filename', 'file_hash', 'id_member');
 
 			// Create some useful shortcuts
-			$source = $_POST['path_from'] . strtok(ltrim($this->row['filename'], '.'), '?');
+			$source = $this->config->path_from . strtok(ltrim($this->row['filename'], '.'), '?');
 			$filename = preg_replace('~avatar_(.+?)\?dateline=\d*~is', 'avatar_$1', $this->row['filename']);
 			$file = substr(strrchr($filename, "/"), 1);
 			$file_hash = createAttachmentFileHash($filename);

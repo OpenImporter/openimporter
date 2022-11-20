@@ -97,7 +97,7 @@ class XmlProcessor
 		$this->doPresqlStep($substep);
 
 		// Codeblock? (<code></code>) Then no query.
-		if ($this->doCode())
+		if ($this->doCode($substep))
 		{
 			$this->advanceSubstep($substep);
 
@@ -405,7 +405,7 @@ class XmlProcessor
 	 *
 	 * @return bool
 	 */
-	protected function doCode()
+	protected function doCode($substep)
 	{
 		if (isset($this->current_step->code))
 		{

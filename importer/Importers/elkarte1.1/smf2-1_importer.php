@@ -18,7 +18,7 @@ class SMF2_1 extends Importers\AbstractSourceImporter
 
 	public function getName()
 	{
-		return 'SMF2_1';
+		return 'SMF 2.1';
 	}
 
 	public function getVersion()
@@ -45,21 +45,6 @@ class SMF2_1 extends Importers\AbstractSourceImporter
 	public function getDbName()
 	{
 		return $this->fetchSetting('db_name');
-	}
-
-	public function fetchSetting($name)
-	{
-		static $content = null;
-
-		if ($content === null)
-		{
-			$content = file_get_contents($this->path . '/Settings.php');
-		}
-
-		$match = array();
-		preg_match('~\$' . $name . '\s*=\s*\'(.*?)\';~', $content, $match);
-
-		return isset($match[1]) ? $match[1] : '';
 	}
 
 	public function getTableTest()

@@ -202,8 +202,8 @@
 
 			if (!isset($xen_attachment_dir))
 			{
-				$xen_attachment_dir = rtrim($_POST['path_from'], '/\\') . "/internal_data/attachments/";
-				$xen_thumbnail_dir = rtrim($_POST['path_from'], '/\\') . "/data/attachments/";
+				$xen_attachment_dir = rtrim($this->config->path_from, '/\\') . "/internal_data/attachments/";
+				$xen_thumbnail_dir = rtrim($this->config->path_from, '/\\') . "/data/attachments/";
 			}
 
 			// Copy the attachment
@@ -238,7 +238,7 @@
 			$this->keys = array('size', 'filename', 'file_hash', 'fileext', 'mime_type', 'id_member');
 
 			// Create some useful shortcuts
-			$xen_avatar_dir = rtrim($_POST['path_from'], '/\\') . '/data/avatars/';
+			$xen_avatar_dir = rtrim($this->config->path_from, '/\\') . '/data/avatars/';
 			$xen_avatar_name = 'l/' . floor($this->row['id_member']/1000) . '/' . $this->row['id_member'] . '.jpg';
 
 			// Create the destination name

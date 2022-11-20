@@ -102,4 +102,19 @@ abstract class AbstractSourceImporter
 	public function setGlobals()
 	{
 	}
+
+	public function fetchSetting($name)
+	{
+		static $config = null;
+
+		if ($config === null)
+		{
+			$config = file_get_contents($this->path . $this->setting_file);
+		}
+
+		$match = array();
+		preg_match('~\$' . $name . '\s*=\s*\'?(.*?)\'?;~', $config, $match);
+
+		return isset($match[1]) ? $match[1] : '';
+	}
 }
