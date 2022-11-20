@@ -165,6 +165,10 @@ abstract class SmfCommonSource
 	 */
 	public function getLegacyAttachmentFilename($filename, $attachment_id, $legacy = true)
 	{
+		$se = array("ä", "ö", "ü", "Ä", "Ö", "Ü", "ß");
+		$repl = array("a", "o", "u", "A", "O", "U", "ss");
+		$filename = str_replace($se, $repl, $filename);
+
 		// Remove special accented characters - ie. sí (because they won't write to the filesystem well.)
 		$clean_name = strtr($filename, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy');
 		$clean_name = strtr($clean_name, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
