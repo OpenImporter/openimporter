@@ -235,7 +235,7 @@ class Template
 			}
 			body, td {
 				color: #000;
-				font-size: small;
+				font-size: 14px;
 				font-family: arial;
 			}
 			a {
@@ -277,6 +277,8 @@ class Template
 				margin: 1ex 0;
 				padding: 1.2ex;
 				border: 1px solid #abadb3;
+				border-radius: 4px;
+				box-shadow: 0.3px 0.5px 0.7px rgba(158,158,158,.38), 0.4px 0.8px 1px -1.2px rgba(158,158,158,.38), 1px 2px 2.5px -2.5px rgba(158,158,158,.38);
 			}
 			.button {
 				margin: 0 0.8em 0.8em 0.8em;
@@ -371,7 +373,7 @@ class Template
 				cursor: pointer;
 			}
 			.arrow {
-				font-size: 8pt;
+				font-size: 10px;
 			}
 			#destinations ul, #source {
 				padding: 0 1em;
