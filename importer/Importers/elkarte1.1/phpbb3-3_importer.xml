@@ -42,6 +42,49 @@
 		</query>
 	</step>
 	<step>
+		<title>Importing Buddy/Ignore Lists</title>
+		<detect>{$from_prefix}zebra</detect>
+		<destination>{$to_prefix}members</destination>
+		<code>
+			$request = $this->db->query("
+				SELECT
+					user_id AS id_member, zebra_id, friend, foe
+				FROM {$from_prefix}zebra
+				ORDER BY user_id"
+			);
+			$friend = array();
+			$foe = array();
+			while ($row = $this->db->fetch_assoc($request))
+			{
+				if (!empty($row['friend']))
+				{
+					$friend[$row['id_member']] = empty($friend[$row['id_member']]) ? $row['zebra_id'] : $friend[$row['id_member']] . ',' . $row['zebra_id'];
+				}
+				if (!empty($row['foe']))
+				{
+					$foe[$row['id_member']] = empty($foe[$row['id_member']]) ? $row['zebra_id'] : $foe[$row['id_member']] . ',' . $row['zebra_id'];
+				}
+			}
+
+			foreach ($friend as $member => $buddies)
+			{
+				$this->db->query("
+					UPDATE {$to_prefix}members
+					SET buddy_list = '$buddies'
+					WHERE id_member = $member"
+				);
+			}
+			foreach ($foe as $member => $foil)
+			{
+				$this->db->query("
+					UPDATE {$to_prefix}members
+					SET pm_ignore_list = '$foil'
+					WHERE id_member = $member"
+				);
+			}
+		</code>
+	</step>
+	<step>
 		<title>Importing Custom Fields</title>
 		<detect>{$from_prefix}profile_fields_data</detect>
 		<destination>{$to_prefix}custom_fields_data</destination>
